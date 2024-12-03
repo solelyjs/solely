@@ -8,14 +8,14 @@ export default {
     dtsPlugin({
       outDir: 'dist',
       exclude: [
-        'src/main.ts'
+        'src/test.ts'
       ]
     }),
   ],
   build: {
     sourcemap: false,
     emptyOutDir: true, // 是否清空该目录
-    copyPublicDir: false, // 是否拷贝public
+    copyPublicDir: true, // 是否拷贝public
     // 库模式
     lib: {
       entry: [
