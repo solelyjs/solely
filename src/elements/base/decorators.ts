@@ -3,7 +3,7 @@ export interface Manifest {
     template?: string;
 }
 
-export const Component = (manifest: Manifest): ClassDecorator => {
+export const CustomElement = (manifest: Manifest): ClassDecorator => {
     return (target: any) => {
         // 防止重复定义
         if (customElements.get(manifest.tagName)) {
