@@ -54,21 +54,18 @@ class BaseElement extends HTMLElement {
     #refresh(): void {
         if (this.#refreshing) return;
         this.#refreshing = true;
-        runInAsyncQueue((a: string) => {
-            console.log(a)
+        runInAsyncQueue(() => {
             this.#vNodes = patch(this, this.#AST, this.#vNodes);
             this.#refreshing = false;
-        }, '1');
+        });
     }
 
     connectedCallback(): void {
-        (async () => {
-            await this.onInit();
-            this.#refresh();
-        })();
+        this.#vNodes = patch(this, this.#AST, this.#vNodes);
+        this.onInit();
     }
 
-    public async onInit(): Promise<void> { }
+    public onInit(): Promise<void> | void { }
 
     disconnectedCallback(): void {
         console.log(`disconnectedCallback`);

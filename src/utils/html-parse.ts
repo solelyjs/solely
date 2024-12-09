@@ -94,7 +94,7 @@ function parseTag(ctx: any, tag: string): ASTNode {
     }
 
     if (ast.model) {
-        const key = ast.model;
+        const key = ast.model.replace('this.', '').replace('$data.', '');
         const updateValue = (loops: Loop[]) => getValue(ctx, `$data.${key}`, loops);
         const eventHandler = (type: string) => createEventHandler(ctx, `$data.${key}=${type}`);
 
