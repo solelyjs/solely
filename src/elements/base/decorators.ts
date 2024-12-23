@@ -1,6 +1,7 @@
 export interface Manifest {
     tagName: string;
     template?: string;
+    className?: string;
 }
 
 export const CustomElement = (manifest: Manifest): ClassDecorator => {

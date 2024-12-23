@@ -13,10 +13,15 @@ class BaseElement extends HTMLElement {
 
     constructor() {
         super();
-        const manifest = this._manifest;
-        if (manifest?.template && typeof manifest.template === "string") {
+        const manifest = this._manifest || {};
+        if (manifest.template && typeof manifest.template === "string") {
             this.#AST = parseHtml(this, manifest.template);
         }
+
+        const className = manifest.className || manifest.tagName || "";
+        className.split(" ").forEach((name) => {
+            this.classList.add(name);
+        });
     }
 
     public get $data(): any {
