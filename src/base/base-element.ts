@@ -1,4 +1,4 @@
-import { ASTNode, parseHtml, isObject, patch, runInAsyncQueue } from "../../utils";
+import { ASTNode, parseHtml, isObject, patch, runInAsyncQueue } from "../utils";
 import { Manifest } from "./decorators";
 
 declare interface BaseElement {

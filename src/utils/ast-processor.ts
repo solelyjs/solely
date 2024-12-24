@@ -221,11 +221,13 @@ const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [],
                 }
                 i++;
             }
-            if (i + 1 < nodes.length && isElse(nodes[i + 1]) && !isDone) {
-                toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, true);
-                isDone = true;
+            if (i + 1 < nodes.length && isElse(nodes[i + 1])) {
+                if (!isDone) {
+                    toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, true);
+                    isDone = true;
+                }
+                i++;
             }
-            i++;
         } else if (node.tagName === 'For') {
             const { item = "item", index = "index" } = node.attrs;
             const array = node.fn!(loops) || [];
