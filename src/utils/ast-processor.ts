@@ -100,8 +100,23 @@ const flattenClasses = (classObj: any): string[] => {
     return [];
 }
 
+const addEventHandler = (elm: HTMLElement, key: string, newNode: ASTNode): void => {
+    const eventHandler = (event: Event) => newNode.on[key](event, newNode.loops || []);
+    elm.addEventListener(key, eventHandler, false);
+    newNode.handlers = newNode.handlers || {};
+    newNode.handlers[key] = eventHandler;
+}
+
 const updateElement = (oldNode: ASTNode, newNode: ASTNode): void => {
     const elm = newNode.elm as HTMLElement;
+    // 更新事件监听器
+    Object.keys(newNode.on).forEach(key => {
+        if (oldNode.handlers && oldNode.handlers[key]) {
+            elm.removeEventListener(key, oldNode.handlers[key], false);
+        }
+        addEventHandler(elm, key, newNode);
+    });
+
     setElementProps(elm, newNode.props, newNode.loops);
     setElementClasses(elm, newNode);
     setElementStyles(elm, newNode);
@@ -166,7 +181,7 @@ const addElement = (parentNode: Node, newNode: ASTNode, nextNode?: Node, ns?: st
         }
     });
     Object.keys(newNode.on).forEach(key => {
-        elm.addEventListener(key, (event: Event) => newNode.on[key](event, newNode.loops || []), false);
+        addEventHandler(elm as HTMLElement, key, newNode);
     });
     setElementProps(elm as HTMLElement, newNode.props, newNode.loops);
     setElementClasses(elm as HTMLElement, newNode);

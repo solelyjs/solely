@@ -15,6 +15,7 @@ export interface Loop {
 }
 
 export interface ASTNode {
+    handlers?: Record<string, EventListenerOrEventListenerObject>;
     rootId: number;
     tagName: string;
     attrs: Record<string, string>;
