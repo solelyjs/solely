@@ -8,7 +8,7 @@ export default {
     dtsPlugin({
       outDir: 'dist',
       exclude: [
-        'src/test.ts'
+        'test/test.ts'
       ]
     }),
   ],

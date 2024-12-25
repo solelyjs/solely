@@ -10,6 +10,7 @@ class BaseElement extends HTMLElement {
     #AST: ASTNode[] = [];
     #vNodes: ASTNode[] = [];
     #refreshing: boolean = false;
+    #classList: string[] = [];
 
     constructor() {
         super();
@@ -17,10 +18,9 @@ class BaseElement extends HTMLElement {
         if (manifest.template && typeof manifest.template === "string") {
             this.#AST = parseHtml(this, manifest.template);
         }
-
         const className = manifest.className || manifest.tagName || "";
         className.split(" ").forEach((name) => {
-            this.classList.add(name);
+            this.#classList.push(name);
         });
     }
 
@@ -33,7 +33,7 @@ class BaseElement extends HTMLElement {
     }
 
     public set $data(value: any) {
-        this.#data = value;
+        this.#data = value || {};
         this.#refresh();
     }
 
@@ -61,6 +61,8 @@ class BaseElement extends HTMLElement {
         this.#refreshing = true;
         runInAsyncQueue(() => {
             this.#vNodes = patch(this, this.#AST, this.#vNodes);
+            // 添加class 防止被意外移除
+            this.#classList.forEach((name) => this.classList.add(name));
             this.#refreshing = false;
         });
     }
