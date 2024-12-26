@@ -29,76 +29,98 @@ const setElementProps = (elm: HTMLElement, props: Record<string, Function>, loop
 };
 
 const setElementStyles = (elm: HTMLElement, newNode: ASTNode): void => {
-    const { styles, attrs, loops = [] } = newNode;
+    const { styles, loops = [] } = newNode;
     if (!styles) return;
-
-    const cssTextList: string[] = [];
-
-    // 处理 attrs 中的 style 属性
-    if (attrs?.style) {
-        cssTextList.push(attrs.style);
-    }
 
     // 获取 styles(loops) 的结果
     const stylesObj = styles(loops);
 
-    // 处理不同类型的 stylesObj
-    cssTextList.push(...flattenStyles(stylesObj));
-
-    // 设置元素的样式
-    elm.style.cssText = cssTextList.join(';');
+    const styleDict = flattenStyle(stylesObj);
+    Object.entries(styleDict).forEach(([key, value]) => {
+        (elm.style as any)[key] = value;
+    });
 };
 
 const setElementClasses = (elm: HTMLElement, newNode: ASTNode): void => {
-    const { classes, attrs, loops = [] } = newNode;
+    const { classes, loops = [] } = newNode;
     if (!classes) return;
-
-    const classesToAdd: string[] = [];
-
-    // 处理 attrs 中的 class 属性
-    if (attrs?.class) {
-        classesToAdd.push(...attrs.class.split(' ').filter(cls => cls !== ''));
-    }
 
     // 获取 classes(loops) 的结果
     const classObj = classes(loops);
 
-    // 处理不同类型的 classObj
-    classesToAdd.push(...flattenClasses(classObj));
+    const classDict = flattenClasses(classObj);
 
-    // 设置元素的类名
-    elm.className = Array.from(new Set(classesToAdd)).join(' ');
+    Object.entries(classDict).forEach(([key, value]) => {
+        if (value) {
+            elm.classList.add(key);
+        } else {
+            elm.classList.remove(key);
+        }
+    });
 };
 
-// 辅助函数：处理 stylesObj 的不同情况
-const flattenStyles = (stylesObj: any): string[] => {
-    if (typeof stylesObj === 'object' && !Array.isArray(stylesObj)) {
-        return Object.keys(stylesObj).map(key => `${key}:${stylesObj[key]}`);
-    } else if (typeof stylesObj === 'string') {
-        return [stylesObj];
-    } else if (Array.isArray(stylesObj)) {
-        return stylesObj.flatMap(item =>
-            typeof item === 'string' ? [item] :
-                Object.keys(item).map(key => `${key}:${item[key]}`)
-        );
-    }
-    return [];
-}
+// 辅助函数：处理 styleObj 的不同情况并返回 k-v 结构的对象
+const flattenStyle = (styleObj: any): Record<string, string> => {
+    let result: Record<string, string> = {};
 
-// 辅助函数：处理 classObj 的不同情况
-const flattenClasses = (classObj: any): string[] => {
-    if (typeof classObj === 'object' && !Array.isArray(classObj)) {
-        return Object.keys(classObj).filter(key => classObj[key]).map(key => key);
-    } else if (typeof classObj === 'string') {
-        return classObj.split(' ').filter(cls => cls !== '');
-    } else if (Array.isArray(classObj)) {
-        return classObj.flatMap(item =>
-            typeof item === 'string' ? item.split(' ').filter(cls => cls !== '') :
-                Object.keys(item).filter(key => item[key])
-        );
+    if (typeof styleObj === 'object' && styleObj !== null && !Array.isArray(styleObj)) {
+        Object.entries(styleObj).forEach(([key, value]) => {
+            // 检查值是否为对象，如果是，则递归调用 flattenStyle
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                const nestedStyle = flattenStyle(value);
+                Object.entries(nestedStyle).forEach(([subKey, subValue]) => {
+                    result[`${key}-${subKey}`] = subValue;
+                });
+            } else if (typeof value === 'string' || typeof value === 'number') {
+                // 如果值是字符串或数字，直接添加到结果对象
+                result[key] = `${value}`;
+            } else {
+                // 如果值不是字符串或数字，转换为字符串
+                result[key] = String(value);
+            }
+        });
+    } else if (typeof styleObj === 'string') {
+        // 将字符串形式的样式转换为对象
+        styleObj.split(';').forEach(rule => {
+            const [prop, value] = rule.split(':').map(part => part.trim());
+            if (prop && value) result[prop] = value;
+        });
+    } else if (Array.isArray(styleObj)) {
+        // 处理数组中的每个元素
+        styleObj.forEach(item => {
+            const flatItem = flattenStyle(item);
+            Object.entries(flatItem).forEach(([key, value]) => {
+                result[key] = value;
+            });
+        });
     }
-    return [];
-}
+
+    return result;
+};
+
+// 辅助函数：处理 classObj 的不同情况并返回 k-v 结构的对象
+const flattenClasses = (classObj: any): Record<string, boolean> => {
+    let result: Record<string, boolean> = {};
+
+    if (typeof classObj === 'object' && !Array.isArray(classObj)) {
+        Object.entries(classObj).forEach(([key, value]) => {
+            result[key] = !!value;
+        });
+    } else if (typeof classObj === 'string') {
+        classObj.split(' ').forEach(cls => {
+            if (cls !== '') result[cls] = true;
+        });
+    } else if (Array.isArray(classObj)) {
+        classObj.forEach(item => {
+            const flatItem = flattenClasses(item);
+            Object.entries(flatItem).forEach(([key, value]) => {
+                result[key] = value;
+            });
+        });
+    }
+
+    return result;
+};
 
 const addEventHandler = (elm: HTMLElement, key: string, newNode: ASTNode): void => {
     const eventHandler = (event: Event) => newNode.on[key](event, newNode.loops || []);

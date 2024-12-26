@@ -4,3 +4,5 @@ export { runInAsyncQueue } from './async-queue';
 export { createFunction, type FunctionCreator } from './functions';
 export { patch } from './ast-processor';
 export { isObject } from './is-object';
+export { parseHashUrl } from './url';
+export { observe } from './observe';

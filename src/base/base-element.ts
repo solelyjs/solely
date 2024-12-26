@@ -1,4 +1,4 @@
-import { ASTNode, parseHtml, isObject, patch, runInAsyncQueue } from "../utils";
+import { ASTNode, parseHtml, isObject, patch, runInAsyncQueue, observe } from "../utils";
 import { Manifest } from "./decorators";
 
 declare interface BaseElement {
@@ -10,7 +10,6 @@ class BaseElement extends HTMLElement {
     #AST: ASTNode[] = [];
     #vNodes: ASTNode[] = [];
     #refreshing: boolean = false;
-    #classList: string[] = [];
 
     constructor() {
         super();
@@ -18,16 +17,12 @@ class BaseElement extends HTMLElement {
         if (manifest.template && typeof manifest.template === "string") {
             this.#AST = parseHtml(this, manifest.template);
         }
-        const className = manifest.className || manifest.tagName || "";
-        className.split(" ").forEach((name) => {
-            this.#classList.push(name);
-        });
     }
 
     public get $data(): any {
         let val = this.#data;
         if (isObject(val)) {
-            val = this.#observe(val);
+            val = observe(val, () => this.#refresh());
         }
         return val;
     }
@@ -37,37 +32,21 @@ class BaseElement extends HTMLElement {
         this.#refresh();
     }
 
-    #observe(value: any): any {
-        return new Proxy(value, {
-            get: (target, p) => {
-                let val = target[p];
-                if (isObject(val)) {
-                    val = this.#observe(val);
-                }
-                return val;
-            },
-            set: (target, p, val) => {
-                if (target[p] !== val) {
-                    target[p] = val;
-                    this.#refresh();
-                }
-                return true;
-            },
-        });
-    }
-
     #refresh(): void {
         if (this.#refreshing) return;
         this.#refreshing = true;
         runInAsyncQueue(() => {
             this.#vNodes = patch(this, this.#AST, this.#vNodes);
-            // 添加class 防止被意外移除
-            this.#classList.forEach((name) => this.classList.add(name));
             this.#refreshing = false;
         });
     }
 
     connectedCallback(): void {
+        const manifest = this._manifest || {};
+        const className = manifest.className || manifest.tagName || "";
+        className.split(" ").forEach((name) => {
+            this.classList.add(name)
+        });
         this.#vNodes = patch(this, this.#AST, this.#vNodes);
         this.onInit();
     }
