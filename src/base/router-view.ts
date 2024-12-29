@@ -1,121 +1,186 @@
 import { CustomElement } from "./decorators";
-import { parseHashUrl } from "../utils";
-import { IRouter, router } from "./router";
+import { ASTNode, parseHashUrl, patch } from "../utils";
 
-// 定义查询参数和路由参数的接口
-interface IQueryParams {
+// 定义路由参数的接口
+interface IRouteParams {
     [key: string]: string;
 }
 
-interface IRouteParams {
-    [key: string]: string;
+export interface IRouter {
+    path: string;
+    tagName: string;
+    children?: IRouter[];
 }
 
 @CustomElement({
     tagName: 'router-view'
 })
 export class RouterViewElement extends HTMLElement {
-    $elm: HTMLElement;
-    $routes: IRouter[] = [];
-    $matchedRoute: IRouter | null = null;
-    $remainingPath: string[] = [];
-    $query: IQueryParams = {}; //  URL 查询参数
-    $params: IRouteParams = {}; // 路由参数
+    #vNodes: ASTNode[] = [];
+    #remainingPath: string[] = [];
+    #matchedRoute: IRouter | null = null;
 
     constructor() {
         super();
-        this.$elm = this;
-        window.addEventListener('hashchange', this.#refresh.bind(this));
+        window.addEventListener('hashchange', this.onHashChange.bind(this));
     }
 
+    public $path?: string[];
+    #routes: IRouter[] = [];
+    public get $routes(): IRouter[] {
+        return this.#routes;
+    }
+
+    public set $routes(v: IRouter[]) {
+        this.#routes = v;
+        this.#apply();
+    }
+
+    public get $remainingPath() {
+        return this.#remainingPath;
+    }
+
+    public get $matchedRoute() {
+        return this.#matchedRoute;
+    }
+
+    #pipe: any = {};
+    public set $pipe(v: any) {
+        this.#pipe = v || {};
+        this.#apply();
+    }
 
     connectedCallback() {
-        this.#refresh(); // 初始刷新以匹配路由
-        router.subscribe(() => {
-            this.#refresh();
-        });
+        this.onHashChange();
     }
 
-    disconnectedCallback() {
-
-    }
-
-    #refresh() {
-        const ancestor: any = this.findAncestorWithRouterView(this.$elm);
+    onHashChange() {
+        const { path } = parseHashUrl(window.location);
+        const ancestor: RouterViewElement | null = this.findAncestorWithRouterView(this);
         if (ancestor) {
-            this.$remainingPath = ancestor.$remainingPath;
-            this.$query = ancestor.$query;
-            this.$routes = ancestor.$matchRoute.children || [];
+            this.$path = ancestor.$remainingPath;
+            this.$routes = ancestor.$matchedRoute?.children || [];
         }
         else {
-            const { path, query } = parseHashUrl(window.location);
-            this.$remainingPath = path;
-            this.$query = query;
-            this.$routes = router.getRoutes();
-        }
-        this.matchRoute(); // 匹配路由
-
-        let elm;
-        if (this.$matchedRoute) {
-            elm = this.$matchedRoute.elm || document.createElement(this.$matchedRoute.tagName);
-            //标记当前element是路由组件
-            // elm.setAttribute('router-view', '');
-            // 传递路由参数
-            for (const [key, value] of Object.entries(this.$params)) {
-                elm.setAttribute(key, value);
-            }
-            // 传递查询参数
-            for (const [key, value] of Object.entries(this.$query)) {
-                elm.setAttribute(key, value);
-            }
-
-            this.$matchedRoute.elm = elm;
-        } else {
-            // 没有匹配的路由
-            // console.log('No route matched');
-            elm = document.createElement('error-not-found');
-            elm.innerHTML = `<h1>404 Not Found</h1>`;
-        }
-
-        if (this.$elm !== elm) {
-            this.$elm.replaceWith(elm); // 替换当前元素为匹配的组件
-            this.$elm = elm;
+            this.$path = path;
+            this.$routes = this.$routes;
         }
     }
 
-    matchRoute() {
-        for (const route of this.$routes) {
+    #apply() {
+        const _remainingPath = this.$path || [];
+        const { matchedRoute, params, remainingPath } = this.matchRoute(this.$routes, _remainingPath); // 匹配路由
+        this.#remainingPath = remainingPath;
+
+        const tagName = matchedRoute?.tagName || 'comment';
+
+        const props: Record<string, Function> = {};
+        const on: Record<string, (event: Event) => any> = {};
+        // 传递路由参数
+        for (const [key, value] of Object.entries(params)) {
+            props[key] = () => value;
+        }
+
+        // 传递管道参数
+        for (const [key, value] of Object.entries(this.#pipe)) {
+            if (typeof value === 'function') {
+                on[key] = value as any;
+            }
+            else {
+                props[key] = () => value;
+            }
+        }
+
+        let ast: ASTNode[] = [
+            {
+                tagName: tagName,
+                rootId: 0,
+                attrs: {},
+                props: props,
+                on: on,
+                children: [],
+            }
+        ];
+
+        if (this.#matchedRoute?.tagName !== tagName) {
+            ast = [{
+                rootId: 0,
+                tagName: "If", // 带有If标记的ast会被重建
+                attrs: {},
+                props: {},
+                on: {},
+                fn: () => true,
+                children: ast
+            }];
+        }
+        this.#vNodes = patch(this, ast, this.#vNodes);
+
+        this.#matchedRoute = matchedRoute || {
+            tagName: 'comment',
+            path: '',
+            children: []
+        }
+
+        // 通知后代
+        this.propagateRoutes(this);
+    }
+
+    matchRoute(routes: IRouter[], remainingPath: string[]) {
+        for (const route of routes) {
             const paths = route.path.split('/');
             let isMatch = true;
+            let params: IRouteParams = {};
             for (let i = 0; i < paths.length; i++) {
-                if (paths[i].startsWith(':')) {
-                    this.$params[paths[i].substring(1)] = this.$remainingPath[i];
-                }
-                else if (paths[i] === '*') {
+                const pathSegment = paths[i];
+                if (pathSegment.startsWith(':')) {
+                    // 将参数名和对应的值存入params对象
+                    params[pathSegment.substring(1)] = remainingPath[i];
+                } else if (pathSegment === '*') {
                     // 通配符匹配所有剩余路径
+                    isMatch = true;
                     break;
-                }
-                else if (paths[i] !== this.$remainingPath[i]) {
+                } else if (pathSegment !== remainingPath[i]) {
                     isMatch = false;
                     break;
                 }
             }
             if (isMatch) {
-                this.$matchedRoute = route;
-                this.$remainingPath = this.$remainingPath.slice(paths.length);
-                return;
+                // 如果匹配成功，返回匹配的路由和剩余路径
+                return {
+                    matchedRoute: route,
+                    params: params,
+                    remainingPath: remainingPath.slice(paths.length)
+                };
             }
         }
-        this.$matchedRoute = null;
+        // 如果没有匹配的路由，返回null
+        return {
+            matchedRoute: null,
+            params: {},
+            remainingPath: remainingPath
+        };
+    }
+
+    // 向直系后代传播路由
+    propagateRoutes(node: Node) {
+        for (let item of node.childNodes) {
+            if ((item as any).tagName === 'ROUTER-VIEW') {
+                (item as any).onHashChange();
+                continue;
+            }
+            else {
+                this.propagateRoutes(item);
+            }
+        }
     }
 
     // 寻找包含 'router-view' 属性的祖辈节点
-    findAncestorWithRouterView(node: Element): Element | null {
+    findAncestorWithRouterView(node: Element): RouterViewElement | null {
         // 从传入节点的父节点开始遍历
         let current: Element | null = node.parentNode as Element | null;
         while (current) {
-            if (current.hasAttribute('router-view')) {
-                return current;
+            if (current.tagName === 'ROUTER-VIEW') {
+                return current as RouterViewElement;
             }
             current = current.parentElement;
         }
