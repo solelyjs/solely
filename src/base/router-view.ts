@@ -1,5 +1,5 @@
 import { CustomElement } from "./decorators";
-import { ASTNode, parseHashUrl, patch } from "../utils";
+import { ASTNode, listeners, parseHashUrl, patch } from "../utils";
 
 // 定义路由参数的接口
 interface IRouteParams {
@@ -63,7 +63,8 @@ export class RouterViewElement extends HTMLElement {
         }
         else {
             this.$path = path;
-            this.$routes = this.$routes;
+            // this.$routes = this.$routes;
+            this.#apply();
         }
     }
 
@@ -83,8 +84,8 @@ export class RouterViewElement extends HTMLElement {
 
         // 传递管道参数
         for (const [key, value] of Object.entries(this.#pipe)) {
-            if (typeof value === 'function') {
-                on[key] = value as any;
+            if (listeners.includes(key) || key.startsWith("on-")) {
+                on[key.startsWith("on-") ? key.slice(3) : key.slice(2)] = value as any;
             }
             else {
                 props[key] = () => value;
