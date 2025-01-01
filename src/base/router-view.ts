@@ -20,12 +20,17 @@ export class RouterViewElement extends HTMLElement {
     #remainingPath: string[] = [];
     #matchedRoute: IRouter | null = null;
 
-    constructor() {
-        super();
-        window.addEventListener('hashchange', this.onHashChange.bind(this));
+
+    public get isRouterView(): boolean {
+        return true;
     }
 
-    public $path?: string[];
+
+    constructor() {
+        super();
+    }
+
+    #path?: string[];
     #routes: IRouter[] = [];
     public get $routes(): IRouter[] {
         return this.#routes;
@@ -33,7 +38,7 @@ export class RouterViewElement extends HTMLElement {
 
     public set $routes(v: IRouter[]) {
         this.#routes = v;
-        this.#apply();
+        this.onHashChange();
     }
 
     public get $remainingPath() {
@@ -47,29 +52,33 @@ export class RouterViewElement extends HTMLElement {
     #pipe: any = {};
     public set $pipe(v: any) {
         this.#pipe = v || {};
-        this.#apply();
+        this.onHashChange();
     }
 
     connectedCallback() {
+        window.addEventListener('hashchange', this.onHashChange.bind(this));
         this.onHashChange();
+    }
+
+    disconnectedCallback(): void {
+        window.removeEventListener('hashchange', this.onHashChange.bind(this));
     }
 
     onHashChange() {
         const { path } = parseHashUrl(window.location);
         const ancestor: RouterViewElement | null = this.findAncestorWithRouterView(this);
         if (ancestor) {
-            this.$path = ancestor.$remainingPath;
-            this.$routes = ancestor.$matchedRoute?.children || [];
+            this.#path = ancestor.$remainingPath;
+            this.#routes = ancestor.$matchedRoute?.children || [];
         }
         else {
-            this.$path = path;
-            // this.$routes = this.$routes;
-            this.#apply();
+            this.#path = path;
         }
+        this.#apply();
     }
 
     #apply() {
-        const _remainingPath = this.$path || [];
+        const _remainingPath = this.#path || [];
         const { matchedRoute, params, remainingPath } = this.matchRoute(this.$routes, _remainingPath); // 匹配路由
         this.#remainingPath = remainingPath;
 
@@ -165,7 +174,7 @@ export class RouterViewElement extends HTMLElement {
     // 向直系后代传播路由
     propagateRoutes(node: Node) {
         for (let item of node.childNodes) {
-            if ((item as any).tagName === 'ROUTER-VIEW') {
+            if ((item as any).isRouterView) {
                 (item as any).onHashChange();
                 continue;
             }
@@ -180,7 +189,7 @@ export class RouterViewElement extends HTMLElement {
         // 从传入节点的父节点开始遍历
         let current: Element | null = node.parentNode as Element | null;
         while (current) {
-            if (current.tagName === 'ROUTER-VIEW') {
+            if ((current as any).isRouterView) {
                 return current as RouterViewElement;
             }
             current = current.parentElement;

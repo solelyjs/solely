@@ -10,6 +10,7 @@ class BaseElement extends HTMLElement {
     #AST: ASTNode[] = [];
     #vNodes: ASTNode[] = [];
     #refreshing: boolean = false;
+    #initialized: boolean = false;
 
     constructor() {
         super();
@@ -38,6 +39,10 @@ class BaseElement extends HTMLElement {
         runInAsyncQueue(() => {
             this.#vNodes = patch(this, this.#AST, this.#vNodes);
             this.#refreshing = false;
+            if (this.isConnected && !this.#initialized) {
+                this.#initialized = true;
+                this.onInit();
+            }
         });
     }
 
@@ -45,16 +50,15 @@ class BaseElement extends HTMLElement {
         const manifest = this._manifest || {};
         const className = manifest.className || manifest.tagName || "";
         className.split(" ").forEach((name) => {
-            this.classList.add(name)
+            name && this.classList.add(name)
         });
-        this.#vNodes = patch(this, this.#AST, this.#vNodes);
-        this.onInit();
+        this.#refresh();
     }
 
     public onInit(): Promise<void> | void { }
 
     disconnectedCallback(): void {
-        console.log(`disconnectedCallback`);
+        // console.log(`disconnectedCallback`);
     }
 }
 

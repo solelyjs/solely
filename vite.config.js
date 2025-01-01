@@ -1,5 +1,5 @@
 import dtsPlugin from 'vite-plugin-dts';
-
+import path from 'path';
 
 export default {
   base: '',
@@ -12,6 +12,11 @@ export default {
       ]
     }),
   ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'), // 配置 @ 指向 src 目录
+    },
+  },
   build: {
     sourcemap: false,
     emptyOutDir: true, // 是否清空该目录
