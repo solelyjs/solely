@@ -322,7 +322,7 @@ const processNodes = (parentNode: Node, oldNodes: ASTNode[], newNodes: ASTNode[]
     }
 };
 
-export const patch = (parentNode: Element, ast: ASTNode[], oldNodes: ASTNode[] = []): ASTNode[] => {
+export const patch = (parentNode: Element | ShadowRoot, ast: ASTNode[], oldNodes: ASTNode[] = []): ASTNode[] => {
     if (!ast || ast.length === 0) return [];
     const newNodes: ASTNode[] = [];
     toVNodes(newNodes, ast || [], [], 0, true);

@@ -11,12 +11,22 @@ class BaseElement extends HTMLElement {
     #vNodes: ASTNode[] = [];
     #refreshing: boolean = false;
     #initialized: boolean = false;
+    #root: Element | ShadowRoot;
 
     constructor() {
         super();
         const manifest = this._manifest || {};
         if (manifest.template && typeof manifest.template === "string") {
             this.#AST = parseHtml(this, manifest.template);
+        }
+
+        if (manifest.shadowDOM && manifest.shadowDOM.use) {
+            this.#root = this.attachShadow({
+                mode: manifest.shadowDOM.mode || 'open'
+            });
+        }
+        else {
+            this.#root = this;
         }
     }
 
@@ -37,7 +47,7 @@ class BaseElement extends HTMLElement {
         if (this.#refreshing) return;
         this.#refreshing = true;
         runInAsyncQueue(() => {
-            this.#vNodes = patch(this, this.#AST, this.#vNodes);
+            this.#vNodes = patch(this.#root, this.#AST, this.#vNodes);
             this.#refreshing = false;
             if (this.isConnected && !this.#initialized) {
                 this.#initialized = true;

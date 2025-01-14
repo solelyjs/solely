@@ -2,6 +2,10 @@ export interface Manifest {
     tagName: string;
     template?: string;
     className?: string;
+    shadowDOM?: {
+        use: boolean,
+        mode?: 'open' | 'closed'
+    }
 }
 
 export const CustomElement = (manifest: Manifest): ClassDecorator => {

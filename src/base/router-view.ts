@@ -65,6 +65,10 @@ export class RouterViewElement extends HTMLElement {
     }
 
     onHashChange() {
+        if (!this.isConnected) {
+            return;
+        }
+
         const { path } = parseHashUrl(window.location);
         const ancestor: RouterViewElement | null = this.findAncestorWithRouterView(this);
         if (ancestor) {
