@@ -198,8 +198,8 @@ export function parseHtml(ctx: any, html: string): ASTNode[] {
 
 const getValue = (ctx: any, template: string, loops: Loop[]): any => {
     try {
-        const func = createFunction(["$data", ...loops.map(loop => loop.item), `return (${template})`]).bind(ctx);
-        return func(ctx.$data, ...loops.map(loop => loop.value));
+        const func = createFunction(["$data", ...loops.map(loop => loop.item), ...loops.map(loop => loop.index), `return (${template})`]).bind(ctx);
+        return func(ctx.$data, ...loops.map(loop => loop.value), ...loops.map(loop => loop.valueIndex));
     } catch (e) {
         console.error(e);
     }
@@ -207,7 +207,7 @@ const getValue = (ctx: any, template: string, loops: Loop[]): any => {
 
 const createEventHandler = (ctx: any, handler: string) => {
     return (event: Event | any, loops: Loop[]) => {
-        const func = createFunction(["$data", "event", "value", "checked", ...loops.map(loop => loop.item), handler]).bind(ctx);
-        return func(ctx.$data, event, event.target.value, event.target.checked, ...loops.map(loop => loop.value));
+        const func = createFunction(["$data", "event", "value", "checked", ...loops.map(loop => loop.item), ...loops.map(loop => loop.index), handler]).bind(ctx);
+        return func(ctx.$data, event, event.target.value, event.target.checked, ...loops.map(loop => loop.value), ...loops.map(loop => loop.valueIndex));
     };
 };
