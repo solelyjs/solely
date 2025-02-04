@@ -65,7 +65,7 @@ Solely 使用基于 HTML 的模板语法，能够精准地将数据绑定到呈�
 
 ### 使用 JavaScript 表达式
 
-Solely 在所有的数据绑定中都支持 JavaScript 表达式，除了 `eval`、`Function`、`setTimeout`、`setInterval` 等部分不安全代码除外。
+Solely 在所有的数据绑定中都支持 JavaScript 表达式，除了 `eval`、`Function`、`setTimeout`、`setInterval` 等部分不安全代码。
 
 ```html
 <div>{{ $data.number + 1 }}</div>
@@ -129,6 +129,15 @@ Solely 采用与标签中直接绑定事件相同的方式，不需要进行额�
 - `<input>` (text/checkbox/radio)
 - `<textarea>`
 - `<select>`
+
+**注意：** 双向绑定的表达式只支持 `$data` 中的属性。基于这个特性，你也可以省略 `$data` ,直接使用对应的属性，如 `$data.selected` 可以省略成 `selected`。
+
+```html
+<input type="text" s-model="$data.message">
+<select s-model="selected">
+  <option value="A">选项A</option>
+</select>
+```
 
 ### 条件判断
 
