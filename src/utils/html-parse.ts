@@ -62,7 +62,7 @@ function parseTag(ctx: any, tag: string): ASTNode {
             : [result[2], result[3].trim().slice(1, -1)];
 
         if (listeners.includes(key) || key.startsWith("on-")) {
-            ast.on[key.startsWith("on-") ? key.slice(3) : key.slice(2)] = createEventHandler(ctx, `return (${value})`);
+            ast.on[key.startsWith("on-") ? key.slice(3) : key.slice(2)] = createEventHandler(ctx, value);
         } else if (key.startsWith("s-")) {
             const propKey = key.slice(2);
             switch (propKey) {
