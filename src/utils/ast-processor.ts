@@ -239,28 +239,31 @@ const isElseIfOrComment = (node: ASTNode): boolean => node && (node.tagName === 
 const isElse = (node: ASTNode): boolean => node && (node.tagName === 'Else');
 
 const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [],
-    rootId: number = 0, updateId: boolean = true, isIf: boolean = false
+    rootId: number = 0, updateId: boolean = true, ifId?: number
 ): void => {
     for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         if (node.tagName === 'If') {
             let isDone = false;
+            let ifId = 1; // 1 is the first if
             const condition = node.fn?.(loops);
             if (condition) {
-                toVNodes(vNodes, node.children, loops, rootId, false, true);
+                toVNodes(vNodes, node.children, loops, rootId, false, ifId);
                 isDone = true;
             }
+            ifId++;
             while (i + 1 < nodes.length && isElseIfOrComment(nodes[i + 1])) {
                 const condition = nodes[i + 1].fn?.(loops);
                 if (condition && !isDone) {
-                    toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, true);
+                    toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, ifId);
                     isDone = true;
                 }
                 i++;
+                ifId++;
             }
             if (i + 1 < nodes.length && isElse(nodes[i + 1])) {
                 if (!isDone) {
-                    toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, true);
+                    toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, ifId);
                     isDone = true;
                 }
                 i++;
@@ -278,7 +281,7 @@ const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [],
                 loops,
                 children: [],
                 rootId,
-                isIf
+                ifId
             };
             toVNodes(newNode.children, node.children, loops);
             vNodes.push(newNode);
@@ -294,7 +297,7 @@ const processNodes = (parentNode: Node, oldNodes: ASTNode[], newNodes: ASTNode[]
         const oldNode = oldNodes[oldIndex];
         const newNode = newNodes[newIndex];
         if (oldNode.rootId === newNode.rootId) {
-            if (newNode.isIf) {
+            if (newNode.ifId && oldNode.ifId !== newNode.ifId) {
                 (oldNode.elm as HTMLElement)?.remove();
                 addNode(parentNode, newNode, oldNodes[oldIndex + 1]?.elm);
             } else {

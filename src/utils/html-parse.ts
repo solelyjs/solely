@@ -28,7 +28,7 @@ export interface ASTNode {
     elm?: Node;
     fn?: Function;
     loops?: Loop[];
-    isIf?: boolean;
+    ifId?: number;
     model?: string;
 }
 
