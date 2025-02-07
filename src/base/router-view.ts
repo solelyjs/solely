@@ -19,19 +19,14 @@ export class RouterViewElement extends HTMLElement {
     #vNodes: ASTNode[] = [];
     #remainingPath: string[] = [];
     #matchedRoute: IRouter | null = null;
-
+    #path?: string[];
+    #routes: IRouter[] = [];
+    #pipe: Record<string, any> = {};
 
     public get isRouterView(): boolean {
         return true;
     }
 
-
-    constructor() {
-        super();
-    }
-
-    #path?: string[];
-    #routes: IRouter[] = [];
     public get $routes(): IRouter[] {
         return this.#routes;
     }
@@ -41,21 +36,20 @@ export class RouterViewElement extends HTMLElement {
         this.onHashChange();
     }
 
-    public get $remainingPath() {
+    public get $remainingPath(): string[] {
         return this.#remainingPath;
     }
 
-    public get $matchedRoute() {
+    public get $matchedRoute(): IRouter | null {
         return this.#matchedRoute;
     }
 
-    #pipe: any = {};
-    public set $pipe(v: any) {
+    public set $pipe(v: Record<string, any>) {
         this.#pipe = v || {};
         this.onHashChange();
     }
 
-    connectedCallback() {
+    connectedCallback(): void {
         window.addEventListener('hashchange', this.onHashChange.bind(this));
         this.onHashChange();
     }
@@ -64,32 +58,32 @@ export class RouterViewElement extends HTMLElement {
         window.removeEventListener('hashchange', this.onHashChange.bind(this));
     }
 
-    onHashChange() {
-        if (!this.isConnected) {
-            return;
-        }
+    private onHashChange(): void {
+        if (!this.isConnected) return;
 
         const { path } = parseHashUrl(window.location);
-        const ancestor: RouterViewElement | null = this.findAncestorWithRouterView(this);
+        const ancestor = this.findAncestorWithRouterView(this);
+
         if (ancestor) {
             this.#path = ancestor.$remainingPath;
             this.#routes = ancestor.$matchedRoute?.children || [];
-        }
-        else {
+        } else {
             this.#path = path;
         }
+
         this.#apply();
     }
 
-    #apply() {
+    #apply(): void {
         const _remainingPath = this.#path || [];
-        const { matchedRoute, params, remainingPath } = this.matchRoute(this.$routes, _remainingPath); // 匹配路由
+        const { matchedRoute, params, remainingPath } = this.matchRoute(this.#routes, _remainingPath);
         this.#remainingPath = remainingPath;
 
         const tagName = matchedRoute?.tagName || 'comment';
 
         const props: Record<string, Function> = {};
         const on: Record<string, (event: Event) => any> = {};
+
         // 传递路由参数
         for (const [key, value] of Object.entries(params)) {
             props[key] = () => value;
@@ -98,14 +92,13 @@ export class RouterViewElement extends HTMLElement {
         // 传递管道参数
         for (const [key, value] of Object.entries(this.#pipe)) {
             if (listeners.includes(key) || key.startsWith("on-")) {
-                on[key.startsWith("on-") ? key.slice(3) : key.slice(2)] = value as any;
-            }
-            else {
+                on[key.startsWith("on-") ? key.slice(3) : key.slice(2)] = value as (event: Event) => any;
+            } else {
                 props[key] = () => value;
             }
         }
 
-        let ast: ASTNode[] = [
+        const ast: ASTNode[] = [
             {
                 tagName: tagName,
                 rootId: 0,
@@ -117,40 +110,33 @@ export class RouterViewElement extends HTMLElement {
         ];
 
         if (this.#matchedRoute?.tagName !== tagName) {
-            ast = [{
-                rootId: 0,
-                tagName: "If", // 带有If标记的ast会被重建
-                attrs: {},
-                props: {},
-                on: {},
-                fn: () => true,
-                children: ast
-            }];
+            this.innerHTML = ''; // 清空子元素
+            this.#vNodes = patch(this, ast, []);
+        } else {
+            this.#vNodes = patch(this, ast, this.#vNodes);
         }
-        this.#vNodes = patch(this, ast, this.#vNodes);
 
         this.#matchedRoute = matchedRoute || {
             tagName: 'comment',
             path: '',
             children: []
-        }
+        };
 
         // 通知后代
         this.propagateRoutes(this);
     }
 
-    matchRoute(routes: IRouter[], remainingPath: string[]) {
+    private matchRoute(routes: IRouter[], remainingPath: string[]): { matchedRoute: IRouter | null; params: IRouteParams; remainingPath: string[] } {
         for (const route of routes) {
             const paths = route.path.split('/');
             let isMatch = true;
-            let params: IRouteParams = {};
+            const params: IRouteParams = {};
+
             for (let i = 0; i < paths.length; i++) {
                 const pathSegment = paths[i];
                 if (pathSegment.startsWith(':')) {
-                    // 将参数名和对应的值存入params对象
                     params[pathSegment.substring(1)] = remainingPath[i];
                 } else if (pathSegment === '*') {
-                    // 通配符匹配所有剩余路径
                     isMatch = true;
                     break;
                 } else if (pathSegment !== remainingPath[i]) {
@@ -158,8 +144,8 @@ export class RouterViewElement extends HTMLElement {
                     break;
                 }
             }
+
             if (isMatch) {
-                // 如果匹配成功，返回匹配的路由和剩余路径
                 return {
                     matchedRoute: route,
                     params: params,
@@ -167,7 +153,7 @@ export class RouterViewElement extends HTMLElement {
                 };
             }
         }
-        // 如果没有匹配的路由，返回null
+
         return {
             matchedRoute: null,
             params: {},
@@ -175,22 +161,17 @@ export class RouterViewElement extends HTMLElement {
         };
     }
 
-    // 向直系后代传播路由
-    propagateRoutes(node: Node) {
-        for (let item of node.childNodes) {
+    private propagateRoutes(node: Node): void {
+        for (const item of node.childNodes) {
             if ((item as any).isRouterView) {
                 (item as any).onHashChange();
-                continue;
-            }
-            else {
+            } else {
                 this.propagateRoutes(item);
             }
         }
     }
 
-    // 寻找包含 'router-view' 属性的祖辈节点
-    findAncestorWithRouterView(node: Element): RouterViewElement | null {
-        // 从传入节点的父节点开始遍历
+    private findAncestorWithRouterView(node: Element): RouterViewElement | null {
         let current: Element | null = node.parentNode as Element | null;
         while (current) {
             if ((current as any).isRouterView) {
