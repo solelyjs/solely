@@ -237,25 +237,22 @@ const addNode = (parentNode: Node, newNode: ASTNode, nextNode?: Node, ns?: strin
 
 const isElseIfOrComment = (node: ASTNode): boolean => node && (node.tagName === 'ElseIf' || node.tagName === 'comment');
 const isElse = (node: ASTNode): boolean => node && (node.tagName === 'Else');
-
-const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [],
-    rootId: number = 0, updateId: boolean = true, ifId?: number
-): void => {
+const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [], rootId: string = "0", ifId?: number): void => {
     for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         if (node.tagName === 'If') {
             let isDone = false;
-            let ifId = 1; // 1 is the first if
+            let ifId = 1;
             const condition = node.fn?.(loops);
             if (condition) {
-                toVNodes(vNodes, node.children, loops, rootId, false, ifId);
+                toVNodes(vNodes, node.children, loops, `${rootId}-if-${ifId}`, ifId);
                 isDone = true;
             }
             ifId++;
             while (i + 1 < nodes.length && isElseIfOrComment(nodes[i + 1])) {
                 const condition = nodes[i + 1].fn?.(loops);
                 if (condition && !isDone) {
-                    toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, ifId);
+                    toVNodes(vNodes, nodes[i + 1].children, loops, `${rootId}-if-${ifId}`, ifId);
                     isDone = true;
                 }
                 i++;
@@ -263,7 +260,7 @@ const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [],
             }
             if (i + 1 < nodes.length && isElse(nodes[i + 1])) {
                 if (!isDone) {
-                    toVNodes(vNodes, nodes[i + 1].children, loops, rootId, false, ifId);
+                    toVNodes(vNodes, nodes[i + 1].children, loops, `${rootId}-if-${ifId}`, ifId);
                     isDone = true;
                 }
                 i++;
@@ -273,7 +270,7 @@ const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [],
             const array = node.fn!(loops) || [];
             array.forEach((value: any, valueIndex: number) => {
                 const loopData: Loop = { item, value, index, valueIndex };
-                toVNodes(vNodes, node.children, [...loops, loopData], rootId, false);
+                toVNodes(vNodes, node.children, [...loops, loopData], `${rootId}-for-${valueIndex}`, 1); //重置ifId
             });
         } else {
             const newNode: ASTNode = {
@@ -281,55 +278,49 @@ const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [],
                 loops,
                 children: [],
                 rootId,
-                ifId
+                ifId,
+                key: node.key || `${rootId}-${i}` // 添加 key 属性
             };
-            toVNodes(newNode.children, node.children, loops);
+            toVNodes(newNode.children, node.children, loops, `${rootId}-${i}`);
             vNodes.push(newNode);
         }
-        updateId && rootId++;
     }
 };
 
 const processNodes = (parentNode: Node, oldNodes: ASTNode[], newNodes: ASTNode[]): void => {
-    let oldIndex = 0;
+    const oldMap = new Map();
+    oldNodes.forEach((node, index) => oldMap.set(node.key, { node, index }));
+
     let newIndex = 0;
-    while (oldIndex < oldNodes.length && newIndex < newNodes.length) {
-        const oldNode = oldNodes[oldIndex];
+    let oldIndex = 0;
+    while (newIndex < newNodes.length) {
         const newNode = newNodes[newIndex];
-        if (oldNode.rootId === newNode.rootId) {
+        const oldMatch = oldMap.get(newNode.key);
+
+        if (oldMatch) {
+            const oldNode = oldMatch.node;
             if (newNode.ifId && oldNode.ifId !== newNode.ifId) {
                 (oldNode.elm as HTMLElement)?.remove();
                 addNode(parentNode, newNode, oldNodes[oldIndex + 1]?.elm);
             } else {
                 updateNode(oldNode, newNode);
             }
-            newIndex++;
-            oldIndex++;
-        } else if (oldNode.rootId > newNode.rootId) {
-            (oldNode.elm as HTMLElement)?.remove();
+            oldMap.delete(newNode.key);
             oldIndex++;
         } else {
-            addNode(parentNode, newNode, oldNodes[oldIndex + 1]?.elm);
-            newIndex++;
+            const nextNode = oldNodes[oldIndex]?.elm;
+            addNode(parentNode, newNode, nextNode);
         }
-    }
-    while (oldIndex < oldNodes.length) {
-        const oldNode = oldNodes[oldIndex];
-        (oldNode.elm as HTMLElement)?.remove();
-        oldIndex++;
-    }
-    while (newIndex < newNodes.length) {
-        const newNode = newNodes[newIndex];
-        addNode(parentNode, newNode);
         newIndex++;
     }
+
+    oldMap.forEach(({ node }) => (node.elm as HTMLElement)?.remove());
 };
 
 export const patch = (parentNode: Element | ShadowRoot, ast: ASTNode[], oldNodes: ASTNode[] = []): ASTNode[] => {
     if (!ast || ast.length === 0) return [];
     const newNodes: ASTNode[] = [];
-    toVNodes(newNodes, ast || [], [], 0, true);
+    toVNodes(newNodes, ast || [], [], "0");
     processNodes(parentNode, oldNodes, newNodes);
-    // console.log(newNodes)
     return newNodes;
 };

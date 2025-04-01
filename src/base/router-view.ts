@@ -101,7 +101,7 @@ export class RouterViewElement extends HTMLElement {
         const ast: ASTNode[] = [
             {
                 tagName: tagName,
-                rootId: 0,
+                rootId: '0',
                 attrs: {},
                 props: props,
                 on: on,

@@ -15,8 +15,9 @@ export interface Loop {
 }
 
 export interface ASTNode {
+    key?: string;
     handlers?: Record<string, EventListenerOrEventListenerObject>;
-    rootId: number;
+    rootId: string;
     tagName: string;
     attrs: Record<string, string>;
     props: Record<string, Function>;
@@ -41,7 +42,7 @@ function compressHtml(html: string): string {
 function parseTag(ctx: any, tag: string): ASTNode {
     const tagName = (tag.match(tagNameRE) || [])[1] || '';
     const ast: ASTNode = {
-        rootId: 0,
+        rootId: '0',
         tagName,
         attrs: {},
         props: {},
@@ -141,7 +142,7 @@ export function parseHtml(ctx: any, html: string): ASTNode[] {
                 const isStatic = !varRE.test(value);
                 const content = isStatic ? value : (loops: Loop[]) => value.replace(varRE, (_, match) => getValue(ctx, match, loops));
                 current.push({
-                    rootId: 0,
+                    rootId: '0',
                     tagName: "text",
                     attrs: {},
                     props: {},
@@ -155,7 +156,7 @@ export function parseHtml(ctx: any, html: string): ASTNode[] {
 
         if (tag.startsWith('<!--') && tag.endsWith('-->')) {
             current.push({
-                rootId: 0,
+                rootId: '0',
                 tagName: "comment",
                 attrs: {},
                 props: {},
@@ -183,7 +184,7 @@ export function parseHtml(ctx: any, html: string): ASTNode[] {
 
     if (html.length > index) {
         astNodes.push({
-            rootId: 0,
+            rootId: '0',
             tagName: "text",
             attrs: {},
             props: {},
