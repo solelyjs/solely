@@ -8,7 +8,9 @@ export default {
     dtsPlugin({
       outDir: 'dist',
       exclude: [
-        'test/test.ts'
+        'test/test.ts',
+        'examples',
+        '**/* copy*.ts'
       ]
     }),
   ],

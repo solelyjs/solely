@@ -202,7 +202,8 @@ const getValue = (ctx: any, template: string, loops: Loop[]): any => {
         const func = createFunction(["$data", ...loops.map(loop => loop.item), ...loops.map(loop => loop.index), `return (${template})`]).bind(ctx);
         return func(ctx.$data, ...loops.map(loop => loop.value), ...loops.map(loop => loop.valueIndex));
     } catch (e) {
-        console.error(e);
+        console.error(`Error evaluating expression: {{ ${template} }}`, e);
+        return ''; // 返回默认值避免渲染失败
     }
 };
 

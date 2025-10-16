@@ -1,0 +1,49 @@
+<div class="todo-container">
+  <h2>Todo List</h2>
+
+  <div class="todo-input-section">
+    <input type="text" placeholder="What needs to be done?" s-value="$data.newTodoText"
+      oninput="this.handleInputChange(event)" onkeypress="this.handleKeyPress(event)" class="todo-input" />
+    <button class="add-btn" onclick="this.addTodo()">
+      Add
+    </button>
+  </div>
+
+  <ul class="todo-list">
+    <For each="$data.filteredTodos" item="todo">
+      <li class="todo-item" s-class="{ 'completed': todo.completed }">
+        <input type="checkbox" s-checked="todo.completed" onchange="this.toggleTodo(todo.id)" />
+        <span class="todo-text">{{ todo.text }}</span>
+        <button class="delete-btn" onclick="this.removeTodo(todo.id)">
+          ×
+        </button>
+      </li>
+    </For>
+  </ul>
+
+  <If condition="$data.todos.length > 0">
+    <div class="todo-footer">
+      <span class="todo-count">{{ this.activeCount }} item{{ this.activeCount !== 1 ? 's' : '' }} left</span>
+
+      <div class="todo-filters">
+        <button class="filter-btn" s-class="{ 'active': $data.filter === 'all' }" onclick="this.setFilter('all')">
+          All
+        </button>
+        <button class="filter-btn" s-class="{ 'active': $data.filter === 'active' }" onclick="this.setFilter('active')">
+          Active
+        </button>
+        <button class="filter-btn" s-class="{ 'active': $data.filter === 'completed' }"
+          onclick="this.setFilter('completed')">
+          Completed
+        </button>
+      </div>
+
+      <button class="clear-btn" onclick="this.clearCompleted()">
+        Clear completed
+      </button>
+    </div>
+  </If>
+  <Else condition="$data.todos.length === 0">
+    <p class="empty-message">No todos yet. Add your first todo!</p>
+  </Else>
+</div>

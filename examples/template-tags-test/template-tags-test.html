@@ -1,0 +1,114 @@
+<div class="template-tags-test">
+  <h2>模板标签测试组件</h2>
+
+  <!-- 条件标签测试 -->
+  <section class="condition-test">
+    <h3>条件标签测试 (If/ElseIf/Else)</h3>
+    <p>当前条件: {{ $data.condition }}</p>
+    <button class="action-btn" onclick="this.changeCondition()">切换条件</button>
+
+    <div class="condition-content">
+      <If condition="$data.condition === 'A'">
+        <div class="condition-a">
+          <h4>条件 A 匹配</h4>
+          <p>这是条件 A 的内容，当 condition 属性值为 'A' 时显示。</p>
+        </div>
+      </If>
+      <ElseIf condition="$data.condition === 'B'">
+        <div class="condition-b">
+          <h4>条件 B 匹配</h4>
+          <p>这是条件 B 的内容，当 condition 属性值为 'B' 时显示。</p>
+        </div>
+      </ElseIf>
+      <ElseIf condition="$data.condition === 'C'">
+        <div class="condition-c">
+          <h4>条件 C 匹配</h4>
+          <p>这是条件 C 的内容，当 condition 属性值为 'C' 时显示。</p>
+        </div>
+      </ElseIf>
+      <Else>
+        <div class="condition-default">
+          <h4>默认条件匹配</h4>
+          <p>这是默认内容，当以上条件都不匹配时显示。</p>
+        </div>
+      </Else>
+    </div>
+  </section>
+
+  <!-- 循环标签测试 -->
+  <section class="loop-test">
+    <h3>循环标签测试 (For)</h3>
+    <div class="loop-controls">
+      <button class="action-btn" onclick="this.addItem()">添加项目</button>
+      <button class="action-btn" onclick="this.toggleList()">
+        {{ $data.showList ? '隐藏列表' : '显示列表' }}
+      </button>
+    </div>
+
+    <If condition="$data.showList">
+      <ul class="items-list">
+        <For each="$data.items" item="item">
+          <li class="item" s-class="{ 'completed': item.completed }">
+            <input type="checkbox" s-checked="item.completed" onchange="this.toggleItemStatus(item.id)" />
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-id">#{{ item.id }}</span>
+            <button class="remove-btn" onclick="this.removeItem(item.id)">删除</button>
+          </li>
+        </For>
+      </ul>
+
+      <If condition="$data.items.length === 0">
+        <p class="empty-message">列表为空，请添加项目。</p>
+      </If>
+    </If>
+
+    <Else>
+      <p class="hidden-message">列表已隐藏</p>
+    </Else>
+  </section>
+
+  <!-- 嵌套标签测试 -->
+  <section class="nested-test">
+    <h3>嵌套标签测试</h3>
+    <button class="action-btn" onclick="this.incrementCounter()">递增计数器 (当前: {{ $data.counter }})</button>
+
+    <div class="nested-content">
+      <If condition="$data.counter > 0">
+        <div class="counter-positive">
+          <p>计数器为正数: {{ $data.counter }}</p>
+          <If condition="$data.counter % 2 === 0">
+            <p class="even">这是一个偶数</p>
+          </If>
+          <Else>
+            <p class="odd">这是一个奇数</p>
+          </Else>
+
+          <div class="nested-loop">
+            <h4>嵌套循环示例</h4>
+            <ul>
+              <For each="Array.from(new Array($data.counter).keys())" item="i">
+                <li>项目 {{ i + 1 }}</li>
+                <For each="Array.from(new Array(3).keys())" item="j">
+                  <li class="nested-item">- 子项目 {{ j + 1 }}</li>
+                </For>
+              </For>
+            </ul>
+          </div>
+        </div>
+      </If>
+      <Else>
+        <p class="counter-zero">计数器为 0，请点击递增按钮</p>
+      </Else>
+    </div>
+  </section>
+
+  <!-- 数据绑定测试 -->
+  <section class="binding-test">
+    <h3>数据绑定测试</h3>
+    <div class="stats">
+      <p>总项目数: {{ $data.items.length }}</p>
+      <p>已完成项目: {{ $data.items.filter(item => item.completed).length }}</p>
+      <p>未完成项目: {{ $data.items.filter(item => !item.completed).length }}</p>
+    </div>
+  </section>
+</div>

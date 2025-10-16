@@ -1,0 +1,45 @@
+<div class="user-card">
+  <div class="card-header">
+    <div class="avatar-container">
+      <img s-src="$data.user.avatar" alt="$data.user.name" class="avatar" />
+      <span class="status-indicator" s-data-status="$data.user.isActive ? 'active' : 'inactive'"></span>
+    </div>
+
+    <div class="user-basic-info">
+      <h3 class="user-name">{{ $data.user.name }}</h3>
+      <p class="user-email">{{ $data.user.email }}</p>
+      <p class="user-role">{{ $data.user.role }}</p>
+    </div>
+  </div>
+
+  <button class="toggle-details-btn" onclick="this.toggleDetails()">
+    {{ $data.showDetails ? 'Hide Details' : 'Show Details' }}
+  </button>
+
+
+  <If condition="$data.showDetails">
+    <div class="card-details">
+      <div class="detail-item">
+        <span class="detail-label">Department:</span>
+        <span class="detail-value">{{ $data.user.department }}</span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">Status:</span>
+        <span class="detail-value status-{{ $data.user.isActive ? 'active' : 'inactive' }}">
+          {{ $data.user.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+
+      <div class="detail-item">
+        <span class="detail-label">User ID:</span>
+        <span class="detail-value">{{ $data.user.id }}</span>
+      </div>
+
+      <div class="card-actions">
+        <button class="action-btn edit-btn">Edit Profile</button>
+        <button class="action-btn message-btn">Send Message</button>
+      </div>
+    </div>
+  </If>
+</div>

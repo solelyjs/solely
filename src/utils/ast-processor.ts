@@ -299,14 +299,33 @@ const processNodes = (parentNode: Node, oldNodes: ASTNode[], newNodes: ASTNode[]
 
         if (oldMatch) {
             const oldNode = oldMatch.node;
-            if (newNode.ifId && oldNode.ifId !== newNode.ifId) {
-                (oldNode.elm as HTMLElement)?.remove();
-                addNode(parentNode, newNode, oldNodes[oldIndex + 1]?.elm);
+
+            // 如果 tagName 发生变化 —— 直接删除旧 DOM 并创建新 DOM（保证命名空间/类型正确）
+            if (oldNode.tagName !== newNode.tagName) {
+                // 移除旧节点的 DOM（会移除其子树和事件绑定）
+                (oldNode.elm as HTMLElement | null)?.remove();
+
+                // 在当前位置插入 newNode（使用 oldNodes[oldIndex + 1]?.elm 作为 nextNode）
+                const nextNode = oldNodes[oldIndex + 1]?.elm;
+                addNode(parentNode, newNode, nextNode);
+
+                // 从映射中移除已处理的旧节点
+                oldMap.delete(newNode.key);
+
+                // 保持 oldIndex 与 newIndex 的推进（我们替换了当前位置）
+                oldIndex++;
             } else {
-                updateNode(oldNode, newNode);
+                // 如果 ifId 变了（条件分支替换）需要整体替换 DOM
+                if (newNode.ifId && oldNode.ifId !== newNode.ifId) {
+                    (oldNode.elm as HTMLElement | null)?.remove();
+                    const nextNode = oldNodes[oldIndex + 1]?.elm;
+                    addNode(parentNode, newNode, nextNode);
+                } else {
+                    updateNode(oldNode, newNode);
+                }
+                oldMap.delete(newNode.key);
+                oldIndex++;
             }
-            oldMap.delete(newNode.key);
-            oldIndex++;
         } else {
             const nextNode = oldNodes[oldIndex]?.elm;
             addNode(parentNode, newNode, nextNode);
@@ -314,8 +333,9 @@ const processNodes = (parentNode: Node, oldNodes: ASTNode[], newNodes: ASTNode[]
         newIndex++;
     }
 
-    oldMap.forEach(({ node }) => (node.elm as HTMLElement)?.remove());
+    oldMap.forEach(({ node }) => (node.elm as HTMLElement | null)?.remove());
 };
+
 
 export const patch = (parentNode: Element | ShadowRoot, ast: ASTNode[], oldNodes: ASTNode[] = []): ASTNode[] => {
     if (!ast || ast.length === 0) return [];

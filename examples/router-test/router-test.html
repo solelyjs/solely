@@ -1,0 +1,58 @@
+<div class="router-test">
+  <h1>路由测试组件</h1>
+  
+  <!-- 路由导航 -->
+  <nav class="main-nav">
+    <ul>
+      <li>
+        <button 
+          class="nav-btn" 
+          s-class="{ 'active': $data.currentPath === '#/home' }"
+          onclick="this.navigateTo('#/home')"
+        >
+          首页
+        </button>
+      </li>
+      <li>
+        <button 
+          class="nav-btn" 
+          s-class="{ 'active': $data.currentPath === '#/about' }"
+          onclick="this.navigateTo('#/about')"
+        >
+          关于
+        </button>
+      </li>
+      <li>
+        <button 
+          class="nav-btn" 
+          s-class="{ 'active': $data.currentPath.startsWith('#/user') }"
+          onclick="this.navigateTo('#/user/profile')"
+        >
+          用户中心
+        </button>
+      </li>
+    </ul>
+  </nav>
+  
+  <!-- 当前路径显示 -->
+  <div class="path-info">
+    <p>当前路径: <code>{{ $data.currentPath }}</code></p>
+  </div>
+  
+  <!-- 路由视图 -->
+  <div class="route-container">
+    <router-view s-$routes="$data.routes"></router-view>
+  </div>
+  
+  <!-- 路由说明 -->
+  <div class="route-info">
+    <h3>路由说明</h3>
+    <ul>
+      <li><strong>#/home</strong> - 首页路由</li>
+      <li><strong>#/about</strong> - 关于页面路由</li>
+      <li><strong>#/user/profile</strong> - 用户资料（嵌套路由）</li>
+      <li><strong>#/user/settings</strong> - 用户设置（嵌套路由）</li>
+    </ul>
+    <p>通过点击导航按钮或直接修改URL中的hash值来测试路由功能。</p>
+  </div>
+</div>

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
+    // "removeComments": true,
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
@@ -30,6 +31,8 @@
     }
   },
   "include": [
-    "src"
-, "test/test.ts"  ]
+    "src",
+    "test/test.ts",
+    "examples"
+  ]
 }

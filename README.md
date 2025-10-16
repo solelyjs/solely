@@ -2,17 +2,18 @@
 
 ## 项目简介
 
-在当今的软件开发领域，前端框架的选择对于项目的成功至关重要。我们注意到，市面上的许多前端框架虽然功能强大，但往往过于复杂，与原生JavaScript（JS）或TypeScript（TS）的写法差异较大，这不仅增加了开发者的学习成本，也不利于技术的积累和迁移。特别是对于小型项目，这些框架的全面性反而导致了资源的浪费，因为它们往往包含了许多项目并不需要的复杂功能。
+Solely 是一款基于 Web Components 标准的轻量级前端框架，专为简化小型项目开发而设计。它保留了与原生 JavaScript/TypeScript 的高兼容性，同时提供了现代前端框架的核心功能，如响应式数据绑定、虚拟 DOM 渲染和组件化开发。
 
-为了解决这一问题，我们开发了一款简单而高效的前端框架。它的核心优势在于：
+核心优势：
 
-1. **简化复杂性**：我们的框架设计简洁，易于上手，与原生JS/TS的写法保持一致，便于技术积累。
-2. **专注核心功能**：针对小型项目，我们的框架专注于提供必要的响应式功能，避免了不必要的功能堆砌，从而减少了项目的臃肿。
-3. **性能优化**：轻量级的设计减少了资源消耗，提高了项目运行效率。
-4. **技术兼容性**：与原生JS/TS的高兼容性，使得开发者可以在不同项目间轻松迁移和应用技术。
-5. **高度定制性**：根据项目需求灵活定制功能，避免功能浪费。
+1. **简化复杂性**：设计简洁，易于上手，与原生 JS/TS 语法保持一致
+2. **响应式系统**：基于 Proxy 实现的高效响应式数据绑定
+3. **虚拟 DOM**：轻量级虚拟 DOM 系统，提高渲染性能
+4. **组件化开发**：基于 Web Components 标准，支持自定义元素
+5. **TypeScript 支持**：完整的类型定义，提供良好的开发体验
+6. **路由功能**：内置简单路由系统，支持单页应用开发
 
-我们致力于持续优化框架，确保它能够适应不断变化的前端开发需求，并根据用户反馈进行调整和改进。我们的目标是提供一个既满足小型项目需求，又不牺牲性能和易用性的前端解决方案。
+Solely 适用于需要快速开发且不希望引入大型框架复杂性的项目，它既保持了原生开发的灵活性，又提供了现代框架的便利性。
 
 ## 安装
 
@@ -24,11 +25,54 @@ npm i solely
 
 ### 响应式数据
 
-Solely 中内置了响应式数据 `$data`，每当 `$data` 中的数据更改时，页面也会同步更新。
+Solely 通过 `$data` 属性提供响应式数据绑定功能。框架使用 JavaScript 的 Proxy API 实现深度响应式系统，每当 `$data` 中的数据更改时，页面会自动同步更新。
+
+```ts
+// 初始化响应式数据
+this.$data = {
+  count: 0,
+  user: {
+    name: 'John',
+    age: 30
+  }
+};
+
+// 修改数据会自动触发视图更新
+this.$data.count++;
+this.$data.user.name = 'Jane';
+```
+
+响应式系统特性：
+
+- 支持嵌套对象和数组的深度响应式
+- 自动追踪数据变化并触发视图更新
+- 优化的批量更新机制，避免频繁渲染
+
+### TypeScript 泛型支持
+
+Solely 提供了完整的 TypeScript 支持，您可以通过泛型定义 `$data` 的类型结构，获得更好的类型推断和编辑器智能提示。
+
+```ts
+class MyComponent extends BaseElement<{
+  count: number;
+  message: string;
+  items: string[];
+}> {
+  onInit() {
+    this.$data = {
+      count: 0,
+      message: 'Hello',
+      items: ['item1', 'item2']
+    };
+  }
+}
+```
 
 ### 模板语法
 
-Solely 使用基于 HTML 的模板语法，能够精准地将数据绑定到呈现的 DOM 上。所有模板都是语法正确的 HTML，可被标准的浏览器和 HTML 解析器顺利解析。
+Solely 使用 HTML 字符串作为视图模板，结合虚拟DOM和响应式系统，提供高效的模板渲染能力。框架内部会将模板解析为抽象语法树(AST)，并生成高效的更新函数。所有模板都是语法正确的 HTML，可被标准的浏览器和 HTML 解析器顺利解析。
+
+模板支持以下功能：
 
 ### 文本插值
 
@@ -38,6 +82,8 @@ Solely 使用基于 HTML 的模板语法，能够精准地将数据绑定到呈�
 <div>消息: {{ this.$data.msg }}</div>
 <div>消息: {{ $data.msg }}</div>
 ```
+
+框架内部会将模板解析为抽象语法树(AST)，并生成高效的更新函数。当 `$data` 中的数据发生变化时，响应式系统会通过虚拟DOM进行精确的差异比较，只更新必要的DOM节点，确保渲染性能。
 
 双大括号标签会被替换为 `Element` 实例中 `$data.msg` 的值。同时，每次 `$data.msg` 属性更改时，它也会同步更新。
 
@@ -141,32 +187,127 @@ Solely 采用与标签中直接绑定事件相同的方式，不需要进行额�
 
 ### 条件判断
 
-Solely 引入了 `<If>` 标签，基于 `condition` 关键字绑定的表达式值的真假性，有条件地渲染元素或模板片段。该标签不会在 HTML 中渲染，只控制内部元素的展示。
+Solely 提供了内置的条件渲染标签，使您可以根据条件动态地显示或隐藏DOM元素：
 
 ```html
-<If condition="$data.if">
-  <div>内容1</div>
-  <div>内容2</div>
-  <div>内容3</div>
+<If condition="$data.show">
+  <div>显示的内容</div>
 </If>
+
+<If condition="$data.condition1">
+  <div>内容1</div>
+</If>
+<ElseIf condition="$data.condition2">
+  <div>内容2</div>
+</ElseIf>
+<Else>
+  <div>默认内容</div>
+</Else>
+
+<div s-style="{ display: $data.show ? 'block' : 'none' }"></div>
 ```
+
+Solely 引入的条件标签基于 `condition` 关键字绑定的表达式值的真假性，有条件地渲染元素或模板片段。这些标签不会在 HTML 中渲染，只控制内部元素的展示。
 
 ### 列表渲染
 
-Solely 引入了 `<For>` 标签，根据由 `each` 关键字绑定的表达式值返回的数组来渲染列表。`item` 关键字是迭代的别名，默认为 `item`，但可以通过为其赋值进行修改。标签内部的元素可以使用 `item` 关键字绑定的内容，使用 `index` 关键字绑定内容的索引。该标签不会在 HTML 中渲染，只控制内部元素的展示。
+Solely 提供了内置的 `<For>` 标签，用于高效地渲染列表数据。该标签会根据由 `each` 关键字绑定的表达式值返回的数组来动态生成DOM元素，标签本身不会在HTML中渲染，只控制内部元素的展示。
 
 ```html
-<For each="$data.f" item="i">
-  <For each="$data.e">
-    <div>For 外层 {{i}} 内层 {{item}}</div>
-    <button onclick="this.onClick(i,item)">点击</button>
+<!-- 基本列表渲染 -->
+<For each="$data.items">
+  <div>{{ item }}</div>
+</For>
+
+<!-- 访问索引 -->
+<For each="$data.items">
+  <div>{{ index }}: {{ item }}</div>
+</For>
+
+<!-- 对象属性访问 -->
+<For each="$data.users">
+  <div>{{ item.name }} - {{ item.age }}</div>
+</For>
+
+<!-- 自定义循环变量名 -->
+<For each="$data.users" item="user">
+  <div>{{ user.name }}</div>
+</For>
+
+<!-- 使用index指定索引 -->
+<For each="$data.pages" item="page" index="i">
+  <div>{{ i }}: {{ page.title }}</div>
+</For>
+
+<!-- 嵌套循环示例 -->
+<For each="$data.groups" item="group">
+  <div>{{ group.name }}</div>
+  <For each="group.users">
+    <div>  - {{ item.name }}</div>
   </For>
 </For>
-<!-- 使用index指定索引 -->
-<For each="$data.pages" item="page" index="i"></For>
-```
+</html>
 
-### 类绑定
+<!-- 组件代码示例 -->
+<script>
+class UserListComponent extends BaseElement {
+  onInit() {
+    this.$data = {
+      users: [
+        { id: 1, name: 'John', age: 30 },
+        { id: 2, name: 'Jane', age: 28 },
+        { id: 3, name: 'Bob', age: 32 }
+      ]
+    };
+  }
+}
+</script>
+
+<!-- 渲染结果示例 -->
+<!--
+<div>John - 30</div>
+<div>Jane - 28</div>
+<div>Bob - 32</div>
+-->
+
+**注意**：在处理列表数据时，如果列表项可能会发生变化（如添加、删除、重新排序），建议为每个列表项提供唯一的标识，这有助于 Solely 的虚拟 DOM 系统进行高效的节点复用和更新，提高渲染性能。
+
+## 类绑定
+
+在 Solely 中，您可以使用 `s-class` 属性动态绑定类名。
+
+```html
+<template>
+  <!-- 简单的布尔值切换 -->
+  <div s-class="{ active: $data.isActive }"></div>
+  
+  <!-- 多个类名条件 -->
+  <div s-class="{ active: $data.isActive, disabled: $data.isDisabled }"></div>
+  
+  <!-- 数组语法 -->
+  <div s-class="[ $data.baseClass, { active: $data.isActive } ]"></div>
+  
+  <!-- 直接绑定表达式结果 -->
+  <div s-class="$data.className"></div>
+</template>
+
+<script>
+class MyComponent extends BaseElement {
+  onInit() {
+    this.$data = {
+      isActive: true,
+      isDisabled: false,
+      baseClass: 'container',
+      className: 'user-card highlighted'
+    };
+  }
+}
+</script>
+
+<!-- 渲染结果 -->
+<!-- <div class="active container"></div> -->
+
+```
 
 支持三种形式实现动态类绑定：
 
@@ -190,18 +331,55 @@ Solely 引入了 `<For>` 标签，根据由 `each` 关键字绑定的表达式�
 
 ### 样式绑定
 
+在 Solely 中，您可以使用 `s-style` 属性动态绑定样式。
+
+```html
+<template>
+  <!-- 对象语法 -->
+  <div s-style="{
+    color: $data.textColor,
+    fontSize: $data.fontSize + 'px',
+    border: { 
+      width: '1px',
+      style: 'solid'
+    }
+  }"></div>
+  
+  <!-- 字符串语法 -->
+  <div s-style="color: red; font-size: 14px;"></div>
+  
+  <!-- 数组语法 -->
+  <div s-style="[$data.baseStyles, { padding: $data.padding + 'px' }]"></div>
+  
+  <!-- 简单表达式 -->
+  <div s-style="color: {{ $data.isActive ? 'red' : 'blue' }}"></div>
+</template>
+
+<script>
+class MyComponent extends BaseElement {
+  onInit() {
+    this.$data = {
+      textColor: 'red',
+      fontSize: 16,
+      baseStyles: { backgroundColor: 'lightgray' },
+      padding: 10,
+      isActive: true
+    };
+  }
+}
+</script>
+
+<!-- 渲染结果 -->
+<!-- <div style="color: red; font-size: 16px; border: 1px solid;"></div> -->
+
 支持三种形式实现动态样式绑定：
 
-1. **对象语法**（支持嵌套对象）：
+1. **对象语法**：
 
 ```html
 <div s-style="{
   color: $data.textColor,
-  fontSize: $data.fontSize + 'px',
-  border: { 
-    width: '1px',
-    style: 'solid'
-  }
+  fontSize: $data.fontSize + 'px'
 }"></div>
 ```
 
@@ -217,38 +395,245 @@ Solely 引入了 `<For>` 标签，根据由 `each` 关键字绑定的表达式�
 <div s-style="[$data.baseStyles, { padding: $data.padding + 'px' }]"></div>
 ```
 
+4. **嵌套对象**：
+
+```html
+<div s-style="{
+  border: {
+    width: '1px',
+    style: 'solid',
+    color: $data.borderColor
+  }
+}"></div>
+```
+
 ### 自定义元素
 
-通过继承 `BaseElement` 创建自定义组件：
+Solely 基于 Web Components 标准，通过继承 `BaseElement` 和使用 `@CustomElement` 装饰器可以轻松创建自定义组件。
 
 ```ts
 import { BaseElement, CustomElement } from "solely";
 
+// 基本组件定义
 @CustomElement({
   tagName: "my-component",
   template: `<div>{{ $data.count }}</div>`
 })
-class MyComponent extends BaseElement {
+export class MyComponent extends BaseElement {
   onInit() {
     this.$data = { count: 0 };
   }
 }
+
+// 带样式和影子DOM的组件
+@CustomElement({
+  tagName: "styled-component",
+  template: `<div class="container">{{ $data.message }}</div>`,
+  className: "my-class", // 添加额外的类名
+  style: ".container { color: blue; }", // 内联样式
+  shadowDOM: true // 使用影子DOM隔离样式和结构
+})
+export class StyledComponent extends BaseElement {
+  onInit() {
+    this.$data = { message: 'Hello with style!' };
+  }
+}
+
+// 使用TypeScript泛型定义数据类型
+@CustomElement({
+  tagName: "typed-component"
+})
+export class TypedComponent extends BaseElement<{
+  title: string;
+  items: Array<{id: number, name: string}>;
+}> {
+  template = `
+    <h1>{{ $data.title }}</h1>
+    <For each="{{ $data.items }}">
+      <div>{{ item.id }}: {{ item.name }}</div>
+    </For>
+  `;
+  
+  onInit() {
+    this.$data = {
+      title: 'Typed Component',
+      items: [
+        { id: 1, name: 'Item 1' },
+        { id: 2, name: 'Item 2' }
+      ]
+    };
+  }
+}
 ```
+
+#### 使用自定义元素
+
+在HTML中使用自定义元素就像使用普通HTML标签一样简单：
+
+```html
+<!-- 基本用法 -->
+<my-component></my-component>
+
+<!-- 传递属性 -->
+<my-component s-initial-count="10"></my-component>
+
+<!-- 监听自定义事件 -->
+<my-component onupdate="handleUpdate(event)"></my-component>
+```
+
+#### 组件间通信
+
+组件间通信可以通过以下方式实现：
+
+1. **属性传递**：使用 `s-` 前缀的属性将数据传递给子组件
+
+2. **事件冒泡**：子组件通过 `dispatchEvent` 触发自定义事件，父组件通过事件监听器接收
+
+```ts
+// 子组件中触发事件
+this.dispatchEvent(new CustomEvent('update', {
+  bubbles: true,
+  detail: { value: this.$data.count }
+}));
+
+// 父组件中监听事件
+<child-component onupdate="this.handleChildUpdate(event)"></child-component>
+
+// 父组件中的处理方法
+handleChildUpdate(event) {
+  console.log('Received update from child:', event.detail.value);
+}
+```
+
+3. **共享服务**：创建全局服务类来管理共享状态
+
+4. **Context API**：使用自定义的Context机制在组件树中传递数据
 
 ### 生命周期
 
-组件生命周期方法：
+Solely 提供了完整的组件生命周期钩子，让您可以在组件的不同阶段执行特定操作：
 
-- `onInit()`: 组件初始化时调用
+| 生命周期钩子 | 调用时机 | 用途 |
+|-------------|---------|------|
+| `created()` | 组件构造函数执行完毕后 | 组件初始化的最早阶段，可用于设置初始状态 |
+| `onInit()` | 组件首次挂载到DOM前 | 初始化数据和设置（保持向后兼容） |
+| `beforeUpdate()` | 每次组件更新渲染前 | 可以在数据更新后、渲染前执行逻辑 |
+| `mounted()` | 组件首次挂载到DOM后 | 可以访问DOM元素，绑定事件监听器等 |
+| `updated()` | 组件每次更新渲染后 | 可以执行依赖于DOM更新的操作 |
+| `unmounted()` | 组件从DOM中移除时 | 清理资源，移除事件监听器，避免内存泄漏 |
+
+```ts
+class MyComponent extends BaseElement {
+  created() {
+    // 组件创建完成
+    console.log('Component created');
+  }
+  
+  onInit() {
+    // 初始化数据
+    this.$data = { count: 0 };
+  }
+  
+  mounted() {
+    // 组件已挂载到DOM
+    console.log('Component mounted');
+    // 可以在这里访问DOM元素
+    this.querySelector('button').addEventListener('click', this.onClick);
+  }
+  
+  beforeUpdate() {
+    // 组件即将更新
+    console.log('Before update');
+  }
+  
+  updated() {
+    // 组件已更新
+    console.log('Component updated');
+  }
+  
+  unmounted() {
+    // 组件即将被移除
+    console.log('Component unmounted');
+    // 清理资源
+    this.querySelector('button').removeEventListener('click', this.onClick);
+  }
+}
+
+### 路由功能
+
+Solely 内置了简单但功能强大的路由系统，通过 `router-view` 组件实现。该组件会根据当前 URL 的 hash 部分（如 `#/home`）自动渲染匹配的组件。
+
+#### 路由配置
+
+```ts
+// 创建路由配置
+const router = {
+  routes: [
+    {
+      path: '/',
+      component: HomeComponent
+    },
+    {
+      path: '/about',
+      component: AboutComponent
+    },
+    {
+      path: '/user/:id', // 动态路由参数
+      component: UserComponent
+    }
+  ]
+};
+
+// 在自定义元素中使用路由
+class MyApp extends BaseElement {
+  onInit() {
+    this.$data = {
+      router // 将路由配置传递给模板
+    };
+  }
+}
+```
+
+#### 在模板中使用路由
+
+```html
+<template>
+  <div>
+    <nav>
+      <a href="#/">首页</a>
+      <a href="#/about">关于</a>
+      <a href="#/user/123">用户详情</a>
+    </nav>
+    <!-- 路由视图组件 -->
+    <router-view :router="router"></router-view>
+  </div>
+</template>
+```
+
+#### 获取路由参数
+
+在组件内部，您可以通过 `this.params` 访问路由参数：
+
+```ts
+class UserComponent extends BaseElement {
+  onInit() {
+    // 访问路由参数
+    const userId = this.params.id;
+    console.log('User ID:', userId);
+  }
+}
+```
 
 ### 注意事项
 
-1. **性能优化**：
+#### 性能优化
 
-- 避免在模板表达式中进行复杂计算
-- 列表渲染始终为 `<For>` 元素添加唯一的 `key` 属性
+- **避免复杂计算**：避免在模板表达式中进行复杂计算或调用可能产生副作用的函数
+- **列表渲染优化**：对于频繁变化的列表，确保提供唯一标识符以优化虚拟DOM更新
+- **批量更新**：框架会自动合并短时间内的多次数据更新，减少不必要的渲染
+- **事件处理**：对于频繁触发的事件（如滚动、输入），考虑使用节流或防抖
 
-2. **命名空间**：
+#### 命名空间
 
 SVG 元素会自动应用 `svg` 命名空间：
 
@@ -258,17 +643,35 @@ SVG 元素会自动应用 `svg` 命名空间：
 </svg>
 ```
 
-3. **组件通信**：
+#### 组件通信
 
-通过自定义事件实现父子组件通信：
+组件间通信可以通过以下方式实现：
+
+1. **属性传递**：使用 `s-` 前缀的属性将数据传递给子组件
+
+2. **事件冒泡**：子组件通过 `dispatchEvent` 触发自定义事件，父组件通过事件监听器接收
 
 ```ts
-// 触发事件
-this.dispatchEvent(new CustomEvent('update', { detail: value }));
+// 子组件中触发事件
+this.dispatchEvent(new CustomEvent('update', {
+  bubbles: true,
+  detail: { value: this.$data.count }
+}));
 
-// 监听事件
-<my-component onupdate="console.log(event.detail)"></my-component>
+// 父组件中监听事件
+<child-component onupdate="this.handleChildUpdate(event)"></child-component>
 ```
+
+3. **共享服务**：创建全局服务类来管理共享状态
+
+#### 开发最佳实践
+
+- `$data` 可以在任何生命周期钩子中设置，框架会自动处理响应式转换
+- 自定义元素的名称必须包含连字符，例如 `my-component`
+- 在类中使用 `@CustomElement` 装饰器时，需要正确设置参数
+- 使用路由功能时，请确保在 `router-view` 组件中正确传递路由配置
+- 避免在模板中使用 `eval`、`Function`、`setTimeout`、`setInterval` 等可能导致安全问题的代码
+- 当组件被移除时，确保在 `unmounted` 钩子中清理资源，避免内存泄漏
 
 ## 许可证
 

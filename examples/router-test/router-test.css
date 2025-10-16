@@ -1,0 +1,211 @@
+.router-test {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.router-test h1 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* 导航样式 */
+.main-nav {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 10px 0;
+}
+
+.main-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.main-nav li {
+  margin: 0 5px;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #495057;
+  transition: all 0.3s;
+  border-radius: 4px;
+}
+
+.nav-btn:hover {
+  background-color: #e9ecef;
+  color: #007bff;
+}
+
+.nav-btn.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* 路径信息样式 */
+.path-info {
+  background-color: #e7f3ff;
+  padding: 10px 15px;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+  margin-bottom: 20px;
+}
+
+.path-info code {
+  background-color: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  color: #e83e8c;
+}
+
+/* 路由容器样式 */
+.route-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 300px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* 路由组件样式 */
+.route-home, .route-about {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.route-home h2, .route-about h2 {
+  color: #007bff;
+  margin-bottom: 20px;
+}
+
+.route-home p, .route-about p {
+  color: #666;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+/* 用户布局样式 */
+.user-layout {
+  padding: 20px;
+}
+
+.user-layout h2 {
+  color: #007bff;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eaeaea;
+  padding-bottom: 10px;
+}
+
+.user-nav {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.user-nav button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.user-nav button:hover {
+  background-color: #5a6268;
+}
+
+.user-content {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 20px;
+  min-height: 200px;
+}
+
+.user-profile, .user-settings {
+  padding: 10px 0;
+}
+
+.user-profile h3, .user-settings h3 {
+  color: #495057;
+  margin-bottom: 15px;
+}
+
+.user-profile p, .user-settings p {
+  color: #666;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+/* 路由说明样式 */
+.route-info {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+}
+
+.route-info h3 {
+  color: #28a745;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.route-info ul {
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.route-info li {
+  margin-bottom: 8px;
+  color: #495057;
+}
+
+.route-info strong {
+  color: #007bff;
+}
+
+.route-info p {
+  color: #666;
+  font-style: italic;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .main-nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .main-nav li {
+    margin: 5px 0;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .nav-btn {
+    width: 90%;
+  }
+  
+  .user-nav button {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+  }
+}

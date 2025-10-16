@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solely 组件示例</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #3498db, #2ecc71);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #7f8c8d;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .components-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+
+    .component-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .component-section:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .component-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #ecf0f1;
+    }
+
+    .component-title {
+      font-size: 1.5rem;
+      margin: 0;
+      color: #2c3e50;
+    }
+
+    .component-description {
+      color: #7f8c8d;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+
+    .component-demo {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      min-height: 200px;
+    }
+
+    .todo-section {
+      grid-column: span 2;
+    }
+
+    .usage-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin-top: 40px;
+    }
+
+    .usage-title {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    .code-block {
+      background: #2d3436;
+      color: #dfe6e9;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      margin: 16px 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7f8c8d;
+      border-top: 1px solid #ecf0f1;
+      margin-top: 60px;
+    }
+
+    @media (max-width: 768px) {
+      .components-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .todo-section {
+        grid-column: span 1;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Solely 框架组件示例</h1>
+      <p class="subtitle">使用 Solely Web Components 框架构建的组件示例。</p>
+    </header>
+
+    <div class="components-grid">
+      <!-- Counter 组件 -->
+      <div class="component-section">
+        <div class="component-header">
+          <h2 class="component-title">计数器组件</h2>
+          <p class="component-description">一个带有增加、减少与重置功能的简单计数器。</p>
+        </div>
+        <div class="component-demo">
+          <solely-counter step="2" count="3"></solely-counter>
+        </div>
+      </div>
+
+      <!-- User Card 组件 -->
+      <div class="component-section">
+        <div class="component-header">
+          <h2 class="component-title">用户卡片组件</h2>
+          <p class="component-description">展示用户信息，可展开详情的卡片组件。</p>
+        </div>
+        <div class="component-demo">
+          <solely-user-card></solely-user-card>
+        </div>
+        <div class="component-demo" style="margin-top: 20px;">
+          <solely-user-card user-id="2"></solely-user-card>
+        </div>
+      </div>
+
+      <!-- Todo List 组件 -->
+      <div class="component-section todo-section">
+        <div class="component-header">
+          <h2 class="component-title">待办列表组件</h2>
+          <p class="component-description">一个完整的待办事项列表，支持筛选与管理功能。</p>
+        </div>
+        <div class="component-demo">
+          <solely-todo-list></solely-todo-list>
+        </div>
+      </div>
+    </div>
+
+    <!-- 使用说明 -->
+    <div class="usage-section">
+      <h2 class="usage-title">如何使用这些组件</h2>
+      <p>在项目中使用 Solely 组件的步骤如下：</p>
+
+      <h3>1. 导入组件</h3>
+      <pre class="code-block">
+      &lt;script type="module"&gt;
+      import './components/counter/counter.js';
+      import './components/todo-list/todo-list.js';
+      import './components/user-card/user-card.js';
+      &lt;/script&gt;
+      </pre>
+
+      <h3>2. 在 HTML 中使用组件</h3>
+      <pre class="code-block">
+      &lt;!-- 计数器组件 --&gt;
+      &lt;solely-counter step="2" count="3"&gt;&lt;/solely-counter&gt;
+      
+      &lt;!-- 用户卡片（通过属性传入 ID） --&gt;
+      &lt;solely-user-card user-id="2"&gt;&lt;/solely-user-card&gt;
+      </pre>
+
+      <h3>如果需要传递非字符串数据或复杂对象，可以使用 JS 设置属性或 $data：</h3>
+      <pre class="code-block">
+      &lt;!-- 用户卡片通过 JS 设置 --&gt;
+      &lt;solely-user-card id="card-js"&gt;&lt;/solely-user-card&gt;
+      
+      &lt;script&gt;
+      const card = document.getElementById('card-js');
+      
+      // 设置单个属性（驼峰形式）
+      card.userId = 2;
+      
+      // 设置复杂数据
+      card.$data = {
+        name: 'Alice',
+        status: 'online'
+      };
+      
+      // 或者更新部分数据
+      card.$data = {
+        status: 'offline'
+      };
+      &lt;/script&gt;
+      </pre>
+
+
+      <h3>3. 属性与类型说明</h3>
+      <ul>
+        <li>HTML 属性值默认都是字符串，Solely 会尝试根据 <code>$data</code> 默认值或 <code>props</code> type 自动转换类型。</li>
+        <li>如果需要数字、布尔或对象类型，推荐在 <code>props</code> 中声明 type，或者使用 JavaScript 设置 <code>$data</code>。</li>
+      </ul>
+
+      <h3>4. 组件特性</h3>
+      <ul>
+        <li><strong>计数器：</strong> 可自定义步进值，支持增加、减少、重置</li>
+        <li><strong>用户卡片：</strong> 支持动态加载用户数据、展开详情、状态指示</li>
+        <li><strong>待办列表：</strong> 支持添加、删除、标记完成、筛选与批量操作</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>由 Solely Web Components 框架构建</p>
+  </footer>
+
+  <!-- 引入打包后的库 -->
+  <script type="module" src="../src/solely.ts"></script>
+  <script type="module" src="./index.ts"></script>
+
+  <!-- 仅示例：页面加载日志 -->
+  <script type="module">
+    console.log('Solely 组件示例页面已加载');
+  </script>
+</body>
+
+</html>

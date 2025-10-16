@@ -1,0 +1,31 @@
+<div class="counter-container">
+  <div class="counter-display">
+    <h2>Counter</h2>
+    <div class="count-value">{{ this.$data.count }}</div>
+  </div>
+  
+  <div class="counter-controls">
+    <button class="btn" onclick="this.decrement()">
+      -{{ this.$data.step }}
+    </button>
+    
+    <button class="btn reset-btn" onclick="this.reset()">
+      Reset
+    </button>
+    
+    <button class="btn" onclick="this.increment()">
+      +{{ this.$data.step }}
+    </button>
+  </div>
+  
+  <div class="counter-settings">
+    <label for="step-input">Step Size:</label>
+    <input 
+      id="step-input" 
+      type="number" 
+      min="1" 
+      s-value="this.$data.step" 
+      onchange="this.handleStepChange(event)"
+    />
+  </div>
+</div>
