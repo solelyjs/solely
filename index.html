@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/solely.svg">
   <title>Solely框架组件测试</title>
   <style>
     body {
@@ -122,6 +123,7 @@
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('template-tags')">模板标签测试</button>
       <button class="nav-tab" onclick="switchTab('router')">路由功能测试</button>
+      <button class="nav-tab" onclick="switchTab('lab')">综合功能测试</button>
     </div>
 
     <!-- 模板标签测试 -->
@@ -195,6 +197,20 @@
       event.target.classList.add('active');
     }
   </script>
+
+  <!-- 综合功能测试 -->
+  <div id="lab" class="tab-content">
+    <div class="component-section">
+      <h2>综合功能测试组件</h2>
+      <div class="component-description">
+        <p>系统性覆盖框架核心功能：响应式、模板语法、事件、s-model、props/attributes 同步、样式/类绑定、数组操作与路由。</p>
+        <p>使用方式：<code>&lt;framework-lab&gt;&lt;/framework-lab&gt;</code></p>
+      </div>
+      <div class="component-preview">
+        <framework-lab title="综合测试" init-count="2" debug="false" config='{"theme":"light","enableRouter":true}'></framework-lab>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

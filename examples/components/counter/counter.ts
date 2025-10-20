@@ -1,4 +1,4 @@
-import { BaseElement, CustomElement } from '../../src/base';
+import { BaseElement, CustomElement } from '../../../src/base';
 import template from './counter.html?raw';
 import styles from './counter.css?raw';
 

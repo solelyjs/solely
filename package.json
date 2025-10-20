@@ -1,7 +1,7 @@
 {
   "name": "solely",
   "private": false,
-  "version": "0.0.24",
+  "version": "0.0.25",
   "type": "module",
   "module": "./dist/solely.js",
   "types": "./dist/solely.d.ts",
@@ -17,9 +17,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "link": "npm link && echo '✅ 全局链接成功，可在其他项目中使用 solely 命令'",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "pack:local": "npm pack && echo '✅ 打包完成，可在其他项目中使用 file: 引用'"
   },
   "devDependencies": {
     "@rollup/plugin-strip": "^3.0.4",

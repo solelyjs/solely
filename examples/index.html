@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="/solely.svg">
   <title>Solely 组件示例</title>
   <style>
     body {
@@ -192,9 +193,12 @@
       <h3>1. 导入组件</h3>
       <pre class="code-block">
       &lt;script type="module"&gt;
-      import './components/counter/counter.js';
-      import './components/todo-list/todo-list.js';
-      import './components/user-card/user-card.js';
+      // 在示例项目中，建议直接引入入口注册文件
+      import './index.ts';
+      // 或者按需引入各组件：
+      import './components/counter/counter.ts';
+      import './components/todo-list/todo-list.ts';
+      import './components/user-card/user-card.ts';
       &lt;/script&gt;
       </pre>
 
@@ -248,18 +252,32 @@
 
   </div>
 
+  <!-- 示例导航 -->
+  <section class="usage-section" style="margin-top: 0;">
+    <h2 class="usage-title">示例导航</h2>
+    <ul>
+      <!-- 独立页面已迁移至 ./pages/ 分组 -->
+      <li><a href="./pages/basic.html">基础示例 Basic Example</a></li>
+      <li><a href="./pages/demo.html">演示 Demo</a></li>
+      <li><a href="./pages/filter-deep-compare.html">深比较过滤 Filter Deep Compare</a></li>
+      <li><a href="./pages/throttle.html">节流示例 Throttle Example</a></li>
+      <!-- 说明文档 Readme（readme.html 已移除） -->
+    </ul>
+  </section>
+
   <footer>
     <p>由 Solely Web Components 框架构建</p>
   </footer>
 
-  <!-- 引入打包后的库 -->
-  <script type="module" src="../src/solely.ts"></script>
+  <!-- 引入打包后的库（建议使用打包产物以提升兼容性） -->
+  <script type="module" src="../dist/solely.js"></script>
   <script type="module" src="./index.ts"></script>
 
   <!-- 仅示例：页面加载日志 -->
   <script type="module">
     console.log('Solely 组件示例页面已加载');
   </script>
+
 </body>
 
 </html>

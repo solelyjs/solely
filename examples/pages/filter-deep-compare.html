@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/solely.svg">
+    <title>Observe 路径过滤和深比较示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #9C27B0;
+            padding-bottom: 10px;
+        }
+
+        .filter-controls {
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .filter-option:hover {
+            background: #e0e0e0;
+        }
+
+        .filter-option.selected {
+            background: #9C27B0;
+            color: white;
+        }
+
+        .filter-option input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .custom-filter {
+            margin-top: 15px;
+        }
+
+        .custom-filter input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .deep-compare-toggle {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .deep-compare-toggle label {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .deep-compare-toggle input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .data-editor {
+            background: #f9f9f9;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .editor-section {
+            margin-bottom: 15px;
+        }
+
+        .editor-section h3 {
+            margin-top: 0;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .nested-editor {
+            padding-left: 20px;
+            border-left: 2px solid #ddd;
+            margin-left: 10px;
+        }
+
+        .object-actions {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #9C27B0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #7B1FA2;
+        }
+
+        button.outline {
+            background: transparent;
+            border: 1px solid #9C27B0;
+            color: #9C27B0;
+        }
+
+        button.outline:hover {
+            background: #f3e5f5;
+        }
+
+        .log-container {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .log {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 6px;
+            background: #fafafa;
+            border-radius: 3px;
+            border-left: 3px solid #9C27B0;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .log-path {
+            font-weight: bold;
+            color: #9C27B0;
+        }
+
+        .log-flag {
+            font-size: 11px;
+            padding: 2px 6px;
+            background: #E1BEE7;
+            border-radius: 3px;
+            color: #4A148C;
+        }
+
+        .log-values {
+            display: flex;
+            gap: 10px;
+        }
+
+        .log-old,
+        .log-new {
+            font-size: 12px;
+        }
+
+        .log-old {
+            color: #d32f2f;
+        }
+
+        .log-new {
+            color: #388E3C;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .status-item {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #9C27B0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Observe 路径过滤和深比较功能演示</h1>
+
+    <div class="container">
+        <div class="section">
+            <h2>路径过滤设置</h2>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>预设过滤选项:</label>
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-all">
+                            <label for="filter-all">监听所有路径</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-user">
+                            <label for="filter-user">user.*</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-settings">
+                            <label for="filter-settings">settings.*</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-name">
+                            <label for="filter-name">user.name</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-address">
+                            <label for="filter-address">user.address.*</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="custom-filter">
+                    <label for="custom-filter-input">自定义过滤路径 (支持通配符 * 和 [*]):</label>
+                    <input type="text" id="custom-filter-input" placeholder="例如: items[*].name">
+                    <button id="add-custom-filter" class="outline">添加自定义过滤</button>
+                </div>
+            </div>
+
+            <div class="deep-compare-toggle">
+                <input type="checkbox" id="deep-compare-toggle">
+                <label for="deep-compare-toggle">启用深比较 (只有内容变化时触发更新)</label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>数据编辑器</h2>
+            <div class="data-editor">
+                <div class="editor-section">
+                    <h3>用户信息</h3>
+                    <div class="input-group">
+                        <label>姓名:</label>
+                        <input type="text" id="edit-name" placeholder="姓名">
+                    </div>
+                    <div class="input-group">
+                        <label>年龄:</label>
+                        <input type="number" id="edit-age" placeholder="年龄">
+                    </div>
+
+                    <div class="nested-editor">
+                        <h3>地址信息</h3>
+                        <div class="input-group">
+                            <label>城市:</label>
+                            <input type="text" id="edit-city" placeholder="城市">
+                        </div>
+                        <div class="input-group">
+                            <label>街道:</label>
+                            <input type="text" id="edit-street" placeholder="街道">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-section">
+                    <h3>设置信息</h3>
+                    <div class="input-group">
+                        <label>主题:</label>
+                        <input type="text" id="edit-theme" placeholder="主题">
+                    </div>
+                    <div class="input-group">
+                        <label>语言:</label>
+                        <input type="text" id="edit-language" placeholder="语言">
+                    </div>
+                </div>
+
+                <div class="object-actions">
+                    <button id="update-normal">普通更新</button>
+                    <button id="update-deep-equal" class="outline">更新为内容相同对象</button>
+                    <button id="reset-data">重置数据</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>更新日志</h2>
+            <div class="log-container">
+                <div class="log" id="update-log"></div>
+                <div class="status-bar">
+                    <div class="status-item">
+                        触发更新次数: <span class="status-value" id="update-count">0</span>
+                    </div>
+                    <div class="status-item">
+                        当前过滤模式: <span class="status-value" id="current-filter">所有路径</span>
+                    </div>
+                    <div class="status-item">
+                        深比较状态: <span class="status-value" id="deep-compare-status">禁用</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入 observe 函数
+        import { observe } from '../../src/solely.ts';
+
+        // 状态变量
+        let currentFilters = [];
+        let useDeepCompare = false;
+        let updateCount = 0;
+
+        // 初始数据
+        let userData = {
+            user: {
+                name: '李四',
+                age: 30,
+                address: {
+                    city: '上海',
+                    street: '南京东路'
+                }
+            },
+            settings: {
+                theme: 'light',
+                language: 'zh-CN'
+            }
+        };
+
+        // DOM 元素
+        const editName = document.getElementById('edit-name');
+        const editAge = document.getElementById('edit-age');
+        const editCity = document.getElementById('edit-city');
+        const editStreet = document.getElementById('edit-street');
+        const editTheme = document.getElementById('edit-theme');
+        const editLanguage = document.getElementById('edit-language');
+        const updateLog = document.getElementById('update-log');
+        const updateCountEl = document.getElementById('update-count');
+        const currentFilterEl = document.getElementById('current-filter');
+        const deepCompareStatusEl = document.getElementById('deep-compare-status');
+        const customFilterInput = document.getElementById('custom-filter-input');
+
+        // 初始化输入框
+        function initInputs() {
+            editName.value = userData.user.name;
+            editAge.value = userData.user.age;
+            editCity.value = userData.user.address.city;
+            editStreet.value = userData.user.address.street;
+            editTheme.value = userData.settings.theme;
+            editLanguage.value = userData.settings.language;
+        }
+
+        // 初始化
+        initInputs();
+
+        // 记录更新日志
+        const logUpdate = (path, newValue, oldValue) => {
+            updateCount++;
+            updateCountEl.textContent = updateCount.toString();
+
+            const pathStr = path.join('.');
+            const isFiltered = currentFilters.length > 0;
+
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <div class="log-header">
+                    <span class="log-path">${pathStr}</span>
+                    <span class="log-flag">${isFiltered ? '已过滤' : '全部'}</span>
+                </div>
+                <div class="log-values">
+                    <span class="log-old">旧值: ${JSON.stringify(oldValue)}</span>
+                    <span class="log-new">新值: ${JSON.stringify(newValue)}</span>
+                </div>
+            `;
+
+            updateLog.prepend(logEntry);
+
+            // 限制日志数量
+            if (updateLog.children.length > 30) {
+                updateLog.removeChild(updateLog.lastChild);
+            }
+        };
+
+        // 创建响应式代理
+        let reactiveData;
+        let unobserve;
+
+        function createReactive() {
+            // 停止之前的观察
+            if (unobserve) {
+                unobserve();
+            }
+
+            // 更新显示
+            currentFilterEl.textContent = currentFilters.length > 0 ? currentFilters.join(', ') : '所有路径';
+            deepCompareStatusEl.textContent = useDeepCompare ? '启用' : '禁用';
+
+            // 创建新的响应式代理
+            const result = observe(
+                userData,
+                logUpdate,
+                {
+                    filter: currentFilters.length > 0 ? currentFilters : undefined,
+                    deepCompare: useDeepCompare
+                }
+            );
+
+            reactiveData = result.proxy;
+            unobserve = result.unobserve;
+        }
+
+        // 初始化响应式
+        createReactive();
+
+        // 处理过滤选项变化
+        const filterCheckboxes = [
+            'filter-all', 'filter-user', 'filter-settings',
+            'filter-name', 'filter-address'
+        ];
+
+        filterCheckboxes.forEach(id => {
+            const checkbox = document.getElementById(id);
+            checkbox.addEventListener('change', updateFilters);
+        });
+
+        function updateFilters() {
+            const allCheckbox = document.getElementById('filter-all');
+            const filters = [];
+
+            if (allCheckbox.checked) {
+                // 如果选择了"监听所有路径"，取消其他选择
+                filterCheckboxes.slice(1).forEach(id => {
+                    document.getElementById(id).checked = false;
+                });
+            } else {
+                // 收集其他选中的过滤选项
+                if (document.getElementById('filter-user').checked) filters.push('user.*');
+                if (document.getElementById('filter-settings').checked) filters.push('settings.*');
+                if (document.getElementById('filter-name').checked) filters.push('user.name');
+                if (document.getElementById('filter-address').checked) filters.push('user.address.*');
+            }
+
+            currentFilters = filters;
+            updateCount = 0;
+            updateCountEl.textContent = '0';
+            updateLog.innerHTML = '';
+            createReactive();
+        }
+
+        // 添加自定义过滤
+        document.getElementById('add-custom-filter').addEventListener('click', () => {
+            const customFilter = customFilterInput.value.trim();
+            if (customFilter) {
+                // 取消"监听所有路径"的选择
+                document.getElementById('filter-all').checked = false;
+
+                // 添加自定义过滤
+                currentFilters.push(customFilter);
+                customFilterInput.value = '';
+
+                // 更新响应式
+                updateCount = 0;
+                updateCountEl.textContent = '0';
+                updateLog.innerHTML = '';
+                createReactive();
+
+                alert(`已添加自定义过滤路径: ${customFilter}`);
+            }
+        });
+
+        // 深比较切换
+        document.getElementById('deep-compare-toggle').addEventListener('change', (e) => {
+            useDeepCompare = e.target.checked;
+            updateCount = 0;
+            updateCountEl.textContent = '0';
+            updateLog.innerHTML = '';
+            createReactive();
+        });
+
+        // 普通更新
+        document.getElementById('update-normal').addEventListener('click', () => {
+            reactiveData.user.name = editName.value;
+            reactiveData.user.age = parseInt(editAge.value) || 0;
+            reactiveData.user.address.city = editCity.value;
+            reactiveData.user.address.street = editStreet.value;
+            reactiveData.settings.theme = editTheme.value;
+            reactiveData.settings.language = editLanguage.value;
+        });
+
+        // 更新为内容相同的对象
+        document.getElementById('update-deep-equal').addEventListener('click', () => {
+            // 创建内容相同但引用不同的对象
+            reactiveData.user = {
+                name: editName.value,
+                age: parseInt(editAge.value) || 0,
+                address: {
+                    city: editCity.value,
+                    street: editStreet.value
+                }
+            };
+
+            reactiveData.settings = {
+                theme: editTheme.value,
+                language: editLanguage.value
+            };
+
+            // 提示用户
+            if (useDeepCompare) {
+                alert('由于启用了深比较，虽然对象引用改变，但内容相同，不会触发更新');
+            } else {
+                alert('由于未启用深比较，即使内容相同，对象引用改变会触发更新');
+            }
+        });
+
+        // 重置数据
+        document.getElementById('reset-data').addEventListener('click', () => {
+            userData = {
+                user: {
+                    name: '李四',
+                    age: 30,
+                    address: {
+                        city: '上海',
+                        street: '南京东路'
+                    }
+                },
+                settings: {
+                    theme: 'light',
+                    language: 'zh-CN'
+                }
+            };
+
+            initInputs();
+            updateCount = 0;
+            updateCountEl.textContent = '0';
+            updateLog.innerHTML = '';
+            createReactive();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,114 +1,90 @@
-# Solely框架组件
+# Solely 示例与组件目录
 
-本目录包含使用Solely Web Components框架构建的示例组件。这些组件展示了如何使用框架的功能创建可重用、封装良好的UI元素。
+本目录包含使用 Solely Web Components 框架构建的示例与演示页面，涵盖常用组件与功能特性，便于快速对齐用法与最佳实践。
 
-## 组件结构
-
-每个组件都遵循一致的结构：
+## 目录结构
 
 ```
-components/
-├── component-name/
-│   ├── component-name.ts    # 包含组件逻辑的主TypeScript文件
-│   ├── component-name.html  # HTML模板
-│   ├── component-name.css   # 样式文件
-├── index.ts                 # 组件注册入口文件
-└── README.md               # 本文档
+examples/
+├── index.html            # 示例首页（带导航与使用说明）
+├── index.ts              # 组件注册入口（统一导入/注册）
+├── components/           # 组件示例分组
+│   ├── counter/          # 计数器组件
+│   ├── todo-list/        # 待办列表组件
+│   └── user-card/        # 用户卡片组件
+├── router-test/          # 路由相关示例
+├── template-tags-test/   # 模板标签示例
+├── framework-lab/        # 框架实验（综合功能实验）
+├── pages/                # 独立页面分组
+│   ├── basic.html        # observe 基础示例
+│   ├── demo.html         # 演示页面
+│   ├── filter-deep-compare.html  # 深比较过滤示例
+│   └── throttle.html     # 节流示例
+└── _archive/             # 历史文件归档（如存在）
 ```
 
-## 可用组件
+说明：已移除 `readme.html`（内容与示例首页及本 README 重叠）；已清理 `counter copy/` 目录内的重复文件。如需保留历史版本，建议迁入 `_archive/`。
 
-### 1. 计数器组件 (`solely-counter`)
+## 访问方式
 
-一个简单的计数器，具有以下功能：
+- 开发环境：运行 `npm run dev` 后，访问 `http://localhost:5173/examples/index.html`
+- 独立示例建议引用打包产物：`../dist/solely.js`（在 `pages/basic.html`、`pages/throttle.html`、`pages/filter-deep-compare.html` 已统一）
 
-- 增加和减少计数功能
-- 可自定义步长
-- 重置按钮
-- 响应式设计
+## 示例索引（首页导航）
 
-**使用方法：**
+- `./components/counter/counter.html` 计数器 Counter
+- `./components/user-card/user-card.html` 用户卡片 User Card
+- `./components/todo-list/todo-list.html` 待办列表 Todo List
+- `./router-test/router-test.html` 路由测试 Router Test
+- `./template-tags-test/template-tags-test.html` 模板标签 Template Tags
+- `./framework-lab/framework-lab.html` 框架实验 Framework Lab
+- `./pages/basic.html` observe 基础示例
+- `./pages/demo.html` 演示 Demo
+- `./pages/filter-deep-compare.html` 深比较过滤示例
+- `./pages/throttle.html` 节流示例
 
-```html
-<solely-counter></solely-counter>
+## 组件注册入口（index.ts）
+
+`examples/index.ts` 统一导入并注册示例所需组件，示例首页只需引入该入口即可完成组件注册：
+
+```ts
+// examples/index.ts（片段）
+export { default as CounterElement } from './components/counter/counter';
+export { default as TodoListElement } from './components/todo-list/todo-list';
+export { default as UserCardElement } from './components/user-card/user-card';
+
+import './components/counter/counter';
+import './components/todo-list/todo-list';
+import './components/user-card/user-card';
+import './framework-lab/framework-lab';
+import './template-tags-test/template-tags-test';
+import './router-test/router-test';
 ```
 
-### 2. 待办事项列表组件 (`solely-todo-list`)
+## 在示例页中引入库
 
-一个功能完整的待办事项列表，具有：
+- 示例首页：`index.html` 已使用 `../dist/solely.js`（推荐）与 `./index.ts`
+- 按需引入：可直接在页面中 `import './counter/counter.ts'` 等组件文件
+- 外部项目：建议通过包管理器安装使用并引入打包入口
 
-- 添加新的待办事项
-- 将项目标记为已完成
-- 过滤项目（全部/活跃/已完成）
-- 删除单个项目
-- 清除所有已完成的项目
-- 项目数量显示
+## 新增示例的推荐流程
 
-**使用方法：**
+1. 在 `examples/` 下创建子目录（如 `my-example/`）
+2. 添加 `my-example.html / .ts / .css`，使用唯一的自定义元素标签
+3. 在 `examples/index.ts` 中导入并注册组件/示例
+4. 将示例链接加入 `examples/index.html` 的“示例导航”列表
+5. 独立 HTML 示例优先从 `../dist/solely.js` 导入 API（如 `observe`）
 
-```html
-<solely-todo-list></solely-todo-list>
-```
+## 优化与修复记录
 
-### 3. 用户卡片组件 (`solely-user-card`)
-
-用户资料卡片，具有：
-
-- 头像和基本用户信息
-- 状态指示器（活跃/非活跃）
-- 可展开的详情部分
-- 基于用户ID的动态数据加载
-
-**使用方法：**
-
-```html
-<!-- 默认用户 -->
-<solely-user-card></solely-user-card>
-
-<!-- 指定ID的用户 -->
-<solely-user-card user-id="2"></solely-user-card>
-```
-
-## 如何构建和使用
-
-### 构建组件
-
-要构建这些组件，您需要将它们集成到主构建过程中。目前，这些是示例组件，用于展示结构和使用模式。
-
-### 查看示例
-
-1. 构建项目后，在浏览器中打开`components/index.html`文件
-2. 或者，使用项目的预览服务器：
-
-   ```bash
-   npm run preview
-   ```
-
-   然后导航到根页面查看示例
-
-## 创建您自己的组件
-
-要创建新组件：
-
-1. 在`components/`中创建新目录
-2. 创建三个必需文件（ts, html, css）
-3. 继承`BaseElement`类并使用`@CustomElement`装饰器
-4. 定义您的模板、样式和组件逻辑
-5. 使用唯一的标签名注册组件
-6. 在`components/index.ts`中导入并注册您的组件
-
-## 展示的关键框架特性
-
-- **Shadow DOM封装**
-- **响应式数据绑定**
-- **组件生命周期钩子**
-- **模板渲染**
-- **属性同步**
-- **事件处理**
-- **样式处理**
+- 删除 `readme.html`（与首页和 README 重叠，避免维护成本与导航重复）
+- 统一独立示例的 `observe` 导入至 `../dist/solely.js`（修复 TS 路径加载不一致）
+- 删除 `counter copy/` 内重复文件，避免目录噪音与误用
+- 示例首页 `index.html` 的“导入组件”代码片段改为真实路径（`./index.ts` 或 `./counter/counter.ts` 等）
+- 示例首页改为从 `../dist/solely.js` 引入库，减少开发期网络请求中断提示
 
 ## 注意事项
 
-- 这些组件仅供演示目的，生产环境可能需要额外功能
-- 该框架使用Web Components标准以获得最大兼容性
-- 组件可以独立使用或集成到更大的应用程序中
+- 示例为学习与演示用途，生产环境请按需增强健壮性与异常处理
+- 推荐通过 `$data` 或在 `props` 中声明类型来传递非字符串数据
+- 如需保留历史文件，请统一迁入 `examples/_archive/` 目录

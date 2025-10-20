@@ -31,6 +31,8 @@ export interface ASTNode {
     loops?: Loop[];
     ifId?: number;
     model?: string;
+    onMounted?: (elm: HTMLElement, loops?: Loop[]) => void;
+    onUpdated?: (elm: HTMLElement, loops?: Loop[]) => void;
 }
 
 function compressHtml(html: string): string {
@@ -62,7 +64,11 @@ function parseTag(ctx: any, tag: string): ASTNode {
             ? result[1].trim().split('=')
             : [result[2], result[3].trim().slice(1, -1)];
 
-        if (listeners.includes(key) || key.startsWith("on-")) {
+        if (key === "onMounted" || key === "onUpdated") {
+            // 解析生命周期钩子
+            ast[key] = createLifecycleHandler(ctx, value);
+        }
+        else if (listeners.includes(key) || key.startsWith("on-")) {
             ast.on[key.startsWith("on-") ? key.slice(3) : key.slice(2)] = createEventHandler(ctx, value);
         } else if (key.startsWith("s-")) {
             const propKey = key.slice(2);
@@ -98,25 +104,28 @@ function parseTag(ctx: any, tag: string): ASTNode {
     if (ast.model) {
         const key = ast.model.replace('this.', '').replace('$data.', '');
         const updateValue = (loops: Loop[]) => getValue(ctx, `$data.${key}`, loops);
-        const eventHandler = (type: string) => createEventHandler(ctx, `$data.${key}=${type}`);
-
-        // 根据tagName和type设置属性和事件
+    
         if (tagName === 'input') {
-            if (ast.attrs.type === 'checkbox' || ast.attrs.type === 'radio') {
+            const type = ast.attrs.type || 'text';
+            if (type === 'checkbox') {
                 ast.props['checked'] = updateValue;
-                ast.on['change'] = eventHandler('checked');
+                ast.on['change'] = createEventHandler(ctx, `$data.${key}=checked`);
+            } else if (type === 'radio') {
+                const radioValue = ast.attrs.value;
+                ast.props['checked'] = (loops: Loop[]) => updateValue(loops) == radioValue;
+                ast.on['change'] = createEventHandler(ctx, `if(checked){$data.${key}='${radioValue}'}`);
             } else {
                 ast.props['value'] = updateValue;
-                ast.on['input'] = eventHandler('value');
+                ast.on['input'] = createEventHandler(ctx, `$data.${key}=value`);
             }
         } else if (tagName === 'textarea') {
             ast.props['value'] = updateValue;
-            ast.on['input'] = eventHandler('value');
+            ast.on['input'] = createEventHandler(ctx, `$data.${key}=value`);
         } else if (tagName === 'select') {
             ast.props['value'] = updateValue;
-            ast.on['change'] = eventHandler('value');
+            ast.on['change'] = createEventHandler(ctx, `$data.${key}=value`);
         }
-    }
+    }    
 
     return ast;
 }
@@ -197,19 +206,101 @@ export function parseHtml(ctx: any, html: string): ASTNode[] {
     return astNodes;
 }
 
-const getValue = (ctx: any, template: string, loops: Loop[]): any => {
+/**
+ * 🔹 表达式求值函数
+ * 用于解析模板中的 {{ 表达式 }} 或 s-xxx 属性。
+ * 语义：计算并返回表达式结果。
+ */
+export const getValue = (
+    ctx: any,
+    template: string,
+    loops: Loop[]
+): any => {
     try {
-        const func = createFunction(["$data", ...loops.map(loop => loop.item), ...loops.map(loop => loop.index), `return (${template})`]).bind(ctx);
-        return func(ctx.$data, ...loops.map(loop => loop.value), ...loops.map(loop => loop.valueIndex));
+        const func = createFunction([
+            '$data',
+            ...loops.map(loop => loop.item),
+            ...loops.map(loop => loop.index),
+            // 表达式求值，返回结果
+            `return (${template})`
+        ]).bind(ctx);
+
+        return func(
+            ctx.$data,
+            ...loops.map(loop => loop.value),
+            ...loops.map(loop => loop.valueIndex)
+        );
     } catch (e) {
-        console.error(`Error evaluating expression: {{ ${template} }}`, e);
-        return ''; // 返回默认值避免渲染失败
+        console.error(
+            `[BaseElement][${ctx.tagName}] Error evaluating expression: {{ ${template} }}`, ctx, e
+        );
+        return '';
     }
 };
 
-const createEventHandler = (ctx: any, handler: string) => {
+
+/**
+ * 🔹 事件处理器创建函数
+ * 用于解析 onClick、onInput 等事件属性。
+ * 语义：执行表达式或语句；返回表达式结果（通常被忽略）。
+ */
+export const createEventHandler = (ctx: any, handler: string) => {
     return (event: Event | any, loops: Loop[]) => {
-        const func = createFunction(["$data", "event", "value", "checked", ...loops.map(loop => loop.item), ...loops.map(loop => loop.index), handler]).bind(ctx);
-        return func(ctx.$data, event, event.target.value, event.target.checked, ...loops.map(loop => loop.value), ...loops.map(loop => loop.valueIndex));
+        try {
+            const func = createFunction([
+                '$data',
+                'event',
+                'value',
+                'checked',
+                ...loops.map(loop => loop.item),
+                ...loops.map(loop => loop.index),
+                handler
+            ]).bind(ctx);
+
+            return func(
+                ctx.$data,
+                event,
+                event?.target?.value,
+                event?.target?.checked,
+                ...loops.map(loop => loop.value),
+                ...loops.map(loop => loop.valueIndex)
+            );
+        } catch (e) {
+            console.error(
+                `[BaseElement][${ctx.tagName}] Error executing event handler "${handler}"`, ctx, e
+            );
+        }
+    };
+};
+
+
+/**
+ * 🔹 生命周期钩子创建函数
+ * 用于解析 onMounted / onUpdated。
+ * 语义：执行一段副作用语句块；不返回值。
+ */
+export const createLifecycleHandler = (ctx: any, handler: string) => {
+    return (elm: HTMLElement, loops: Loop[] = []) => {
+        try {
+            const func = createFunction([
+                '$data',
+                'elm',
+                ...loops.map(loop => loop.item),
+                ...loops.map(loop => loop.index),
+                // 执行语句块（无 return）
+                `(function(){ ${handler} }).call(this)`
+            ]).bind(ctx);
+
+            func(
+                ctx.$data,
+                elm,
+                ...loops.map(loop => loop.value),
+                ...loops.map(loop => loop.valueIndex)
+            );
+        } catch (e) {
+            console.error(
+                `[BaseElement][${ctx.tagName}] Error executing lifecycle handler "${handler}"`, ctx, e
+            );
+        }
     };
 };

@@ -1,0 +1,129 @@
+<div class="lab-root">
+  <h2>{{ $data.title }}（综合功能实验室）</h2>
+
+  <!-- props/attributes 同步与类型转换测试 -->
+  <section class="section">
+    <h3>Props 与 Attribute 同步</h3>
+    <p>initCount: <strong>{{ $data.initCount }}</strong></p>
+    <p>debug: <strong>{{ $data.debug }}</strong></p>
+    <p>config.theme: <strong>{{ $data.config.theme }}</strong></p>
+    <button class="btn" onclick="this.setAttrProgrammatically()">以编程方式修改 attributes</button>
+  </section>
+
+  <!-- 生命周期钩子测试 -->
+  <section class="section">
+    <h3>生命周期钩子（onMounted / onUpdated）</h3>
+    <div class="box" onMounted="this.enqueueLog('box mounted');" onUpdated="this.enqueueLog('box updated');">
+      观察此盒子的挂载与更新日志
+    </div>
+  </section>
+
+  <!-- 样式与类绑定 -->
+  <section class="section">
+    <h3>样式与类绑定</h3>
+    <div class="style-target"
+      s-style="{ backgroundColor: $data.debug ? '#e3f2fd' : '#fff', border: '1px solid #90caf9', padding: '8px' }"
+      s-class="{ 'is-debug': $data.debug, 'is-normal': !$data.debug }">
+      根据 debug 切换样式与类名
+    </div>
+    <button class="btn" onclick="$data.debug = !$data.debug">切换 debug</button>
+  </section>
+
+  <!-- s-model 双向绑定 -->
+  <section class="section">
+    <h3>双向绑定（s-model）</h3>
+    <div class="form-grid">
+      <label>姓名：<input type="text" s-model="$data.user.name" /></label>
+      <label>简介：<textarea s-model="$data.user.bio"></textarea></label>
+
+      <div>
+        角色：
+        <label><input type="radio" name="role" value="guest" s-model="user.role" /> guest</label>
+        <label><input type="radio" name="role" value="admin" s-model="user.role" /> admin</label>
+        <label><input type="radio" name="role" value="editor" s-model="user.role" /> editor</label>
+      </div>
+
+      <label>
+        语言：
+        <select s-model="$data.user.locale">
+          <option value="zh-CN">中文</option>
+          <option value="en-US">英语</option>
+          <option value="ja-JP">日语</option>
+        </select>
+      </label>
+
+      <label>
+        调试模式：
+        <input type="checkbox" s-model="$data.debug" />
+      </label>
+    </div>
+
+    <p>当前用户：{{ $data.user.name }} / {{ $data.user.role }} / {{ $data.user.locale }}</p>
+  </section>
+
+  <!-- 计数与事件 -->
+  <section class="section">
+    <h3>计数与事件</h3>
+    <p>count = <strong>{{ $data.count }}</strong></p>
+    <button class="btn" onclick="this.inc()">+1</button>
+    <button class="btn" onclick="this.dec()">-1</button>
+  </section>
+
+  <!-- 条件与循环 -->
+  <section class="section">
+    <h3>条件与循环</h3>
+    <div class="toolbar">
+      <button class="btn" onclick="this.setFilter('all')" s-class="{ active: $data.filter === 'all' }">全部</button>
+      <button class="btn" onclick="this.setFilter('active')"
+        s-class="{ active: $data.filter === 'active' }">未完成</button>
+      <button class="btn" onclick="this.setFilter('done')" s-class="{ active: $data.filter === 'done' }">已完成</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn" onclick="this.pushTodo()">push</button>
+      <button class="btn" onclick="this.popTodo()">pop</button>
+      <button class="btn" onclick="this.reverseTodos()">reverse</button>
+      <button class="btn" onclick="this.shuffleTodos()">sort/shuffle</button>
+      <button class="btn" onclick="this.spliceTodos()">splice</button>
+      <button class="btn" onclick="this.toggleList()">{{ $data.showList ? '隐藏' : '显示' }} 列表</button>
+      <button class="btn" onclick="this.updateNested()">更新嵌套对象</button>
+    </div>
+
+    <If condition="$data.showList">
+      <ul class="todo-list">
+        <For each="$data.todos.filter(t => $data.filter === 'all' ? true : $data.filter === 'done' ? t.done : !t.done)"
+          item="t" index="i">
+          <li class="todo-item" s-class="{ done: t.done }">
+            <span>#{{ t.id }}</span>
+            <span class="title">{{ t.title }}</span>
+            <label><input type="checkbox" s-checked="t.done" onchange="this.toggleTodo(t.id)" /> 完成</label>
+          </li>
+        </For>
+      </ul>
+      <If condition="$data.todos.length === 0">
+        <p class="empty">暂无任务</p>
+      </If>
+    </If>
+    <Else>
+      <p class="hint">列表已隐藏</p>
+    </Else>
+  </section>
+
+  <!-- 路由视图 -->
+  <section class="section">
+    <h3>路由视图</h3>
+    <div class="router-panel">
+      <router-view s-$routes="$data.routes" s-$pipe="$data.routerPipe"></router-view>
+    </div>
+  </section>
+
+  <!-- 更新日志 -->
+  <section class="section">
+    <h3>更新日志</h3>
+    <ul class="logs">
+      <For each="this.logQueue.slice(-10)" item="log" index="j">
+        <li>{{ log }}</li>
+      </For>
+    </ul>
+  </section>
+</div>

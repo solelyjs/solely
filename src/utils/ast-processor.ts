@@ -142,6 +142,14 @@ const updateElement = (oldNode: ASTNode, newNode: ASTNode): void => {
     setElementProps(elm, newNode.props, newNode.loops);
     setElementClasses(elm, newNode);
     setElementStyles(elm, newNode);
+
+    // ---- 生命周期钩子 ----
+    if (typeof newNode.onUpdated === 'function') {
+        requestAnimationFrame(() => {
+            newNode.onUpdated!(elm, newNode.loops || []);
+        });
+    }
+
     processNodes(elm, oldNode.children, newNode.children);
 };
 
@@ -219,6 +227,14 @@ const addElement = (parentNode: Node, newNode: ASTNode, nextNode?: Node, ns?: st
     newNode.children.forEach(childNode => {
         addNode(elm, childNode, void 0, ns);
     });
+
+    // ---- 生命周期钩子 ----
+    if (typeof newNode.onMounted === 'function') {
+        // 延迟到下一帧，确保布局完成、clientWidth等可用
+        requestAnimationFrame(() => {
+            newNode.onMounted!(elm as HTMLElement, newNode.loops || []);
+        });
+    }
 };
 
 const addNode = (parentNode: Node, newNode: ASTNode, nextNode?: Node, ns?: string): void => {

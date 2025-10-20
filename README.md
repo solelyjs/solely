@@ -159,31 +159,60 @@ Solely 采用与标签中直接绑定事件相同的方式，不需要进行额�
 <button onclick="this.search()">搜索</button>
 ```
 
-### 双向绑定（Model）
+### 双向绑定（s-model）
 
-通过 `s-model` 指令实现表单元素与数据的双向绑定：
+`s-model` 为表单元素提供 `$data` 上属性的双向绑定。表达式会被规范化为属性路径：会去除前缀 `this.` 与 `$data.`，因此仅支持将值同步到 `$data` 的某个字段（不支持函数调用或任意表达式）。
+
+- 书写形式等价：`s-model="$data.message"`、`s-model="message"`、`s-model="this.$data.message"`
+- 目标字段应为可写属性路径（例如 `user.name`、`todo.done`），不支持方法调用或计算表达式
+
+支持的表单元素与行为：
+
+- `<input type="text|password|search|...">`
+  - 绑定：`value`
+  - 事件：`input` → 将输入框 `value` 同步到 `$data.key`
+- `<textarea>`
+  - 绑定：`value`
+  - 事件：`input` → 同步到 `$data.key`
+- `<select>`
+  - 绑定：`value`
+  - 事件：`change` → 同步到 `$data.key`
+- `<input type="checkbox">`
+  - 绑定：`checked`
+  - 事件：`change` → 将布尔值 `checked` 同步到 `$data.key`
+- `<input type="radio" value="...">`
+  - 绑定：`checked`（当 `$data.key == value` 时为选中）
+  - 事件：`change`（仅在选中时）→ 将 `$data.key` 设置为该 radio 的 `value`
+
+示例：
 
 ```html
-<input type="text" s-model="$data.message">
+<!-- 文本输入：值实时写入 $data.message -->
+<input type="text" s-model="$data.message" />
+
+<!-- 文本域：同上，使用 input 事件同步 -->
+<textarea s-model="message"></textarea>
+
+<!-- 下拉框：选择变更使用 change 事件同步 -->
 <select s-model="$data.selected">
   <option value="A">选项A</option>
+  <option value="B">选项B</option>
 </select>
+
+<!-- 复选框：checked 布尔值写入 $data.debug -->
+<label><input type="checkbox" s-model="debug" /> Debug 模式</label>
+
+<!-- 单选框：当选中时将 user.role 设置为对应的 value -->
+<label><input type="radio" name="role" value="guest" s-model="$data.user.role" /> guest</label>
+<label><input type="radio" name="role" value="admin" s-model="user.role" /> admin</label>
+<label><input type="radio" name="role" value="editor" s-model="user.role" /> editor</label>
 ```
 
-支持的表单元素：
+注意事项：
 
-- `<input>` (text/checkbox/radio)
-- `<textarea>`
-- `<select>`
-
-**注意：** 双向绑定的表达式只支持 `$data` 中的属性。基于这个特性，你也可以省略 `$data` ,直接使用对应的属性，如 `$data.selected` 可以省略成 `selected`。
-
-```html
-<input type="text" s-model="$data.message">
-<select s-model="selected">
-  <option value="A">选项A</option>
-</select>
-```
+- 不进行类型自动转换：文本与下拉为字符串，复选框为布尔值；如需数值，请在逻辑层做转换
+- Radio 通常通过相同的 `name` 分组，但框架的值同步逻辑只依赖 `value` 与选中状态
+- `s-model` 仅支持绑定到 `$data` 路径，不能绑定到临时变量或计算结果
 
 ### 条件判断
 
@@ -478,7 +507,7 @@ export class TypedComponent extends BaseElement<{
 <my-component s-initial-count="10"></my-component>
 
 <!-- 监听自定义事件 -->
-<my-component onupdate="handleUpdate(event)"></my-component>
+<my-component on-update="handleUpdate(event)"></my-component>
 ```
 
 #### 组件间通信
@@ -497,7 +526,7 @@ this.dispatchEvent(new CustomEvent('update', {
 }));
 
 // 父组件中监听事件
-<child-component onupdate="this.handleChildUpdate(event)"></child-component>
+<child-component on-update="this.handleChildUpdate(event)"></child-component>
 
 // 父组件中的处理方法
 handleChildUpdate(event) {
@@ -605,7 +634,7 @@ class MyApp extends BaseElement {
       <a href="#/user/123">用户详情</a>
     </nav>
     <!-- 路由视图组件 -->
-    <router-view :router="router"></router-view>
+    <router-view s-$routes="$data.routes"></router-view>
   </div>
 </template>
 ```
@@ -659,7 +688,7 @@ this.dispatchEvent(new CustomEvent('update', {
 }));
 
 // 父组件中监听事件
-<child-component onupdate="this.handleChildUpdate(event)"></child-component>
+<child-component on-update="this.handleChildUpdate(event)"></child-component>
 ```
 
 3. **共享服务**：创建全局服务类来管理共享状态
@@ -672,6 +701,102 @@ this.dispatchEvent(new CustomEvent('update', {
 - 使用路由功能时，请确保在 `router-view` 组件中正确传递路由配置
 - 避免在模板中使用 `eval`、`Function`、`setTimeout`、`setInterval` 等可能导致安全问题的代码
 - 当组件被移除时，确保在 `unmounted` 钩子中清理资源，避免内存泄漏
+
+## 快速开始
+
+- 在项目中使用 Solely（从 npm 安装）：
+  - `npm i solely`
+  - 最小示例：
+
+```ts
+import { BaseElement, CustomElement } from 'solely';
+
+@CustomElement({
+  tagName: 'hello-world',
+  template: `
+    <div class="box">
+      <h1>{{ $data.title }}</h1>
+      <button onclick="this.$data.count++">Count: {{ $data.count }}</button>
+    </div>
+  `,
+  styles: `
+    .box { padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
+    button { margin-top: 8px; }
+  `,
+  shadowDOM: { use: true }
+})
+class HelloWorld extends BaseElement<{ title: string; count: number }> {
+  onInit() {
+    this.$data = { title: 'Hello Solely', count: 0 };
+  }
+}
+```
+
+- 本仓库本地运行：
+  - `npm i`
+  - `npm run dev`
+  - 打开 `http://localhost:5175/` 查看示例与演示页面（如 `examples/index.html`）
+
+## 脚本命令
+
+- `npm run dev`：启动开发服务器（Vite），支持热更新
+- `npm run build`：TypeScript 编译并构建到 `dist/`（包含 `solely.js`、`solely.d.ts`、`solely.umd.cjs`）
+- `npm run preview`：本地预览构建结果
+- `npm run test`：运行单元测试（Vitest + JSDOM）
+- `npm run test:ui`：以交互式 UI 运行测试
+- `npm run test:coverage`：生成覆盖率报告
+- `npm run link`：全局链接当前包，供其他项目本地引用
+- `npm run pack:local`：打包为 `.tgz`，可通过 `file:` 在其他项目引用
+
+## 目录结构
+
+- `src/`：核心源码（`base/`、`utils/`、`solely.ts`）
+- `dist/`：构建输出（ESM 与 UMD、类型声明）
+- `examples/`：示例与演示（组件、路由、模板标签等）
+- `tests/`：测试代码与环境配置
+- `public/`：静态资源
+- `vite.config.js`、`vitest.config.js`：构建与测试配置
+
+## 指令与模板速览
+
+- 文本插值：`{{ ... }}`
+- 属性绑定：`s-<attr>`（例如 `<router-view s-$routes="$data.routes">`）
+- 双向绑定：`s-model`（`input/textarea/select` 支持）
+- 条件渲染：`<If> / <ElseIf> / <Else>`
+- 列表渲染：`<For each="...">`，支持 `item`、`index` 自定义
+- 类名绑定：`s-class`
+- 样式绑定：`s-style`
+- 事件绑定：原生事件属性（如 `onclick`）与 `on-<event>` 自定义事件监听
+
+## 测试
+
+- 框架使用 Vitest 与 JSDOM 进行单元测试，示例见 `tests/observe.test.ts`
+- 运行测试：`npm run test`；生成覆盖率：`npm run test:coverage`
+
+## 浏览器支持
+
+- 基于原生 Web Components 与 ES2020，适配现代浏览器：`Chrome/Edge/Firefox/Safari` 最新两个大版本
+- 不支持 IE；旧版本浏览器如需支持，请使用构建工具降级并谨慎评估 Web Components 支持情况
+
+## 常见问题
+
+- `this` 与 `$data`：模板表达式中 `this` 指向组件实例，`$data` 为响应式数据，可省略 `this.` 前缀
+- 何时使用 Shadow DOM：通过 `manifest.shadowDOM.use` 开启，默认关闭
+- 传递复杂数据：优先使用属性绑定 `:` 或在父组件中直接设置子组件 `$data`
+- 路由：当前实现基于 `hash`，通过 `<router-view>` 组合路由配置
+- 性能：避免在模板表达式中执行复杂计算，必要时将计算逻辑移至类方法
+
+## 贡献指南
+
+- Fork 仓库并创建特性分支
+- 保持代码风格一致，补充相应测试与文档
+- 运行 `npm run test` 确认通过，再发起 Pull Request
+- 对公共 API 变更遵循语义化版本规范
+
+## 版本与发布
+
+- 当前版本：`0.0.24`
+- 遵循语义化版本（SemVer），构建产物位于 `dist/`，模块入口 `package.json:module` 指向 `dist/solely.js`，类型声明位于 `dist/solely.d.ts`
 
 ## 许可证
 

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/solely.svg">
+    <title>Observe 基础示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .change-log {
+            background: #f0f7ff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .change-item {
+            margin-bottom: 8px;
+            padding: 5px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .change-path {
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .change-old {
+            color: #f44336;
+            text-decoration: line-through;
+        }
+
+        .change-new {
+            color: #4CAF50;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button.stop {
+            background: #f44336;
+        }
+
+        button.stop:hover {
+            background: #d32f2f;
+        }
+
+        button#restart-observing {
+            background: #2196F3;
+        }
+
+        button#restart-observing:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Observe 函数基础功能演示</h1>
+
+    <div class="container">
+        <div class="section">
+            <h2>基础对象属性观察</h2>
+            <div class="input-group">
+                <label for="name-input">姓名:</label>
+                <input type="text" id="name-input" placeholder="输入姓名">
+            </div>
+            <div class="input-group">
+                <label for="age-input">年龄:</label>
+                <input type="number" id="age-input" placeholder="输入年龄">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>嵌套对象属性观察</h2>
+            <div class="input-group">
+                <label for="city-input">城市:</label>
+                <input type="text" id="city-input" placeholder="输入城市">
+            </div>
+            <div class="input-group">
+                <label for="zip-input">邮编:</label>
+                <input type="text" id="zip-input" placeholder="输入邮编">
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>控制</h2>
+            <div class="control-panel">
+                <button id="add-property">添加新属性</button>
+                <button id="delete-property">删除属性</button>
+                <button id="stop-observing" class="stop">停止观察</button>
+                <button id="restart-observing">重新开始观察</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>变化记录</h2>
+            <div class="change-log" id="change-log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { observe } from '../../src/solely.ts';
+
+        // 初始数据
+        const userData = {
+            name: '张三',
+            age: 25,
+            address: {
+                city: '北京',
+                zipCode: '100000'
+            }
+        };
+
+        // 初始化输入框值
+        document.getElementById('name-input').value = userData.name;
+        document.getElementById('age-input').value = userData.age;
+        document.getElementById('city-input').value = userData.address.city;
+        document.getElementById('zip-input').value = userData.address.zipCode;
+
+        let propertyCounter = 0;
+
+        // 日志记录函数
+        const logChange = (path, newValue, oldValue) => {
+            const changeLog = document.getElementById('change-log');
+            const pathStr = path.join('.');
+
+            const changeItem = document.createElement('div');
+            changeItem.className = 'change-item';
+            changeItem.innerHTML = `
+                <span class="change-path">${pathStr}</span>:
+                <span class="change-old">${JSON.stringify(oldValue)}</span> →
+                <span class="change-new">${JSON.stringify(newValue)}</span>
+            `;
+
+            if (changeLog.firstChild) {
+                changeLog.insertBefore(changeItem, changeLog.firstChild);
+            } else {
+                changeLog.appendChild(changeItem);
+            }
+
+            if (changeLog.children.length > 20) {
+                changeLog.removeChild(changeLog.lastChild);
+            }
+        };
+
+        // 创建响应式代理
+        let { proxy: reactiveData, unobserve, resume } = observe(
+            userData,
+            logChange,
+            { immediate: true }
+        );
+
+        // 输入框事件
+        document.getElementById('name-input').addEventListener('input', (e) => {
+            reactiveData.name = e.target.value;
+        });
+
+        document.getElementById('age-input').addEventListener('input', (e) => {
+            reactiveData.age = parseInt(e.target.value) || 0;
+        });
+
+        document.getElementById('city-input').addEventListener('input', (e) => {
+            reactiveData.address.city = e.target.value;
+        });
+
+        document.getElementById('zip-input').addEventListener('input', (e) => {
+            reactiveData.address.zipCode = e.target.value;
+        });
+
+        // 添加属性
+        document.getElementById('add-property').addEventListener('click', () => {
+            propertyCounter++;
+            const newPropName = `customProp${propertyCounter}`;
+            reactiveData[newPropName] = `自定义值${propertyCounter}`;
+            alert(`已添加新属性: ${newPropName}`);
+        });
+
+        // 删除属性
+        document.getElementById('delete-property').addEventListener('click', () => {
+            if (reactiveData.customProp1) {
+                delete reactiveData.customProp1;
+                alert('已删除属性: customProp1');
+            } else {
+                alert('请先添加自定义属性');
+            }
+        });
+
+        // 停止观察
+        document.getElementById('stop-observing').addEventListener('click', () => {
+            unobserve();
+            alert('已停止数据观察，修改将不再触发回调');
+        });
+
+        // 重新开始观察
+        document.getElementById('restart-observing').addEventListener('click', () => {
+            resume();
+            alert('已重新开始数据观察！');
+        });
+    </script>
+</body>
+
+</html>

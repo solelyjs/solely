@@ -1,4 +1,4 @@
-import { BaseElement, CustomElement } from '../../src/base';
+import { BaseElement, CustomElement } from '../../../src/base';
 import template from './user-card.html?raw';
 import styles from './user-card.css?raw';
 
@@ -62,11 +62,11 @@ export default class UserCardElement extends BaseElement<UserCardData> {
   async loadUserData(userId: number) {
     // 模拟API请求
     console.log(`Loading user data for ID: ${userId}`);
-    
+
     // 这里可以替换为实际的API调用
     // 模拟延迟
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     // 模拟不同ID返回不同用户数据
     const mockUsers: Record<number, User> = {
       1: {
@@ -97,7 +97,7 @@ export default class UserCardElement extends BaseElement<UserCardData> {
         isActive: false
       }
     };
-    
+
     if (mockUsers[userId]) {
       this.$data.user = { ...mockUsers[userId] };
     }
@@ -105,7 +105,7 @@ export default class UserCardElement extends BaseElement<UserCardData> {
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
     super.attributeChangedCallback(name, oldValue, newValue);
-    
+
     if (name === 'user-id' && oldValue !== newValue && newValue) {
       this.loadUserData(parseInt(newValue));
     }

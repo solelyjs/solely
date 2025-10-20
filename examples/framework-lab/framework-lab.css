@@ -1,0 +1,83 @@
+ .section {
+     margin: 16px 0;
+     padding: 12px;
+     border: 1px solid #eee;
+     border-radius: 8px;
+     background: #fafafa;
+ }
+
+ .btn {
+     margin-right: 8px;
+     padding: 6px 12px;
+     border: 1px solid #bbb;
+     background: #fff;
+     border-radius: 4px;
+     cursor: pointer;
+ }
+
+ .btn.active {
+     color: #fff;
+     background: #007bff;
+     border-color: #007bff;
+ }
+
+ .box {
+     padding: 10px;
+     border: 1px dashed #ccc;
+ }
+
+ .style-target {
+     margin: 8px 0;
+ }
+
+ .style-target.is-debug {
+     outline: 2px solid #42a5f5;
+ }
+
+ .todo-list {
+     list-style: none;
+     padding: 0;
+ }
+
+ .todo-item {
+     display: grid;
+     grid-template-columns: 60px 1fr auto;
+     align-items: center;
+     gap: 8px;
+     padding: 6px 8px;
+     border-bottom: 1px solid #eee;
+ }
+
+ .todo-item.done .title {
+     text-decoration: line-through;
+     color: #999;
+ }
+
+ .logs {
+     list-style: none;
+     padding: 0;
+     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+     font-size: 12px;
+     color: #555;
+ }
+
+ .router-panel {
+     border: 1px solid #ddd;
+     border-radius: 6px;
+     padding: 10px;
+ }
+
+ .form-grid {
+     display: grid;
+     grid-template-columns: repeat(2, minmax(200px, 1fr));
+     gap: 10px;
+     align-items: start;
+ }
+
+ .hint {
+     color: #888;
+ }
+
+ .empty {
+     color: #c00;
+ }

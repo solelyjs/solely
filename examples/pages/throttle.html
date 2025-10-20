@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/solely.svg">
+    <title>Observe 节流和批量更新示例</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #2196F3;
+            padding-bottom: 10px;
+        }
+
+        .throttle-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .throttle-controls label {
+            font-weight: bold;
+        }
+
+        .throttle-controls input[type="range"] {
+            width: 200px;
+        }
+
+        .throttle-value {
+            font-weight: bold;
+            color: #2196F3;
+            min-width: 50px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .update-panel {
+            background: #e3f2fd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .update-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        button.rate-test {
+            background: #FF9800;
+        }
+
+        button.rate-test:hover {
+            background: #F57C00;
+        }
+
+        .performance-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2196F3;
+        }
+
+        .log-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .log-column {
+            flex: 1;
+        }
+
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            padding: 4px;
+            background: white;
+            border-radius: 3px;
+        }
+
+        .batch-log .log-entry {
+            background: #e8f5e9;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Observe 节流和批量更新演示</h1>
+
+    <div class="container">
+        <div class="section">
+            <h2>节流控制</h2>
+            <div class="throttle-controls">
+                <label for="throttle-slider">节流时间 (ms):</label>
+                <input type="range" id="throttle-slider" min="0" max="1000" step="50" value="200">
+                <span class="throttle-value" id="throttle-value">200ms</span>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="use-batch" checked>
+                    <label for="use-batch">启用批量回调</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>性能数据</h2>
+            <div class="performance-stats">
+                <div class="stat-item">
+                    <div>单次回调次数:</div>
+                    <div class="stat-value" id="single-callback-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>批量回调次数:</div>
+                    <div class="stat-value" id="batch-callback-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>合并的更新数量:</div>
+                    <div class="stat-value" id="merged-updates-count">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>当前节流状态:</div>
+                    <div class="stat-value" id="throttle-status">启用</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>更新面板</h2>
+            <div class="update-controls">
+                <button id="single-update">单次更新</button>
+                <button id="multiple-updates">多次更新</button>
+                <button id="rate-test" class="rate-test">高频更新测试 (1秒)</button>
+                <button id="reset-all">重置</button>
+            </div>
+
+            <div class="log-container">
+                <div class="log-column">
+                    <h3>单次更新日志</h3>
+                    <div class="log" id="single-log"></div>
+                </div>
+                <div class="log-column">
+                    <h3>批量更新日志</h3>
+                    <div class="log batch-log" id="batch-log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入 observe 函数
+        import { observe } from '../../src/solely.ts';
+
+        // 状态变量
+        let throttleTime = 200;
+        let useBatchCallback = true;
+        let singleCallbackCount = 0;
+        let batchCallbackCount = 0;
+        let mergedUpdatesCount = 0;
+        let currentTestId = 0;
+
+        // DOM 元素
+        const throttleSlider = document.getElementById('throttle-slider');
+        const throttleValue = document.getElementById('throttle-value');
+        const useBatchCheckbox = document.getElementById('use-batch');
+        const singleCallbackCountEl = document.getElementById('single-callback-count');
+        const batchCallbackCountEl = document.getElementById('batch-callback-count');
+        const mergedUpdatesCountEl = document.getElementById('merged-updates-count');
+        const throttleStatusEl = document.getElementById('throttle-status');
+        const singleLog = document.getElementById('single-log');
+        const batchLog = document.getElementById('batch-log');
+
+        // 数据模型
+        let dataModel = {
+            counter: 0,
+            timestamp: Date.now(),
+            randomValue: Math.random(),
+            nested: {
+                value1: 0,
+                value2: 0
+            }
+        };
+
+        // 记录单次更新日志
+        const logSingleUpdate = (path, newValue, oldValue, testId) => {
+            singleCallbackCount++;
+            singleCallbackCountEl.textContent = singleCallbackCount.toString();
+
+            const pathStr = path.join('.');
+            const timestamp = new Date().toLocaleTimeString();
+
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <div class="timestamp">${timestamp} (测试 ${testId})</div>
+                <div>${pathStr}: ${oldValue} → ${newValue}</div>
+            `;
+
+            singleLog.prepend(logEntry);
+
+            // 限制日志数量
+            if (singleLog.children.length > 50) {
+                singleLog.removeChild(singleLog.lastChild);
+            }
+        };
+
+        // 记录批量更新日志
+        const logBatchUpdate = (changes, testId) => {
+            batchCallbackCount++;
+            mergedUpdatesCount += changes.length;
+
+            batchCallbackCountEl.textContent = batchCallbackCount.toString();
+            mergedUpdatesCountEl.textContent = mergedUpdatesCount.toString();
+
+            const timestamp = new Date().toLocaleTimeString();
+
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+
+            let content = `<div class="timestamp">${timestamp} (测试 ${testId}) - ${changes.length} 个更新</div>`;
+            changes.forEach(change => {
+                const pathStr = change.path.join('.');
+                content += `<div>${pathStr}: ${change.oldValue} → ${change.newValue}</div>`;
+            });
+
+            logEntry.innerHTML = content;
+            batchLog.prepend(logEntry);
+
+            // 限制日志数量
+            if (batchLog.children.length > 20) {
+                batchLog.removeChild(batchLog.lastChild);
+            }
+        };
+
+        // 创建响应式代理
+        let currentTestIdCounter = 0;
+        let reactiveData;
+        let unobserve;
+
+        function createReactive() {
+            // 如果已有观察器，先停止
+            if (unobserve) {
+                unobserve();
+            }
+
+            // 更新节流状态显示
+            throttleStatusEl.textContent = throttleTime > 0 ? `启用 (${throttleTime}ms)` : '禁用';
+
+            // 创建新的响应式代理
+            const result = observe(
+                dataModel,
+                (path, newValue, oldValue) => {
+                    logSingleUpdate(path, newValue, oldValue, currentTestIdCounter);
+                },
+                {
+                    throttle: throttleTime,
+                    onBatch: useBatchCallback ? (changes) => {
+                        logBatchUpdate(changes, currentTestIdCounter);
+                    } : null
+                }
+            );
+
+            reactiveData = result.proxy;
+            unobserve = result.unobserve;
+        }
+
+        // 初始化
+        createReactive();
+
+        // 节流时间滑块事件
+        throttleSlider.addEventListener('input', (e) => {
+            throttleTime = parseInt(e.target.value);
+            throttleValue.textContent = `${throttleTime}ms`;
+            createReactive(); // 重新创建响应式代理
+        });
+
+        // 批量回调复选框事件
+        useBatchCheckbox.addEventListener('change', (e) => {
+            useBatchCallback = e.target.checked;
+            createReactive(); // 重新创建响应式代理
+        });
+
+        // 单次更新按钮
+        document.getElementById('single-update').addEventListener('click', () => {
+            currentTestIdCounter++;
+            reactiveData.counter++;
+        });
+
+        // 多次更新按钮
+        document.getElementById('multiple-updates').addEventListener('click', () => {
+            currentTestIdCounter++;
+            // 快速连续更新多个属性
+            reactiveData.counter++;
+            reactiveData.timestamp = Date.now();
+            reactiveData.randomValue = Math.random();
+            reactiveData.nested.value1++;
+            reactiveData.nested.value2++;
+        });
+
+        // 高频更新测试
+        document.getElementById('rate-test').addEventListener('click', () => {
+            currentTestIdCounter++;
+            const btn = document.getElementById('rate-test');
+            btn.disabled = true;
+            btn.textContent = '测试进行中...';
+
+            const startTime = Date.now();
+            let updatesCount = 0;
+
+            const updateInterval = setInterval(() => {
+                // 每次更新多个属性
+                reactiveData.counter++;
+                reactiveData.timestamp = Date.now();
+                reactiveData.randomValue = Math.random();
+                reactiveData.nested.value1++;
+                reactiveData.nested.value2++;
+
+                updatesCount++;
+
+                // 测试1秒后停止
+                if (Date.now() - startTime >= 1000) {
+                    clearInterval(updateInterval);
+                    btn.disabled = false;
+                    btn.textContent = '高频更新测试 (1秒)';
+                    alert(`测试完成! 1秒内进行了 ${updatesCount * 5} 次数据更新`);
+                }
+            }, 50); // 每50毫秒更新一次
+        });
+
+        // 重置按钮
+        document.getElementById('reset-all').addEventListener('click', () => {
+            // 重置计数器
+            singleCallbackCount = 0;
+            batchCallbackCount = 0;
+            mergedUpdatesCount = 0;
+            currentTestIdCounter = 0;
+
+            // 更新显示
+            singleCallbackCountEl.textContent = '0';
+            batchCallbackCountEl.textContent = '0';
+            mergedUpdatesCountEl.textContent = '0';
+
+            // 清空日志
+            singleLog.innerHTML = '';
+            batchLog.innerHTML = '';
+
+            // 重置数据
+            dataModel = {
+                counter: 0,
+                timestamp: Date.now(),
+                randomValue: Math.random(),
+                nested: {
+                    value1: 0,
+                    value2: 0
+                }
+            };
+
+            // 重新创建响应式代理
+            createReactive();
+        });
+    </script>
+</body>
+
+</html>

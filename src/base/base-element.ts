@@ -1,11 +1,9 @@
 import { ASTNode, parseHtml, isObject, patch, runInAsyncQueue, observe } from "../utils";
 import { Manifest } from "./decorators";
 
-
-
 /**
- * 泛型接口：
- * 外部组件可定义 $data 的结构类型（带自动智能提示）
+ * 泛型接口
+ * 外部组件可定义 $data 的结构类型（带智能提示）
  * 例如：class MyEl extends BaseElement<{ count: number; name: string }> {}
  */
 declare interface BaseElement<TData = any> {
@@ -15,121 +13,123 @@ declare interface BaseElement<TData = any> {
 /**
  * BaseElement<TData>
  * -------------------------------------------------------
- * ✅ 响应式数据系统（observe）
+ * 核心功能：
+ * ✅ 响应式数据系统（observe + Proxy）
  * ✅ 虚拟 DOM 渲染（patch）
  * ✅ 延迟样式注入（connectedCallback 阶段）
  * ✅ 生命周期钩子（created, mounted, updated, unmounted）
  * ✅ 属性同步 ($data <-> attribute)
  */
 class BaseElement<TData extends object> extends HTMLElement {
-    /**
-     * Web Components 标准静态方法：
-     * 声明哪些属性变化会触发 attributeChangedCallback。
-     */
+    /** Web Components 标准方法：声明哪些属性变化会触发 attributeChangedCallback */
     static get observedAttributes() {
         const manifest = (this as any)._manifest || this.prototype._manifest;
         if (!manifest?.props) return [];
-        return manifest.props.map((p: { name: any; }) => typeof p === "string" ? p : p.name);
+        return manifest.props.map((p: { name: any }) => typeof p === "string" ? p : p.name);
     }
 
-    // #region 私有属性
+    // ---------------------- 私有属性 ----------------------
     #data: TData;                    // 响应式数据（Proxy）
-    #AST: ASTNode[] = [];            // 模板 AST
-    #vNodes: ASTNode[] = [];         // 上次渲染的虚拟节点
-    #isRefreshing = false;           // 防止重复渲染
+    #AST: ASTNode[] = [];            // 模板解析后的虚拟节点 AST
+    #vNodes: ASTNode[] = [];         // 上一次渲染的虚拟节点
+    #isRefreshing = false;           // 节流刷新，防止重复 patch
     #isMounted = false;              // 是否已挂载
-    #root: Element | ShadowRoot;     // 渲染根节点
-    #unobserve?: () => void;         // 停止数据监听的函数
-    // #endregion
+    #root: Element | ShadowRoot;     // 渲染根节点（Shadow DOM 优先）
+    #unobserve?: () => void;         // 停止数据监听函数
+    // -----------------------------------------------------
 
     /**
      * 构造函数
      * -------------------------------------------------------
-     * 初始化模板、数据代理、渲染根节点。
-     * 🚫 注意：样式不会在此阶段注入（延迟到 connectedCallback）。
+     * 初始化模板、响应式数据和渲染根节点。
+     * 样式注入延迟到 connectedCallback 阶段。
      */
     constructor(initialData: TData = {} as TData) {
         super();
 
         const manifest = this._manifest || {};
 
-        // 1️⃣ 设置渲染根节点（Shadow DOM 优先）
+        // 设置渲染根节点
         this.#root = manifest.shadowDOM?.use
             ? this.attachShadow({ mode: manifest.shadowDOM.mode || "open" })
             : this;
 
-        // 2️⃣ 将模板字符串解析为虚拟节点 AST
-        if (manifest.template && typeof manifest.template === "string") {
-            this.#AST = parseHtml(this, manifest.template);
-        }
-
-        // 3️⃣ 初始化响应式数据（observe 返回 Proxy + 取消函数）
+        // 初始化响应式数据（observe 返回 Proxy + 取消监听函数）
+        // 🔹 必须在 parseHtml 前执行，确保模板解析时访问 this.$data 就是 Proxy
         const { proxy, unobserve } = observe(initialData, () => this.#refresh());
         this.#data = proxy as TData;
         this.#unobserve = unobserve;
 
-        // 生命周期钩子：组件创建完成
-        this.created();
+        // 解析模板字符串为虚拟节点 AST
+        if (manifest.template && typeof manifest.template === "string") {
+            this.#AST = parseHtml(this, manifest.template);
+        }
+
+        // // 生命周期钩子：组件创建完成
+        // this.created();
+        // 🔹 延迟调用 created()，确保子类字段已初始化
+        Promise.resolve().then(() => this.created());
     }
 
-    // #region 响应式数据访问器
+    // ---------------------- $data getter/setter ----------------------
 
     /** 获取当前组件数据 */
     public get $data(): TData {
+        // 懒初始化 observe（兼容动态替换 $data 或老逻辑）
+        if (!this.#unobserve && isObject(this.#data)) {
+            const { proxy, unobserve } = observe(this.#data, () => this.#refresh());
+            this.#data = proxy as TData;
+            this.#unobserve = unobserve;
+        }
         return this.#data;
     }
 
-    /**
-     * 更新组件数据。
-     * -------------------------------------------------------
-     * ✅ 优化：不销毁 Proxy，只合并新旧数据。
-     * ✅ 保证响应式链保持有效。
-     */
-    public set $data(newData: TData) {
-        if (!isObject(this.#data) || !isObject(newData)) {
-            console.error("BaseElement: $data must be an object.");
+    /** 更新组件数据 */
+    public set $data(value: TData) {
+        if (!isObject(value)) value = {} as TData;
+
+        // 如果尚未 observe，则初始化
+        if (!this.#unobserve) {
+            const { proxy, unobserve } = observe(value, () => this.#refresh());
+            this.#data = proxy as TData;
+            this.#unobserve = unobserve;
+            this.#refresh();
             return;
         }
 
+        // 已 observe，则同步更新现有 Proxy
         const current = this.#data as Record<string, any>;
-        const incoming = newData as Record<string, any>;
+        const incoming = value as Record<string, any>;
 
-        // 删除旧 key（新数据中不存在的）
+        // 删除旧属性
         for (const key of Object.keys(current)) {
             if (!(key in incoming)) delete current[key];
         }
 
-        // 添加或更新新 key
+        // 添加或更新新属性
         for (const key of Object.keys(incoming)) {
             if (current[key] !== incoming[key]) current[key] = incoming[key];
         }
+
+        this.#refresh();
     }
 
-    // #endregion
+    // ---------------------- 渲染核心逻辑 ----------------------
 
-    // #region 渲染核心逻辑
-
-    /**
-     * 内部刷新函数：
-     * -------------------------------------------------------
-     * 由 observe() 自动触发。
-     * 使用 runInAsyncQueue 实现批量异步更新。
-     */
+    /** 内部刷新函数，由 observe() 或外部调用触发 */
     #refresh(): void {
         if (this.#isRefreshing) return;
         this.#isRefreshing = true;
 
         runInAsyncQueue(() => {
-            // 若组件已被移出 DOM，跳过刷新
             if (!this.isConnected) {
                 this.#isRefreshing = false;
                 return;
             }
 
-            // 生命周期：更新前
             this.beforeUpdate();
 
-            // 虚拟 DOM diff & patch
+            // 虚拟 DOM diff + patch
             this.#vNodes = patch(this.#root, this.#AST, this.#vNodes);
             this.#isRefreshing = false;
 
@@ -137,8 +137,6 @@ class BaseElement<TData extends object> extends HTMLElement {
             if (!this.#isMounted) {
                 this.#isMounted = true;
                 this.mounted();
-
-                // ✅ 保留旧的 onInit 生命周期钩子，兼容老组件
                 this.onInit?.();
             } else {
                 this.updated();
@@ -146,12 +144,17 @@ class BaseElement<TData extends object> extends HTMLElement {
         });
     }
 
-    // #endregion
+    /**
+     * 手动刷新组件
+     * 外部可调用，用于数据未触发 observe 或强制刷新
+     */
+    public refresh(): void {
+        this.#refresh();
+    }
 
-    // #region 类型转换工具
+    // ---------------------- 属性类型转换工具 ----------------------
     #convertAttrValue(value: string | null, defaultValue: any, forcedType?: 'number' | 'boolean' | 'object' | 'string') {
         if (value === null) return defaultValue;
-        //  根据 defaultValue 类型推断
         const type = forcedType || typeof defaultValue;
         switch (type) {
             case 'number':
@@ -165,18 +168,9 @@ class BaseElement<TData extends object> extends HTMLElement {
                 return value;
         }
     }
-    // #endregion    
 
+    // ---------------------- Web Components 生命周期 ----------------------
 
-    // #region Web Components 生命周期
-
-    /**
-     * 元素首次插入文档时调用。
-     * -------------------------------------------------------
-     * 1️⃣ 自动添加类名
-     * 2️⃣ 延迟注入样式（确保 Shadow DOM 生效）
-     * 3️⃣ 首次触发渲染
-     */
     connectedCallback(): void {
         const manifest = this._manifest || {};
 
@@ -184,7 +178,7 @@ class BaseElement<TData extends object> extends HTMLElement {
         const className = manifest.className || manifest.tagName || "";
         className.split(" ").forEach((name) => name && this.classList.add(name));
 
-        // 延迟注入样式（仅注入一次）
+        // 延迟注入样式
         if (manifest.styles && !this.#root.querySelector("style[data-manifest-style]")) {
             const styleEl = document.createElement("style");
             styleEl.setAttribute("data-manifest-style", "true");
@@ -192,12 +186,11 @@ class BaseElement<TData extends object> extends HTMLElement {
             this.#root.appendChild(styleEl);
         }
 
-        // HTML 属性同步到 $data，并自动类型转换
+        // HTML 属性同步到 $data
         if (manifest.props && isObject(this.$data)) {
             for (const prop of manifest.props) {
                 const key = typeof prop === "string" ? prop : prop.name;
                 const type = typeof prop === "object" && 'type' in prop ? prop.type : undefined;
-                // 转换属性名 user-id → userId
                 const dataKey = key.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
                 const defaultValue = (this.$data as Record<string, any>)[dataKey];
                 if (this.hasAttribute(key)) {
@@ -207,16 +200,10 @@ class BaseElement<TData extends object> extends HTMLElement {
             }
         }
 
-        // 执行首次渲染
+        // 首次渲染
         this.#refresh();
     }
 
-    /**
-     * 元素从文档中移除时调用。
-     * -------------------------------------------------------
-     * 1️⃣ 调用卸载钩子
-     * 2️⃣ 停止数据监听，防止内存泄漏
-     */
     disconnectedCallback(): void {
         if (!this.isConnected) return;
         this.unmounted();
@@ -224,75 +211,54 @@ class BaseElement<TData extends object> extends HTMLElement {
         this.#unobserve = undefined;
     }
 
-    /**
-     * 当监听的属性变化时触发。
-     * -------------------------------------------------------
-     * 自动将 HTML attribute 同步到 $data。
-     */
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
         if (oldValue === newValue || !isObject(this.$data)) return;
-
-        // 转换属性名 user-id → userId
         const key = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
         const defaultValue = (this.$data as Record<string, any>)[key];
         (this.$data as Record<string, any>)[key] = this.#convertAttrValue(newValue, defaultValue);
     }
 
-    // #endregion
-
-    // #region 自定义生命周期钩子
-
+    // ---------------------- 自定义生命周期钩子 ----------------------
 
     /** 兼容旧组件的初始化钩子（首次 mounted 后调用） */
     public onInit(): void | Promise<void> { }
 
-    /** 组件创建完成（constructor 结束时） */
+    /** 组件创建完成（构造函数结束时调用） */
     public created(): void { }
 
-    /** 组件首次挂载到 DOM 后 */
+    /** 组件首次挂载到 DOM 后调用 */
     public mounted(): void { }
 
-    /** 每次更新前 */
+    /** 每次更新前调用 */
     public beforeUpdate(): void { }
 
-    /** 每次更新完成后 */
+    /** 每次更新完成后调用 */
     public updated(): void { }
 
-    /** 组件从 DOM 中卸载时 */
+    /** 组件从 DOM 中卸载时调用 */
     public unmounted(): void { }
 
-    // #endregion
-
-
-    // #region 开发期友好提示（改进版）
+    // ---------------------- 开发期友好提示 ----------------------
     static {
         if (import.meta.env.DEV) {
-            // 监听自定义元素注册（在注册时检查继承结构）
             const originalDefine = customElements.define;
             customElements.define = function (name, ctor, options) {
                 if (BaseElement.isPrototypeOf(ctor)) {
                     const proto = ctor.prototype;
-
-                    // 检查是否覆盖了关键回调
                     for (const key of ["connectedCallback", "disconnectedCallback"] as const) {
                         const baseMethod = BaseElement.prototype[key];
                         if (proto[key] !== baseMethod) {
                             console.warn(
                                 `[dev-warning] <${name}> 继承自 BaseElement，但重写了 ${key}()。\n` +
-                                `👉 建议使用生命周期钩子 created()/mounted()/unmounted() 来实现逻辑，\n` +
-                                `以避免破坏 BaseElement 内部的样式注入和内存管理机制。`
+                                `建议使用生命周期钩子 created()/mounted()/unmounted()，避免破坏内部样式注入和内存管理。`
                             );
                         }
                     }
                 }
-
-                // 调用原始 define
                 return originalDefine.call(this, name, ctor, options);
             };
         }
     }
-    // #endregion
-
 }
 
 export default BaseElement;

@@ -1,4 +1,4 @@
-import { BaseElement, CustomElement } from '../../src/base';
+import { BaseElement, CustomElement } from '../../../src/base';
 import template from './todo-list.html?raw';
 import styles from './todo-list.css?raw';
 
