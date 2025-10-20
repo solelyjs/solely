@@ -795,7 +795,7 @@ class HelloWorld extends BaseElement<{ title: string; count: number }> {
 
 ## 版本与发布
 
-- 当前版本：`0.0.24`
+- 当前版本：`0.0.25`
 - 遵循语义化版本（SemVer），构建产物位于 `dist/`，模块入口 `package.json:module` 指向 `dist/solely.js`，类型声明位于 `dist/solely.d.ts`
 
 ## 许可证
