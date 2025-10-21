@@ -32,7 +32,5 @@
   },
   "include": [
     "src",
-    "test/test.ts",
-    "examples"
   ]
 }

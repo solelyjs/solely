@@ -30,6 +30,7 @@ interface LabData {
   filter: 'all' | 'active' | 'done';
   showList: boolean;
   logs: string[];
+  nextTodoId: number;
 
   // 路由数据
   routes: IRouter[];
@@ -52,6 +53,7 @@ interface LabData {
 export default class FrameworkLabElement extends BaseElement<LabData> {
   // ---------------- 日志系统 ----------------
   private logQueue: string[] = [];
+  private logScheduled = false;
 
   constructor() {
     super({
@@ -72,6 +74,7 @@ export default class FrameworkLabElement extends BaseElement<LabData> {
       filter: 'all',
       showList: true,
       logs: [],
+      nextTodoId: 4,
 
       // 路由与管道
       routes: [
@@ -110,7 +113,10 @@ export default class FrameworkLabElement extends BaseElement<LabData> {
 
   mounted() {
     this.enqueueLog('mounted');
-    this.registerRouteComponents();
+    // 仅在启用路由时注册
+    if (this.$data.config.enableRouter) {
+      this.registerRouteComponents();
+    }
     this.$data.routerPipe = {
       onClick: (_e: Event) => this.enqueueLog('router pipe click'),
       info: '来自 pipe 的字符串'
@@ -131,13 +137,19 @@ export default class FrameworkLabElement extends BaseElement<LabData> {
 
   // ---------------- 日志方法 ----------------
   /**
-   * 安全入队日志，异步刷新，防止无限更新循环
+   * 安全入队日志，微任务批量刷新到 $data.logs，避免过多渲染
    */
   private enqueueLog(msg: string) {
     const ts = new Date().toLocaleTimeString();
-    this.logQueue.push((`[${ts}] ${msg}`));
+    this.logQueue.push(`[${ts}] ${msg}`);
+    if (!this.logScheduled) {
+      this.logScheduled = true;
+      Promise.resolve().then(() => {
+        this.$data.logs = this.logQueue.slice(-50);
+        this.logScheduled = false;
+      });
+    }
   }
-
 
   // ---------------- 业务方法 ----------------
   inc() { this.$data.count++; }
@@ -151,10 +163,10 @@ export default class FrameworkLabElement extends BaseElement<LabData> {
   }
 
   toggleList() { this.$data.showList = !this.$data.showList; }
-  setFilter(filter: LabData['filter']) { this.$data.filter = filter; }
+  setFilter(filter: LabData['filter']) { if (this.$data.filter !== filter) this.$data.filter = filter; }
 
   pushTodo() {
-    const id = Math.max(0, ...this.$data.todos.map(t => t.id)) + 1;
+    const id = this.$data.nextTodoId++;
     this.$data.todos.push({ id, title: `新任务 #${id}`, done: false });
   }
 
@@ -162,12 +174,21 @@ export default class FrameworkLabElement extends BaseElement<LabData> {
   reverseTodos() { this.$data.todos.reverse(); }
 
   shuffleTodos() {
-    this.$data.todos.sort(() => Math.random() - 0.5);
+    const arr = this.$data.todos;
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
   }
 
   spliceTodos() {
-    if (this.$data.todos.length >= 2) {
-      this.$data.todos.splice(1, 1, { id: Date.now(), title: '替换项', done: false });
+    if (this.$data.todos.length >= 1) {
+      const lastIndex = this.$data.todos.length - 1;
+      this.$data.todos.splice(lastIndex, 1, {
+        id: this.$data.nextTodoId++,
+        title: '替换项',
+        done: false
+      });
     }
   }
 
@@ -182,59 +203,78 @@ export default class FrameworkLabElement extends BaseElement<LabData> {
     this.$data.config.theme = this.$data.config.theme === 'light' ? 'dark' : 'light';
   }
 
+  // 过滤后的列表，避免在模板中进行复杂表达式计算
+  filteredTodos() {
+    const f = this.$data.filter;
+    return this.$data.todos.filter(t => f === 'all' ? true : f === 'done' ? t.done : !t.done);
+  }
+
   // ---------------- 路由注册 ----------------
   private registerRouteComponents() {
-    const defineOnce = (tag: string, tpl: string) => {
-      if (customElements.get(tag)) return;
-      class C extends HTMLElement { connectedCallback() { this.innerHTML = tpl; } }
-      customElements.define(tag, C);
+    const register = (tagName: string, tpl: string) => {
+      if (customElements.get(tagName)) return;
+      class RouteComponent extends HTMLElement {
+        private static tpl: HTMLTemplateElement;
+        constructor() {
+          super();
+          if (!RouteComponent.tpl) {
+            RouteComponent.tpl = document.createElement('template');
+            RouteComponent.tpl.innerHTML = tpl;
+          }
+        }
+        connectedCallback() {
+          this.appendChild(RouteComponent.tpl.content.cloneNode(true));
+        }
+      }
+      customElements.define(tagName, RouteComponent);
     };
 
-    defineOnce('lab-home', `
+    register('router-home', `
       <div class="lab-route home">
         <h3>Lab 首页</h3>
         <p>用于演示 router-view 的基本渲染。</p>
-        <button onclick="window.location.hash = '#/lab/about'">转到 About</button>
+        <button onclick="window.location.hash = '#/about'">转到 About</button>
       </div>
     `);
 
-    defineOnce('lab-about', `
+    register('router-about', `
       <div class="lab-route about">
         <h3>Lab 关于</h3>
         <p>你可以点击下面按钮进入用户中心。</p>
-        <button onclick="window.location.hash = '#/lab/user/profile'">用户中心</button>
+        <button onclick="window.location.hash = '#/user/profile'">用户中心</button>
       </div>
     `);
 
-    defineOnce('lab-user-layout', `
+    register('router-user-layout', `
       <div class="lab-route user-layout">
         <h3>用户中心</h3>
         <div class="nav">
-          <button onclick="window.location.hash = '#/lab/user/profile'">资料</button>
-          <button onclick="window.location.hash = '#/lab/user/settings'">设置</button>
+          <button onclick="window.location.hash = '#/user/profile'">资料</button>
+          <button onclick="window.location.hash = '#/user/settings'">设置</button>
         </div>
         <router-view></router-view>
       </div>
     `);
 
-    defineOnce('lab-user-profile', `
+    register('router-user-profile', `
       <div class="lab-route user-profile">
         <h4>个人资料</h4>
         <p>这是嵌套路由中的子页面。</p>
       </div>
     `);
 
-    defineOnce('lab-user-settings', `
+    register('router-user-settings', `
       <div class="lab-route user-settings">
         <h4>用户设置</h4>
         <p>用于测试嵌套路由。</p>
       </div>
     `);
 
-    defineOnce('lab-wildcard', `
+    // 备用通配符页面（当前未在 routes 中使用）
+    register('router-wildcard', `
       <div class="lab-route wildcard">
         <h4>通配符页面</h4>
-        <p>匹配任意 lab/* 路径。</p>
+        <p>匹配任意路径。</p>
       </div>
     `);
   }

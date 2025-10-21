@@ -72,6 +72,7 @@ export function observe<T extends object>(
 ): ObserveReturn<T> {
     const proxyMap = new WeakMap<object, any>();
     const activeTargets = new WeakSet<object>();
+    const proxyPathMap = new WeakMap<any, (string | symbol)[]>(); // WeakMap 用于记录每个 proxy 的路径
 
     const { throttle = 0, deepCompare = false, onBatch = null, immediate = false } = options;
     const filters = Array.isArray(options.filter)
@@ -116,16 +117,22 @@ export function observe<T extends object>(
         if (filters.length === 0) return true;
         const fullPath = path.map(String).join(".");
         return filters.some((pattern) => {
-            const regex = new RegExp(
-                "^" +
-                pattern
-                    .replace(/\./g, "\\.")
-                    .replace(/\[\*\]/g, "(\\.\\d+)?")
-                    .replace(/\*\*/g, "(.+)")
-                    .replace(/\*/g, "[^.]+")
-                + "$"
-            );
-            return regex.test(fullPath);
+            if (!pattern) return true; // 空字符串匹配所有
+            try {
+                const regex = new RegExp(
+                    "^" +
+                    pattern
+                        .replace(/\./g, "\\.")
+                        .replace(/\[\*\]/g, "(\\.\\d+)?")
+                        .replace(/\*\*/g, "(.+)")
+                        .replace(/\*/g, "[^.]+")
+                    + "$"
+                );
+                return regex.test(fullPath);
+            } catch {
+                // 无效正则也匹配所有（回退安全做法）
+                return true;
+            }
         });
     };
 
@@ -175,32 +182,9 @@ export function observe<T extends object>(
         });
 
         if (proxyMap.has(target)) {
-            return new Proxy(target, {
-                get(target, p, receiver) {
-                    if (Array.isArray(target) && arrayInstrumentations.hasOwnProperty(p as string)) {
-                        return Reflect.get(arrayInstrumentations, p, receiver);
-                    }
-                    const val = Reflect.get(target, p, receiver);
-                    return isObject(val) ? createProxy(val, [...path, p]) : val;
-                },
-                set(target, p, newVal, receiver) {
-                    const oldVal = Reflect.get(target, p, receiver);
-                    const isEqual = deepCompare ? deepEqual(oldVal, newVal) : oldVal === newVal;
-                    if (isEqual) return true;
-                    const result = Reflect.set(target, p, newVal, receiver);
-                    if (activeTargets.has(target)) trigger([...path, p], newVal, oldVal);
-                    return result;
-                },
-                deleteProperty(target: any, p) {
-                    if (Reflect.has(target, p)) {
-                        const oldVal = target[p];
-                        const result = Reflect.deleteProperty(target, p);
-                        if (result && activeTargets.has(target)) trigger([...path, p], undefined, oldVal);
-                        return result;
-                    }
-                    return false;
-                },
-            });
+            const existingProxy = proxyMap.get(target);
+            proxyPathMap.set(existingProxy, path); // 更新路径信息
+            return existingProxy;
         }
 
         activeTargets.add(target);
@@ -211,21 +195,46 @@ export function observe<T extends object>(
                     return Reflect.get(arrayInstrumentations, p, receiver);
                 }
                 const val = Reflect.get(target, p, receiver);
-                return isObject(val) ? createProxy(val, [...path, p]) : val;
+                if (isObject(val)) {
+                    // 动态组合路径
+                    const parentPath = proxyPathMap.get(proxy) || [];
+                    const childPath = [...parentPath, p];
+                    const childProxy = createProxy(val, childPath);
+                    proxyPathMap.set(childProxy, childPath); // 记录子 proxy 的路径
+                    return childProxy;
+                }
+                return val;
             },
             set(target, p, newVal, receiver) {
                 const oldVal = Reflect.get(target, p, receiver);
-                const isEqual = deepCompare ? deepEqual(oldVal, newVal) : oldVal === newVal;
+
+                const isComplexObject = isObject(newVal) && !(
+                    newVal instanceof Date ||
+                    newVal instanceof RegExp ||
+                    newVal instanceof Map ||
+                    newVal instanceof Set
+                );
+
+                // 判断是否需要触发回调
+                const isEqual = deepCompare && isComplexObject
+                    ? deepEqual(oldVal, newVal)
+                    : oldVal === newVal;
+
                 if (isEqual) return true;
+
                 const result = Reflect.set(target, p, newVal, receiver);
-                if (activeTargets.has(target)) trigger([...path, p], newVal, oldVal);
+
+                const parentPath = proxyPathMap.get(proxy) || path;
+                trigger([...parentPath, p], newVal, oldVal);
+
                 return result;
             },
-            deleteProperty(target: any, p) {
+            deleteProperty(target, p) {
                 if (Reflect.has(target, p)) {
                     const oldVal = target[p];
                     const result = Reflect.deleteProperty(target, p);
-                    if (result && activeTargets.has(target)) trigger([...path, p], undefined, oldVal);
+                    const parentPath = proxyPathMap.get(proxy) || [];
+                    if (result && activeTargets.has(target)) trigger([...parentPath, p], undefined, oldVal);
                     return result;
                 }
                 return false;
@@ -233,6 +242,8 @@ export function observe<T extends object>(
         });
 
         proxyMap.set(target, proxy);
+        proxyPathMap.set(proxy, path); // 记录自身路径
+
         return proxy;
     };
 

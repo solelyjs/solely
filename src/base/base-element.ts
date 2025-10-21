@@ -75,12 +75,6 @@ class BaseElement<TData extends object> extends HTMLElement {
 
     /** 获取当前组件数据 */
     public get $data(): TData {
-        // 懒初始化 observe（兼容动态替换 $data 或老逻辑）
-        if (!this.#unobserve && isObject(this.#data)) {
-            const { proxy, unobserve } = observe(this.#data, () => this.#refresh());
-            this.#data = proxy as TData;
-            this.#unobserve = unobserve;
-        }
         return this.#data;
     }
 
@@ -88,30 +82,12 @@ class BaseElement<TData extends object> extends HTMLElement {
     public set $data(value: TData) {
         if (!isObject(value)) value = {} as TData;
 
-        // 如果尚未 observe，则初始化
-        if (!this.#unobserve) {
-            const { proxy, unobserve } = observe(value, () => this.#refresh());
-            this.#data = proxy as TData;
-            this.#unobserve = unobserve;
-            this.#refresh();
-            return;
-        }
+        if (this.#unobserve) this.#unobserve(); // 先停止旧的监听
+        const { proxy, unobserve } = observe(value, () => this.#refresh());
+        this.#data = proxy as TData;
+        this.#unobserve = unobserve;
 
-        // 已 observe，则同步更新现有 Proxy
-        const current = this.#data as Record<string, any>;
-        const incoming = value as Record<string, any>;
-
-        // 删除旧属性
-        for (const key of Object.keys(current)) {
-            if (!(key in incoming)) delete current[key];
-        }
-
-        // 添加或更新新属性
-        for (const key of Object.keys(incoming)) {
-            if (current[key] !== incoming[key]) current[key] = incoming[key];
-        }
-
-        this.#refresh();
+        this.#refresh(); // 立即刷新一次，防止初次数据未渲染
     }
 
     // ---------------------- 渲染核心逻辑 ----------------------

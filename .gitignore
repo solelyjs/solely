@@ -30,6 +30,7 @@ publish
 visualizer
 vite.config.ts.*
 *.tgz
+coverage/
 
 # 备份的文件
 * copy.*
