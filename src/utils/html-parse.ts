@@ -100,32 +100,88 @@ function parseTag(ctx: any, tag: string): ASTNode {
     } else if (tagName === 'If' || tagName === 'ElseIf') {
         ast.fn = (loops: Loop[]) => getValue(ctx, ast.attrs.condition as string, loops);
     }
-
     if (ast.model) {
         const key = ast.model.replace('this.', '').replace('$data.', '');
         const updateValue = (loops: Loop[]) => getValue(ctx, `$data.${key}`, loops);
-    
+
+        // 合并同名事件
+        const mergeEvent = (eventName: string, modelHandler: ReturnType<typeof createEventHandler>) => {
+            if (ast.on[eventName]) {
+                const userHandler = ast.on[eventName];
+                ast.on[eventName] = (event: Event, loops: Loop[]) => {
+                    // 先执行 model，再执行用户逻辑
+                    modelHandler(event, loops);
+                    userHandler(event, loops);
+                };
+            } else {
+                ast.on[eventName] = modelHandler;
+            }
+        };
+
         if (tagName === 'input') {
             const type = ast.attrs.type || 'text';
             if (type === 'checkbox') {
                 ast.props['checked'] = updateValue;
-                ast.on['change'] = createEventHandler(ctx, `$data.${key}=checked`);
+                mergeEvent('change', createEventHandler(ctx, `$data.${key}=checked`));
             } else if (type === 'radio') {
                 const radioValue = ast.attrs.value;
                 ast.props['checked'] = (loops: Loop[]) => updateValue(loops) == radioValue;
-                ast.on['change'] = createEventHandler(ctx, `if(checked){$data.${key}='${radioValue}'}`);
+                mergeEvent('change', createEventHandler(ctx, `if(checked){$data.${key}='${radioValue}'}`));
             } else {
                 ast.props['value'] = updateValue;
-                ast.on['input'] = createEventHandler(ctx, `$data.${key}=value`);
+                mergeEvent('input', createEventHandler(ctx, `$data.${key}=value`));
             }
-        } else if (tagName === 'textarea') {
-            ast.props['value'] = updateValue;
-            ast.on['input'] = createEventHandler(ctx, `$data.${key}=value`);
-        } else if (tagName === 'select') {
-            ast.props['value'] = updateValue;
-            ast.on['change'] = createEventHandler(ctx, `$data.${key}=value`);
         }
-    }    
+        else if (tagName === 'textarea') {
+            ast.props['value'] = updateValue;
+            mergeEvent('input', createEventHandler(ctx, `$data.${key}=value`));
+        }
+        else if (tagName === 'select') {
+            const isMultiple = 'multiple' in ast.attrs;
+
+            // 用户操作 -> 更新 $data
+            if (isMultiple) {
+                mergeEvent(
+                    'change',
+                    createEventHandler(ctx, `
+                        $data.${key} = Array.from(event.target.selectedOptions).map(o => o.value);
+                    `)
+                );
+            } else {
+                mergeEvent('change', createEventHandler(ctx, `$data.${key}=value`));
+                ast.props['value'] = updateValue; // 单选仍然用 value
+            }
+
+            // 数据 -> DOM（渲染或更新时同步）
+            const syncSelectValue = (elm: HTMLSelectElement, loops: Loop[] = []) => {
+                const v = updateValue(loops);
+                if (isMultiple) {
+                    // 多选时，如果不是数组，自动转成数组
+                    const values = Array.isArray(v) ? v : v != null ? [v] : [];
+                    for (const opt of elm.options) {
+                        opt.selected = values.includes(opt.value);
+                    }
+                } else {
+                    const val = v ?? '';
+                    if (elm.value !== val) elm.value = val;
+                }
+            };
+
+            // 保留原本的 onMounted/onUpdated
+            const oldMounted = ast.onMounted;
+            const oldUpdated = ast.onUpdated;
+
+            ast.onMounted = (elm: HTMLElement, loops?: Loop[]) => {
+                oldMounted?.(elm, loops);
+                syncSelectValue(elm as HTMLSelectElement, loops || []);
+            };
+
+            ast.onUpdated = (elm: HTMLElement, loops?: Loop[]) => {
+                oldUpdated?.(elm, loops);
+                syncSelectValue(elm as HTMLSelectElement, loops || []);
+            };
+        }
+    }
 
     return ast;
 }

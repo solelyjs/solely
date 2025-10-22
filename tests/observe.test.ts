@@ -695,9 +695,6 @@ describe('observe function', () => {
         // 修改父对象
         parentProxy.user.name = 'Bob';
 
-        console.log('Child Changes:', childChanges);
-        console.log('Parent Changes:', parentChanges);
-
         expect(childChanges).toContain('child: address.city -> Shanghai');
         expect(parentChanges).toContain('parent: user.address.city -> Shanghai');
         expect(parentChanges).toContain('parent: user.name -> Bob');

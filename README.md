@@ -1,4 +1,4 @@
-# Solely  
+# Solely
 
 基于 Web Components 的轻量级响应式框架  
 < 10 kB（gzip）· 零依赖 · TypeScript 友好 · 单文件即可跑
@@ -72,9 +72,187 @@ npm run dev        # http://localhost:5173/ 查看 examples/
 
 ---
 
-## 语法规则总览
+## 模板语法速查
 
-### 1. 响应式数据
+> 所有模板必须是**合法 HTML**；框架会提前编译成高效更新函数，无运行时解析开销。
+
+| 功能 | 语法格式 | 完整示例 |
+|---|---|---|
+| **文本插值** | `{{ 表达式 }}` | `<span>{{ $data.msg }}</span>` |
+| **属性绑定** | `s-属性名="表达式"` | `<img s-src="$data.url" s-alt="$data.name">` |
+| **布尔属性** | `s-属性名="表达式"`（真值才输出） | `<button s-disabled="$data.loading">提交</button>` |
+| **双向绑定** | `s-model="字段路径"` | `<input s-model="$data.username">` |
+| **原始事件** | `on事件名="语句"`（可直读 `$data`） | `<button onclick="$data.count++">+</button>` |
+| **条件渲染** | `<If condition="表达式">...</If>`<br>`<ElseIf condition="...">...</ElseIf>`<br>`<Else>..</Else>` | `<If condition="$data.ok"><p>成功</p></If>` |
+| **列表渲染** | `<For each="数组" item="项变量" index="下标变量">...</For>` | `<For each="$data.list" item="it">{{ it }}</For>` |
+| **动态类** | `s-class="对象/数组/字符串"` | `<div s-class="{ active: $data.isActive }">` |
+| **动态样式** | `s-style="对象"` | `<div s-style="{ color: $data.c }">` |
+
+---
+
+### 1. 文本插值
+
+```html
+<!-- 基本 -->
+<p>{{ $data.message }}</p>
+
+<!-- 表达式 -->
+<p>总价：{{ $data.price * $data.quantity }}</p>
+
+<!-- 三元 -->
+<span>{{ $data.online ? '在线' : '离线' }}</span>
+
+<!-- 函数调用 -->
+<div>{{ this.formatDate($data.date) }}</div>
+```
+
+---
+
+### 2. 属性绑定
+
+```html
+<!-- 普通属性 -->
+<img s-src="$data.avatar" s-alt="$data.name">
+<a s-href="$data.link">跳转</a>
+
+<!-- data-* 属性 -->
+<div s-data-user-id="$data.uid"></div>
+
+<!-- class 拼接 -->
+<div class="btn" s-class="$data.variant"></div>
+```
+
+---
+
+### 3. 布尔属性
+
+```html
+<button s-disabled="$data.isSubmitting">提交中…</button>
+<input type="checkbox" s-checked="$data.selected">
+```
+
+---
+
+### 4. 双向绑定 `s-model`
+
+```html
+<!-- 文本 -->
+<input type="text" s-model="$data.username">
+
+<!-- 多行 -->
+<textarea s-model="$data.desc"></textarea>
+
+<!-- 单选按钮组 -->
+<label><input type="radio" name="sex" value="m" s-model="$data.sex"> 男</label>
+<label><input type="radio" name="sex" value="f" s-model="$data.sex"> 女</label>
+
+<!-- 单个复选框 -->
+<input type="checkbox" s-model="$data.agree"> 同意协议
+
+<!-- 单选下拉框 -->
+<select s-model="$data.city">
+  <option value="">请选择</option>
+  <option value="beijing">北京</option>
+  <option value="shanghai">上海</option>
+  <option value="guangzhou">广州</option>
+</select>
+
+<!-- 多选下拉框（重要：绑定值建议是数组类型） -->
+<select multiple s-model="$data.selectedCities">
+  <option value="beijing">北京</option>
+  <option value="shanghai">上海</option>
+  <option value="guangzhou">广州</option>
+  <option value="shenzhen">深圳</option>
+</select>
+
+<!-- 初始化示例 -->
+<!-- this.$data = {
+     selectedCities: ['beijing', 'shanghai']
+   } -->
+```
+
+---
+
+### 5. 条件渲染
+
+```html
+<If condition="$data.isLoggedIn">
+  <p>欢迎，{{ $data.name }}！</p>
+</If>
+<Else>
+  <p>请先登录</p>
+</Else>
+```
+
+---
+
+### 6. 列表渲染
+
+```html
+<!-- 基本 -->
+<ul>
+  <For each="$data.users" item="user" index="i">
+    <li>{{ i + 1 }}. {{ user.name }}</li>
+  </For>
+</ul>
+
+<!-- 带唯一 key（推荐） -->
+<For each="$data.products" item="p">
+  <div class="item" s-data-id="p.id">{{ p.name }}</div>
+</For>
+
+<!-- 嵌套循环 -->
+<For each="$data.categories" item="cat">
+  <h3>{{ cat.name }}</h3>
+  <ul>
+    <For each="cat.items" item="it">
+      <li>{{ it }}</li>
+    </For>
+  </ul>
+</For>
+```
+
+---
+
+### 7. 动态类
+
+```html
+<!-- 对象 -->
+<div s-class="{ active: $data.isActive, error: $data.err }"></div>
+
+<!-- 数组 -->
+<div s-class="[$data.base, $data.isActive ? 'on' : 'off']"></div>
+
+<!-- 字符串 -->
+<div s-class="$data.statusClass"></div>
+```
+
+---
+
+### 8. 动态样式
+
+```html
+<!-- 基本 -->
+<div s-style="{ color: $data.c, fontSize: $data.fs + 'px' }"></div>
+
+<!-- 条件 -->
+<div s-style="{ backgroundColor: $data.ok ? '#0f0' : '#f00' }"></div>
+
+<!-- 直接绑对象 -->
+<div s-style="$data.styleObj"></div>
+```
+
+---
+
+### 9. 表达式限制
+
+- 支持任意**纯 JS 表达式**；  
+- 禁止 `eval`、`Function`、`setTimeout`、`setInterval` 等副作用代码；  
+- 绑定函数在每次渲染都会执行，请保持**纯函数**以保证性能。
+
+---
+
+## 响应式数据
 
 框架通过 `this.$data` 提供深度响应式代理。
 
@@ -105,34 +283,7 @@ async onInit() {
 
 ---
 
-### 2. 模板语法
-
-**模板必须是合法 HTML**，框架解析为 AST 后生成高效更新函数。
-
-| 功能 | 示例 | 说明 |
-|---|---|---|
-| 文本插值 | `<span>{{ $data.msg }}</span>` | 可省 `this.` |
-| 属性绑定 | `<img s-src="$data.url">` | 任意属性前加 `s-` |
-| 布尔属性 | `<button s-disabled="$data.loading">` | 真值才输出属性 |
-| 原始事件 | `<button onclick="$data.count++">` | 可直接访问 `$data` / `value` |
-| 双向绑定 | `<input s-model="msg">` | 支持 text/textarea/select/checkbox/radio |
-| 条件 | `<If condition="$data.ok">...</If>` / `<ElseIf>` / `<Else>` | 标签本身不渲染 |
-| 列表 | `<For each="$data.list" item="it" index="i">...</For>` | 嵌套循环可写 |
-| 动态类 | `s-class="{ active: isActive }"` | 对象/数组/字符串 |
-| 动态样式 | `s-style="{ color: c, fontSize: fs+'px' }"` | 支持嵌套对象 |
-
-**列表 key 说明**  
-Solely 内部默认用 **索引** 当 key；若业务会对列表 **增删/排序** 且子 DOM 状态复杂，请 **在数据里提供唯一字段**（如 `id`），框架 diff 时会优先采用，减少不必要的销毁-重建。
-
----
-
-### 3. 表达式限制
-
-支持任意 JS 表达式，**禁止** `eval`、`Function`、`setTimeout`、`setInterval` 等可能产生副作用的代码；绑定方法在每次渲染都会重新执行，请保持纯函数。
-
----
-
-### 4. 自定义元素
+## 自定义元素
 
 ```ts
 import { BaseElement, CustomElement } from 'solely'
@@ -164,17 +315,17 @@ class StyledCard extends BaseElement<{ txt: string }> {
 
 ---
 
-### 5. 组件通信
+## 组件通信
 
 | 方式 | 示例 |
 |---|---|
-| 属性下行 | `<child s-msg="$data.message"></child>` |
+| 属性下行 | `<child s-$data="$data.message"></child>` |
 | 事件上行 | 子 `this.dispatchEvent(new CustomEvent('update', {detail, bubbles:true}))` <br> 父 `<child on-update="this.handleUpdate(event)">` |
 | 全局 Store | 任意单例 class / Context 均可，框架无侵入 |
 
 ---
 
-### 6. 生命周期（按顺序）
+## 生命周期（按顺序）
 
 | 钩子 | 触发时机 | 用途 |
 |---|---|---|
@@ -190,7 +341,7 @@ class StyledCard extends BaseElement<{ txt: string }> {
 
 ---
 
-### 7. 路由（hash 模式）
+## 路由（hash 模式）
 
 ```ts
 const routes = [
@@ -225,9 +376,8 @@ class App extends BaseElement {
 
 ---
 
-### 8. 性能与最佳实践
+## 性能与最佳实践
 
-- 列表增删/排序时提供 **稳定唯一 id** 字段，帮助虚拟 DOM 复用节点  
 - 避免在模板里做重计算 / 副作用函数  
 - 高频事件（scroll / input）自行节流  
 - 批量更新已内置，无需手动 `$nextTick`  
@@ -236,7 +386,7 @@ class App extends BaseElement {
 
 ---
 
-### 9. 目录结构
+## 目录结构
 
 ```
 src/              核心源码（base/、utils/、solely.ts）
@@ -248,7 +398,7 @@ public/           静态资源
 
 ---
 
-### 10. 脚本命令
+## 脚本命令
 
 ```bash
 npm run dev             # Vite 开发服务器，热更新
@@ -263,7 +413,7 @@ npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
 
 ---
 
-### 11. 浏览器支持
+## 浏览器支持
 
 - **ES2020 + 原生 Web Components**  
 - 最近 2 个主版本的 Chrome / Edge / Firefox / Safari  
@@ -271,7 +421,7 @@ npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
 
 ---
 
-### 12. 常见问题（FAQ）
+## 常见问题（FAQ）
 
 | 问题 | 答复 |
 |---|---|
@@ -284,7 +434,7 @@ npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
 
 ---
 
-### 13. 贡献指南
+## 贡献指南
 
 1. Fork 仓库并创建特性分支  
 2. 保持代码风格一致，补充对应测试与文档  
@@ -294,14 +444,14 @@ npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
 
 ---
 
-### 14. 版本与发布
+## 版本与发布
 
-- 当前版本：**0.0.26**
+- 当前版本：**0.0.27**
 - 遵循语义化版本（SemVer）  
 - 构建产物位于 `dist/`，`package.json` 的 `"module"` 指向 `dist/solely.js`，类型声明 `dist/solely.d.ts`
 
 ---
 
-### 15. 许可证
+## 许可证
 
 MIT License
