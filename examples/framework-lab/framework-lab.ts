@@ -137,18 +137,11 @@ export default class FrameworkLabElement extends BaseElement<LabData> {
 
   // ---------------- 日志方法 ----------------
   /**
-   * 安全入队日志，微任务批量刷新到 $data.logs，避免过多渲染
+   * 安全入队日志，微任务批量刷新到 this.logs，避免过多渲染
    */
   private enqueueLog(msg: string) {
     const ts = new Date().toLocaleTimeString();
     this.logQueue.push(`[${ts}] ${msg}`);
-    if (!this.logScheduled) {
-      this.logScheduled = true;
-      Promise.resolve().then(() => {
-        this.$data.logs = this.logQueue.slice(-50);
-        this.logScheduled = false;
-      });
-    }
   }
 
   // ---------------- 业务方法 ----------------

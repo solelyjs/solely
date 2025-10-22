@@ -91,7 +91,8 @@
 
     <If condition="$data.showList">
       <ul class="todo-list">
-        <For each="this.filteredTodos()" item="t" index="i">
+        <For each="$data.todos.filter(t => $data.filter === 'all' ? true : $data.filter === 'done' ? t.done : !t.done)"
+          item="t" index="i">
           <li class="todo-item" s-class="{ done: t.done }">
             <span>#{{ t.id }}</span>
             <span class="title">{{ t.title }}</span>
@@ -120,7 +121,7 @@
   <section class="section">
     <h3>更新日志</h3>
     <ul class="logs">
-      <For each="$data.logs.slice(-10)" item="log" index="j">
+      <For each="this.logQueue.slice(-10)" item="log" index="j">
         <li>{{ log }}</li>
       </For>
     </ul>
