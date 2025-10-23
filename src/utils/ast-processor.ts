@@ -170,7 +170,7 @@ const updateNode = (oldNode: ASTNode, newNode: ASTNode): void => {
 };
 
 const insertNode = (parentNode: Node, newNode: Node, nextNode?: Node): void => {
-    if (nextNode) {
+    if (nextNode && nextNode.parentNode === parentNode) {
         parentNode.insertBefore(newNode, nextNode);
     } else {
         parentNode.appendChild(newNode);
@@ -254,21 +254,24 @@ const addNode = (parentNode: Node, newNode: ASTNode, nextNode?: Node, ns?: strin
 const isElseIfOrComment = (node: ASTNode): boolean => node && (node.tagName === 'ElseIf' || node.tagName === 'comment');
 const isElse = (node: ASTNode): boolean => node && (node.tagName === 'Else');
 const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [], rootId: string = "0", ifId?: number): void => {
+    let ifGroupId = 0; // 跟踪当前父节点下的 If 组数量
+    let forGroupId = 0; // 跟踪当前父节点下的 For 组数量
     for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
         if (node.tagName === 'If') {
             let isDone = false;
+            ifGroupId++; // 每遇到一个新的 If 节点，ifGroupId 递增
             let ifId = 1;
             const condition = node.fn?.(loops);
             if (condition) {
-                toVNodes(vNodes, node.children, loops, `${rootId}-if-${ifId}`, ifId);
+                toVNodes(vNodes, node.children, loops, `${rootId}-if-${ifGroupId}-${ifId}`, ifId);
                 isDone = true;
             }
             ifId++;
             while (i + 1 < nodes.length && isElseIfOrComment(nodes[i + 1])) {
                 const condition = nodes[i + 1].fn?.(loops);
                 if (condition && !isDone) {
-                    toVNodes(vNodes, nodes[i + 1].children, loops, `${rootId}-if-${ifId}`, ifId);
+                    toVNodes(vNodes, nodes[i + 1].children, loops, `${rootId}-if-${ifGroupId}-${ifId}`, ifId);
                     isDone = true;
                 }
                 i++;
@@ -276,17 +279,18 @@ const toVNodes = (vNodes: ASTNode[], nodes: ASTNode[], loops: Loop[] = [], rootI
             }
             if (i + 1 < nodes.length && isElse(nodes[i + 1])) {
                 if (!isDone) {
-                    toVNodes(vNodes, nodes[i + 1].children, loops, `${rootId}-if-${ifId}`, ifId);
+                    toVNodes(vNodes, nodes[i + 1].children, loops, `${rootId}-if-${ifGroupId}-${ifId}`, ifId);
                     isDone = true;
                 }
                 i++;
             }
         } else if (node.tagName === 'For') {
+            forGroupId++; // 每遇到一个新的 For 节点，forGroupId 递增
             const { item = "item", index = "index" } = node.attrs;
             const array = node.fn!(loops) || [];
             array.forEach((value: any, valueIndex: number) => {
                 const loopData: Loop = { item, value, index, valueIndex };
-                toVNodes(vNodes, node.children, [...loops, loopData], `${rootId}-for-${valueIndex}`, 1); //重置ifId
+                toVNodes(vNodes, node.children, [...loops, loopData], `${rootId}-for-${forGroupId}-${valueIndex}`, 1); //重置ifId
             });
         } else {
             const newNode: ASTNode = {
