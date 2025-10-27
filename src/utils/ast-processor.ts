@@ -161,8 +161,8 @@ const updateNode = (oldNode: ASTNode, newNode: ASTNode): void => {
         case "text":
             updateText(newNode);
             break;
-        case "slot":
-            break;
+        // case "slot":
+        //     break;
         default:
             updateElement(oldNode, newNode);
             break;

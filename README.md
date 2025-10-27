@@ -315,6 +315,55 @@ class StyledCard extends BaseElement<{ txt: string }> {
 
 ---
 
+### 插槽（Slots）支持
+
+当 shadowDOM 功能处于开启状态时，该组件支持使用标准的 Web Components 插槽功能，并允许对插槽名称进行动态修改。
+
+```ts
+// 带插槽的组件
+@CustomElement({
+  tagName: 'my-layout',
+  template: `
+    <header><slot name="header"></slot></header>
+    <main><slot></slot></main>
+    <footer><slot s-name="$data.footerSlotName"></slot></footer>
+  `,
+  shadowDOM: { use: true },
+  styles: `
+    header, footer { background: #f0f0f0; padding: 10px; }
+    main { padding: 20px; }
+  `
+})
+class MyLayout extends BaseElement<{ footerSlotName: string }> {
+  constructor() {
+    super({ footerSlotName: 'default-footer' })
+  }
+  
+  // 动态修改插槽名称
+  changeFooterSlot() {
+    this.$data.footerSlotName = 'custom-footer'
+  }
+}
+```
+
+```html
+<my-layout>
+  <!-- 命名插槽 -->
+  <h1 slot="header">页面标题</h1>
+  
+  <!-- 默认插槽 -->
+  <p>这是页面内容...</p>
+  
+  <!-- 动态插槽 -->
+  <div slot="default-footer">默认页脚</div>
+  <div slot="custom-footer">自定义页脚</div>
+</my-layout>
+```
+
+使用动态插槽时，通过 `s-name="$data.slotName"` 语法绑定动态插槽名称，当数据变化时，插槽内容会自动重新分配。
+
+---
+
 ## 组件通信
 
 | 方式 | 示例 |
@@ -427,6 +476,7 @@ npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
 |---|---|
 | 必须先写 `this.` 吗？ | 模板中可省略，直接写 `$data.xxx` |
 | 什么时候用 Shadow DOM？ | 需要样式/结构隔离时，在 `@CustomElement({shadowDOM: { use: true }})` 开启 |
+| 组件支持插槽（Slots）吗？ | 是的，当 shadowDOM 功能处于开启状态时，支持标准 Web Components 插槽功能，并允许使用 `s-name="$data.slotName"` 语法动态修改插槽名称 |
 | 能给子组件传对象吗？ | 可以，用 `s-对象='json-string'` 或在父组件里直接 `querySelector('child').$data = {...}` |
 | 路由能否用 history 模式？ | 当前仅实现 hash 模式，history 模式可自行扩展 |
 | 如何调试响应式数据？ | 浏览器 DevTools 控制台直接 `document.querySelector('my-el').$data` 即可读写 |
@@ -446,7 +496,7 @@ npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
 
 ## 版本与发布
 
-- 当前版本：**0.0.28**
+- 当前版本：**0.0.29**
 - 遵循语义化版本（SemVer）  
 - 构建产物位于 `dist/`，`package.json` 的 `"module"` 指向 `dist/solely.js`，类型声明 `dist/solely.d.ts`
 
