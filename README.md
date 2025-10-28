@@ -496,7 +496,7 @@ npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
 
 ## 版本与发布
 
-- 当前版本：**0.0.29**
+- 当前版本：**0.0.30**
 - 遵循语义化版本（SemVer）  
 - 构建产物位于 `dist/`，`package.json` 的 `"module"` 指向 `dist/solely.js`，类型声明 `dist/solely.d.ts`
 

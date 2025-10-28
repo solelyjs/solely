@@ -85,6 +85,15 @@ function parseTag(ctx: any, tag: string): ASTNode {
                 case "readonly":
                     ast.props["readOnly"] = (loops: Loop[]) => getValue(ctx, value, loops);
                     break;
+                case "for":
+                    ast.props["htmlFor"] = (loops: Loop[]) => getValue(ctx, value, loops);
+                    break;
+                case "tabindex":
+                    ast.props["tabIndex"] = (loops: Loop[]) => getValue(ctx, value, loops);
+                    break;
+                case "contenteditable":
+                    ast.props["contentEditable"] = (loops: Loop[]) => getValue(ctx, value, loops);
+                    break;
                 default:
                     ast.props[propKey] = (loops: Loop[]) => getValue(ctx, value, loops);
                     break;

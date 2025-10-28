@@ -19,11 +19,35 @@ const updateText = (newNode: ASTNode): void => {
     }
 };
 
+/**
+ * 通用动态属性更新函数
+ * - s-* 动态绑定都放在 props
+ * - data-*, aria-*, role → setAttribute
+ * - 其他 DOM 属性 → 直接赋值
+ */
+const dynamicAttrKeys = ["role", "form"]; // 可扩展更多特殊属性
+
 const setElementProps = (elm: HTMLElement, props: Record<string, Function>, loops: Loop[] = []): void => {
     Object.keys(props).forEach(key => {
         const value = props[key](loops);
-        if ((elm as any)[key] !== value) {
-            (elm as any)[key] = value;
+
+        // 判断是否需要 setAttribute
+        if (key.startsWith("data-") || key.startsWith("aria-") || dynamicAttrKeys.includes(key)) {
+            const oldVal = elm.getAttribute(key);
+            const newVal = value == null ? null : String(value);
+            if (oldVal !== newVal) {
+                if (newVal == null) {
+                    elm.removeAttribute(key);
+                } else {
+                    elm.setAttribute(key, newVal);
+                }
+            }
+        } else {
+            // DOM property 更新
+            const current = (elm as any)[key];
+            if (current !== value) {
+                (elm as any)[key] = value;
+            }
         }
     });
 };
