@@ -1,27 +1,44 @@
 {
   "name": "solely",
   "private": false,
-  "version": "0.0.30",
+  "version": "0.1.0",
   "type": "module",
-  "module": "./dist/solely.js",
-  "types": "./dist/solely.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./plugin": "./dist/plugin.js"
+  },
   "files": [
     "dist"
   ],
   "keywords": [
     "ast",
-    "vnode"
+    "vnode",
+    "template",
+    "custom-element",
+    "web-component",
+    "framework",
+    "library",
+    "ui",
+    "component",
+    "design",
+    "development"
   ],
   "author": "Sun Yue",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
+    "build-dev": "vite build && npm run plugin:build",
     "preview": "vite preview",
     "link": "npm link && echo '✅ 全局链接成功，可在其他项目中使用 solely 命令'",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "pack:local": "npm pack && echo '✅ 打包完成，可在其他项目中使用 file: 引用'"
+    "pack:local": "npm pack && echo '✅ 打包完成，可在其他项目中使用 file: 引用'",
+    "dev:debug": "node --inspect-brk ./node_modules/vite/bin/vite.js",
+    "plugin:build": "tsup src/plugin.ts --format esm,cjs --dts"
   },
   "devDependencies": {
     "@rollup/plugin-strip": "^3.0.4",
@@ -33,6 +50,7 @@
     "jsdom": "27.0.0",
     "sass": "^1.83.0",
     "terser": "^5.44.0",
+    "tsup": "^8.5.1",
     "typescript": "~5.6.2",
     "vite": "^5.4.10",
     "vite-plugin-dts": "^4.4.0",

@@ -1,0 +1,84 @@
+<div class="form-container">
+  <h2 class="form-title">用户注册</h2>
+  <p class="form-subtitle">请填写以下信息创建您的账户</p>
+
+  <!-- 用户名 -->
+  <div class="form-group">
+    <label class="form-label">用户名</label>
+    <input type="text" class="form-input" placeholder="请输入用户名（3-16个字符）" s-model="$data.form.username"
+      onblur="this.validateUsername()" />
+    <p class="form-hint" :visible="$data.errors.username">{{ $data.errors.username }}</p>
+  </div>
+
+  <!-- 邮箱 -->
+  <div class="form-group">
+    <label class="form-label">邮箱</label>
+    <input type="email" class="form-input" placeholder="请输入您的邮箱" s-model="$data.form.email"
+      onblur="this.validateEmail()" />
+    <p class="form-hint" :visible="$data.errors.email">{{ $data.errors.email }}</p>
+  </div>
+
+  <!-- 密码 -->
+  <div class="form-group">
+    <label class="form-label">密码</label>
+    <input type="password" class="form-input" placeholder="请输入密码（至少8个字符）" s-model="$data.form.password"
+      oninput="this.validatePassword()" />
+    <!-- 密码强度指示器 -->
+    <div class="password-strength" :visible="$data.form.password">
+      <div class="strength-bar" :class="'strength-' + $data.passwordStrength / 20"></div>
+    </div>
+    <p class="form-hint" :visible="$data.errors.password">{{ $data.errors.password }}</p>
+  </div>
+
+  <!-- 确认密码 -->
+  <div class="form-group">
+    <label class="form-label">确认密码</label>
+    <input type="password" class="form-input" placeholder="请再次输入密码" s-model="$data.form.confirmPassword"
+      @input="this.validateConfirmPassword()" />
+    <p class="form-hint" :visible="$data.errors.confirmPassword">{{ $data.errors.confirmPassword }}</p>
+  </div>
+
+  <!-- 验证码 -->
+  <div class="form-group">
+    <label class="form-label">验证码</label>
+    <div class="captcha-wrapper">
+      <input type="text" class="form-input captcha-input" placeholder="请输入验证码" s-model="$data.form.captcha"
+        onblur="this.validateCaptcha()" />
+      <button class="captcha-btn" onclick="this.sendCaptcha()" :disabled="$data.captchaCountdown > 0">
+        <If test="$data.captchaCountdown > 0">
+          {{ $data.captchaCountdown }}秒后重发
+        </If>
+        <Else>
+          获取验证码
+        </Else>
+      </button>
+    </div>
+    <p class="form-hint" :visible="$data.errors.captcha">{{ $data.errors.captcha }}</p>
+  </div>
+
+  <!-- 同意条款 -->
+  <div class="form-group checkbox-group">
+    <label class="checkbox-label">
+      <input type="checkbox" s-model="$data.form.agreeTerms" />
+      <span>我已阅读并同意 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a></span>
+    </label>
+  </div>
+
+  <!-- 提交按钮 -->
+  <button class="submit-btn" onclick="this.submitForm()" :disabled="!this.isFormValid || $data.isSubmitting">
+    <If test="$data.isSubmitting">
+      <span class="spinner"></span>
+      注册中...
+    </If>
+    <Else>
+      立即注册
+    </Else>
+  </button>
+
+  <!-- 成功消息 -->
+  <If test="$data.isSuccess">
+    <div class="succes:message">
+      <p>✅ 注册成功！欢迎加入我们。</p>
+    </div>
+  </If>
+</div>

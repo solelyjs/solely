@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { parseHashUrl } from '../src/utils/url';
+import { parseHashUrl } from '../src/shared/url';
 
 describe('utils/url.parseHashUrl', () => {
   beforeEach(() => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
-import { observe } from '../src/utils/observe';
+import { observe } from '../src/runtime/reactivity';
 
 // Mock setTimeout for controlling async behavior
 vi.useFakeTimers();

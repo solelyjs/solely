@@ -1,0 +1,57 @@
+<div class="todo-app">
+  <h2 class="title">待办事项列表</h2>
+
+  <!-- 新增待办 -->
+  <div class="add-todo">
+    <input type="text" class="new-todo-input" placeholder="添加新的待办事项..." s-model="$data.newTodoText"
+      onkeydown="event.key === 'Enter' && this.addTodo()" />
+    <button class="add-btn" onclick="this.addTodo()" s-disabled="!$data.newTodoText.trim()">
+      添加
+    </button>
+  </div>
+
+  <!-- 筛选标签 -->
+  <div class="filters">
+    <button class="filter-btn" s-class="$data.filter === 'all' ? 'active' : ''" onclick="this.setFilter('all')">
+      全部 ({{ $data.todos.length }})
+    </button>
+    <button class="filter-btn" s-class="$data.filter === 'active' ? 'active' : ''" onclick="this.setFilter('active')">
+      待办 ({{ this.remainingCount }})
+    </button>
+    <button class="filter-btn" s-class="$data.filter === 'completed' ? 'active' : ''"
+      onclick="this.setFilter('completed')">
+      已完成 ({{ $data.todos.length - this.remainingCount }})
+    </button>
+  </div>
+
+  <!-- 待办列表 -->
+  <ul class="todo-list">
+    <For each="this.filteredTodos" item="todo">
+      <li class="todo-item" s-class="todo.completed ? 'completed' : ''">
+        <input type="checkbox" class="todo-checkbox" s-checked="todo.completed"
+          onclick="console.log(todo);this.toggleTodo(todo.id)" />
+        <span class="todo-text">{{todo.id}} {{todo.text }}</span>
+        <button class="delete-btn" onclick="this.deleteTodo(todo.id)">
+          删除
+        </button>
+      </li>
+    </For>
+  </ul>
+
+  <!-- 空状态 -->
+  <If condition="this.filteredTodos?.length === 0">
+    <div class="empty-state">
+      <p s-visible="$data.filter === 'all'">暂无待办事项</p>
+      <p s-visible="$data.filter === 'active'">所有待办已完成！</p>
+      <p s-visible="$data.filter === 'completed'">暂无已完成的待办</p>
+    </div>
+  </If>
+
+  <!-- 底部操作栏 -->
+  <div class="footer" s-visible="$data.todos.length > 0">
+    <span class="todo-count">{{ this.remainingCount }} 项待办</span>
+    <button class="clear-btn" onclick="this.clearCompleted()" s-visible="$data.todos.length > this.remainingCount">
+      清除已完成
+    </button>
+  </div>
+</div>

@@ -1,507 +1,817 @@
-# Solely
+# Solely - 轻量级 Web 组件框架
 
-基于 Web Components 的轻量级响应式框架  
-< 10 kB（gzip）· 零依赖 · TypeScript 友好 · 单文件即可跑
+<div align="center">
 
----
+![Solely Logo](./public/solely.svg)
 
-## 项目简介
+**一个轻量级、现代化的 Web 组件开发框架**
 
-Solely 是一款基于 Web Components 标准的轻量级前端框架，专为简化小型项目开发而设计。它保留了与原生 JavaScript/TypeScript 的高兼容性，同时提供了现代前端框架的核心功能：响应式数据绑定、虚拟 DOM 渲染、组件化开发、简单路由。
+[![npm version](https://img.shields.io/npm/v/solely.svg)](https://www.npmjs.com/package/solely)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
 
-核心优势  
+</div>
 
-1. 简化复杂性：设计简洁，与原生 JS/TS 语法保持一致  
-2. 响应式系统：基于 Proxy 的深度响应式  
-3. 虚拟 DOM：轻量级 diff，批量更新  
-4. 组件化：继承 `BaseElement` + `@CustomElement` 装饰器  
-5. 完整 TypeScript 泛型支持  
-6. 内置 hash 路由，单页应用开箱即用  
+## ✨ 核心特性
 
-适用于快速原型、嵌入式小部件、不愿引入大型框架的场景。
+- **🚀 高性能**：轻量级架构，零运行时依赖，快速渲染
+- **🔧 类型安全**：完整的 TypeScript 支持，类型提示完善
+- **🎨 强大模板**：基于 AST 的模板编译，支持条件渲染和列表渲染
+- **⚡ 响应式系统**：高效的响应式数据绑定，自动追踪依赖
+- **🧩 Web 组件**：原生 Web 组件支持，可自定义元素
+- **📦 插件系统**：灵活的插件扩展机制
+- **🧪 测试完善**：完整的单元测试覆盖
+- **🗺️ 路由支持**：内置路由系统，支持单页应用开发
 
----
-
-## 安装
+## 📦 安装
 
 ```bash
-npm i solely
+# 使用 npm
+npm install solely
+
+# 使用 yarn
+yarn add solely
+
+# 使用 pnpm
+pnpm add solely
 ```
 
----
+## 🎯 快速开始
 
-## 快速开始（最小可跑示例）
+### 1. 创建一个简单的组件
 
-```ts
-import { BaseElement, CustomElement } from 'solely'
+创建一个 TypeScript 文件：
+
+```typescript
+// counter.ts
+import { BaseElement, CustomElement } from 'solely';
 
 @CustomElement({
-  tagName: 'hello-world',
+  tagName: 'my-counter',
   template: `
-    <div class="box">
-      <h1>{{ $data.title }}</h1>
-      <button onclick="this.$data.count++">Count: {{ $data.count }}</button>
-    </div>`,
+    <div class="counter">
+      <h2>计数器: {{ $data.count }}</h2>
+      <button @click="$data.count++">增加</button>
+    </div>
+  `,
+  props: [
+    { name: 'count', type: 'number' }
+  ],
   styles: `
-    .box { padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
-    button { margin-top: 8px; }`,
-  shadowDOM: { use: true }
+    .counter {
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  `
 })
-class HelloWorld extends BaseElement<{ title: string; count: number }> {
-  onInit() {
-    this.$data = { title: 'Hello Solely', count: 0 }
+class MyCounter extends BaseElement<{ count: number }> {
+  constructor() {
+    super({ count: 0 });
   }
 }
 ```
 
+### 2. 在 HTML 中使用
+
 ```html
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solely 示例</title>
+  <script type="module" src="./counter.ts"></script>
+</head>
 <body>
-  <hello-world></hello-world>
-  <script type="module" src="/src/main.ts"></script>
+  <my-counter></my-counter>
 </body>
+</html>
 ```
 
-本地克隆体验  
+## 📚 模板语法
 
-```bash
-git clone <repo>
-cd solely
-npm i
-npm run dev        # http://localhost:5173/ 查看 examples/
-```
+所有模板必须是 **合法 HTML**；框架会提前编译成高效更新函数，无运行时解析开销。
 
----
+### 语法对照表
 
-## 模板语法速查
+| 功能 | 推荐语法 | 兼容语法 | 完整示例 |
+|---|---|---|---|
+| **文本插值** | `{{ 表达式 }}` | `{{ 表达式 }}` | `<span>{{ $data.msg }}</span>` |
+| **属性绑定** | `:属性名="表达式"` | `s-属性名="表达式"` | `<img :src="$data.url" s-alt="$data.name">` |
+| **布尔属性** | `:属性名="表达式"` | `s-属性名="表达式"` | `<button :disabled="$data.loading">提交</button>` |
+| **双向绑定** | `s-model="字段路径"` | `s-model="字段路径"` | `<input s-model="$data.username">` |
+| **原始事件** | `@事件名="语句"` | `on-事件名="语句"` | `<button @click="$data.count++">增加</button>` |
+| **条件渲染** | `<If test="表达式">` | `<If condition="表达式">` | `<If test="$data.ok"><p>成功</p></If>` |
+| **列表渲染** | `<For each="数组" item="项变量">` | `<For each="数组" item="项变量">` | `<For each="$data.list" item="it">{{ it }}</For>` |
+| **动态类** | `:class="对象/数组/字符串"` | `s-class="对象/数组/字符串"` | `<div :class="{ active: $data.isActive }">` |
+| **动态样式** | `:style="对象"` | `s-style="对象"` | `<div :style="{ color: $data.c }">` |
 
-> 所有模板必须是**合法 HTML**；框架会提前编译成高效更新函数，无运行时解析开销。
+### 详细语法说明
 
-| 功能 | 语法格式 | 完整示例 |
-|---|---|---|
-| **文本插值** | `{{ 表达式 }}` | `<span>{{ $data.msg }}</span>` |
-| **属性绑定** | `s-属性名="表达式"` | `<img s-src="$data.url" s-alt="$data.name">` |
-| **布尔属性** | `s-属性名="表达式"`（真值才输出） | `<button s-disabled="$data.loading">提交</button>` |
-| **双向绑定** | `s-model="字段路径"` | `<input s-model="$data.username">` |
-| **原始事件** | `on事件名="语句"`（可直读 `$data`） | `<button onclick="$data.count++">+</button>` |
-| **条件渲染** | `<If condition="表达式">...</If>`<br>`<ElseIf condition="...">...</ElseIf>`<br>`<Else>..</Else>` | `<If condition="$data.ok"><p>成功</p></If>` |
-| **列表渲染** | `<For each="数组" item="项变量" index="下标变量">...</For>` | `<For each="$data.list" item="it">{{ it }}</For>` |
-| **动态类** | `s-class="对象/数组/字符串"` | `<div s-class="{ active: $data.isActive }">` |
-| **动态样式** | `s-style="对象"` | `<div s-style="{ color: $data.c }">` |
+#### 1. 文本插值
 
----
-
-### 1. 文本插值
+使用 `{{ 表达式 }}` 在模板中插入动态文本：
 
 ```html
-<!-- 基本 -->
-<p>{{ $data.message }}</p>
-
-<!-- 表达式 -->
-<p>总价：{{ $data.price * $data.quantity }}</p>
-
-<!-- 三元 -->
-<span>{{ $data.online ? '在线' : '离线' }}</span>
-
-<!-- 函数调用 -->
-<div>{{ this.formatDate($data.date) }}</div>
+<h1>Hello, {{ $data.name }}!</h1>
+<p>总数: {{ $data.items.length }}</p>
+<p>{{ $data.price * $data.quantity }}</p>
 ```
 
----
+#### 2. 属性绑定
 
-### 2. 属性绑定
+使用 `:属性名` 绑定动态属性（推荐）：
 
 ```html
-<!-- 普通属性 -->
-<img s-src="$data.avatar" s-alt="$data.name">
-<a s-href="$data.link">跳转</a>
-
-<!-- data-* 属性 -->
-<div s-data-user-id="$data.uid"></div>
-
-<!-- class 拼接 -->
-<div class="btn" s-class="$data.variant"></div>
+<img :src="$data.imageUrl" :alt="$data.imageAlt">
+<a :href="$data.linkUrl">访问链接</a>
 ```
 
----
-
-### 3. 布尔属性
+兼容语法：
 
 ```html
-<button s-disabled="$data.isSubmitting">提交中…</button>
-<input type="checkbox" s-checked="$data.selected">
+<img s-src="$data.imageUrl" s-alt="$data.imageAlt">
+<a s-href="$data.linkUrl">访问链接</a>
 ```
 
----
+#### 3. 布尔属性
 
-### 4. 双向绑定 `s-model`
+当表达式为真值时才会输出属性：
 
 ```html
-<!-- 文本 -->
-<input type="text" s-model="$data.username">
+<button :disabled="$data.isLoading">提交</button>
+<input :checked="$data.isAgreed">
+```
 
-<!-- 多行 -->
-<textarea s-model="$data.desc"></textarea>
+兼容语法：
 
-<!-- 单选按钮组 -->
-<label><input type="radio" name="sex" value="m" s-model="$data.sex"> 男</label>
-<label><input type="radio" name="sex" value="f" s-model="$data.sex"> 女</label>
+```html
+<button s-disabled="$data.isLoading">提交</button>
+<input s-checked="$data.isAgreed">
+```
 
-<!-- 单个复选框 -->
-<input type="checkbox" s-model="$data.agree"> 同意协议
+#### 4. 双向绑定
 
-<!-- 单选下拉框 -->
-<select s-model="$data.city">
-  <option value="">请选择</option>
-  <option value="beijing">北京</option>
-  <option value="shanghai">上海</option>
-  <option value="guangzhou">广州</option>
+使用 `s-model` 实现表单双向绑定（推荐）：
+
+```html
+<input s-model="$data.username">
+<textarea s-model="$data.content"></textarea>
+<select s-model="$data.selectedId">
+  <option value="1">选项1</option>
+  <option value="2">选项2</option>
 </select>
-
-<!-- 多选下拉框（重要：绑定值建议是数组类型） -->
-<select multiple s-model="$data.selectedCities">
-  <option value="beijing">北京</option>
-  <option value="shanghai">上海</option>
-  <option value="guangzhou">广州</option>
-  <option value="shenzhen">深圳</option>
-</select>
-
-<!-- 初始化示例 -->
-<!-- this.$data = {
-     selectedCities: ['beijing', 'shanghai']
-   } -->
 ```
 
----
-
-### 5. 条件渲染
+兼容语法：
 
 ```html
-<If condition="$data.isLoggedIn">
-  <p>欢迎，{{ $data.name }}！</p>
+<input s-model="$data.username">
+<textarea s-model="$data.content"></textarea>
+<select s-model="$data.selectedId">
+  <option value="1">选项1</option>
+  <option value="2">选项2</option>
+</select>
+```
+
+#### 5. 事件处理
+
+使用 `@事件名` 绑定事件，可直接读写 `$data`（推荐）：
+
+```html
+<button @click="$data.count++">增加</button>
+<button @click="$data.items.push($data.newItem); $data.newItem=''">添加</button>
+<input @input="$data.searchText = event.target.value">
+```
+
+兼容语法：
+
+```html
+<button onclick="$data.count++">增加</button>
+<button onclick="$data.items.push($data.newItem); $data.newItem=''">添加</button>
+<input oninput="$data.searchText = event.target.value">
+```
+
+#### 6. 条件渲染
+
+使用 `<If>`、`<ElseIf>`、`<Else>` 进行条件渲染：
+
+```html
+<If test="$data.isLoggedIn">
+  <p>欢迎回来，{{ $data.username }}!</p>
 </If>
+<ElseIf test="$data.isLoading">
+  <p>加载中...</p>
+</ElseIf>
 <Else>
-  <p>请先登录</p>
+  <p>请登录</p>
 </Else>
 ```
 
----
-
-### 6. 列表渲染
+兼容语法：
 
 ```html
-<!-- 基本 -->
+<If condition="$data.isLoggedIn">
+  <p>欢迎回来，{{ $data.username }}!</p>
+</If>
+<ElseIf condition="$data.isLoading">
+  <p>加载中...</p>
+</ElseIf>
+<Else>
+  <p>请登录</p>
+</Else>
+```
+
+#### 7. 列表渲染
+
+使用 `<For>` 渲染列表：
+
+```html
 <ul>
-  <For each="$data.users" item="user" index="i">
-    <li>{{ i + 1 }}. {{ user.name }}</li>
+  <For each="$data.items" item="item" index="i">
+    <li>{{ i + 1 }}. {{ item.name }}</li>
   </For>
 </ul>
-
-<!-- 带唯一 key（推荐） -->
-<For each="$data.products" item="p">
-  <div class="item" s-data-id="p.id">{{ p.name }}</div>
-</For>
-
-<!-- 嵌套循环 -->
-<For each="$data.categories" item="cat">
-  <h3>{{ cat.name }}</h3>
-  <ul>
-    <For each="cat.items" item="it">
-      <li>{{ it }}</li>
-    </For>
-  </ul>
-</For>
 ```
 
----
-
-### 7. 动态类
+兼容语法：
 
 ```html
-<!-- 对象 -->
-<div s-class="{ active: $data.isActive, error: $data.err }"></div>
-
-<!-- 数组 -->
-<div s-class="[$data.base, $data.isActive ? 'on' : 'off']"></div>
-
-<!-- 字符串 -->
-<div s-class="$data.statusClass"></div>
+<ul>
+  <For each="$data.items" item="item" index="i">
+    <li>{{ i + 1 }}. {{ item.name }}</li>
+  </For>
+</ul>
 ```
 
----
+#### 8. 动态类
 
-### 8. 动态样式
+使用 `:class` 动态控制 CSS 类（推荐）：
 
 ```html
-<!-- 基本 -->
-<div s-style="{ color: $data.c, fontSize: $data.fs + 'px' }"></div>
-
-<!-- 条件 -->
-<div s-style="{ backgroundColor: $data.ok ? '#0f0' : '#f00' }"></div>
-
-<!-- 直接绑对象 -->
-<div s-style="$data.styleObj"></div>
+<div :class="{ active: $data.isActive, 'has-error': $data.hasError }">
+  内容
+</div>
+<!-- 也支持数组和字符串 -->
+<div :class="[$data.class1, $data.class2]">内容</div>
 ```
 
----
+兼容语法：
 
-### 9. 表达式限制
-
-- 支持任意**纯 JS 表达式**；  
-- 禁止 `eval`、`Function`、`setTimeout`、`setInterval` 等副作用代码；  
-- 绑定函数在每次渲染都会执行，请保持**纯函数**以保证性能。
-
----
-
-## 响应式数据
-
-框架通过 `this.$data` 提供深度响应式代理。
-
-```ts
-// 推荐：构造函数一次性注入，首帧无闪烁
-class MyComponent extends BaseElement<{ count: number; user: { name: string } }> {
-  constructor() {
-    super({ count: 0, user: { name: 'John' } })
-  }
-}
-
-// 兼容：生命周期里赋值
-created() { this.$data = { ... } }
-async onInit() {
-  const user = await fetch('/api/user').then(r => r.json())
-  this.$data = { count: 0, user }
-}
+```html
+<div s-class="{ active: $data.isActive, 'has-error': $data.hasError }">
+  内容
+</div>
+<!-- 也支持数组和字符串 -->
+<div s-class="[$data.class1, $data.class2]">内容</div>
 ```
 
-特性  
+#### 9. 动态样式
 
-- 嵌套对象/数组全部递归代理  
-- 批量异步更新，避免频繁渲染  
-- 支持路径过滤（`filter`）：可监听特定数据路径变化  
-- 支持深度比较（`deepCompare`）：避免不必要的重复触发  
-- 支持节流控制（`throttle`）：自定义更新频率  
-- 提供变更路径信息：精确追踪数据变化位置  
+使用 `:style` 动态设置样式（推荐）：
 
----
+```html
+<div :style="{ color: $data.textColor, fontSize: $data.fontSize + 'px' }">
+  动态样式
+</div>
+```
 
-## 自定义元素
+兼容语法：
 
-```ts
-import { BaseElement, CustomElement } from 'solely'
+```html
+<div s-style="{ color: $data.textColor, fontSize: $data.fontSize + 'px' }">
+  动态样式
+</div>
+```
 
-// 最简单组件
-@CustomElement({ tagName: 'my-card', template: `<p>{{ $data.txt }}</p>` })
-class MyCard extends BaseElement<{ txt: string }> {
-  constructor() { super({ txt: 'hi' }) }
-}
+## 🏗️ 技术架构
 
-// 影子 DOM + 内联样式
+Solely 采用模块化设计，主要由以下部分组成：
+
+```
+solely/
+├── compiler/          # 模板编译器
+│   ├── ir/           # 中间表示层
+│   └── parser/       # AST 解析器
+├── runtime/          # 运行时核心
+│   ├── component/    # 组件基类和装饰器
+│   ├── reactivity/   # 响应式系统
+│   ├── renderer/     # 渲染器
+│   └── router/       # 路由系统
+├── shared/           # 共享工具函数
+├── types/            # TypeScript 类型定义
+├── plugins/          # 插件系统
+└── tests/            # 测试文件
+```
+
+### 核心模块说明
+
+1. **编译器**：将模板转换为高效的渲染函数，支持 AST 解析和中间表示优化
+2. **运行时**：包含组件系统、响应式系统、渲染器和路由系统
+3. **响应式系统**：基于 Proxy 的响应式数据绑定，自动追踪依赖
+4. **路由系统**：支持单页应用的路由管理，包括路由定义、导航和组件挂载
+5. **插件系统**：提供扩展机制，支持自定义功能
+
+## 🔧 API 参考
+
+### CustomElement 装饰器
+
+组件的注册装饰器，用于定义组件的元信息：
+
+```typescript
 @CustomElement({
-  tagName: 'styled-card',
-  template: `<div class="box">{{ $data.txt }}</div>`,
-  styles: `.box{ color: red; }`,
-  shadowDOM: { use: true }
+  tagName: 'my-component',     // 必须：组件标签名
+  template: '...',             // 必须：HTML 模板字符串
+  props: [...],                // 可选：属性定义
+  styles: '...',               // 可选：组件样式
+  shadowDOM: { use: true }     // 可选：使用 Shadow DOM
 })
-class StyledCard extends BaseElement<{ txt: string }> {
-  onInit() { this.$data = { txt: 'shadow' } }
+class MyComponent extends BaseElement<MyData> {
+  // 组件逻辑
 }
 ```
 
-使用  
+### BaseElement
 
-```html
-<my-card></my-card>
-<styled-card></styled-card>
-```
+组件的基类，提供响应式属性、生命周期钩子和渲染方法。
 
----
+#### 生命周期钩子
 
-### 插槽（Slots）支持
+Solely 提供了完整的生命周期钩子函数，用于在组件的不同阶段执行自定义逻辑：
 
-当 shadowDOM 功能处于开启状态时，该组件支持使用标准的 Web Components 插槽功能，并允许对插槽名称进行动态修改。
-
-```ts
-// 带插槽的组件
-@CustomElement({
-  tagName: 'my-layout',
-  template: `
-    <header><slot name="header"></slot></header>
-    <main><slot></slot></main>
-    <footer><slot s-name="$data.footerSlotName"></slot></footer>
-  `,
-  shadowDOM: { use: true },
-  styles: `
-    header, footer { background: #f0f0f0; padding: 10px; }
-    main { padding: 20px; }
-  `
-})
-class MyLayout extends BaseElement<{ footerSlotName: string }> {
-  constructor() {
-    super({ footerSlotName: 'default-footer' })
-  }
-  
-  // 动态修改插槽名称
-  changeFooterSlot() {
-    this.$data.footerSlotName = 'custom-footer'
-  }
-}
-```
-
-```html
-<my-layout>
-  <!-- 命名插槽 -->
-  <h1 slot="header">页面标题</h1>
-  
-  <!-- 默认插槽 -->
-  <p>这是页面内容...</p>
-  
-  <!-- 动态插槽 -->
-  <div slot="default-footer">默认页脚</div>
-  <div slot="custom-footer">自定义页脚</div>
-</my-layout>
-```
-
-使用动态插槽时，通过 `s-name="$data.slotName"` 语法绑定动态插槽名称，当数据变化时，插槽内容会自动重新分配。
-
----
-
-## 组件通信
-
-| 方式 | 示例 |
-|---|---|
-| 属性下行 | `<child s-$data="$data.message"></child>` |
-| 事件上行 | 子 `this.dispatchEvent(new CustomEvent('update', {detail, bubbles:true}))` <br> 父 `<child on-update="this.handleUpdate(event)">` |
-| 全局 Store | 任意单例 class / Context 均可，框架无侵入 |
-
----
-
-## 生命周期（按顺序）
-
-| 钩子 | 触发时机 | 用途 |
+| 钩子函数 | 调用时机 | 说明 |
 |---|---|---|
-| `constructor()` | 实例创建 | 通过 `super(data)` 一次性注入响应式状态（推荐） |
-| `created()` | 构造函数结束后微任务 | 同步初始化，首帧前执行 |
-| `connectedCallback()` | 元素连接到 DOM | **内部使用**，负责样式注入和首次渲染，请勿重写 |
-| `beforeUpdate()` | 每次数据变更 → DOM 更新前 | 可读取新数据，准备更新 |
-| `mounted()` | 首次 DOM 更新完成后 | 访问真实 DOM |
-| `onInit()` | 首次 `mounted()` 后立即调用 | 兼容旧组件的初始化钩子，可用于依赖 DOM 或异步接口的操作 |
-| `updated()` | 后续每次 DOM 更新完成后 | 依赖 DOM 的后处理 |
-| `disconnectedCallback()` | 元素从 DOM 移除 | **内部使用**，负责清理和调用 `unmounted()`，请勿重写 |
-| `unmounted()` | 组件卸载时 | 清理定时器 / 事件监听器，防止内存泄漏 |
+| `created()` | 组件实例创建后 | 在组件构造函数执行完成后调用，此时组件尚未挂载到 DOM |
+| `mounted()` | 组件挂载到 DOM 后 | 组件首次渲染完成后调用，可在此进行 DOM 操作 |
+| `beforeUpdate()` | 数据更新前 | 在组件数据更新导致重新渲染前调用 |
+| `updated()` | 数据更新后 | 在组件数据更新导致重新渲染后调用 |
+| `unmounted()` | 组件从 DOM 移除后 | 组件被销毁时调用，可在此清理资源 |
+| `attributeChanged(name, oldValue, newValue)` | 属性变化时 | 当组件的观察属性发生变化时调用 |
+| `beforeAttributesUpdate()` | 属性更新前 | 在属性更新导致重新渲染前调用 |
+| `afterAttributesUpdate()` | 属性更新后 | 在属性更新导致重新渲染后调用 |
+| `onInit()` | 组件初始化后 | 组件挂载完成后调用，支持异步操作 |
 
----
+#### 示例代码
 
-## 路由（hash 模式）
+```typescript
+class MyComponent extends BaseElement<MyData> {
+  constructor() {
+    super({ /* 初始数据 */ });
+  }
 
-```ts
+  // 组件实例创建后调用
+  created() {
+    console.log('组件实例已创建');
+  }
+
+  // 组件挂载到 DOM 后调用
+  mounted() {
+    console.log('组件已挂载到 DOM');
+    // 可在此进行 DOM 操作
+  }
+
+  // 数据更新前调用
+  beforeUpdate() {
+    console.log('组件即将更新');
+  }
+
+  // 数据更新后调用
+  updated() {
+    console.log('组件已更新');
+  }
+
+  // 组件从 DOM 移除后调用
+  unmounted() {
+    console.log('组件已卸载');
+    // 可在此清理资源
+  }
+
+  // 属性变化时调用
+  attributeChanged(name, oldValue, newValue) {
+    console.log(`属性 ${name} 从 ${oldValue} 变为 ${newValue}`);
+  }
+
+  // 组件初始化后调用，支持异步操作
+  async onInit() {
+    console.log('组件初始化中');
+    // 可在此进行异步操作，如数据获取
+    await fetchData();
+    console.log('组件初始化完成');
+  }
+}
+```
+
+#### 核心方法
+
+| 方法 | 说明 | 参数 | 返回值 |
+|---|---|---|---|
+| `$data` | 获取/设置组件数据 | 新数据对象（设置时） | 当前数据对象 |
+| `refresh()` | 手动触发组件刷新 | 无 | 无 |
+| `emit(eventName, detail, options)` | 派发自定义事件 | eventName: 事件名<br>detail: 事件详情<br>options: 事件选项 | 无 |
+
+### observe
+
+创建响应式数据对象，用于非组件场景的响应式数据：
+
+```typescript
+import { observe } from 'solely';
+
+const state = observe({
+  name: 'Solely',
+  items: [1, 2, 3]
+}, (path, newValue, oldValue) => {
+  console.log('数据变化:', path, oldValue, '->', newValue);
+});
+
+state.name = 'New Name'; // 触发回调
+```
+
+### 路由系统
+
+Solely 提供了功能强大的内置路由系统，支持单页应用开发，包括路由定义、导航、参数传递、路由守卫等功能。
+
+#### 路由配置
+
+首先，定义路由配置：
+
+```typescript
+import { createRouter } from 'solely';
+
 const routes = [
-  { path: 'home', tagName: 'home-page' },
-  { path: 'user/:id', tagName: 'user-page' },
+  { path: '/', tagName: 'home-page' },
+  { path: '/about', tagName: 'about-page' },
+  { path: '/users/:id', tagName: 'user-detail' },
+  { path: '*', tagName: 'not-found' } // 404 页面
+];
+
+const router = createRouter({
+  routes,
+  base: '/', // 基础路径
+  mode: 'history' // 路由模式：'hash' | 'history'
+});
+
+// 启动路由监听
+router.setupListeners();
+```
+
+#### 路由配置选项
+
+| 选项 | 类型 | 说明 | 示例 |
+|---|---|---|---|
+| `path` | `string` | 路由路径，支持动态参数 | `'/users/:id'` |
+| `tagName` | `string` | 组件标签名 | `'user-detail'` |
+| `component` | `Function` | 异步组件加载函数 | `() => import('./pages/user.js')` |
+| `name` | `string` | 路由名称 | `'user'` |
+| `keepAlive` | `boolean` | 是否缓存组件实例 | `true` |
+| `forceReload` | `boolean` | 是否强制重新加载 | `true` |
+| `redirect` | `string` | 重定向路径 | `'/login'` |
+| `props` | `Object` | 传递给组件的属性 | `{ title: '用户详情' }` |
+| `meta` | `Object` | 路由元信息 | `{ requiresAuth: true }` |
+| `children` | `RouteConfig[]` | 嵌套子路由 | `[{ path: 'profile', tagName: 'user-profile' }]` |
+
+#### 路由导航
+
+使用路由方法进行页面导航：
+
+```typescript
+// 基本导航
+router.push('/about');
+
+// 替换当前历史记录
+router.replace('/about');
+
+// 带查询参数
+router.pushWithQuery('/search', { q: 'solely', page: '1' });
+
+// 返回上一页
+router.back();
+
+// 解析路径为真实 URL
+const url = router.resolve('/users/1'); // 根据模式返回 #/users/1 或 /users/1
+```
+
+#### 路由参数
+
+获取路由参数：
+
+```typescript
+// 获取当前路由信息
+const currentRoute = router.getCurrentRoute();
+
+if (currentRoute) {
+  // 获取路径参数
+  console.log(currentRoute.params.id); // 从 /users/:id 中获取 id
+
+  // 获取查询参数
+  console.log(currentRoute.query.q); // 从 ?q=solely 中获取 q
+
+  // 获取完整路径
+  console.log(currentRoute.fullPath); // /users/123?q=solely
+
+  // 获取路由元信息
+  console.log(currentRoute.meta); // { requiresAuth: true }
+
+  // 获取匹配的路由层级
+  console.log(currentRoute.matched); // 匹配的路由数组
+}
+```
+
+#### 路由守卫
+
+Solely 支持全局路由守卫，用于控制导航流程：
+
+```typescript
+// 创建路由时配置守卫
+const router = createRouter({
+  routes,
+  beforeEach: async (to, from) => {
+    // 验证权限
+    if (to.meta.requiresAuth && !isLoggedIn) {
+      return '/login'; // 重定向到登录页
+    }
+
+    // 阻止导航
+    if (to.path === '/admin' && !isAdmin) {
+      return false;
+    }
+
+    // 允许导航
+    return true;
+  },
+  afterEach: (to, from) => {
+    // 导航完成后执行
+    console.log('从', from.fullPath, '导航到', to.fullPath);
+    document.title = to.meta.title || 'Solely App';
+  }
+});
+```
+
+#### 嵌套路由
+
+Solely 支持嵌套路由，实现复杂的页面结构：
+
+```typescript
+const routes = [
   {
-    path: 'dashboard',
-    tagName: 'dashboard-layout',
+    path: '/user',
+    tagName: 'user-layout',
     children: [
-      { path: 'profile', tagName: 'profile-page' },
-      { path: 'settings', tagName: 'settings-page' }
+      { path: 'profile', tagName: 'user-profile' },
+      { path: 'settings', tagName: 'user-settings' },
+      { path: ':id', tagName: 'user-detail' }
     ]
   }
-]
+];
 
-class App extends BaseElement {
-  constructor() {
-    super({ routes })
+// 对应的 URL：
+// /user/profile
+// /user/settings
+// /user/123
+```
+
+#### 异步路由
+
+支持异步组件加载，实现代码分割：
+
+```typescript
+const routes = [
+  {
+    path: '/dashboard',
+    component: async () => {
+      const module = await import('./pages/dashboard.js');
+      return module.default; // 返回包含 tagName 的对象
+    }
+  }
+];
+```
+
+#### 路由缓存
+
+使用 `keepAlive` 选项缓存组件实例，提升切换性能：
+
+```typescript
+const routes = [
+  {
+    path: '/profile',
+    tagName: 'user-profile',
+    keepAlive: true // 缓存组件实例
+  }
+];
+```
+
+#### 路由模式
+
+Solely 支持两种路由模式：
+
+| 模式 | 说明 | URL 格式 | 适用场景 |
+|---|---|---|---|
+| `hash` | 基于 URL hash | `#/users/123` | 兼容旧浏览器，无需服务器配置 |
+| `history` | 基于 HTML5 History API | `/users/123` | 更美观的 URL，需要服务器支持 |
+
+```typescript
+// Hash 模式（默认）
+const router = createRouter({
+  routes,
+  mode: 'hash'
+});
+
+// History 模式
+const router = createRouter({
+  routes,
+  mode: 'history',
+  base: '/app' // 应用基础路径
+});
+```
+
+#### 路由监听
+
+监听路由变化：
+
+```typescript
+// 添加监听器
+const unsubscribe = router.listen(() => {
+  console.log('路由已变化');
+});
+
+// 移除监听器
+unsubscribe();
+```
+
+#### 路由组件
+
+Solely 提供了两个内置的路由组件：
+
+**router-link**
+
+```html
+<!-- 基本用法 -->
+<router-link to="/about">关于我们</router-link>
+
+<!-- 带激活状态 -->
+<router-link to="/users" active-class="active">用户列表</router-link>
+
+<!-- 精确匹配 -->
+<router-link to="/users" exact>用户列表</router-link>
+
+<!-- 自定义链接内容 -->
+<router-link to="/profile">
+  <img src="avatar.png" alt="个人资料">
+  <span>个人资料</span>
+</router-link>
+
+<!-- 自定义模式（移除 a 标签包裹） -->
+<router-link to="/dashboard" custom>
+  <button @click="event.preventDefault()">仪表盘</button>
+</router-link>
+
+<!-- 预加载路由 -->
+<router-link to="/heavy-page" prefetch>重型页面</router-link>
+```
+
+**router-view**
+
+```html
+<!-- 基本用法 -->
+<router-view></router-view>
+
+<!-- 嵌套路由视图 -->
+<div class="layout">
+  <aside>
+    <router-link to="/user/profile">个人资料</router-link>
+    <router-link to="/user/settings">设置</router-link>
+  </aside>
+  <main>
+    <router-view></router-view>
+  </main>
+</div>
+```
+
+#### 路由匹配规则
+
+Solely 的路由匹配遵循以下优先级：
+
+1. **精确匹配**：完全匹配路径
+2. **动态参数**：`/users/:id` 匹配 `/users/123`
+3. **通配符**：`*` 匹配所有未匹配的路径
+
+```typescript
+const routes = [
+  { path: '/users', tagName: 'user-list' },      // 精确匹配 /users
+  { path: '/users/:id', tagName: 'user-detail' }, // 匹配 /users/123
+  { path: '*', tagName: 'not-found' }           // 匹配所有其他路径
+];
+```
+
+#### 路由元信息
+
+使用路由元信息存储自定义数据：
+
+```typescript
+const routes = [
+  {
+    path: '/admin',
+    tagName: 'admin-panel',
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: '管理面板'
+    }
+  }
+];
+
+// 在守卫中使用
+beforeEach: (to, from) => {
+  if (to.meta.requiresAuth && !isLoggedIn) {
+    return '/login';
   }
 }
 ```
 
-```html
-<nav>
-  <a href="#/home">首页</a>
-  <a href="#/user/123">用户</a>
-</nav>
-<router-view s-$routes="$data.routes"></router-view>
-```
+## 📖 示例项目
 
-在组件内通过 `this.params.id` 获取动态段。
+查看 [examples](./examples) 目录获取更多示例：
 
----
+- **计数器示例** (`examples/counter/`) - 基础交互示例
+- **待办事项示例** (`examples/todo/`) - 列表管理和状态示例
+- **表单示例** (`examples/form/`) - 表单处理和验证示例
+- **天气示例** (`examples/weather/`) - 异步数据获取示例
 
-## 性能与最佳实践
-
-- 避免在模板里做重计算 / 副作用函数  
-- 高频事件（scroll / input）自行节流  
-- 批量更新已内置，无需手动 `$nextTick`  
-- 自定义元素名称 **必须含连字符**  
-- 元素被移除时请在 `unmounted()` 内解绑事件 / 清定时器  
-
----
-
-## 目录结构
-
-```
-src/              核心源码（base/、utils/、solely.ts）
-dist/             构建产物（ESM、UMD、*.d.ts）
-examples/         官方示例（组件、路由、模板标签等）
-tests/            单元测试（Vitest + JSDOM）
-public/           静态资源
-```
-
----
-
-## 脚本命令
+### 运行示例
 
 ```bash
-npm run dev             # Vite 开发服务器，热更新
-npm run build           # 编译 TypeScript & 打包到 dist/
-npm run preview         # 本地预览构建结果
-npm run test            # 单元测试
-npm run test:ui         # Vitest UI 交互模式
-npm run test:coverage   # 生成覆盖率报告
-npm run link            # 全局 link，供其他项目本地引用
-npm run pack:local      # 生成 solely-<ver>.tgz，file: 引用
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 访问示例
+# 打开浏览器访问 http://localhost:5173/examples/
 ```
 
+## 🧪 测试
+
+```bash
+# 运行所有测试
+npm test
+
+# 运行测试并查看 UI
+npm run test:ui
+
+# 生成测试覆盖率报告
+npm run test:coverage
+```
+
+## 🔧 构建和开发
+
+```bash
+# 构建生产版本
+npm run build
+
+# 本地预览构建结果
+npm run preview
+
+# 全局链接（用于本地测试）
+npm run link
+
+# 本地打包（用于其他项目引用）
+npm run pack:local
+```
+
+## 🤝 贡献指南
+
+欢迎贡献代码！请遵循以下步骤：
+
+1. **Fork 仓库**：在 GitHub 上 fork 本项目
+2. **克隆仓库**：`git clone https://github.com/your-username/solely.git`
+3. **创建分支**：`git checkout -b feature/your-feature`
+4. **安装依赖**：`npm install`
+5. **开发和测试**：编写代码并运行测试
+6. **提交代码**：`git commit -m "Add your feature"`
+7. **推送到远程**：`git push origin feature/your-feature`
+8. **创建 Pull Request**：在 GitHub 上创建 PR
+
+### 代码规范
+
+- 遵循 TypeScript 编码规范
+- 确保所有测试通过
+- 保持代码风格一致
+- 提供清晰的注释
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 🙏 致谢
+
+感谢所有为这个项目做出贡献的人！
+
 ---
 
-## 浏览器支持
-
-- **ES2020 + 原生 Web Components**  
-- 最近 2 个主版本的 Chrome / Edge / Firefox / Safari  
-- **不支持 IE**；旧环境请自行加 polyfill 并降级编译
-
----
-
-## 常见问题（FAQ）
-
-| 问题 | 答复 |
-|---|---|
-| 必须先写 `this.` 吗？ | 模板中可省略，直接写 `$data.xxx` |
-| 什么时候用 Shadow DOM？ | 需要样式/结构隔离时，在 `@CustomElement({shadowDOM: { use: true }})` 开启 |
-| 组件支持插槽（Slots）吗？ | 是的，当 shadowDOM 功能处于开启状态时，支持标准 Web Components 插槽功能，并允许使用 `s-name="$data.slotName"` 语法动态修改插槽名称 |
-| 能给子组件传对象吗？ | 可以，用 `s-对象='json-string'` 或在父组件里直接 `querySelector('child').$data = {...}` |
-| 路由能否用 history 模式？ | 当前仅实现 hash 模式，history 模式可自行扩展 |
-| 如何调试响应式数据？ | 浏览器 DevTools 控制台直接 `document.querySelector('my-el').$data` 即可读写 |
-| 如何在组件中获取路由参数？ | 路由参数会自动作为组件属性传入，可通过 `this.$data.id` 或直接使用 `id` 获取（如路径为 `/user/:id`） |
-
----
-
-## 贡献指南
-
-1. Fork 仓库并创建特性分支  
-2. 保持代码风格一致，补充对应测试与文档  
-3. 运行 `npm run test` 确保通过  
-4. 对公共 API 的变更请遵循 **SemVer**  
-5. 提交 Pull Request，标题注明 `feat:` / `fix:` / `docs:` 等
-
----
-
-## 版本与发布
-
-- 当前版本：**0.0.30**
-- 遵循语义化版本（SemVer）  
-- 构建产物位于 `dist/`，`package.json` 的 `"module"` 指向 `dist/solely.js`，类型声明 `dist/solely.d.ts`
-
----
-
-## 许可证
-
-MIT License
+**Happy Coding with Solely! 🚀**

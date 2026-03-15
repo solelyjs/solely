@@ -1,0 +1,52 @@
+<div class="counter">
+  <!-- 显示区域 -->
+  <div class="display">
+    <p class="label">当前值</p>
+    <p class="value">{{ $data.count }}</p>
+  </div>
+
+  <!-- 控制按钮 -->
+  <div class="controls">
+    <button class="btn minus" onclick="this.decrement1()" :disabled="$data.count <= 0">
+      −
+    </button>
+
+    <div class="step-control">
+      <label>步长:</label>
+      <select s-model="step">
+        <option value="1">1</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+      </select>
+    </div>
+
+    <button class="btn plus" onclick="this.increment()">
+      +
+    </button>
+  </div>
+
+  <!-- 操作按钮 -->
+  <div class="actions">
+    <button class="btn reset" onclick="this.reset()" :disabled="$data.count === 0">
+      重置
+    </button>
+    <button class="btn random" onclick="this.random()">
+      随机
+    </button>
+  </div>
+
+  <!-- 信息提示 -->
+  <div class="info">
+    <p>历史记录: {{ $data.history.length }} 次操作</p>
+
+    <!-- 条件渲染：数值超过100 -->
+    <If test="$data.count > 100">
+      <p class="warning">🎉 数值超过 100!</p>
+    </If>
+
+    <!-- 条件渲染：数值为负 -->
+    <If test="$data.count < 0">
+      <p class="warning">⚠️ 数值不能为负</p>
+    </If>
+  </div>
+</div>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { CustomElement } from '../src/base';
+import { CustomElement } from '../src/runtime/component';
 
 describe('base/decorators.CustomElement', () => {
   it('registers custom element and sets manifest on prototype', () => {

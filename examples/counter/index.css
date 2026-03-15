@@ -1,0 +1,123 @@
+.counter {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.display {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.label {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.value {
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover:not([disabled]) {
+  transform: scale(1.1);
+}
+
+.btn:active:not([disabled]) {
+  transform: scale(0.95);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.minus {
+  background: #ff6b6b;
+  color: white;
+}
+
+.plus {
+  background: #51cf66;
+  color: white;
+}
+
+.step-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-control label {
+  font-size: 14px;
+  color: #666;
+}
+
+.step-control select {
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.actions .btn {
+  width: auto;
+  height: auto;
+  padding: 12px 24px;
+  font-size: 14px;
+}
+
+.reset {
+  background: #ffd43b;
+  color: #333;
+}
+
+.random {
+  background: #339af0;
+  color: white;
+}
+
+.info {
+  text-align: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+.warning {
+  color: #ff6b6b;
+  font-weight: bold;
+  margin-top: 8px;
+}

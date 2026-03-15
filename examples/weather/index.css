@@ -1,0 +1,343 @@
+.weather-app {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 搜索区域 */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search-box {
+  display: flex;
+  gap: 12px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 16px 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2a5298;
+}
+
+.search-btn {
+  width: 56px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-btn:hover:not([disabled]) {
+  transform: scale(1.05);
+}
+
+.search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 热门城市 */
+.hot-cities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.hot-city-btn {
+  padding: 8px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 20px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hot-city-btn:hover {
+  border-color: #2a5298;
+  color: #2a5298;
+}
+
+/* 加载状态 */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading p {
+  margin-top: 16px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+.loading-spinner.large {
+  width: 48px;
+  height: 48px;
+  border-color: #e9ecef;
+  border-top-color: #2a5298;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 错误提示 */
+.error-message {
+  text-align: center;
+  padding: 40px 20px;
+  background: #fff5f5;
+  border-radius: 12px;
+}
+
+.error-message p {
+  color: #e53e3e;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.error-message button {
+  padding: 10px 24px;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-message button:hover {
+  background: #c53030;
+}
+
+/* 天气卡片 */
+.weather-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.current-weather {
+  padding: 30px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  border-radius: 16px;
+  color: white;
+}
+
+.location h2 {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.location p {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.weather-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 30px 0;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.weather-icon {
+  font-size: 80px;
+}
+
+.temp-section {
+  text-align: center;
+}
+
+.temperature {
+  font-size: 64px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.condition {
+  font-size: 18px;
+  margin-top: 8px;
+  opacity: 0.9;
+}
+
+.weather-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.detail-icon {
+  font-size: 20px;
+}
+
+.detail-label {
+  flex: 1;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.detail-value {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* 预报区域 */
+.forecast {
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 16px;
+}
+
+.forecast h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.forecast-list {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.forecast-item {
+  text-align: center;
+  padding: 12px 8px;
+  background: white;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.forecast-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.forecast-day {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.forecast-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.forecast-temp {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.forecast-condition {
+  font-size: 10px;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 更新时间 */
+.update-time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.update-time p {
+  font-size: 12px;
+  color: #666;
+}
+
+.refresh-btn {
+  padding: 8px 16px;
+  background: #2a5298;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: #1e3c72;
+}
+
+/* 欢迎状态 */
+.welcome-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.welcome-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.welcome-state h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.welcome-state p {
+  color: #666;
+  font-size: 14px;
+}
+
+/* 响应式 */
+@media (max-width: 600px) {
+  .forecast-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .weather-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .forecast-item:nth-child(n+5) {
+    display: none;
+  }
+}

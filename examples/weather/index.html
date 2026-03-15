@@ -1,0 +1,126 @@
+<div class="weather-app">
+  <!-- 搜索框 -->
+  <div class="search-section">
+    <div class="search-box">
+      <input type="text" class="search-input" placeholder="搜索城市天气..." s-model="$data.city"
+        onkeypress="if($event.key === 'Enter') this.searchWeather()">
+      <button class="search-btn" onclick="this.searchWeather()" s-disabled="$data.isLoading || !$data.city.trim()">
+        <If condition="$data.isLoading">
+          <span class="loading-spinner"></span>
+        </If>
+        <Else>
+          🔍
+        </Else>
+      </button>
+    </div>
+
+    <!-- 热门城市 -->
+    <div class="hot-cities">
+      <For each="$data.hotCities" item="city">
+        <button class="hot-city-btn" onclick="this.searchCity(city)">
+          {{ city }}
+        </button>
+      </For>
+    </div>
+  </div>
+
+  <!-- 加载状态 -->
+  <If condition="$data.isLoading">
+    <div class="loading">
+      <div class="loading-spinner large"></div>
+      <p>正在获取天气数据...</p>
+    </div>
+  </If>
+
+  <!-- 错误提示 -->
+  <If condition="$data.error">
+    <div class="error-message">
+      <p>❌ {{ $data.error }}</p>
+      <button onclick="this.clearError()">重试</button>
+    </div>
+  </If>
+
+  <!-- 天气数据 -->
+  <If condition="$data.weatherData && !$data.isLoading">
+    <div class="weather-card">
+      <!-- 当前天气 -->
+      <div class="current-weather">
+        <div class="location">
+          <h2>{{ $data.weatherData.city }}</h2>
+          <p>{{ $data.weatherData.country }}</p>
+        </div>
+
+        <div class="weather-main">
+          <div class="weather-icon">
+            {{ this.getWeatherEmoji($data.weatherData.condition) }}
+          </div>
+          <div class="temp-section">
+            <p class="temperature">{{ $data.weatherData.temperature }}°</p>
+            <p class="condition">{{ $data.weatherData.conditionText }}</p>
+          </div>
+        </div>
+
+        <div class="weather-details">
+          <div class="detail-item">
+            <span class="detail-icon">💧</span>
+            <span class="detail-label">湿度</span>
+            <span class="detail-value">{{ $data.weatherData.humidity }}%</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">💨</span>
+            <span class="detail-label">风速</span>
+            <span class="detail-value">{{ $data.weatherData.windSpeed }} km/h</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">👁️</span>
+            <span class="detail-label">能见度</span>
+            <span class="detail-value">{{ $data.weatherData.visibility }} km</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">☀️</span>
+            <span class="detail-label">紫外线</span>
+            <span class="detail-value">{{ $data.weatherData.uvIndex }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 天气预报 -->
+      <div class="forecast">
+        <h3>📅 7天预报</h3>
+        <div class="forecast-list">
+          <For each="$data.weatherData.forecast" item="day" index="i">
+            <div class="forecast-item">
+              <p class="forecast-day">
+                <If condition="i === 0">今天</If>
+                <ElseIf condition="i === 1">明天</ElseIf>
+                <Else>{{ this.getDayName(i) }}</Else>
+              </p>
+              <p class="forecast-icon">{{ this.getWeatherEmoji(day.condition) }}</p>
+              <p class="forecast-temp">
+                {{ day.high }}° / {{ day.low }}°
+              </p>
+              <p class="forecast-condition">{{ day.condition }}</p>
+            </div>
+          </For>
+        </div>
+      </div>
+
+      <!-- 更新时间 -->
+      <div class="update-time">
+        <p>最后更新: {{ $data.lastUpdate }}</p>
+        <button class="refresh-btn" onclick="this.refresh()">
+          🔄 刷新
+        </button>
+      </div>
+    </div>
+  </If>
+
+  <!-- 欢迎状态 -->
+  <If condition="!$data.weatherData && !$data.isLoading && !$data.error">
+    <div class="welcome-state">
+      <div class="welcome-icon">🌈</div>
+      <h3>欢迎使用天气预报</h3>
+      <p>输入城市名称或选择热门城市查询天气</p>
+    </div>
+  </If>
+</div>

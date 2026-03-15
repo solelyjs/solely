@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createFunction } from '../src/utils/functions';
+import { createFunction } from '../src/shared/functions';
 
 describe('utils/functions.createFunction', () => {
   it('creates a working function and caches by args key', () => {
