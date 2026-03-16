@@ -3,13 +3,13 @@ import { IRAttr, IRNode, IRRoot, Meta } from "@/types";
 import { runtimeLoop } from "@/types";
 import { showTemplateError } from "@/shared";
 
+const IS_SVG_SYMBOL = Symbol("solely.isSVG");
 const IRCTX_SYMBOL = Symbol("solely.irCtx");
 const IR_EVENTS_SYMBOL = Symbol("solely.irEvents");
 const IR_META_SYMBOL = Symbol.for("solely.irMeta");
 
-const STATIC_CLASS_SYMBOL = Symbol("solely.staticClass");
-const STATIC_STYLE_SYMBOL = Symbol("solely.staticStyle");
-const DYNAMIC_STYLE_SYMBOL = Symbol("solely.dynamicStyle");
+const DYNAMIC_CLASS_LAST = Symbol("solely.lastDynamicClass");
+const DYNAMIC_STYLE_LAST = Symbol("solely.dynamicStyleLast");
 
 const NS_PREFIXES = {
     xml: 'http://www.w3.org/XML/1998/namespace',
@@ -33,113 +33,96 @@ const POST_CHILD_PROPS = new Set([
     'selectedIndex'
 ]);
 
-function initStaticClass(el: HTMLElement, irNode: IRNode) {
+function initStaticClass(el: HTMLElement | SVGElement, irNode: IRNode) {
     const anyEl = el as any;
-    if (anyEl[STATIC_CLASS_SYMBOL] === undefined) {
-        // 从 IR 中寻找静态 class 属性
-        const staticAttr = irNode.attrs?.find(a => a.key === 'class' && !a.dynamic);
-        anyEl[STATIC_CLASS_SYMBOL] = staticAttr ? staticAttr.value : '';
+    const staticAttr = irNode.attrs?.find(a => a.key === 'class' && !a.dynamic);
+    const value = staticAttr ? staticAttr.value : '';
+
+    // 初始化渲染静态 class
+    if (value) {
+        if (anyEl[IS_SVG_SYMBOL]) {
+            anyEl.className.baseVal = value;
+        } else {
+            anyEl.className = value;
+        }
     }
 }
 
 function initStaticStyle(el: HTMLElement, irNode: IRNode) {
-    const anyEl = el as any;
-    if (anyEl[STATIC_STYLE_SYMBOL] === undefined) {
-        // 从 IR 中寻找静态 style 属性
-        const staticAttr = irNode.attrs?.find(a => a.key === 'style' && !a.dynamic);
-        anyEl[STATIC_STYLE_SYMBOL] = staticAttr
-            ? flattenStyle(staticAttr.value)
-            : {};
+    const staticAttr = irNode.attrs?.find(a => a.key === 'style' && !a.dynamic);
+    // flatten 成 key-value 对象
+    const staticStyle = staticAttr ? flattenStyle(staticAttr.value) : {};
+
+    // 写入 DOM（只写一次）
+    for (const key in staticStyle) {
+        const val = staticStyle[key];
+        if (key.startsWith('--')) el.style.setProperty(key, val);
+        else (el.style as any)[key] = val;
     }
 }
+
 
 const setElementStyles = (el: HTMLElement, dynamicStyle: any): void => {
     const anyEl = el as any;
 
-    const staticStyle: Record<string, string> =
-        anyEl[STATIC_STYLE_SYMBOL] || {};
-
+    // flatten 当前动态 style
     const dynamic = flattenStyle(dynamicStyle);
 
-    const final: Record<string, string> = { ...staticStyle };
+    const prevDynamic: Record<string, string> = anyEl[DYNAMIC_STYLE_LAST] || {};
 
-    // dynamic 覆盖 static
+    // 删除上次存在但现在不存在的 key
+    for (const key in prevDynamic) {
+        if (!(key in dynamic)) {
+            if (key.startsWith('--')) el.style.removeProperty(key);
+            else (el.style as any)[key] = '';
+        }
+    }
+
+    // 更新/添加新的动态 key
     for (const key in dynamic) {
         const val = dynamic[key];
-
-        if (val === '' || val == null) {
-            delete final[key];
-        } else {
-            final[key] = val;
-        }
+        if (key.startsWith('--')) el.style.setProperty(key, val);
+        else (el.style as any)[key] = val; // 普通属性直接赋值，天然支持驼峰命名 (camelCase)，且性能更好
     }
 
-    const prevDynamic: Record<string, string> =
-        anyEl[DYNAMIC_STYLE_SYMBOL] || {};
+    // 缓存当前动态 style
+    anyEl[DYNAMIC_STYLE_LAST] = dynamic;
+}
 
-    // 删除旧 dynamic
-    for (const key in prevDynamic) {
-        if (!(key in final)) {
-            // 区分 CSS 变量和普通属性
-            if (key.startsWith('--')) {
-                el.style.removeProperty(key);
-            } else {
-                (el.style as any)[key] = '';
-            }
-        }
-    }
-
-    // 更新 style
-    for (const key in final) {
-        const val = final[key];
-
-        // 区分 CSS 变量和普通属性
-        if (key.startsWith('--')) {
-            // CSS 变量必须使用 setProperty
-            if (el.style.getPropertyValue(key) !== val) {
-                el.style.setProperty(key, val);
-            }
-        } else {
-            // 普通属性直接赋值，天然支持驼峰命名 (camelCase)，且性能更好
-            if ((el.style as any)[key] !== val) {
-                (el.style as any)[key] = val;
-            }
-        }
-    }
-
-    anyEl[DYNAMIC_STYLE_SYMBOL] = dynamic;
-};
-
-const setElementClasses = (el: HTMLElement, dynamicClass: any): void => {
+const setElementClasses = (el: HTMLElement | SVGElement, dynamicClass: any): void => {
     const anyEl = el as any;
 
-    const staticClass: string = anyEl[STATIC_CLASS_SYMBOL] || '';
+    const lastDynamic: Record<string, boolean> = anyEl[DYNAMIC_CLASS_LAST] || {};
+    const currentDynamic = flattenClasses(dynamicClass); // 当前计算出的动态 class
 
-    const dynamic = flattenClasses(dynamicClass);
-
-    const final = new Set<string>();
-
-    // 先加入 static
-    if (staticClass) {
-        staticClass.split(/\s+/).forEach(c => {
-            if (!dynamic.hasOwnProperty(c) || dynamic[c]) {
-                final.add(c);
+    // 移除上一次有但这次没有的 class
+    for (const cls in lastDynamic) {
+        if (lastDynamic[cls] && !currentDynamic[cls]) {
+            if (anyEl[IS_SVG_SYMBOL]) {
+                anyEl.className.baseVal = anyEl.className.baseVal.replace(new RegExp(`\\b${cls}\\b`, 'g'), '').trim();
+            } else {
+                anyEl.classList.remove(cls);
             }
-        });
-    }
-
-    // 再加入 dynamic true
-    for (const [cls, active] of Object.entries(dynamic)) {
-        if (active) {
-            final.add(cls);
         }
     }
 
-    const finalStr = [...final].join(' ');
-
-    if (el.className !== finalStr) {
-        el.className = finalStr;
+    // 添加这次为 true 的 class
+    for (const cls in currentDynamic) {
+        if (currentDynamic[cls]) {
+            if (anyEl[IS_SVG_SYMBOL]) {
+                const classes = anyEl.className.baseVal.split(/\s+/);
+                if (!classes.includes(cls)) {
+                    classes.push(cls);
+                    anyEl.className.baseVal = classes.join(' ');
+                }
+            } else {
+                anyEl.classList.add(cls);
+            }
+        }
     }
+
+    // 更新 Symbol 缓存
+    anyEl[DYNAMIC_CLASS_LAST] = currentDynamic;
 };
 
 // 递归 → 迭代的扁平化
@@ -253,11 +236,17 @@ export class IRRenderer {
     }
 
     // ================ 创建节点 ================
-    private createElement(irNode: IRNode): SVGSVGElement | HTMLElement {
+    private createElement(irNode: IRNode, parent: Node): SVGElement | HTMLElement {
         const tag = irNode.tag!;
-        const el = tag === 'svg'
+
+        const isSVG = parent instanceof SVGElement || tag === 'svg';
+
+        const el = isSVG
             ? document.createElementNS('http://www.w3.org/2000/svg', tag)
             : document.createElement(tag);
+
+        (el as any)[IS_SVG_SYMBOL] = isSVG;
+
         return el;
     }
 
@@ -483,7 +472,7 @@ export class IRRenderer {
             // 创建新节点
             switch (irNode.type) {
                 case ASTType.Element:
-                    node = this.createElement(irNode);
+                    node = this.createElement(irNode, parentNode);
                     // 初始化静态 class / style
                     initStaticClass(node as HTMLElement, irNode);
                     initStaticStyle(node as HTMLElement, irNode);

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Solely Logo](./public/solely.svg)
+![Solely Logo](https://raw.githubusercontent.com/solelyjs/solely/main/public/solely.svg)
 
 **一个轻量级、现代化的 Web 组件开发框架**
 

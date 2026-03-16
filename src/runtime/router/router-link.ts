@@ -12,7 +12,6 @@ import { getRouter, routerReady } from './core';
   `,
   styles: `
     :host {
-      display: inline-block;
     }
 
     a {
@@ -37,14 +36,23 @@ import { getRouter, routerReady } from './core';
 })
 class RouterLink extends BaseElement<{
   active: boolean;
-  to: string;
-  label: string;
+  to: string;    // 路由目标，动态
+  label: string; // slot fallback，静态
   href: string;
   isActive: boolean;
-  custom: boolean;
+  custom: boolean; // custom 模式，静态
   activeClass: string;
-  prefetch: boolean;
+  prefetch: boolean;  // 预加载标记，静态
 }> {
+
+  set to(value: string) {
+    this.$data.to = value;
+    this.updateState();
+  }
+
+  get to(): string {
+    return this.$data.to;
+  }
 
   private _prefetched = false;
 

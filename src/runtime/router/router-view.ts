@@ -68,7 +68,7 @@ class RouterView extends BaseElement {
       return;
     }
 
-    const { config, params } = matched;
+    const { config } = matched;
     let tagName = config.tagName;
 
     // 异步组件处理
@@ -88,16 +88,16 @@ class RouterView extends BaseElement {
 
     // 复用逻辑
     if (!config.forceReload && this.currentElement && this.currentTagName === tagName.toLowerCase()) {
-      this.syncState(this.currentElement, params, route?.query || {}, config.props);
+      this.syncState(this.currentElement, route?.params, route?.query || {}, config.props);
       return;
     }
 
-    // 【重要修复】在切换前，先清理旧组件。如果旧组件需要 keepAlive，则仅仅 removeChild
+    // 在切换前，先清理旧组件。如果旧组件需要 keepAlive，则仅仅 removeChild
     // 我们通过检查当前 currentElement 的 tagName 是否在缓存配置中来实现
     this.clear(config.keepAlive);
 
     const el = this.getOrCreateComponent(tagName, config);
-    this.syncState(el, params, route?.query || {}, config.props);
+    this.syncState(el, route?.params, route?.query || {}, config.props);
 
     this.appendChild(el); // 直接 append 到 this (Host) 之下
     this.currentElement = el;

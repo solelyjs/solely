@@ -38,14 +38,14 @@ export class Router {
 
   constructor(options: RouterOptions) {
     this.routes = options.routes;
-    this.base = options.base || '/';
+    this.base = options.base ?? '/';
     this.mode = options.mode || 'history';
     this.beforeEachGuard = options.beforeEach;
     this.afterEachGuard = options.afterEach;
   }
 
   // --- 核心匹配逻辑 ---
-  public matchRoute(path: string): RouteMatch | null {
+  public matchRoute(path: string = '/'): RouteMatch | null {
     // 确保路径以 / 开头
     const normalizedSearchPath = path.startsWith('/') ? path : '/' + path;
     const [urlPath, queryStr] = normalizedSearchPath.split('?');
@@ -140,7 +140,7 @@ export class Router {
     return null;
   }
 
-  private calculateScore(path: string): number {
+  private calculateScore(path: string = '/'): number {
     const segments = path.split('/').filter(Boolean);
     if (segments.length === 0) return 1;
     return segments.reduce((score, seg) => {
@@ -158,54 +158,65 @@ export class Router {
     return query;
   }
 
-  // --- 导航逻辑 (已修复循环跳转) ---
-
-  public getPath(): string {
-    let path = this.mode === 'hash'
-      ? (window.location.hash.slice(1) || '/')
-      : window.location.pathname;
-
-    if (this.base && this.base !== '/' && path.startsWith(this.base)) {
-      path = path.slice(this.base.length) || '/';
+  private normalizePath(path: string = '/'): string {
+    // 确保字符串类型
+    let safePath = path && typeof path === 'string' ? path : '/';
+    // 以 / 开头
+    if (!safePath.startsWith('/')) safePath = '/' + safePath;
+    // 去掉末尾多余 /
+    if (safePath.length > 1 && safePath.endsWith('/')) {
+      safePath = safePath.slice(0, -1);
     }
-    return path.startsWith('/') ? path : '/' + path;
+    return safePath;
   }
 
-  private updateBrowserHistory(path: string, replace: boolean): void {
-    if (this.mode === 'hash') {
-      // Hash 模式：路径直接作为 hash，不再次拼接 base 路径
-      const fullHash = path.startsWith('/') ? path : '/' + path;
-      if (replace) {
-        window.location.replace(`#${fullHash}`);
-      } else {
-        window.location.hash = fullHash;
-      }
-    } else {
-      // History 模式：拼接 base 路径
-      const fullPath = this.base && this.base !== '/' ?
-        (this.base.endsWith('/') ? this.base.slice(0, -1) : this.base) + path : path;
+  // --- 导航逻辑  ---
+  public getPath(): string {
+    let path: string;
+    try {
+      path = this.mode === 'hash'
+        ? (window.location.hash.slice(1) || '/')
+        : window.location.pathname || '/';
+    } catch {
+      path = '/';
+    }
 
-      if (replace) {
-        window.history.replaceState({ path: fullPath }, '', fullPath);
-      } else {
-        window.history.pushState({ path: fullPath }, '', fullPath);
-      }
+    const safeBase = this.base || '/';
+    if (safeBase !== '/' && path.startsWith(safeBase)) {
+      path = path.slice(safeBase.length) || '/';
+    }
+
+    return this.normalizePath(path);
+  }
+
+  private updateBrowserHistory(path: string = '/', replace: boolean): void {
+    const safePath = this.normalizePath(path);
+    const safeBase = this.base || '/';
+
+    if (this.mode === 'hash') {
+      if (replace) window.location.replace(`#${safePath}`);
+      else window.location.hash = safePath;
+    } else {
+      const basePrefix = safeBase.endsWith('/') ? safeBase.slice(0, -1) : safeBase;
+      const fullPath = basePrefix === '/' ? safePath : basePrefix + safePath;
+
+      if (replace) window.history.replaceState({ path: fullPath }, '', fullPath);
+      else window.history.pushState({ path: fullPath }, '', fullPath);
     }
   }
 
   /**
    * @param fromEvent 标志位：是否由浏览器 popstate 事件触发
    */
-  public async navigate(path: string, replace: boolean = false, fromEvent: boolean = false): Promise<NavigationResult> {
+  public async navigate(path: string = '/', replace: boolean = false, fromEvent: boolean = false): Promise<NavigationResult> {
+    const safePath = this.normalizePath(path);
+
     const from = this.currentRoute;
-    const to = this.matchRoute(path);
+    const to = this.matchRoute(safePath);
 
-    if (!to) return { success: false, error: `No route matched: ${path}` };
+    if (!to) return { success: false, error: `No route matched: ${safePath}` };
 
-    // 关键修复：防止相同路径重复跳转
-    if (from && from.fullPath === to.fullPath) {
-      return { success: true };
-    }
+    if (from && from.fullPath === to.fullPath) return { success: true };
 
     if (this.beforeEachGuard) {
       try {
@@ -219,15 +230,10 @@ export class Router {
 
     this.currentRoute = to;
 
-    // 关键修复：如果是从浏览器事件触发的，不再更新 URL，避免二次触发跳转
-    if (!fromEvent) {
-      this.updateBrowserHistory(path, replace);
-    }
+    if (!fromEvent) this.updateBrowserHistory(safePath, replace);
 
     this.notifyListeners();
-    if (this.afterEachGuard) {
-      this.afterEachGuard(to, from!);
-    }
+    if (this.afterEachGuard) this.afterEachGuard(to, from!);
 
     return { success: true };
   }
@@ -239,19 +245,13 @@ export class Router {
    * 将逻辑路径解析为浏览器真实的 URL 路径
    * 供 RouterLink 等组件生成 href 使用
    */
-  public resolve(path: string): string {
-    // 确保路径以 / 开头
-    const normalizedPath = path.startsWith('/') ? path : '/' + path;
+  public resolve(path: string = '/'): string {
+    const safePath = this.normalizePath(path);
 
-    // 1. Hash 模式：直接返回 # + 路径
-    if (this.mode === 'hash') {
-      return `#${normalizedPath}`;
-    }
+    if (this.mode === 'hash') return `#${safePath}`;
 
-    // 2. History 模式：需要拼接 base 前缀
-    // 移除 base 结尾的 / 防止拼接出 //
     const basePrefix = this.base.endsWith('/') ? this.base.slice(0, -1) : this.base;
-    return basePrefix + normalizedPath;
+    return basePrefix === '/' ? safePath : basePrefix + safePath;
   }
 
   /**
@@ -261,14 +261,14 @@ export class Router {
     return this.mode;
   }
 
-  public pushWithQuery(path: string, query: Record<string, string>) {
+  public pushWithQuery(path: string = '/', query: Record<string, string>) {
     const queryString = new URLSearchParams(query).toString();
     const separator = path.includes('?') ? '&' : '?';
     return this.push(path + (queryString ? separator + queryString : ''));
   }
 
-  public push(path: string) { return this.navigate(path, false); }
-  public replace(path: string) { return this.navigate(path, true); }
+  public push(path: string = '/') { return this.navigate(path, false); }
+  public replace(path: string = '/') { return this.navigate(path, true); }
   public back() { window.history.back(); }
   public listen(cb: () => void) {
     this.listeners.add(cb);

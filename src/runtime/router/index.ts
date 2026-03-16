@@ -1,4 +1,4 @@
-import { Router, createRouter, getRouter, } from './core';
+import { Router, createRouter, getRouter, routerReady } from './core';
 import RouterView from './router-view';
 import RouterLink from './router-link';
 import type {
@@ -15,6 +15,7 @@ export {
   RouterLink,
   createRouter,
   getRouter,
+  routerReady
 };
 
 export type {
