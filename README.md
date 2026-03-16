@@ -296,7 +296,7 @@ Solely 采用模块化设计，主要由以下部分组成：
 
 ```
 solely/
-├── compiler/          # 模板编译器
+├── compiler/         # 模板编译器
 │   ├── ir/           # 中间表示层
 │   └── parser/       # AST 解析器
 ├── runtime/          # 运行时核心

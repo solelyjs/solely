@@ -30,7 +30,7 @@ export default {
   ...(isDev ? {
     // 开发模式配置
     server: {
-      port: 3000,
+      port: 5173,
       open: './examples/index.html',
     },
     build: {
