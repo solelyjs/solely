@@ -89,6 +89,20 @@ export class SimpleCounter extends BaseElement<CounterData> {
       timestamp: Date.now()
     });
   }
+
+  /**
+   * 元素挂载时调用
+   */
+  onOptionMounted(label: HTMLLabelElement) {
+    console.log('Label mounted:', label);
+  }
+
+  /**
+   * 元素更新时调用
+   */
+  onOptionUpdated(label: HTMLLabelElement) {
+    console.log('Label updated:', label);
+  }
 }
 
 console.log('SimpleCounter component registered!');

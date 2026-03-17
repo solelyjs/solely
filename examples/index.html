@@ -106,6 +106,7 @@
       <button class="tab-btn" data-tab="form">📋 表单验证</button>
       <button class="tab-btn" data-tab="todo">📝 待办事项</button>
       <button class="tab-btn" data-tab="weather">🌤️ 天气应用</button>
+      <button class="tab-btn" data-tab="ref">🔗 元素引用</button>
     </div>
 
     <div class="content">
@@ -128,6 +129,11 @@
         <h2 class="section-title">天气应用示例</h2>
         <weather-app></weather-app>
       </div>
+
+      <div class="example-container" id="ref-example">
+        <h2 class="section-title">元素引用示例</h2>
+        <ref-example></ref-example>
+      </div>
     </div>
   </div>
 
@@ -136,6 +142,7 @@
     import './todo/index.ts';
     import './form/index.ts';
     import './weather/index.ts';
+    import './ref-example/index.ts';
 
     // Tab switching logic
     document.querySelectorAll('.tab-btn').forEach(btn => {

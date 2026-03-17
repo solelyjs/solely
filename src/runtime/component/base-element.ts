@@ -3,10 +3,25 @@ import { isObject } from "@/shared";
 import { Manifest, PropDescriptor, PropType } from "./decorators";
 import { createRender, IRRenderInstance, observe } from "@/runtime";
 
-const MANIFEST_SYMBOL = Symbol.for("solely.manifest");
+const MANIFEST_SYMBOL: unique symbol = Symbol.for("solely.manifest");
 
 /* -------------------- 类型定义 -------------------- */
-declare interface BaseElement<TData = any> { }
+declare interface BaseElement<TData = any> {
+    /**
+       * 通过 ref 属性获取的 DOM 元素引用集合
+       * - 键：模板中写的 ref="xxx" 的名字
+       * - 值：对应的 DOM 元素（通常是 HTMLElement 或 SVGElement）
+       */
+    $refs: Record<string, HTMLElement | SVGElement | any>;
+}
+
+interface ManifestConstructor {
+    [MANIFEST_SYMBOL]?: Manifest;
+}
+
+interface UpgradePropsConstructor {
+    upgradeProps?: readonly string[];
+}
 
 /* -------------------- 实现 -------------------- */
 class BaseElement<TData extends object = any> extends HTMLElement {
@@ -22,6 +37,8 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     #isAttributeUpdate = false;
 
     #createdCalled = false;
+
+    static upgradeProps?: readonly string[]; // 需要在元素定义前设置的属性列表（Upgrade Property）
 
     static #sheetCache = new Map<string, CSSStyleSheet>();
 
@@ -55,7 +72,9 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     constructor(initialData: TData = {} as TData) {
         super();
 
-        this.#manifest = (this.constructor as any)[MANIFEST_SYMBOL] || {};
+        const ctor = this.constructor as typeof BaseElement & ManifestConstructor;
+
+        this.#manifest = ctor[MANIFEST_SYMBOL] || { tagName: "base-element" };
         const manifest = this.#manifest;
 
         this.#root = manifest.shadowDOM?.use
@@ -66,6 +85,17 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         this.#initTemplate(manifest);
 
         queueMicrotask(() => this.#callCreatedOnce());
+    }
+
+    // 升级属性（Upgrade Property）, 保障在元素被定义前设置的属性能正确触发响应式更新
+    #upgradeProperties(props: string[]) {
+        for (const prop of props) {
+            if (this.hasOwnProperty(prop)) {
+                const value = (this as any)[prop];
+                delete (this as any)[prop];
+                (this as any)[prop] = value;
+            }
+        }
     }
 
     /* -------------------- 初始化 -------------------- */
@@ -241,6 +271,11 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
     /* -------------------- 生命周期 -------------------- */
     connectedCallback(): void {
+        const ctor = this.constructor as typeof BaseElement & UpgradePropsConstructor;
+        if (Array.isArray(ctor.upgradeProps)) {
+            this.#upgradeProperties(ctor.upgradeProps);
+        }
+
         this.#callCreatedOnce();
 
         const manifest = this.#manifest;

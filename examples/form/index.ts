@@ -224,6 +224,7 @@ export class RegistrationForm extends BaseElement<{
 
     console.log('表单提交成功！', this.$data.form);
   }
+  
 }
 
 console.log('注册表单组件已注册！');

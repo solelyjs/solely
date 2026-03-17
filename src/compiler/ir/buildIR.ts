@@ -231,12 +231,12 @@ export function transformModel(node: ASTNode) {
 
     // ------------------------------------------------
     // 4. 组件（未来拓展）
-    // my-component v-model="x"
+    // my-component s-model="x"
     // 转换成：
     //   :modelValue="x"
     //   @update:modelValue="x = $event"
     // ------------------------------------------------
-    // 如果你未来要支持组件 v-model，把逻辑写在这里
+    // 如果未来要支持组件 s-model，把逻辑写在这里
 
     // 默认行为（非组件）
     add(':value', model);

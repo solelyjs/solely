@@ -1,0 +1,23 @@
+<div class="login-container">
+    <h2 class="form-title">用户登录</h2>
+    <div class="form-group">
+        <label for="username" class="form-label">用户名:</label>
+        <input ref="usernameInput" type="text" id="username" class="form-input" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+        <label for="password" class="form-label">密码:</label>
+        <input ref="passwordInput" type="password" id="password" class="form-input" placeholder="请输入密码">
+    </div>
+    <div class="button-group">
+        <button ref="loginButton" class="form-button login-button" @click="this.handleLogin()">
+            登录
+        </button>
+        <button ref="resetButton" class="form-button reset-button" @click="this.handleReset()">
+            重置
+        </button>
+    </div>
+    <div class="result" ref="resultDiv">
+        <p v-if="!$data.submitted">请输入用户名和密码</p>
+        <p v-else>登录成功！欢迎，{{ $data.username }}！</p>
+    </div>
+</div>
