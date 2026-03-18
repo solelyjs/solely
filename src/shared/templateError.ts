@@ -4,7 +4,7 @@ import { Meta } from "@/types";
  * 常量和配置
  */
 const TAB_SIZE = 4;
-const ARROW_MIN = 1;
+const ARROW_MIN = 1; //最小指示器宽度
 const PAD_LINE = 3;
 
 /**
@@ -58,15 +58,34 @@ function displayWidth(str: string): number {
     return width;
 }
 
+
+interface PointerOptions {
+    /** 当前行索引（从 0 开始） */
+    lineIndex?: number;
+    /** 错误跨越的总行数 */
+    totalLines?: number;
+}
+
 /**
- * 生成错误位置指示器（箭头或波浪线）
+ * 生成错误位置指示器
+ * 优化逻辑：单行或多行首行使用 '^'，多行后续行使用 '~' 以增强视觉连续性
  * @param width 指示器宽度
- * @param isMultiLine 是否为多行错误
- * @returns 生成的指示器字符串
+ * @param opts 包含行索引和总行数的配置项
+ * @returns 格式化后的指示器字符串（如 "^^^" 或 "~~~"）
  */
-function makePointer(width: number, isMultiLine: boolean): string {
-    const char = isMultiLine ? '~' : '^';
-    return char.repeat(Math.max(ARROW_MIN, width));
+function makePointer(width: number, opts: PointerOptions = {}): string {
+    const { lineIndex = 0, totalLines = 1 } = opts;
+
+    // 确保宽度不小于最小值，并处理非正数情况
+    const effectiveWidth = Math.max(ARROW_MIN, Math.floor(width));
+
+    // 逻辑判定：
+    // 1. 如果总行数为 1，必然是单行错误 -> 使用 '^'
+    // 2. 如果是多行错误的第一行 -> 使用 '^'
+    // 3. 如果是多行错误的后续行 -> 使用 '~'
+    const char = (totalLines <= 1 || lineIndex === 0) ? '^' : '~';
+
+    return char.repeat(effectiveWidth);
 }
 
 /**
@@ -201,8 +220,8 @@ export function showTemplateError(
                 }
 
                 // 计算指示器宽度并生成指示器
-                const pointerWidth = Math.max(ARROW_MIN, displayWidth(exprLine));
-                const pointer = makePointer(pointerWidth, true);
+                const pointerWidth = Math.max(ARROW_MIN, displayWidth(exprLine.trim()));
+                const pointer = makePointer(pointerWidth, { lineIndex: j, totalLines: exprLines.length });
                 // 构建前缀空格，确保即使有前导空白也能正确对齐
                 const prefix = basePrefixSpaces + ' '.repeat(currentIndent);
 
@@ -222,7 +241,7 @@ export function showTemplateError(
             // 单行表达式的波浪线，显示在错误行下方
             // 确保正确处理开头的空格或换行
             const prefix = basePrefixSpaces + ' '.repeat(errorIndent);
-            const pointer = makePointer(exprWidth || ARROW_MIN, false);
+            const pointer = makePointer(exprWidth || ARROW_MIN);
             console.log(`%c${prefix}%c${pointer}`, stylePointerPrefix, stylePointer);
         }
     }

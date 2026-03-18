@@ -13,7 +13,7 @@ interface IRBranch {
 
 // ==================== 全局常量与环境 ====================
 const IS_DEV = process.env.NODE_ENV !== 'production';
-const INTERPOLATION_RE = /\{\{.*?\}\}/; // 移除 /g，使用 .test() 时无需重置 lastIndex，且更安全
+const INTERPOLATION_RE = /\{\{[\s\S]*?\}\}/; // 移除 /g，使用 .test() 时无需重置 lastIndex，且更安全
 
 // ==================== 全局函数编译器 ====================
 class GlobalFunctionCompiler {
@@ -402,12 +402,14 @@ function transformList(
                 // 计算条件 (Else 没有条件)
                 let condFid: number | null = null;
                 let expr = '';
+                let loc: SourceLocation | null = null;
                 if (type !== ASTType.Else) {
                     const testAttr = currentNode.attrs?.find(a =>
                         a.key === 'test' || a.key === 'condition'
                     );
                     expr = testAttr?.value ?? 'false';
                     condFid = compiler.compile('expression', expr, locals);
+                    loc = testAttr?.loc ?? currentNode.loc;
                 }
 
                 // 处理子节点
@@ -418,7 +420,7 @@ function transformList(
                     ? transformList(currentNode.children, locals, compiler)
                     : [];
 
-                // 处理属性 (排除 test)
+                // 处理属性 (排除 test、condition)
                 const exclude = new Set(['test', 'condition']);
                 const attrs = processAttributes(currentNode, locals, compiler, exclude);
 
@@ -426,7 +428,7 @@ function transformList(
                     condFid,
                     children,
                     attrs: attrs.length > 0 ? attrs : undefined,
-                    [IR_META_SYMBOL]: IS_DEV ? { expr, loc: currentNode.loc } : undefined
+                    [IR_META_SYMBOL]: IS_DEV ? { expr, loc: loc } : undefined
                 });
 
                 currentIdx++;

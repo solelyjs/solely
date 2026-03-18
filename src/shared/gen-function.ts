@@ -6,17 +6,20 @@ export type GenType = "template" | "handler" | "expression" | "lifecycle";
 /* -------------------------------------------------------
  * 1. 模板预处理（处理 {{ expr }} 和非法 {{{ expr }}）
  * ----------------------------------------------------- */
+const ILLEGAL_INTERPOLATION_RE = /\{\{\{\s*[\s\S]*?\s*\}\}\}/;
+const INTERPOLATION_RE = /\{\{\s*([\s\S]*?)\s*\}\}/g;
+
 function preprocessTemplate(code: string, type: GenType): string {
     if (!code?.trim()) return "";
 
     // 禁止 {{{ }}}
-    if (/\{\{\{\s*.*?\s*\}\}\}/.test(code)) {
+    if (ILLEGAL_INTERPOLATION_RE.test(code)) {
         throw new Error("Illegal interpolation syntax: use {{ }} instead of {{{ }}}");
     }
 
     // template 类型才处理 {{ expr }}
     if (type === "template") {
-        return code.replace(/\{\{\s*(.*?)\s*\}\}/g, (_, expr) => {
+        return code.replace(INTERPOLATION_RE, (_, expr) => {
             return `\${${expr.trim()}}`;
         });
     }
