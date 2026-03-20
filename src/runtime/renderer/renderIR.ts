@@ -40,7 +40,9 @@ function initStaticClass(el: HTMLElement | SVGElement, irNode: IRNode) {
     }
 }
 
-function initStaticStyle(el: HTMLElement, irNode: IRNode) {
+function initStaticStyle(el: HTMLElement | SVGElement, irNode: IRNode) {
+    const anyEl = el as any;
+    if (!anyEl.style) return;
     const staticAttr = irNode.attrs?.find(a => a.key === 'style' && !a.dynamic);
     // flatten 成 key-value 对象
     const staticStyle = staticAttr ? flattenStyle(staticAttr.value) : {};
@@ -242,24 +244,114 @@ function flattenClasses(classObj: any): Record<string, boolean> {
     return result;
 }
 
-// 属性设置
-function setAttribute(el: Element, key: string, value: string) {
+/**
+ * 带有“脏检查”和命名空间支持的 Attribute 设置函数
+ */
+function setAttribute(el: Element, key: string, value: any): void {
+    const strVal = value == null ? '' : String(value);
+
+    // 1. 命名空间检查 (针对 xlink:href, xml:lang 等)
     const colonIndex = key.indexOf(':');
     if (colonIndex > 0) {
         const prefix = key.slice(0, colonIndex);
         const ns = NS_PREFIXES[prefix as keyof typeof NS_PREFIXES];
-        if (ns) return el.setAttributeNS(ns, key, value);
+        if (ns) {
+            // 特殊处理：setAttributeNS 需要比对当前命名空间下的值
+            if (el.getAttributeNS(ns, key) !== strVal) {
+                el.setAttributeNS(ns, key, strVal);
+            }
+            return;
+        }
     }
-    el.setAttribute(key, value);
+
+    // 2. 普通属性脏检查
+    // getAttribute 返回的是原始字符串，这对于 'd', 'points', 'viewBox' 等非常有效
+    if (el.getAttribute(key) !== strVal) {
+        el.setAttribute(key, strVal);
+    }
 }
 
-function setProperty(el: Element, propKey: string, value: any) {
+/**
+ * 安全地将属性值设置到 DOM 元素上
+ * @param el - 目标 DOM 元素
+ * @param propKey - 原始属性名（如 'data-id', 'class', 'value'）
+ * @param value - 要设置的值，可以是任意类型
+ */
+function setProperty(el: Element, propKey: string, value: any): void {
+    // 1. 将 propKey 映射为 DOM property 的键名（驼峰形式）
+    const camelKey = HTML_PROP_MAP[propKey] || propKey;
+
+    // 2. 处理必须通过 setAttribute 设置的属性（data-*, aria-*, 以及显式指定的属性）
     if (propKey.startsWith('data-') || propKey.startsWith('aria-') || ATTR_ONLY_PROPS.has(propKey)) {
-        el.setAttribute(propKey, value);
+        // 只有当值真正改变时才调用 setAttribute，避免触发不必要的 MutationObserver
+        setAttribute(el, propKey, value);
         return;
     }
-    const camelKey = HTML_PROP_MAP[propKey as keyof typeof HTML_PROP_MAP] || propKey;
-    (el as any)[camelKey] = value;
+
+    const anyEl = el as any;
+    const tagName = anyEl.tagName;
+
+    // 3. 处理 null/undefined：将 null 或 undefined 转换为移除属性或设为默认值
+    //    - 对于布尔属性，null/undefined 视为 false
+    //    - 对于其他属性，通常应移除 attribute 或设 property 为 ''（根据规范选择）
+    if (value == null) {
+        // 如果是布尔属性，直接置 false
+        if (typeof anyEl[camelKey] === 'boolean') {
+            if (anyEl[camelKey] !== false) {
+                anyEl[camelKey] = false;
+            }
+        } else {
+            // 对于非布尔属性，移除 attribute（若存在），同时 property 设为空字符串或默认值
+            // 但 property 可能无法直接移除，这里选择将 property 设为空字符串（与浏览器行为一致）
+            const current = anyEl[camelKey];
+            if (current !== '' && current !== undefined) {
+                anyEl[camelKey] = '';
+            }
+            // 如果存在对应的 attribute，也一并移除（保持清洁）
+            if (el.hasAttribute(propKey)) {
+                el.removeAttribute(propKey);
+            }
+        }
+        return;
+    }
+
+    // 4. 特殊属性处理：src / href（避免重复加载）
+    if (camelKey === 'src' || camelKey === 'href') {
+        const strValue = String(value);
+        // 比较时同时检查 property 和 attribute 的当前值，因为 property 可能返回绝对路径
+        if (anyEl[camelKey] === strValue || el.getAttribute(camelKey) === strValue) {
+            return;
+        }
+    }
+
+    // 5. 表单元素的 value 处理（保持光标位置，避免不必要的更新）
+    if (camelKey === 'value') {
+        if (tagName === 'INPUT' || tagName === 'TEXTAREA') {
+            // 注意：对于 select，应使用 'selectedIndex' 或修改 option，这里不做处理
+            if (anyEl.value === value) {
+                return;
+            }
+        }
+        // 其他情况继续赋值
+    }
+
+    // 6. 布尔属性（如 disabled, checked, readonly 等）
+    if (typeof value === 'boolean') {
+        if (anyEl[camelKey] === value) {
+            return;
+        }
+        anyEl[camelKey] = value;
+        return;
+    }
+
+    // 7. 通用赋值：如果是 SVG 元素，很多时候 property 赋值是不生效的
+    // 比如 <circle cx="50">，在 JS 里 el.cx = 50 往往没用，必须 setAttribute
+    const isSVG = el instanceof SVGElement || anyEl.ownerSVGElement !== undefined;
+    if (isSVG && !HTML_PROP_MAP[propKey]) {
+        setAttribute(el, propKey, value);
+    } else if (anyEl[camelKey] !== value) {
+        anyEl[camelKey] = value;
+    }
 }
 
 // ==================== 最终完整 Renderer ====================

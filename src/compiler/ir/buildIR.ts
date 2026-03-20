@@ -395,7 +395,14 @@ function transformList(
                 const currentNode = nodes[currentIdx];
                 const type = currentNode.type;
 
+                // 如果当前不是条件节点，跳出
                 if (type !== ASTType.If && type !== ASTType.ElseIf && type !== ASTType.Else) {
+                    break;
+                }
+
+                // 如果当前是 If，但它不是这一组的“领头羊”（即 branches 已经有东西了）
+                // 说明遇到了下一个独立的 If 块，必须跳出，留给外层循环处理
+                if (type === ASTType.If && branches.length > 0) {
                     break;
                 }
 

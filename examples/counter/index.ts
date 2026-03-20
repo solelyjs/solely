@@ -29,7 +29,7 @@ interface CounterData {
   styles,
   shadowDOM: { use: true },
   props: [
-    { name: 'count', type: 'number' },
+    { name: 'count', type: 'number', reflect: true },
     { name: 'step', type: 'number' },
   ]
 })
