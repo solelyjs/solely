@@ -17,7 +17,11 @@
         </button>
     </div>
     <div class="result" ref="resultDiv">
-        <p v-if="!$data.submitted">请输入用户名和密码</p>
-        <p v-else>登录成功！欢迎，{{ $data.username }}！</p>
+        <If test="!$data.submitted">
+            请输入用户名和密码
+        </If>
+        <Else>
+            登录成功！欢迎，{{ $data.username }}！
+        </Else>
     </div>
 </div>
