@@ -1,6 +1,7 @@
 import { isObject } from "@/shared";
 import { InternalManifest, Manifest, PropDescriptor, PropType } from "./decorators";
-import { createRender, IRRenderInstance, observe } from "@/runtime";
+import { createRender, IRRenderInstance } from "../renderer";
+import { observe } from "../reactivity";
 import { ChangeItem } from "../reactivity/observe";
 
 const MANIFEST_SYMBOL: unique symbol = Symbol.for("solely.manifest");

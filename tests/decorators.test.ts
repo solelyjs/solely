@@ -1,18 +1,20 @@
 import { describe, it, expect, vi } from 'vitest';
-import { CustomElement } from '../src/runtime/component';
+import { CustomElement } from '../src/runtime/component/decorators';
 
 describe('base/decorators.CustomElement', () => {
   it('registers custom element and sets manifest on prototype', () => {
     class El1 extends HTMLElement { }
-    (CustomElement({ tagName: 'dup-el', template: '<span></span>' }) as ClassDecorator)(El1 as any) as any;
+    const DecoratedClass = (CustomElement({ tagName: 'dup-el', template: '<span></span>' }) as ClassDecorator)(El1 as any) as any;
 
-    // custom element should be registered
+    // custom element should be registered (返回的是新类 CE，不是原类 El1)
     const defined = customElements.get('dup-el');
-    expect(defined).toBe(El1);
+    expect(defined).toBe(DecoratedClass);
+    expect(defined?.prototype).toBeInstanceOf(El1);
 
-    // manifest attached
-    expect((El1.prototype as any)._manifest).toBeDefined();
-    expect((El1.prototype as any)._manifest.tagName).toBe('dup-el');
+    // manifest attached to the decorated class
+    const MANIFEST_SYMBOL = Symbol.for("solely.manifest");
+    expect((DecoratedClass as any)[MANIFEST_SYMBOL]).toBeDefined();
+    expect((DecoratedClass as any)[MANIFEST_SYMBOL].tagName).toBe('dup-el');
   });
 
   it('warns and skips duplicate registration', () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BaseElement, CustomElement } from '../src/runtime/component';
+import BaseElement from '../src/runtime/component/base-element';
+import { CustomElement } from '../src/runtime/component/decorators';
 
 type TestData = {
   initCount: number;
@@ -100,10 +101,14 @@ describe('base/BaseElement public interface tests', () => {
 
   it('should inject className and styles on connectedCallback', () => {
     // 验证 connectedCallback 自动添加 className 并注入样式
-    const style = el.shadowRoot?.querySelector('style[data-manifest-style]');
     const classes = el.classList;
 
     expect(classes.contains('test-el-attrs')).toBe(true); // tagName 自动作为 className
+
+    // 样式可能通过 adoptedStyleSheets 或 style 元素注入
+    // jsdom 不支持 CSSStyleSheet.replaceSync，所以走回退方案（style 元素）
+    const styleId = 'solely-style-test-el-attrs';
+    const style = el.shadowRoot?.querySelector(`#${styleId}`) || document.head.querySelector(`#${styleId}`);
     expect(style).not.toBeNull(); // 样式是否注入
     expect(style?.textContent).toContain(':host'); // 样式内容
   });

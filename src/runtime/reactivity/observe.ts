@@ -283,6 +283,8 @@ export function observe<T extends object>(
 
             Reflect.ownKeys(obj).forEach((k) => {
                 const val = obj[k];
+                // 跳过循环引用
+                if (isObject(val) && seen.has(val)) return;
                 emit(currentProxy, { type: "set", key: k, newValue: val, oldValue: undefined });
                 if (isObject(val)) {
                     walk(val, createProxy(val, currentProxy, k), seen);

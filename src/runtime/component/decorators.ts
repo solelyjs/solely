@@ -83,7 +83,9 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
                 const desc: PropDescriptor = typeof p === "string" ? { name: p } : p;
                 // 转换出 HTML attribute 名 (camelCase -> kebab-case)
                 const attrName = desc.name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
-                map.set(attrName, desc);
+                // 同时确保 desc.name 是 camelCase（用于 $data 属性访问）
+                const propName = attrName.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+                map.set(attrName, { ...desc, name: propName });
             });
             manifest.propMap = map;
         }
