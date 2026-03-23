@@ -31,7 +31,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     #ir: any;
     #data!: TData;
     #root!: Element | ShadowRoot;
-    #unobserve?: () => void;
+    #dispose?: () => void;
 
     #isRefreshing = false;
     #updateScheduled = false;
@@ -82,7 +82,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
     /* -------------------- 初始化 -------------------- */
     #initData(data: TData) {
-        const { proxy, unobserve } = observe(data, (change: ChangeItem) => {
+        const { proxy, dispose } = observe(data, (change: ChangeItem) => {
             // 1. 使用类型守卫：只处理属性赋值操作
             if (change.type === 'set') {
                 const { key, newValue } = change;
@@ -109,7 +109,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         });
 
         this.#data = proxy as TData;
-        this.#unobserve = unobserve;
+        this.#dispose = dispose;
     }
 
     #reflectToAttribute(desc: PropDescriptor, value: any) {
@@ -143,7 +143,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     set $data(value: TData) {
         if (!isObject(value)) value = {} as TData;
 
-        this.#unobserve?.();
+        this.#dispose?.();
         this.#initData(value);
         this.#scheduleRefresh();
     }
@@ -246,9 +246,19 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     /* -------------------- 生命周期 -------------------- */
     connectedCallback(): void {
         const ctor = this.constructor as typeof BaseElement & UpgradePropsConstructor;
-        if (Array.isArray(ctor.upgradeProps)) {
-            this.#upgradeProperties(ctor.upgradeProps);
+        const userUpgradeProps = ctor.upgradeProps;
+
+        // 构建升级属性列表，确保 $data 始终被包含
+        let finalUpgradeProps: string[];
+        if (Array.isArray(userUpgradeProps)) {
+            finalUpgradeProps = userUpgradeProps.includes('$data')
+                ? userUpgradeProps
+                : [...userUpgradeProps, '$data'];
+        } else {
+            finalUpgradeProps = ['$data'];
         }
+
+        this.#upgradeProperties(finalUpgradeProps);
 
         this.#callCreatedOnce();
 
@@ -292,10 +302,14 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     disconnectedCallback(): void {
         this.unmounted();
 
-        this.#unobserve?.();
-        this.#unobserve = undefined;
-    }
+        // 清理响应式
+        this.#dispose?.();
+        this.#dispose = undefined;
 
+        // 销毁渲染实例
+        this.#render?.destroy?.();
+        this.#render = null as any;
+    }
     attributeChangedCallback(
         name: string,
         oldValue: string | null,
