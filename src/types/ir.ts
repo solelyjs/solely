@@ -2,10 +2,14 @@ import { ASTType, SourceLocation } from "./ast";
 
 /** IR 属性 */
 export interface IRAttr {
+    /** 属性键名 */
     key: string;
+    /** 属性值 */
     value?: string;
-    fid?: number;     // 函数ID
-    dynamic: 0 | 1;   // 0=静态, 1=动态
+    /** 函数ID */
+    fid?: number;
+    /** 0=静态, 1=动态 */
+    dynamic: 0 | 1;
     /**
      * 执行语义角色（Execution Role）
      *
@@ -29,49 +33,72 @@ export interface IRLocal {
 
 /** 核心 IR 节点 */
 export interface IRNode {
-    type: ASTType;          // ASTType (数字枚举)
-    dynamic: 0 | 1;         // dynamic flag (0=静态, 1=动态) 不包含子节点状态
+    /** ASTType (数字枚举) */
+    type: ASTType;
+    /** dynamic flag (0=静态, 1=动态) 不包含子节点状态 */
+    dynamic: 0 | 1;
 
-    // Element
-    tag?: string;       // 标签名
-    attrs?: IRAttr[];   // 属性数组
+    /** 标签名（Element 使用） */
+    tag?: string;
+    /** 属性数组（Element 使用） */
+    attrs?: IRAttr[];
 
-    // Text/Comment
-    txt?: string;      // 静态文本内容
+    /** 静态文本内容（Text/Comment 使用） */
+    txt?: string;
 
-    // 控制流
-    fid?: number;     // 条件/循环表达式函数ID
-    item?: string;    // for item
-    index?: string;   // for index
+    /** 条件/循环表达式函数ID */
+    fid?: number;
+    /** for 循环的 item 变量名 */
+    item?: string;
+    /** for 循环的 index 变量名 */
+    index?: string;
 
+    /** 条件分支数组 */
     branches?: {
-        condFid: number | null;     // null 表示 else
+        /** 条件函数ID，null 表示 else */
+        condFid: number | null;
+        /** 子节点数组 */
         children: IRNode[];
-        attrs?: IRAttr[];           // 支持 <if class="red" cond={...}>
+        /** 属性数组，支持 <if class="red" cond={...}> */
+        attrs?: IRAttr[];
         __meta?: any;
     }[];
 
-    // 子节点
+    /** 子节点数组 */
     children?: IRNode[];
 }
 
 /** 🎯 IR 根节点 - 核心数据结构 */
 export interface IRRoot {
+    /** 节点类型 */
     type: 'root';
-    version: string;           // IR 版本
-    functions: Function[];     // 编译后的函数数组
-    nodes: IRNode[];           // 根节点数组
+    /** IR 版本 */
+    version: string;
+    /** 编译后的函数数组 */
+    functions: Function[];
+    /** 根节点数组 */
+    nodes: IRNode[];
+    /** 统计信息 */
     stats: {
-        totalFunctions: number;    // 总函数数
-        cachedFunctions: number;   // 缓存命中数
-        dynamicNodes: number;      // 动态节点数
-        totalNodes: number;        // 总节点数
+        /** 总函数数 */
+        totalFunctions: number;
+        /** 缓存命中数 */
+        cachedFunctions: number;
+        /** 动态节点数 */
+        dynamicNodes: number;
+        /** 总节点数 */
+        totalNodes: number;
     };
+    /** 元数据 */
     metadata?: {
-        compiledAt: string;        // 编译时间
-        astSize: number;           // 原始AST大小
-        source?: string;           // 源文件路径
-        filename: string;          // 源文件名
+        /** 编译时间 */
+        compiledAt: string;
+        /** 原始AST大小 */
+        astSize: number;
+        /** 源文件路径 */
+        source?: string;
+        /** 源文件名 */
+        filename: string;
     };
 }
 

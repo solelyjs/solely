@@ -24,12 +24,18 @@ export interface PropDescriptor {
  * 用于描述组件模板、样式、属性监听和 Shadow DOM 行为。
  */
 export interface Manifest {
-    template?: string | Function;                  // HTML 模板字符串
-    styles?: string;                    // 组件样式（CSS 字符串）
-    props?: Array<string | PropDescriptor>; // 支持字符串或对象形式
-    shadowDOM?: { use: boolean; mode?: "open" | "closed" }; // 是否启用 Shadow DOM
-    className?: string;                 // 组件根元素类名
-    tagName: string;                    // 注册的自定义元素标签名
+    /** HTML 模板字符串 */
+    template?: string | Function;
+    /** 组件样式（CSS 字符串） */
+    styles?: string;
+    /** 支持字符串或对象形式 */
+    props?: Array<string | PropDescriptor>;
+    /** 是否启用 Shadow DOM */
+    shadowDOM?: { use: boolean; mode?: "open" | "closed" };
+    /** 组件根元素类名 */
+    className?: string;
+    /** 注册的自定义元素标签名 */
+    tagName: string;
 }
 
 /** 框架内部使用的运行时版本 */

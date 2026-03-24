@@ -36,10 +36,16 @@ export enum ASTType {
 
 /** AST 节点 */
 export interface ASTNode {
+    /** 节点类型 */
     type: ASTType;
-    tag: string;      // 只有 Element 用
-    loc: SourceLocation; // 位置
+    /** 标签名（只有 Element 使用） */
+    tag: string;
+    /** 源代码位置 */
+    loc: SourceLocation;
+    /** 子节点数组 */
     children?: ASTNode[];
-    attrs?: Attribute[];     // 所有属性统一在这里！
-    content?: string;        // 只有文本/注释用
+    /** 属性数组 */
+    attrs?: Attribute[];
+    /** 内容（只有文本/注释使用） */
+    content?: string;
 }
