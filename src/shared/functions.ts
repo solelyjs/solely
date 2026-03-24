@@ -1,3 +1,4 @@
+/** 函数创建器类型 */
 export type FunctionCreator<TArgs extends any[], TReturn> = (...args: TArgs) => TReturn;
 
 interface ICachedFunction {
@@ -6,6 +7,11 @@ interface ICachedFunction {
 
 const cachedFunctions: ICachedFunction = {};
 
+/**
+ * 创建函数（带缓存和安全检查）
+ * @param args 参数列表，最后一个元素是函数体
+ * @returns 创建的函数
+ */
 export function createFunction<TArgs extends any[]>(args: string[]): FunctionCreator<TArgs, any> {
     const key = args.map(a => a.replace(/[',"]/g, '')).join(',');
 

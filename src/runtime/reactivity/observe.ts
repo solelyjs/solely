@@ -4,6 +4,7 @@ import { isObject } from "../../shared/is-object";
 
 const RAW_SYMBOL = Symbol("solely.raw");
 
+/** 路径键类型 - 用于表示对象路径的字符串或符号 */
 export type PathKey = string | symbol;
 
 /** 变更项的原始载荷 */
@@ -18,15 +19,23 @@ export type ChangePayload =
 /** 完整的变更对象 */
 export type ChangeItem = ChangePayload & { path: PathKey[] };
 
+/** 观察选项配置 */
 export interface ObserveOptions {
+    /** 节流延迟时间（毫秒），默认 0 表示不节流 */
     throttle?: number;
+    /** 批量变更回调，在 throttle 触发时调用 */
     onBatch?: (changes: ChangeItem[]) => void;
+    /** 是否立即触发一次所有属性的变更通知 */
     immediate?: boolean;
+    /** 路径过滤器，支持通配符 * 和 ** */
     filter?: string | string[];
+    /** 是否启用深度比较 */
     deepCompare?: boolean;
 }
 
+/** 观察返回值 */
 export interface ObserveReturn<T> {
+    /** 响应式代理对象 */
     proxy: T;
     /** 暂停观察，可以调用 resume 恢复 */
     unobserve: () => void;
@@ -66,7 +75,11 @@ const globalArrayMutationDepth = new WeakMap<object, number>();
 
 /* ======================= 核心 Helpers ======================= */
 
-/** 将 Proxy 还原为原始对象 - 优化后只需读取一次 */
+/**
+ * 将 Proxy 还原为原始对象
+ * @param observed 观察对象
+ * @returns 原始对象
+ */
 export function toRaw<T>(observed: T): T {
     if (observed && typeof observed === 'object') {
         const raw = (observed as any)[RAW_SYMBOL];
@@ -75,7 +88,26 @@ export function toRaw<T>(observed: T): T {
     return observed;
 }
 
-function isProxy(value: any): boolean {
+// ======================= Native Object Guard =======================
+
+const isNativeSkippable = (obj: any): boolean => {
+    if (!obj || typeof obj !== "object") return false;
+
+    // 浏览器原生类型，不能被 Proxy，否则会 Illegal invocation
+    return obj instanceof File ||
+        obj instanceof Blob ||
+        obj instanceof FormData ||
+        obj instanceof ArrayBuffer ||
+        obj instanceof Response ||
+        obj instanceof Request;
+};
+
+/**
+ * 检查一个值是否为响应式代理对象
+ * @param value 要检查的值
+ * @returns 如果是代理对象返回 true，否则返回 false
+ */
+export function isProxy(value: any): boolean {
     return !!(value && value[RAW_SYMBOL]);
 }
 
@@ -208,6 +240,13 @@ const globalEmit = (targetProxy: object, payload: ChangePayload) => {
 
 /* ======================= observe 主函数 ======================= */
 
+/**
+ * 创建响应式观察对象
+ * @param value 要观察的目标对象
+ * @param callback 变更回调函数
+ * @param options 观察选项配置
+ * @returns 观察控制对象，包含代理对象和控制方法
+ */
 export function observe<T extends object>(
     value: T,
     callback: (change: ChangeItem) => void,
@@ -298,6 +337,11 @@ export function observe<T extends object>(
             return target;
         }
 
+        // 跳过浏览器原生对象（File / Blob 等）
+        if (isNativeSkippable(target)) {
+            return target;
+        }
+
         // 如果 target 本身就是一个代理对象（即能响应 RAW_SYMBOL），直接返回它
         if ((target as any)[RAW_SYMBOL]) {
             return target;
@@ -325,7 +369,9 @@ export function observe<T extends object>(
                 // 排除 Symbol.iterator 等内置属性
                 if (typeof p === 'symbol') return val;
 
-                return isObject(val) ? createProxy(val, proxy, p) : val;
+                return isObject(val) && !isNativeSkippable(val)
+                    ? createProxy(val, proxy, p)
+                    : val;
             },
 
             set(t, p, newVal, r) {

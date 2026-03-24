@@ -1,7 +1,7 @@
 /**
  * 获取url参数，包含hash参数和查询参数
- * @param location - 浏览器的location对象或者URL字符串
- * @returns 
+ * @param location 浏览器的location对象或者URL字符串
+ * @returns 解析后的路径和查询参数对象
  */
 export function parseHashUrl(location: Location | string = window.location) {
     let hash: string;

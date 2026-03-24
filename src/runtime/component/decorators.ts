@@ -6,11 +6,16 @@ const MANIFEST_SYMBOL = Symbol.for("solely.manifest");
 /** Prop 配置，支持类型声明 */
 export type PropType = "string" | "number" | "boolean" | "object";
 
+/** 属性描述符 */
 export interface PropDescriptor {
-    name: string;       // HTML attribute 名
-    type?: PropType;    // 输入转换类型
-    default?: any;      // 渲染兜底值（非状态）
-    reflect?: boolean;  // 是否同步回 HTML Attribute
+    /** HTML attribute 名 */
+    name: string;
+    /** 输入转换类型 */
+    type?: PropType;
+    /** 渲染兜底值（非状态） */
+    default?: any;
+    /** 是否同步回 HTML Attribute */
+    reflect?: boolean;
 }
 
 /**
@@ -29,13 +34,19 @@ export interface Manifest {
 
 /** 框架内部使用的运行时版本 */
 export interface InternalManifest extends Manifest {
+    /** 编译后的 IR */
     ir?: IRRoot;
+    /** 预编译的样式表 */
     sheet?: CSSStyleSheet;
-    // 预处理后的属性映射表：attr-name -> PropDescriptor
+    /** 预处理后的属性映射表：attr-name -> PropDescriptor */
     propMap?: Map<string, PropDescriptor>;
 }
 
-
+/**
+ * 自定义元素装饰器 - 用于注册 Web Component
+ * @param config 组件配置
+ * @returns 类装饰器
+ */
 export const CustomElement = (config: Manifest): ClassDecorator => {
     // 将用户配置强制断言为内部版本，方便后续挂载编译产物
     const manifest = config as InternalManifest;

@@ -1,5 +1,7 @@
-export type SourceLocation = [number, number]; // [line, column]
+/** 源代码位置 [行, 列] */
+export type SourceLocation = [number, number];
 
+/** AST 属性节点 */
 export interface Attribute {
     key: string;
     value: string;
@@ -19,6 +21,7 @@ export interface Attribute {
     role?: 'model' | 'user';
 }
 
+/** AST 节点类型枚举 */
 export enum ASTType {
     Element = 0,
     Text = 1,
@@ -31,6 +34,7 @@ export enum ASTType {
     Other = 99,
 }
 
+/** AST 节点 */
 export interface ASTNode {
     type: ASTType;
     tag: string;      // 只有 Element 用

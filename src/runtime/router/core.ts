@@ -9,10 +9,16 @@ import type {
 let globalRouterInstance: Router | null = null;
 let routerResolver: (value: Router) => void;
 
+/** 路由器就绪 Promise，在 createRouter 调用后 resolve */
 export const routerReady = new Promise<Router>((resolve) => {
   routerResolver = resolve;
 });
 
+/**
+ * 创建路由器实例（单例）
+ * @param options 路由器配置选项
+ * @returns 路由器实例
+ */
 export function createRouter(options: RouterOptions): Router {
   if (globalRouterInstance) return globalRouterInstance;
   globalRouterInstance = new Router(options);
@@ -23,10 +29,17 @@ export function createRouter(options: RouterOptions): Router {
   return globalRouterInstance;
 }
 
+/**
+ * 获取路由器实例
+ * @returns 路由器实例，如果未创建则返回 null
+ */
 export function getRouter(): Router | null {
   return globalRouterInstance;
 }
 
+/**
+ * 路由器类
+ */
 export class Router {
   private routes: RouteConfig[];
   private base: string;

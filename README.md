@@ -474,6 +474,7 @@ class MyComponent extends BaseElement<MyData> {
 ```
 
 **说明**：
+
 - 钩子属性中可以使用 `this` 访问组件实例
 - 钩子函数会接收元素本身作为参数（通过 `el` 变量）
 - 可以在钩子中调用组件的方法，实现更复杂的逻辑
@@ -507,6 +508,7 @@ class MyComponent extends BaseElement<MyData> {
 ```
 
 **说明**：
+
 - 在模板元素上添加 `ref="名称"` 属性
 - 在组件中通过 `this.$refs.名称` 访问对应的 DOM 元素
 - 支持在任何模板元素上使用，包括原生 HTML 元素和自定义组件
@@ -585,6 +587,41 @@ const state = observe({
 });
 
 state.name = 'New Name'; // 触发回调
+```
+
+#### 特殊对象处理
+
+响应式系统会自动处理以下特殊情况：
+
+| 对象类型 | 处理方式 | 说明 |
+|---|---|---|
+| `Object.freeze()` | 跳过代理 | 被冻结的对象不会被代理，直接返回原对象 |
+| `Object.seal()` | 跳过代理 | 被密封的对象不会被代理，直接返回原对象 |
+| `File` / `Blob` | 跳过代理 | 浏览器原生文件对象不会被代理 |
+| `FormData` | 跳过代理 | 表单数据对象不会被代理 |
+| `ArrayBuffer` | 跳过代理 | 二进制数据缓冲区不会被代理 |
+| `Response` / `Request` | 跳过代理 | Fetch API 对象不会被代理 |
+
+**示例**：
+
+```typescript
+// 冻结对象不会被代理
+const frozen = Object.freeze({ count: 0 });
+const state = observe({ frozen }, (change) => {
+  console.log('变化:', change);
+});
+
+// 修改冻结对象的属性不会触发回调
+state.frozen.count = 1; // 静默失败，无回调
+
+// File 对象不会被代理
+const file = new File(['content'], 'test.txt');
+const state2 = observe({ file }, (change) => {
+  console.log('变化:', change);
+});
+
+// File 对象保持原样
+console.log(state2.file instanceof File); // true
 ```
 
 ### 路由系统

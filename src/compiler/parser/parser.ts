@@ -152,9 +152,9 @@ function findTagEnd(html: string, start: number): number {
 
 /**
  * 主解析函数：生成最简单的 AST
+ * @param html HTML 字符串
+ * @returns AST 节点数组
  */
-
-
 export function parseHtml(html: string): ASTNode[] {
     const astNodes: ASTNode[] = [];
     if (!html) return [];

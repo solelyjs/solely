@@ -121,6 +121,7 @@ function attachMeta(target: any, expr: string | undefined, loc?: SourceLocation 
 /**
  * 将 s-model 转换成 :value / @input / @change
  * 在 AST → IR 转换前调用
+ * @param node AST 节点
  */
 export function transformModel(node: ASTNode) {
     if (!node.attrs) return;
@@ -466,11 +467,20 @@ function transformList(
 }
 
 // ==================== 导出接口 ====================
+/** 构建 IR 的选项 */
 export interface BuildIROptions {
+    /** 源代码字符串 */
     source?: string;
+    /** 文件名 */
     filename?: string;
 }
 
+/**
+ * 构建 IR（中间表示）
+ * @param ast AST 节点数组
+ * @param options 构建选项
+ * @returns IR 根节点
+ */
 export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
     const { filename = 'anonymous', source } = options;
     const compiler = globalCompiler.get(filename);
@@ -519,6 +529,10 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
     return root;
 }
 
+/**
+ * 清除 IR 编译缓存
+ * @param filename 指定文件名，不传则清除所有缓存
+ */
 export function clearIRCache(filename?: string) {
     globalCompiler.clear(filename);
 }

@@ -363,6 +363,9 @@ interface NodeEntry {
     marker: boolean;
 }
 
+/**
+ * IR 渲染器类 - 负责将 IR（中间表示）渲染到 DOM
+ */
 export class IRRenderer {
     private nodeMap = new Map<string, NodeEntry>();
     private marker: boolean = false;
@@ -769,12 +772,22 @@ export class IRRenderer {
     }
 }
 
+/** 渲染实例接口 */
 export interface IRRenderInstance {
+    /** 更新渲染 */
     update: () => void;
+    /** 销毁渲染实例，清理 DOM */
     destroy: () => void;
 }
 
 // ================ 对外 API ================
+/**
+ * 创建渲染实例
+ * @param ir IR 根节点
+ * @param el 容器元素
+ * @param ctx 上下文数据
+ * @returns 渲染实例
+ */
 export const createRender = (ir: IRRoot, el: HTMLElement, ctx: any = {}): IRRenderInstance => {
     const renderer = new IRRenderer(ir, el, ctx);
     renderer.mount();

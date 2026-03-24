@@ -1,6 +1,7 @@
 import { IRLocal } from "@/types";
 import { createFunction } from "./functions";
 
+/** 函数生成类型 */
 export type GenType = "template" | "handler" | "expression" | "lifecycle";
 
 /* -------------------------------------------------------
@@ -97,6 +98,13 @@ function buildArgs(
 /* -------------------------------------------------------
  * 6. 主入口：生成序列化函数
  * ----------------------------------------------------- */
+/**
+ * 生成序列化函数
+ * @param code 代码字符串
+ * @param type 函数类型
+ * @param locals 局部变量列表
+ * @returns 生成的函数
+ */
 export function genFunction(
     code: string,
     type: GenType,
