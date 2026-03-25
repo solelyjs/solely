@@ -1,4 +1,5 @@
 import { buildIR, parseHtml } from "@/compiler";
+import { IS_DEV } from "@/shared";
 import { IRRoot } from "@/types";
 
 const MANIFEST_SYMBOL = Symbol.for("solely.manifest");
@@ -63,7 +64,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
         // 1. 注册检查：如果已经注册过，直接返回原类
         // 这防止了浏览器抛出 "Registration failed for type 'xxx'. A type with that name is already registered."
         if (customElements.get(tagName)) {
-            if (import.meta.env.DEV) {
+            if (IS_DEV) {
                 console.warn(`[Solely] 标签名称 "${tagName}" 已经被注册，跳过重复定义。`);
             }
             return OriginalClass;
@@ -86,10 +87,16 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
         if (manifest.styles && !manifest.sheet && "CSSStyleSheet" in window) {
             try {
                 const sheet = new CSSStyleSheet();
-                sheet.replaceSync(manifest.styles);
-                manifest.sheet = sheet;
+                // 检查 replaceSync 方法是否存在（某些测试环境可能不完整）
+                if (typeof sheet.replaceSync === 'function') {
+                    sheet.replaceSync(manifest.styles);
+                    manifest.sheet = sheet;
+                }
             } catch (e) {
-                console.error(`[Style Error] <${tagName}>:`, e);
+                // 静默失败，让运行时回退到 style 标签方案
+                if (IS_DEV) {
+                    console.warn(`[Style Warning] <${tagName}>: CSSStyleSheet 不可用，将使用 style 标签回退方案`);
+                }
             }
         }
 

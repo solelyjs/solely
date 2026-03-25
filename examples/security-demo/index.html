@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solely 框架安全机制演示</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f7fa;
+      line-height: 1.6;
+    }
+
+    h1 {
+      color: #1a1a1a;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+    }
+
+    .intro {
+      background: #e3f2fd;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border-left: 4px solid #2196f3;
+    }
+
+    .demo-section {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-section h2 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .safe {
+      border-left: 5px solid #4caf50;
+    }
+
+    .warning {
+      border-left: 5px solid #ff9800;
+    }
+
+    .danger {
+      border-left: 5px solid #f44336;
+    }
+
+    .info {
+      border-left: 5px solid #2196f3;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+    }
+
+    button.danger-btn {
+      background: #f44336;
+    }
+
+    button.danger-btn:hover {
+      background: #d32f2f;
+    }
+
+    .result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .result.safe {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
+    .result.danger {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .result.warning {
+      background: #fff3e0;
+      color: #ef6c00;
+      border: 1px solid #ffcc80;
+    }
+
+    .result.info {
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+    }
+
+    .code-block {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 13px;
+      margin: 15px 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.6;
+    }
+
+    .code-block .comment {
+      color: #546e7a;
+    }
+
+    .code-block .string {
+      color: #c3e88d;
+    }
+
+    .code-block .keyword {
+      color: #c792ea;
+    }
+
+    .mechanism-box {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+
+    .mechanism-box h4 {
+      margin-top: 0;
+      color: #495057;
+    }
+
+    .mechanism-box ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .mechanism-box li {
+      margin: 8px 0;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .comparison-box {
+      padding: 15px;
+      border-radius: 6px;
+    }
+
+    .comparison-box.safe-example {
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+    }
+
+    .comparison-box.danger-example {
+      background: #ffebee;
+      border: 1px solid #ef9a9a;
+    }
+
+    .highlight {
+      background: #fff59d;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🛡️ Solely 框架安全机制演示</h1>
+
+  <div class="intro">
+    <strong>演示目的：</strong>展示 Solely 框架如何处理潜在的安全风险，特别是 XSS（跨站脚本攻击）。
+    框架的模板在<strong>编译时</strong>就已经确定，运行时只能修改数据，不能改变模板结构。
+  </div>
+
+  <!-- 场景 1: 用户资料 XSS -->
+  <div class="demo-section danger">
+    <h2>🚨 场景 1: 用户资料中的 XSS 攻击</h2>
+    <p>攻击者尝试在用户资料中注入恶意代码，看看框架如何处理。</p>
+
+    <div class="mechanism-box" style="background: #ffebee; border: 2px solid #f44336;">
+      <h4 style="color: #c62828;">⚠️ 重要安全警告</h4>
+      <p>本示例使用了 <code>:innerHTML</code> 指令来展示 XSS 风险。<strong>在实际项目中：</strong></p>
+      <ul style="color: #c62828;">
+        <li><strong>永远不要</strong>将用户输入的内容直接绑定到 <code>:innerHTML</code></li>
+        <li><strong>永远不要</strong>将第三方 API 数据直接绑定到 <code>:innerHTML</code></li>
+        <li><code>:innerHTML</code> 应该只用于<strong>完全可信</strong>的静态内容</li>
+        <li>使用 <code>{{ }}</code> 插值会自动转义 HTML，是安全的选择</li>
+      </ul>
+    </div>
+
+    <div class="mechanism-box">
+      <h4>攻击数据示例：</h4>
+      <div class="code-block">{
+  username: <span class="string">'&lt;img src=x onerror="alert(\'XSS\')"&gt;'</span>,
+  bio: <span class="string">'&lt;script&gt;alert("XSS")&lt;/script&gt;正常简介'</span>,
+  website: <span class="string">'javascript:alert("XSS")'</span>,
+  userContent: <span class="string">'&lt;div onclick="alert(\'点击攻击\')"&gt;点击我&lt;/div&gt;'</span>
+}</div>
+    </div>
+
+    <button onclick="loadNormalUser()">加载正常用户</button>
+    <button class="danger-btn" onclick="loadAttackerUser()">加载攻击者用户（触发 XSS）</button>
+
+    <div id="userContainer"></div>
+    <div id="normalResult" class="result"></div>
+  </div>
+
+  <!-- 场景 2: 评论 XSS -->
+  <div class="demo-section warning">
+    <h2>⚠️ 场景 2: 评论中的 XSS 攻击</h2>
+    <p>攻击者在评论中注入恶意代码，测试框架的防护能力。</p>
+
+    <div class="mechanism-box">
+      <h4>框架的安全机制：</h4>
+      <ul>
+        <li><code>{{ }}</code> 插值表达式会自动进行 HTML 实体编码</li>
+        <li><code>&lt;script&gt;</code> 标签会被转义为纯文本显示</li>
+        <li>事件处理器（如 <code>onerror</code>）不会被绑定</li>
+      </ul>
+    </div>
+
+    <button onclick="addNormalComment()">添加正常评论</button>
+    <button class="danger-btn" onclick="addMaliciousComment()">添加恶意评论</button>
+
+    <div id="commentContainer"></div>
+    <div id="commentResult" class="result"></div>
+  </div>
+
+  <!-- 场景 3: URL 参数注入 -->
+  <div class="demo-section info">
+    <h2>ℹ️ 场景 3: URL 参数注入尝试</h2>
+    <p>尝试通过 URL 参数注入恶意模板代码。</p>
+
+    <div class="mechanism-box">
+      <h4>为什么这种攻击无效：</h4>
+      <ul>
+        <li>Solely 的模板在<strong>编译时</strong>就已经确定</li>
+        <li>运行时只能修改 <code>$data</code> 中的数据</li>
+        <li>URL 参数无法改变已编译的模板结构</li>
+        <li>即使传入 <code>{{ alert('XSS') }}</code>，也会被当作纯文本</li>
+      </ul>
+    </div>
+
+    <button onclick="testUrlInjection()">模拟 URL 注入</button>
+
+    <div id="urlContainer"></div>
+    <div id="urlResult" class="result"></div>
+  </div>
+
+  <!-- 安全机制总结 -->
+  <div class="demo-section safe">
+    <h2>✅ Solely 框架的安全机制总结</h2>
+
+    <div class="comparison">
+      <div class="comparison-box safe-example">
+        <h4>🛡️ 自动防护</h4>
+        <ul>
+          <li>HTML 实体编码</li>
+          <li>模板编译时固定</li>
+          <li>数据与结构分离</li>
+          <li>属性绑定安全检查</li>
+        </ul>
+      </div>
+      <div class="comparison-box danger-example">
+        <h4>⚠️ 需要注意</h4>
+        <ul>
+          <li>:innerHTML 指令（如果存在）会渲染原始 HTML</li>
+          <li>javascript: 伪协议在 href 中</li>
+          <li>动态模板构造（如果支持）</li>
+          <li>第三方脚本引入</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mechanism-box">
+      <h4>框架的安全设计：</h4>
+      <ol>
+        <li><strong>编译时安全：</strong>模板在构建阶段编译为 IR，运行时不可更改</li>
+        <li><strong>自动转义：</strong><code>{{ }}</code> 插值自动进行 HTML 实体编码</li>
+        <li><strong>数据隔离：</strong>用户数据只能影响内容，不能改变 DOM 结构</li>
+        <li><strong>函数预编译：</strong>事件处理函数在编译时确定，不是动态解析</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- 开发者注意事项 -->
+  <div class="demo-section warning">
+    <h2>⚠️ 开发者安全注意事项</h2>
+
+    <div class="mechanism-box" style="background: #ffebee; border: 2px solid #f44336;">
+      <h4 style="color: #c62828;">🚫 绝对禁止：使用 :innerHTML 绑定不可信内容</h4>
+      <div class="code-block" style="background: #3e2723;"><span class="comment">// ❌ 绝对不要这样做！会导致 XSS 攻击</span>
+<span class="comment">// 用户输入的内容直接绑定到 :innerHTML</span>
+&lt;div :innerHTML="$data.userComment"&gt;&lt;/div&gt;
+
+<span class="comment">// ❌ 绝对不要这样做！API 数据可能已被污染</span>
+&lt;div :innerHTML="$data.apiResponse.content"&gt;&lt;/div&gt;
+
+<span class="comment">// ❌ 绝对不要这样做！URL 参数不可信</span>
+&lt;div :innerHTML="getUrlParam('content')"&gt;&lt;/div&gt;</div>
+      <p style="color: #c62828; margin-top: 10px;">
+        <strong>后果：</strong>攻击者可以注入 &lt;script&gt; 标签、事件处理器（onclick/onerror）等恶意代码，
+        窃取用户 Cookie、Token，或执行任意操作。
+      </p>
+    </div>
+
+    <div class="mechanism-box">
+      <h4>其他应该避免的做法：</h4>
+      <div class="code-block"><span class="comment">// ❌ 不要手动构造模板字符串</span>
+<span class="keyword">const</span> template = <span class="string">`&lt;div&gt;${userInput}&lt;/div&gt;`</span>;
+
+<span class="comment">// ❌ 不要直接操作 DOM 插入不可信内容</span>
+element.innerHTML = userContent;
+
+<span class="comment">// ❌ 不要信任外部 API 数据而不验证</span>
+<span class="keyword">const</span> data = <span class="keyword">await</span> fetch(<span class="string">'https://api.example.com/data'</span>);
+<span class="comment">// 直接使用而不验证</span></div>
+    </div>
+
+    <div class="mechanism-box" style="background: #e8f5e9; border: 2px solid #4caf50;">
+      <h4 style="color: #2e7d32;">✅ 正确的做法：使用 {{ }} 插值（自动转义）</h4>
+      <div class="code-block" style="background: #1b5e20;"><span class="comment">// ✅ 正确：使用 {{ }} 插值，框架会自动转义 HTML</span>
+<span class="comment">// 即使 userComment 包含 &lt;script&gt; 标签，也会被转义为纯文本显示</span>
+&lt;div&gt;{{ $data.userComment }}&lt;/div&gt;
+
+<span class="comment">// ✅ 正确：API 数据使用 {{ }} 绑定</span>
+&lt;div&gt;{{ $data.apiResponse.content }}&lt;/div&gt;
+
+<span class="comment">// ✅ 正确：如果需要富文本，使用专门的富文本组件并做白名单过滤</span>
+&lt;rich-text :content="sanitizedHtml"&gt;&lt;/rich-text&gt;</div>
+    </div>
+
+    <div class="mechanism-box">
+      <h4>其他推荐的安全实践：</h4>
+      <ul>
+        <li>✅ 对用户输入进行验证和清理（白名单策略）</li>
+        <li>✅ 使用 CSP (Content Security Policy) 限制脚本执行</li>
+        <li>✅ 对第三方 API 数据进行 schema 验证</li>
+        <li>✅ 如果必须使用 :innerHTML，确保内容经过严格的 HTML 净化（如 DOMPurify）</li>
+        <li>✅ 设置 HttpOnly Cookie，防止 JavaScript 读取敏感 Cookie</li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module" src="./index.ts"></script>
+</body>
+
+</html>

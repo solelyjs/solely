@@ -1,4 +1,4 @@
-import { genFunction, GenType } from '@/shared';
+import { genFunction, GenType, IS_DEV } from '@/shared';
 import { IRNode, IRAttr, SourceLocation, IRLocal, isLifecycleKind, ASTNode, ASTType, IRRoot } from '@/types';
 const IR_META_SYMBOL = Symbol.for("solely.irMeta");
 
@@ -12,7 +12,6 @@ interface IRBranch {
 }
 
 // ==================== 全局常量与环境 ====================
-const IS_DEV = process.env.NODE_ENV !== 'production';
 const INTERPOLATION_RE = /\{\{[\s\S]*?\}\}/; // 移除 /g，使用 .test() 时无需重置 lastIndex，且更安全
 
 // ==================== 全局函数编译器 ====================

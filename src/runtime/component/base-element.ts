@@ -1,4 +1,4 @@
-import { isObject } from "@/shared";
+import { IS_DEV, isObject } from "@/shared";
 import { InternalManifest, Manifest, PropDescriptor, PropType } from "./decorators";
 import { createRender, IRRenderInstance } from "../renderer";
 import { observe } from "../reactivity";
@@ -388,16 +388,14 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     public afterAttributesUpdate(): void { }
 
     /* -------------------- DEV define 保护 -------------------- */
-    static #patched = false;
-
     static {
-        if (import.meta.env.DEV && !BaseElement.#patched) {
-            BaseElement.#patched = true;
-
+        if (IS_DEV) {
             const original = customElements.define;
+            const checkedCtors = new WeakSet<CustomElementConstructor>();
 
             customElements.define = function (name, ctor, options) {
-                if (BaseElement.isPrototypeOf(ctor)) {
+                if (BaseElement.isPrototypeOf(ctor) && !checkedCtors.has(ctor)) {
+                    checkedCtors.add(ctor);
                     const proto = ctor.prototype;
 
                     const forbidden = [
