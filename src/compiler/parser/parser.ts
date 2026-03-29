@@ -1,5 +1,5 @@
-import { listeners } from "@/shared";
-import { SourceLocation, Attribute, mapAttrKeyToLifecycleKind, ASTNode, ASTType } from "@/types";
+import { listeners } from "../../shared";
+import { SourceLocation, Attribute, mapAttrKeyToLifecycleKind, ASTNode, ASTType } from "../../types";
 
 const tagNameRE = /<\/?([A-Za-z][A-Za-z0-9\-\:]*)[>\s\/]/;
 const voidElements = new Set([

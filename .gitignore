@@ -39,3 +39,4 @@ coverage/
 * 副本*/
 test
 test.*
+dist-examples

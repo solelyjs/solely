@@ -1,5 +1,5 @@
 /** 是否为开发环境 */
-export const IS_DEV = (() => {
+export const IS_DEV = /* @__PURE__ */ (() => {
     // 1. 最高优先级：运行时强制后门（用户随时可以打开调试）
     if (typeof window !== 'undefined') {
         // URL 参数 ?debug 或 ?debug=true

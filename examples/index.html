@@ -107,6 +107,7 @@
       <button class="tab-btn" data-tab="todo">📝 待办事项</button>
       <button class="tab-btn" data-tab="weather">🌤️ 天气应用</button>
       <button class="tab-btn" data-tab="ref">🔗 元素引用</button>
+      <button class="tab-btn" data-tab="router">🧭 路由测试</button>
     </div>
 
     <div class="content">
@@ -134,15 +135,25 @@
         <h2 class="section-title">元素引用示例</h2>
         <ref-example></ref-example>
       </div>
+
+      <div class="example-container" id="router-example">
+        <h2 class="section-title">路由测试示例</h2>
+        <router-test></router-test>
+      </div>
     </div>
   </div>
 
   <script type="module">
-    import './counter/index.ts';
-    import './todo/index.ts';
-    import './form/index.ts';
-    import './weather/index.ts';
-    import './ref-example/index.ts';
+    // 导入示例组件 - 使用 import * as 确保副作用被保留
+    import * as counter from './counter/index.ts';
+    import * as todo from './todo/index.ts';
+    import * as form from './form/index.ts';
+    import * as weather from './weather/index.ts';
+    import * as refExample from './ref-example/index.ts';
+    import * as routerTest from './router-test/index.ts';
+
+    // 防止 tree-shaking
+    console.log('Loaded:', counter, todo, form, weather, refExample, routerTest);
 
     // Tab switching logic
     document.querySelectorAll('.tab-btn').forEach(btn => {

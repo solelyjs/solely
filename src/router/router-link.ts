@@ -1,4 +1,4 @@
-import { BaseElement, CustomElement } from '../component';
+import { BaseElement, CustomElement } from '../runtime/component';
 import { getRouter, routerReady } from './core';
 
 @CustomElement({

@@ -1,11 +1,10 @@
-import { ASTType } from "@/types";
-import { IRAttr, IRNode, IRRoot, Meta } from "@/types";
-import { runtimeLoop } from "@/types";
-import { showTemplateError } from "@/shared";
+import { ASTType } from "../../types";
+import { IRAttr, IRNode, IRRoot, Meta } from "../../types";
+import { runtimeLoop } from "../../types";
+import { showTemplateError } from "../../shared";
 
 const IRCTX_SYMBOL = Symbol("solely.irCtx");
 const IR_EVENTS_SYMBOL = Symbol("solely.irEvents");
-const IR_META_SYMBOL = Symbol.for("solely.irMeta");
 
 const PREV_CLASS_OBJ = Symbol("solely.prevClassObj");
 const PREV_STYLE_OBJ = Symbol("solely.prevStyleObj");
@@ -33,19 +32,19 @@ const POST_CHILD_PROPS = new Set([
 ]);
 
 function initStaticClass(el: HTMLElement | SVGElement, irNode: IRNode) {
-    const staticAttr = irNode.attrs?.find(a => a.key === 'class' && !a.dynamic);
-    if (staticAttr?.value) {
+    const staticAttr = irNode.a?.find(a => a.k === 'class' && !a.d);
+    if (staticAttr?.v) {
         // 无论 HTML 还是 SVG，这都是最稳妥的首屏赋值方式
-        el.setAttribute('class', staticAttr.value);
+        el.setAttribute('class', staticAttr.v);
     }
 }
 
 function initStaticStyle(el: HTMLElement | SVGElement, irNode: IRNode) {
     const anyEl = el as any;
     if (!anyEl.style) return;
-    const staticAttr = irNode.attrs?.find(a => a.key === 'style' && !a.dynamic);
+    const staticAttr = irNode.a?.find(a => a.k === 'style' && !a.d);
     // flatten 成 key-value 对象
-    const staticStyle = staticAttr ? flattenStyle(staticAttr.value) : {};
+    const staticStyle = staticAttr ? flattenStyle(staticAttr.v) : {};
 
     // 写入 DOM（只写一次）
     for (const key in staticStyle) {
@@ -377,19 +376,19 @@ export class IRRenderer {
     ) { }
 
     evalIR(fid: number, args: any[], meta?: Meta) {
-        const fn = this.ir.functions[fid - 1];
+        const fn = this.ir.fns[fid - 1];
         try {
             return fn ? fn.apply(this.scope, args) : '';
         }
         catch (e: any) {
-            showTemplateError(e.message || e.toString(), this.ir.metadata?.source || '', meta, this.scope.tagName);
+            showTemplateError(e.message || e.toString(), this.ir.m?.src || '', meta, this.scope.tagName);
             return '';
         }
     }
 
     // ================ 创建节点 ================
     private createElement(irNode: IRNode, parent: Node): SVGElement | HTMLElement {
-        const tag = irNode.tag!;
+        const tag = irNode.g!;
 
         const isSVG = parent instanceof SVGElement || tag === 'svg';
 
@@ -401,12 +400,12 @@ export class IRRenderer {
     }
 
     private createText(irNode: IRNode, loops: runtimeLoop[]): Text {
-        const value = irNode.dynamic ? this.evalIR(irNode.fid!, [loops], (irNode as any)[IR_META_SYMBOL]) : irNode.txt || '';
+        const value = irNode.d ? this.evalIR(irNode.f!, [loops], irNode.__m) : irNode.x || '';
         return document.createTextNode(value);
     }
 
     private createComment(irNode: IRNode, loops: runtimeLoop[]): Comment {
-        const value = irNode.dynamic ? this.evalIR(irNode.fid!, [loops], (irNode as any)[IR_META_SYMBOL]) : irNode.txt || '';
+        const value = irNode.d ? this.evalIR(irNode.f!, [loops], irNode.__m) : irNode.x || '';
         return document.createComment(value);
     }
 
@@ -450,16 +449,16 @@ export class IRRenderer {
         let hasDynamicStyle = false;
 
         for (const attr of attrs) {
-            const { key, fid, dynamic, value: staticValue } = attr;
+            const { k: key, f: fid, d: dynamic, v: staticValue } = attr;
 
             // 拦截：完全接管 class 和 style
             if (key === ':class') {
-                dynamicClassVal = this.evalIR(fid!, [loops], (attr as any)[IR_META_SYMBOL]);
+                dynamicClassVal = this.evalIR(fid!, [loops], attr.__m);
                 hasDynamicClass = true;
                 continue;
             }
             if (key === ':style') {
-                dynamicStyleVal = this.evalIR(fid!, [loops], (attr as any)[IR_META_SYMBOL]);
+                dynamicStyleVal = this.evalIR(fid!, [loops], attr.__m);
                 hasDynamicStyle = true;
                 continue;
             }
@@ -474,7 +473,7 @@ export class IRRenderer {
              * ----------------------------- */
             if (first === '@') {
                 const eventName = key.slice(1);
-                const role = attr.role ?? 'user';
+                const role = attr.r ?? 'user';
 
                 let bucket = anyEl[IR_EVENTS_SYMBOL][eventName];
                 if (!bucket) {
@@ -503,7 +502,7 @@ export class IRRenderer {
                         this.evalIR(
                             fid!,
                             [e, anyEl[IRCTX_SYMBOL].loops],
-                            (attr as any)[IR_META_SYMBOL]
+                            attr.__m
                         );
 
                     bucket[role].push(handler);
@@ -518,7 +517,7 @@ export class IRRenderer {
             if (key === 'mounted') {
                 if (!isUpdate) {
                     requestAnimationFrame(() =>
-                        this.evalIR(fid!, [el, loops], (attr as any)[IR_META_SYMBOL])
+                        this.evalIR(fid!, [el, loops], attr.__m)
                     );
                 }
                 continue;
@@ -527,7 +526,7 @@ export class IRRenderer {
             if (key === 'updated') {
                 if (isUpdate) {
                     requestAnimationFrame(() =>
-                        this.evalIR(fid!, [el, loops], (attr as any)[IR_META_SYMBOL])
+                        this.evalIR(fid!, [el, loops], attr.__m)
                     );
                 }
                 continue;
@@ -546,7 +545,7 @@ export class IRRenderer {
              *  普通属性 / 动态属性
              * ----------------------------- */
             const val = dynamic
-                ? this.evalIR(fid!, [loops], (attr as any)[IR_META_SYMBOL])
+                ? this.evalIR(fid!, [loops], attr.__m)
                 : staticValue ?? '';
 
             if (first === ':') {
@@ -579,8 +578,8 @@ export class IRRenderer {
 
     // ================ 更新已有节点 Text Or Comment ================
     private updateNode(node: Node, irNode: IRNode, loops: runtimeLoop[]) {
-        const newText = irNode.dynamic ? this.evalIR(irNode.fid!, [loops], (irNode as any)[IR_META_SYMBOL]) : irNode.txt || '';
-        if (irNode.dynamic && node.textContent !== newText) {
+        const newText = irNode.d ? this.evalIR(irNode.f!, [loops], irNode.__m) : irNode.x || '';
+        if (irNode.d && node.textContent !== newText) {
             node.textContent = newText;
         }
     }
@@ -597,12 +596,12 @@ export class IRRenderer {
 
             let postTasks: (() => void)[] = [];
 
-            if (irNode.dynamic) {
-                if (irNode.type === ASTType.Element) {
+            if (irNode.d) {
+                if (irNode.t === ASTType.Element) {
                     // 只有 dynamic Element 才需要更新属性
                     postTasks = this.applyAttrs(
                         node as Element,
-                        irNode.attrs ?? [],
+                        irNode.a ?? [],
                         loops,
                         true
                     );
@@ -613,7 +612,7 @@ export class IRRenderer {
             }
 
             // children 始终递归（结构变化由 IR 保证）
-            irNode.children?.forEach((child, childIdx) => {
+            irNode.c?.forEach((child, childIdx) => {
                 this.irToNode(child, childIdx, id, node!, loops);
             });
 
@@ -621,18 +620,18 @@ export class IRRenderer {
             postTasks.forEach(fn => fn());
         } else {
             // 创建新节点
-            switch (irNode.type) {
+            switch (irNode.t) {
                 case ASTType.Element:
                     node = this.createElement(irNode, parentNode);
                     // 初始化静态 class / style
                     initStaticClass(node as HTMLElement, irNode);
                     initStaticStyle(node as HTMLElement, irNode);
 
-                    const postTasks = this.applyAttrs(node as HTMLElement, irNode.attrs ?? [], loops);
+                    const postTasks = this.applyAttrs(node as HTMLElement, irNode.a ?? [], loops);
                     parentNode.appendChild(node);
                     this.nodeMap.set(id, { irNode, node, loops, marker: this.marker });
                     // 递归子节点
-                    irNode.children?.forEach((child, childIdx) => {
+                    irNode.c?.forEach((child, childIdx) => {
                         this.irToNode(child, childIdx, id, node!, loops);
                     });
                     postTasks.forEach((fn: () => any) => fn());
@@ -655,7 +654,7 @@ export class IRRenderer {
                         anchor = document.createComment(`for:${id}`);
                         parentNode.appendChild(anchor);
                         this.nodeMap.set(anchorId, {
-                            irNode: { type: ASTType.Comment } as any,
+                            irNode: { t: ASTType.Comment } as any,
                             node: anchor,
                             loops,
                             marker: this.marker
@@ -665,12 +664,12 @@ export class IRRenderer {
                     }
 
                     // 清空旧内容（简单方式：等会 cleanup 会处理）
-                    const list = this.evalIR(irNode.fid!, [loops], (irNode as any)[IR_META_SYMBOL]) || [];
+                    const list = this.evalIR(irNode.f!, [loops], irNode.__m) || [];
                     const fragment = document.createDocumentFragment();
 
                     list.forEach((item: any, i: number) => {
                         const childLoops = [...loops, { itmVal: item, idxVal: i }];
-                        irNode.children?.forEach((child, childIdx) => {
+                        irNode.c?.forEach((child, childIdx) => {
                             this.irToNode(child, childIdx, `${id}-for-${i}`, fragment as any, childLoops);
                         });
                     });
@@ -691,13 +690,13 @@ export class IRRenderer {
                     }
 
                     // 找到第一个真的分支
-                    for (let ifIdx = 0; ifIdx < (irNode.branches || []).length; ifIdx++) {
-                        const branch = irNode.branches![ifIdx];
-                        const matched = branch.condFid === null || this.evalIR(branch.condFid, [loops], (branch as any)[IR_META_SYMBOL]);
+                    for (let ifIdx = 0; ifIdx < (irNode.b || []).length; ifIdx++) {
+                        const branch = irNode.b![ifIdx];
+                        const matched = branch.f === null || this.evalIR(branch.f, [loops], branch.__m);
 
                         if (matched) {
                             const fragment = document.createDocumentFragment();
-                            branch.children.forEach((child, childIdx) => {
+                            branch.c.forEach((child, childIdx) => {
                                 this.irToNode(child, childIdx, `${id}-if-${ifIdx}`, fragment as any, loops);
                             });
                             anchor.parentNode!.insertBefore(fragment, anchor);
@@ -718,23 +717,23 @@ export class IRRenderer {
             if (entry.marker !== this.marker) {
                 const { irNode, node, loops } = entry;
 
-                if (irNode.attrs) {
+                if (irNode.a) {
                     // 调用 unmounted 生命周期
-                    const unmountedAttr = irNode.attrs.find(a => a.key === 'unmounted');
+                    const unmountedAttr = irNode.a.find(a => a.k === 'unmounted');
                     if (unmountedAttr) {
                         requestAnimationFrame(() => {
                             this.evalIR(
-                                unmountedAttr.fid!,
+                                unmountedAttr.f!,
                                 [node, loops],
-                                (unmountedAttr as any)[IR_META_SYMBOL]
+                                unmountedAttr.__m
                             );
                         });
                     }
 
                     // 移除 ref 节点
-                    const refAttr = irNode.attrs.find(a => a.key === 'ref');
-                    if (refAttr && refAttr.value) {
-                        delete this.scope.$refs[refAttr.value];
+                    const refAttr = irNode.a.find(a => a.k === 'ref');
+                    if (refAttr && refAttr.v) {
+                        delete this.scope.$refs[refAttr.v];
                     }
                 }
 
@@ -750,7 +749,7 @@ export class IRRenderer {
     // ================ 公共 API ================
     mount() {
         this.marker = !this.marker;
-        this.ir.nodes.forEach((node, idx) => {
+        this.ir.n.forEach((node, idx) => {
             this.irToNode(node, idx, "root", this.container, []);
         });
 
@@ -759,7 +758,7 @@ export class IRRenderer {
 
     update() {
         this.marker = !this.marker;
-        this.ir.nodes.forEach((node, idx) => {
+        this.ir.n.forEach((node, idx) => {
             this.irToNode(node, idx, "root", this.container, []);
         });
 

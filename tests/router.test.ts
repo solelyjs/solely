@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { createRouter, getRouter, Router, routerReady } from '../src/runtime/router/core';
-import type { RouteConfig, RouteMatch } from '../src/runtime/router/types';
+import { createRouter, getRouter, Router, routerReady } from '../src/router/core';
+import type { RouteConfig, RouteMatch } from '../src/router/types';
 
 // 重置全局路由实例的辅助函数
 function resetRouter() {

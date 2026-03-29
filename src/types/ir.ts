@@ -2,16 +2,16 @@ import { ASTType, SourceLocation } from "./ast";
 
 /** IR 属性 */
 export interface IRAttr {
-    /** 属性键名 */
-    key: string;
-    /** 属性值 */
-    value?: string;
-    /** 函数ID */
-    fid?: number;
-    /** 0=静态, 1=动态 */
-    dynamic: 0 | 1;
+    /** key 属性键名 */
+    k: string;
+    /** value 属性值 */
+    v?: string;
+    /** functionId 函数ID */
+    f?: number;
+    /** dynamicFlag 0=静态, 1=动态 */
+    d: 0 | 1;
     /**
-     * 执行语义角色（Execution Role）
+     * executionRole 执行语义角色（Execution Role）
      *
      * - model:
      *   数据同步语义（如 s-model / v-model 展开）
@@ -22,87 +22,101 @@ export interface IRAttr {
      *   用户显式声明的事件处理逻辑（@click / @input 等）
      *   在 model 同步完成后执行
      */
-    role?: 'model' | 'user';
+    r?: 'model' | 'user';
+    /** __meta 调试元信息 */
+    __m?: Meta;
 }
 
 /** 局部变量作用域 */
 export interface IRLocal {
-    item?: string;
-    index?: string;
+    /** item variable name */
+    i?: string;
+    /** index variable name */
+    x?: string;
+}
+
+/** 条件分支 */
+export interface IRBranch {
+    /** conditionFunctionId 条件函数 id，null 表示 else */
+    f: number | null;
+    /** children 子节点数组 */
+    c: IRNode[];
+    /** attributes 属性数组，支持 <if class="red" cond={...}> */
+    a?: IRAttr[];
+    /** __meta 调试元信息 */
+    __m?: Meta;
 }
 
 /** 核心 IR 节点 */
 export interface IRNode {
-    /** ASTType (数字枚举) */
-    type: ASTType;
-    /** dynamic flag (0=静态, 1=动态) 不包含子节点状态 */
-    dynamic: 0 | 1;
+    /** type ASTType (数字枚举) */
+    t: ASTType;
+    /** dynamicFlag (0=静态, 1=动态) 不包含子节点状态 */
+    d: 0 | 1;
 
-    /** 标签名（Element 使用） */
-    tag?: string;
-    /** 属性数组（Element 使用） */
-    attrs?: IRAttr[];
+    /** tagName 标签名（Element 使用） */
+    g?: string;
+    /** attributes 属性数组（Element 使用） */
+    a?: IRAttr[];
 
-    /** 静态文本内容（Text/Comment 使用） */
-    txt?: string;
+    /** text 静态文本内容（Text/Comment 使用） */
+    x?: string;
 
-    /** 条件/循环表达式函数ID */
-    fid?: number;
-    /** for 循环的 item 变量名 */
-    item?: string;
-    /** for 循环的 index 变量名 */
-    index?: string;
+    /** functionId 条件/循环表达式函数ID */
+    f?: number;
+    /** forItemVariableName for 循环的 item 变量名 */
+    i?: string;
+    /** forIndexVariableName for 循环的 index 变量名 */
+    n?: string;
 
-    /** 条件分支数组 */
-    branches?: {
-        /** 条件函数ID，null 表示 else */
-        condFid: number | null;
-        /** 子节点数组 */
-        children: IRNode[];
-        /** 属性数组，支持 <if class="red" cond={...}> */
-        attrs?: IRAttr[];
-        __meta?: any;
-    }[];
+    /** branches 条件分支数组 */
+    b?: IRBranch[];
 
-    /** 子节点数组 */
-    children?: IRNode[];
+    /** children 子节点数组 */
+    c?: IRNode[];
+
+    /** __meta 调试元信息 */
+    __m?: Meta;
 }
 
 /** 🎯 IR 根节点 - 核心数据结构 */
 export interface IRRoot {
-    /** 节点类型 */
-    type: 'root';
-    /** IR 版本 */
-    version: string;
-    /** 编译后的函数数组 */
-    functions: Function[];
-    /** 根节点数组 */
-    nodes: IRNode[];
-    /** 统计信息 */
-    stats: {
+    /** type 固定为 root */
+    t: 'root';
+    /** version IR 版本 */
+    v: string;
+    /** functions 编译后的函数数组 */
+    fns: Function[];
+    /** nodes 根节点数组 */
+    n: IRNode[];
+    /** stats 统计信息 */
+    s: {
         /** 总函数数 */
-        totalFunctions: number;
+        tf: number;
         /** 缓存命中数 */
-        cachedFunctions: number;
+        cf: number;
         /** 动态节点数 */
-        dynamicNodes: number;
+        dn: number;
         /** 总节点数 */
-        totalNodes: number;
+        tn: number;
     };
-    /** 元数据 */
-    metadata?: {
+    /** meta 编译元数据 */
+    m?: {
         /** 编译时间 */
-        compiledAt: string;
+        t: string;
         /** 原始AST大小 */
-        astSize: number;
+        as: number;
         /** 源文件路径 */
-        source?: string;
+        src?: string;
         /** 源文件名 */
-        filename: string;
+        fn: string;
     };
 }
 
+/** 元数据（调试与源码映射用） */
 export interface Meta {
-    expr: string;
+    /** expr 原始表达式字符串 */
+    expr?: string;
+    /** sourceLocation 源码位置信息 */
     loc?: SourceLocation;
 }

@@ -1,6 +1,6 @@
-import { buildIR, parseHtml } from "@/compiler";
-import { IS_DEV } from "@/shared";
-import { IRRoot } from "@/types";
+import { buildIR, parseHtml } from "../../compiler";
+import { IS_DEV } from "../../shared";
+import { IRRoot } from "../../types";
 
 const MANIFEST_SYMBOL = Symbol.for("solely.manifest");
 
@@ -26,7 +26,7 @@ export interface PropDescriptor {
  */
 export interface Manifest {
     /** HTML 模板字符串 */
-    template?: string | Function;
+    template?: string | IRRoot;
     /** 组件样式（CSS 字符串） */
     styles?: string;
     /** 支持字符串或对象形式 */
@@ -72,14 +72,58 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
 
         // 2. 预编译 IR (只在第一次注册时运行)
         if (typeof manifest.template === "string" && !manifest.ir) {
-            try {
-                const ast = parseHtml(manifest.template);
-                manifest.ir = buildIR(ast, {
-                    source: manifest.template,
-                    filename: tagName,
-                });
-            } catch (e) {
-                console.error(`[Compiler Error] <${tagName}>:`, e);
+            // 检查空模板
+            if (!manifest.template.trim()) {
+                if (IS_DEV) {
+                    console.warn(`[Solely] <${tagName}>: 模板为空字符串`);
+                }
+            } else {
+                try {
+                    const ast = parseHtml(manifest.template);
+                    manifest.ir = buildIR(ast, {
+                        source: manifest.template,
+                        filename: tagName,
+                    });
+
+
+                } catch (e) {
+                    const error = e instanceof Error ? e : new Error(String(e));
+                    console.error(
+                        `[Compiler Error] <${tagName}>: 模板编译失败\n` +
+                        `错误: ${error.message}\n` +
+                        `模板长度: ${manifest.template.length} 字符`,
+                        IS_DEV ? error.stack : ''
+                    );
+                }
+            }
+        }
+        else if (manifest.template && !manifest.ir) {
+            // 如果用户直接提供了 IR 对象（跳过编译），这里进行简单验证
+            if (typeof manifest.template === "object" && manifest.template !== null) {
+                const irCandidate = manifest.template as IRRoot;
+
+                // 验证 IR 对象的结构
+                if (irCandidate.t === "root" &&
+                    Array.isArray(irCandidate.fns) &&
+                    Array.isArray(irCandidate.n)) {
+                    manifest.ir = irCandidate;
+
+                    if (IS_DEV) {
+                        console.log(`[Solely] Using precompiled IR for <${tagName}> | Nodes: ${irCandidate.n.length} | Fns: ${irCandidate.fns.length}`);
+                    }
+                } else {
+                    console.error(
+                        `[Manifest Error] <${tagName}>: 提供的 template 不是有效的 IRRoot 对象。\n` +
+                        `期望: { t: "root", fns: [], n: [] }\n` +
+                        `实际: ${JSON.stringify(Object.keys(irCandidate))}`
+                    );
+                }
+            } else {
+                console.error(
+                    `[Manifest Error] <${tagName}>: template 类型无效。\n` +
+                    `期望: string 或 IRRoot 对象\n` +
+                    `实际: ${typeof manifest.template}`
+                );
             }
         }
 

@@ -1,0 +1,45 @@
+<div class="router-test">
+  <h2>🧭 路由测试页面</h2>
+  <p>当前路径: {{ $data.currentPath }}</p>
+  <p>路由参数: {{ JSON.stringify($data.params) }}</p>
+
+  <div class="nav-buttons">
+    <button @click="this.router.push('/')">首页</button>
+    <button @click="this.router.push('/about')">关于</button>
+    <button @click="this.router.push('/user/123')">用户 123</button>
+    <button @click="this.router.push('/user/456')">用户 456</button>
+    <button @click="this.router.back()">返回</button>
+    <button @click="this.router.forward()">前进</button>
+  </div>
+
+  <div class="route-content">
+    <If test="$data.currentPath === '/'">
+      <div class="page home">
+        <h3>🏠 首页</h3>
+        <p>欢迎来到 Solely 路由测试！</p>
+      </div>
+    </If>
+
+    <If test="$data.currentPath === '/about'">
+      <div class="page about">
+        <h3>ℹ️ 关于</h3>
+        <p>Solely 是一个轻量级 Web 组件框架</p>
+      </div>
+    </If>
+
+    <If test="$data.currentPath.startsWith('/user')">
+      <div class="page user">
+        <h3>👤 用户详情</h3>
+        <p>用户ID: {{ $data.params.id }}</p>
+        <p>这是动态路由参数的示例</p>
+      </div>
+    </If>
+  </div>
+
+  <div class="history-info">
+    <h4>导航历史</h4>
+    <For each="$data.history" item="item" index="i">
+      <div class="history-item">{{ i + 1 }}. {{ item }}</div>
+    </For>
+  </div>
+</div>

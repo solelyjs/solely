@@ -283,6 +283,7 @@ export class Router {
   public push(path: string = '/') { return this.navigate(path, false); }
   public replace(path: string = '/') { return this.navigate(path, true); }
   public back() { window.history.back(); }
+  public forward() { window.history.forward(); }
   public listen(cb: () => void) {
     this.listeners.add(cb);
     return () => this.listeners.delete(cb);

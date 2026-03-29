@@ -29,6 +29,7 @@
 - [快速开始指南](./docs/guide.md) - 从零开始学习 Solely
 - [API 文档](./docs/api.md) - 完整的 API 参考
 - [示例项目](./examples/) - 实际应用示例
+- [插件系统](#插件系统) - 了解 Vite 插件的使用方法
 - [安全机制说明](#安全机制) - 了解框架的 XSS 防护机制
 - [安全演示](./examples/security-demo/) - 查看 XSS 防护实际效果
 
@@ -327,7 +328,122 @@ solely/
 4. **路由系统**：支持单页应用的路由管理，包括路由定义、导航和组件挂载
 5. **插件系统**：提供扩展机制，支持自定义功能
 
-## �️ 安全机制
+## 🔌 插件系统
+
+Solely 提供了强大的插件系统，支持构建时扩展。目前内置了 Vite 插件，用于模板预编译和构建优化。
+
+### Vite 插件
+
+Solely 提供了官方的 Vite 插件 `solelyVitePlugin`，用于在构建时将 HTML 模板预编译为高效的 IR（中间表示），提升运行时性能。
+
+#### 安装
+
+```bash
+npm install solely
+```
+
+#### 基本配置
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import { solelyVitePlugin } from 'solely/plugin';
+
+export default defineConfig({
+  plugins: [
+    solelyVitePlugin({
+      precompile: true,   // 启用预编译（默认 true）
+      sourceMap: true,    // 生成源码映射（默认 true）
+      minify: false,      // 压缩生成的代码（默认 false）
+      debug: false,       // 调试模式（默认 false）
+    })
+  ]
+});
+```
+
+#### 配置选项
+
+| 选项 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `precompile` | `boolean` | `true` | 是否启用模板预编译 |
+| `sourceMap` | `boolean` | `true` | 是否生成源码映射 |
+| `minify` | `boolean` | `false` | 是否压缩生成的代码 |
+| `include` | `string \| RegExp \| Array<string \| RegExp>` | `/\.html(?:\?\|$)/` | 包含的文件匹配模式 |
+| `exclude` | `string \| RegExp \| Array<string \| RegExp>` | `/node_modules/` | 排除的文件匹配模式 |
+| `debug` | `boolean` | `false` | 调试模式，输出详细日志 |
+
+#### 在组件中使用
+
+使用 `?solely` 查询参数导入 HTML 模板，插件会自动将其预编译为 IR：
+
+```typescript
+// my-component.ts
+import { BaseElement, CustomElement } from 'solely';
+import template from './template.html?solely';  // 使用 ?solely 查询参数
+
+@CustomElement({
+  tagName: 'my-component',
+  template,  // 直接使用预编译的 IR
+})
+class MyComponent extends BaseElement {
+  // ...
+}
+```
+
+#### 预编译 vs 运行时编译
+
+| 特性 | 预编译模式 (`?solely`) | 运行时编译模式 (`?raw`) |
+|------|----------------------|----------------------|
+| 构建时 | 模板编译为 IR | 保持原始 HTML 字符串 |
+| 运行时 | 直接执行 IR，无解析开销 | 需要解析 HTML 并构建 IR |
+| 性能 | 更高（推荐生产环境） | 较低（适合开发环境） |
+| 包体积 | 较小（IR 比 HTML 更紧凑） | 较大（包含原始 HTML） |
+
+**开发环境**（使用运行时编译）：
+```typescript
+import template from './template.html?raw';  // 运行时编译
+```
+
+**生产环境**（使用预编译）：
+```typescript
+import template from './template.html?solely';  // 预编译
+```
+
+#### 热更新支持
+
+插件支持 Vite 的热模块替换（HMR），当模板文件修改时会自动触发页面刷新：
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  plugins: [
+    solelyVitePlugin({
+      debug: true  // 启用调试模式查看 HMR 日志
+    })
+  ]
+});
+```
+
+#### 错误处理
+
+插件具有健壮的错误处理机制：
+
+- 编译失败时会自动回退到原始模板
+- 在控制台输出详细的错误信息
+- 不会中断构建流程
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  plugins: [
+    solelyVitePlugin({
+      debug: true  // 查看详细的编译日志和错误信息
+    })
+  ]
+});
+```
+
+## 🛡️ 安全机制
 
 Solely 框架内置了多层安全防护机制，有效防止常见的 XSS（跨站脚本攻击）：
 

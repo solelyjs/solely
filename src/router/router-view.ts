@@ -1,4 +1,4 @@
-import { BaseElement, CustomElement } from '../component';
+import { BaseElement, CustomElement } from '../runtime/component';
 import type { RouteMatch } from './types';
 import { routerReady } from './core';
 

@@ -1,15 +1,5 @@
-import { genFunction, GenType, IS_DEV } from '@/shared';
-import { IRNode, IRAttr, SourceLocation, IRLocal, isLifecycleKind, ASTNode, ASTType, IRRoot } from '@/types';
-const IR_META_SYMBOL = Symbol.for("solely.irMeta");
-
-// ==================== 类型定义补充 ====================
-// 为 Conditional 节点的分支结构定义明确类型，方便后续维护
-interface IRBranch {
-    condFid: number | null;
-    children: IRNode[];
-    attrs?: IRAttr[];
-    [IR_META_SYMBOL]?: { expr: string; loc?: SourceLocation | null };
-}
+import { genFunction, GenType, IS_DEV } from '../../shared';
+import { IRNode, IRAttr, SourceLocation, IRLocal, isLifecycleKind, ASTNode, ASTType, IRRoot, IRBranch } from '../../types';
 
 // ==================== 全局常量与环境 ====================
 const INTERPOLATION_RE = /\{\{[\s\S]*?\}\}/; // 移除 /g，使用 .test() 时无需重置 lastIndex，且更安全
@@ -111,8 +101,7 @@ function hasInterpolation(text: string | undefined): boolean {
 // 统一的 Meta 添加工具
 function attachMeta(target: any, expr: string | undefined, loc?: SourceLocation | null) {
     if (IS_DEV) {
-        // 使用 Symbol 避免与其他属性冲突
-        target[IR_META_SYMBOL] = { expr: expr ?? '', loc: loc ?? null };
+        target.__m = { expr: expr ?? '', loc: loc ?? null };
     }
 }
 
@@ -263,11 +252,11 @@ function processAttributes(
 
         if (isDynamic && type) {
             const fid = compiler.compile(type, value ?? '', locals);
-            const irAttr: IRAttr = { key, fid, dynamic: 1, role };
+            const irAttr: IRAttr = { k: key, f: fid, d: 1, r: role };
             attachMeta(irAttr, value, attr.loc ?? node.loc);
             result.push(irAttr);
         } else {
-            result.push({ key, value, dynamic: 0, role });
+            result.push({ k: key, v: value, d: 0, r: role });
         }
     }
 
@@ -284,7 +273,7 @@ function transformNode(
     locals: IRLocal[],
     compiler: FunctionCompiler
 ): IRNode {
-    const ir: IRNode = { type: node.type, dynamic: 0 };
+    const ir: IRNode = { t: node.type, d: 0 };
 
     // 1. 动态性预判
     let isDynamic = false;
@@ -299,28 +288,28 @@ function transformNode(
         // 特殊节点类型天生是动态的
         if (node.type === ASTType.For) isDynamic = true;
     }
-    ir.dynamic = isDynamic ? 1 : 0;
+    ir.d = isDynamic ? 1 : 0;
 
     // 2. 根据类型处理
     switch (node.type) {
         case ASTType.Text: {
             const content = node.content ?? '';
             if (isDynamic) {
-                ir.fid = compiler.compile('template', content, locals);
+                ir.f = compiler.compile('template', content, locals);
                 attachMeta(ir, content, node.loc);
             } else {
-                ir.txt = content;
+                ir.x = content;
             }
             break;
         }
 
         case ASTType.Element: {
-            ir.tag = node.tag;
+            ir.g = node.tag;
             // 双向绑定语法展开
             transformModel(node);
-            ir.attrs = processAttributes(node, locals, compiler);
+            ir.a = processAttributes(node, locals, compiler);
             if (node.children) {
-                ir.children = transformList(node.children, locals, compiler);
+                ir.c = transformList(node.children, locals, compiler);
             }
             break;
         }
@@ -330,21 +319,21 @@ function transformNode(
             const eachAttr = node.attrs?.find(a => a.key === 'each');
             const expr = eachAttr?.value ?? '';
 
-            ir.fid = compiler.compile('expression', expr, locals);
-            ir.item = node.attrs?.find(a => a.key === 'item')?.value ?? 'item';
-            ir.index = node.attrs?.find(a => a.key === 'index')?.value ?? 'index';
+            ir.f = compiler.compile('expression', expr, locals);
+            ir.i = node.attrs?.find(a => a.key === 'item')?.value ?? 'item';
+            ir.n = node.attrs?.find(a => a.key === 'index')?.value ?? 'index';
 
             attachMeta(ir, expr, eachAttr?.loc ?? node.loc);
 
             // 处理其他属性 (排除 each, item, index)
             const exclude = new Set(['each', 'item', 'index']);
-            ir.attrs = processAttributes(node, locals, compiler, exclude);
+            ir.a = processAttributes(node, locals, compiler, exclude);
 
             // 构造新的作用域
-            const nextLocals = [...locals, { item: ir.item!, index: ir.index! }];
+            const nextLocals = [...locals, { i: ir.i!, x: ir.n! }];
 
             if (node.children) {
-                ir.children = transformList(node.children, nextLocals, compiler);
+                ir.c = transformList(node.children, nextLocals, compiler);
             }
             break;
         }
@@ -355,15 +344,15 @@ function transformNode(
         case ASTType.ElseIf:
         case ASTType.Else: {
             if (IS_DEV) console.warn(`[IR] Orphaned conditional node found: ${ASTType[node.type]}`);
-            ir.attrs = processAttributes(node, locals, compiler);
+            ir.a = processAttributes(node, locals, compiler);
             if (node.children) {
-                ir.children = transformList(node.children, locals, compiler);
+                ir.c = transformList(node.children, locals, compiler);
             }
             break;
         }
 
         case ASTType.Comment: {
-            ir.txt = node.content ?? '';
+            ir.x = node.content ?? '';
             break;
         }
     }
@@ -400,7 +389,7 @@ function transformList(
                     break;
                 }
 
-                // 如果当前是 If，但它不是这一组的“领头羊”（即 branches 已经有东西了）
+                // 如果当前是 If，但它不是这一组的"领头羊"（即 branches 已经有东西了）
                 // 说明遇到了下一个独立的 If 块，必须跳出，留给外层循环处理
                 if (type === ASTType.If && branches.length > 0) {
                     break;
@@ -409,7 +398,7 @@ function transformList(
                 // 计算条件 (Else 没有条件)
                 let condFid: number | null = null;
                 let expr = '';
-                let loc: SourceLocation | null = null;
+                let loc: SourceLocation | undefined = undefined;
                 if (type !== ASTType.Else) {
                     const testAttr = currentNode.attrs?.find(a =>
                         a.key === 'test' || a.key === 'condition'
@@ -432,10 +421,10 @@ function transformList(
                 const attrs = processAttributes(currentNode, locals, compiler, exclude);
 
                 branches.push({
-                    condFid,
-                    children,
-                    attrs: attrs.length > 0 ? attrs : undefined,
-                    [IR_META_SYMBOL]: IS_DEV ? { expr, loc: loc } : undefined
+                    f: condFid,
+                    c: children,
+                    a: attrs.length > 0 ? attrs : undefined,
+                    ...(IS_DEV && { __m: { expr, loc } })
                 });
 
                 currentIdx++;
@@ -447,10 +436,10 @@ function transformList(
             // 生成 Conditional 节点
 
             result.push({
-                type: ASTType.Conditional,
-                dynamic: 1,
-                branches,
-                ...(IS_DEV && { [IR_META_SYMBOL]: { loc: node.loc } })
+                t: ASTType.Conditional,
+                d: 1,
+                b: branches,
+                ...(IS_DEV && { __m: { loc: node.loc } })
             });
 
             // 跳过已处理的节点
@@ -497,30 +486,30 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
     const stats = compiler.getStats();
 
     // 计算统计信息 (简单遍历根层级动态性，如果需要深度统计可以递归，这里保持轻量)
-    const dynamicNodeCount = irNodes.filter(n => n.dynamic === 1).length;
+    const dynamicNodeCount = irNodes.filter(n => n.d === 1).length;
 
     const root: IRRoot = {
-        type: 'root',
-        version: '1.1.0', // Bump version
-        functions: compiler.getFunctions(), // 获取函数列表快照
-        nodes: irNodes,
-        stats: {
-            totalFunctions: stats.total,
-            cachedFunctions: stats.cached,
-            dynamicNodes: dynamicNodeCount,
-            totalNodes: irNodes.length
+        t: 'root',
+        v: '1.1.0', // Bump version
+        fns: compiler.getFunctions(), // 获取函数列表快照
+        n: irNodes,
+        s: {
+            tf: stats.total,
+            cf: stats.cached,
+            dn: dynamicNodeCount,
+            tn: irNodes.length
         },
-        metadata: {
-            compiledAt: new Date().toISOString(),
-            astSize: ast.length,
-            filename,
-            ...(source && { source })
+        m: {
+            t: new Date().toISOString(),
+            as: ast.length,
+            fn: filename,
+            ...(source && { src: source })
         }
     };
 
     if (IS_DEV) {
         console.log(
-            `[IRBuilder] ${filename} | ${(end - start).toFixed(2)}ms | ` +
+            `[Solely] Compiled <${filename}> in ${(end - start).toFixed(2)}ms | ` +
             `Nodes: ${irNodes.length} | Fns: ${stats.total}`
         );
     }

@@ -1,4 +1,4 @@
-import { IS_DEV, isObject } from "@/shared";
+import { IS_DEV, isObject } from "../../shared";
 import { InternalManifest, Manifest, PropDescriptor, PropType } from "./decorators";
 import { createRender, IRRenderInstance } from "../renderer";
 import { observe } from "../reactivity";
