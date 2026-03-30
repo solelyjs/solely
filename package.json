@@ -1,7 +1,7 @@
 {
   "name": "solely",
   "private": false,
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "A lightweight TypeScript framework for building web components with compile-time optimizations",
   "type": "module",
   "sideEffects": false,
@@ -190,14 +190,6 @@
     "prepublishOnly": "npm run build && npm run test",
     "pack:local": "npm pack && echo '✅ 打包完成，可在其他项目中使用 file: 引用'",
     "dev:debug": "node --inspect-brk ./node_modules/vite/bin/vite.js"
-  },
-  "peerDependencies": {
-    "vite": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "vite": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@rollup/plugin-strip": "^3.0.4",
