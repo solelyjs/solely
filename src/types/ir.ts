@@ -1,4 +1,4 @@
-import { ASTType, SourceLocation } from "./ast";
+import { ASTType, SourceLocation } from './ast';
 
 /** IR 属性 */
 export interface IRAttr {

@@ -1,18 +1,18 @@
-import { ASTType } from "../../types";
-import { IRAttr, IRNode, IRRoot, Meta } from "../../types";
-import { runtimeLoop } from "../../types";
-import { showTemplateError } from "../../shared";
+import { ASTType } from '../../types';
+import { IRAttr, IRNode, IRRoot, Meta } from '../../types';
+import { runtimeLoop } from '../../types';
+import { showTemplateError } from '../../shared';
 
-const IRCTX_SYMBOL = Symbol("solely.irCtx");
-const IR_EVENTS_SYMBOL = Symbol("solely.irEvents");
+const IRCTX_SYMBOL = Symbol('solely.irCtx');
+const IR_EVENTS_SYMBOL = Symbol('solely.irEvents');
 
-const PREV_CLASS_OBJ = Symbol("solely.prevClassObj");
-const PREV_STYLE_OBJ = Symbol("solely.prevStyleObj");
+const PREV_CLASS_OBJ = Symbol('solely.prevClassObj');
+const PREV_STYLE_OBJ = Symbol('solely.prevStyleObj');
 
 const NS_PREFIXES = {
     xml: 'http://www.w3.org/XML/1998/namespace',
     xlink: 'http://www.w3.org/1999/xlink',
-    xmlns: 'http://www.w3.org/2000/xmlns/'
+    xmlns: 'http://www.w3.org/2000/xmlns/',
 } as const;
 
 const HTML_PROP_MAP: Record<string, string> = {
@@ -20,16 +20,13 @@ const HTML_PROP_MAP: Record<string, string> = {
     for: 'htmlFor',
     tabindex: 'tabIndex',
     contenteditable: 'contentEditable',
-    maxlength: 'maxLength'
+    maxlength: 'maxLength',
 } as const;
 
 // data-* / aria-* / role / form 等只能用 setAttribute
 const ATTR_ONLY_PROPS = new Set(['data-', 'aria-', 'role', 'form']);
 
-const POST_CHILD_PROPS = new Set([
-    'value',
-    'selectedIndex'
-]);
+const POST_CHILD_PROPS = new Set(['value', 'selectedIndex']);
 
 function initStaticClass(el: HTMLElement | SVGElement, irNode: IRNode) {
     const staticAttr = irNode.a?.find(a => a.k === 'class' && !a.d);
@@ -53,7 +50,6 @@ function initStaticStyle(el: HTMLElement | SVGElement, irNode: IRNode) {
         else (el.style as any)[key] = val;
     }
 }
-
 
 /**
  * 样式动态设置函数 (支持引用检查 + 增量更新)
@@ -142,7 +138,7 @@ const setElementClasses = (el: HTMLElement | SVGElement, dynamicClass: any): voi
 
 /**
  * 样式扁平化处理函数
- * 支持: 
+ * 支持:
  * 1. 字符串: "color: red; background: url(data:image/png;base64,xxx;)"
  * 2. 数组: [{color: 'red'}, "margin: 10px"]
  * 3. 对象: { color: 'red', '--custom-var': 'blue', nested: { opacity: 0.5 } }
@@ -223,14 +219,12 @@ function flattenClasses(classObj: any): Record<string, boolean> {
                 const c = parts[i].trim();
                 if (c) result[c] = true;
             }
-        }
-        else if (Array.isArray(obj)) {
+        } else if (Array.isArray(obj)) {
             // 优化：倒序压栈保持原有的顺序感知（虽然 class 顺序通常不重要）
             for (let i = obj.length - 1; i >= 0; i--) {
                 stack.push(obj[i]);
             }
-        }
-        else if (typeof obj === 'object') {
+        } else if (typeof obj === 'object') {
             for (const k in obj) {
                 // 仅存储真值，减少结果对象的大小
                 if (obj[k]) {
@@ -372,15 +366,14 @@ export class IRRenderer {
     constructor(
         private ir: IRRoot,
         private container: HTMLElement,
-        private scope: any = {}
-    ) { }
+        private scope: any = {},
+    ) {}
 
     evalIR(fid: number, args: any[], meta?: Meta) {
         const fn = this.ir.fns[fid - 1];
         try {
             return fn ? fn.apply(this.scope, args) : '';
-        }
-        catch (e: any) {
+        } catch (e: any) {
             showTemplateError(e.message || e.toString(), this.ir.m?.src || '', meta, this.scope.tagName);
             return '';
         }
@@ -392,9 +385,7 @@ export class IRRenderer {
 
         const isSVG = parent instanceof SVGElement || tag === 'svg';
 
-        const el = isSVG
-            ? document.createElementNS('http://www.w3.org/2000/svg', tag)
-            : document.createElement(tag);
+        const el = isSVG ? document.createElementNS('http://www.w3.org/2000/svg', tag) : document.createElement(tag);
 
         return el;
     }
@@ -410,12 +401,7 @@ export class IRRenderer {
     }
 
     // ================ 属性全量应用（创建或更新时用） ================
-    private applyAttrs(
-        el: Element,
-        attrs: IRAttr[],
-        loops: runtimeLoop[],
-        isUpdate: boolean = false
-    ) {
+    private applyAttrs(el: Element, attrs: IRAttr[], loops: runtimeLoop[], isUpdate: boolean = false) {
         const postTasks: (() => void)[] = [];
         const anyEl = el as any;
 
@@ -425,7 +411,7 @@ export class IRRenderer {
          * ============================= */
         if (!anyEl[IRCTX_SYMBOL]) {
             anyEl[IRCTX_SYMBOL] = {
-                loops: null as runtimeLoop[] | null
+                loops: null as runtimeLoop[] | null,
             };
         }
         anyEl[IRCTX_SYMBOL].loops = loops;
@@ -479,7 +465,7 @@ export class IRRenderer {
                 if (!bucket) {
                     bucket = anyEl[IR_EVENTS_SYMBOL][eventName] = {
                         model: [],
-                        user: []
+                        user: [],
                     };
 
                     // 只注册一次 DOM listener
@@ -498,12 +484,7 @@ export class IRRenderer {
 
                 // handler 只在首次渲染时创建
                 if (!isUpdate) {
-                    const handler = (e: any) =>
-                        this.evalIR(
-                            fid!,
-                            [e, anyEl[IRCTX_SYMBOL].loops],
-                            attr.__m
-                        );
+                    const handler = (e: any) => this.evalIR(fid!, [e, anyEl[IRCTX_SYMBOL].loops], attr.__m);
 
                     bucket[role].push(handler);
                 }
@@ -516,18 +497,14 @@ export class IRRenderer {
              * ----------------------------- */
             if (key === 'mounted') {
                 if (!isUpdate) {
-                    requestAnimationFrame(() =>
-                        this.evalIR(fid!, [el, loops], attr.__m)
-                    );
+                    requestAnimationFrame(() => this.evalIR(fid!, [el, loops], attr.__m));
                 }
                 continue;
             }
 
             if (key === 'updated') {
                 if (isUpdate) {
-                    requestAnimationFrame(() =>
-                        this.evalIR(fid!, [el, loops], attr.__m)
-                    );
+                    requestAnimationFrame(() => this.evalIR(fid!, [el, loops], attr.__m));
                 }
                 continue;
             }
@@ -544,9 +521,7 @@ export class IRRenderer {
             /** -----------------------------
              *  普通属性 / 动态属性
              * ----------------------------- */
-            const val = dynamic
-                ? this.evalIR(fid!, [loops], attr.__m)
-                : staticValue ?? '';
+            const val = dynamic ? this.evalIR(fid!, [loops], attr.__m) : (staticValue ?? '');
 
             if (first === ':') {
                 const prop = key.slice(1);
@@ -586,7 +561,7 @@ export class IRRenderer {
 
     // ================ 核心遍历 ================
     private irToNode(irNode: IRNode, index: number | string, pid: string, parentNode: Node, loops: runtimeLoop[]) {
-        const id = pid + "-" + index;
+        const id = pid + '-' + index;
         const existing = this.nodeMap.get(id);
         let node: Node | undefined = undefined;
 
@@ -599,12 +574,7 @@ export class IRRenderer {
             if (irNode.d) {
                 if (irNode.t === ASTType.Element) {
                     // 只有 dynamic Element 才需要更新属性
-                    postTasks = this.applyAttrs(
-                        node as Element,
-                        irNode.a ?? [],
-                        loops,
-                        true
-                    );
+                    postTasks = this.applyAttrs(node as Element, irNode.a ?? [], loops, true);
                 } else {
                     // dynamic Text / Comment
                     this.updateNode(node, irNode, loops);
@@ -657,7 +627,7 @@ export class IRRenderer {
                             irNode: { t: ASTType.Comment } as any,
                             node: anchor,
                             loops,
-                            marker: this.marker
+                            marker: this.marker,
                         });
                     } else {
                         this.nodeMap.get(anchorId)!.marker = this.marker;
@@ -722,11 +692,7 @@ export class IRRenderer {
                     const unmountedAttr = irNode.a.find(a => a.k === 'unmounted');
                     if (unmountedAttr) {
                         requestAnimationFrame(() => {
-                            this.evalIR(
-                                unmountedAttr.f!,
-                                [node, loops],
-                                unmountedAttr.__m
-                            );
+                            this.evalIR(unmountedAttr.f!, [node, loops], unmountedAttr.__m);
                         });
                     }
 
@@ -750,7 +716,7 @@ export class IRRenderer {
     mount() {
         this.marker = !this.marker;
         this.ir.n.forEach((node, idx) => {
-            this.irToNode(node, idx, "root", this.container, []);
+            this.irToNode(node, idx, 'root', this.container, []);
         });
 
         this.cleanupOldNodes();
@@ -759,7 +725,7 @@ export class IRRenderer {
     update() {
         this.marker = !this.marker;
         this.ir.n.forEach((node, idx) => {
-            this.irToNode(node, idx, "root", this.container, []);
+            this.irToNode(node, idx, 'root', this.container, []);
         });
 
         this.cleanupOldNodes();
@@ -792,6 +758,6 @@ export const createRender = (ir: IRRoot, el: HTMLElement, ctx: any = {}): IRRend
     renderer.mount();
     return {
         update: () => renderer.update(),
-        destroy: () => renderer.destroy()
+        destroy: () => renderer.destroy(),
     };
 };

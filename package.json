@@ -1,212 +1,233 @@
 {
-  "name": "solely",
-  "private": false,
-  "version": "0.1.10",
-  "description": "A lightweight TypeScript framework for building web components with compile-time optimizations",
-  "type": "module",
-  "sideEffects": false,
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.cjs"
-      }
+    "name": "solely",
+    "private": false,
+    "version": "0.1.10",
+    "description": "A lightweight TypeScript framework for building web components with compile-time optimizations",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            },
+            "require": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.cjs"
+            }
+        },
+        "./plugin": {
+            "import": {
+                "types": "./dist/plugin.d.ts",
+                "default": "./dist/plugin.js"
+            },
+            "require": {
+                "types": "./dist/plugin.d.ts",
+                "default": "./dist/plugin.cjs"
+            }
+        },
+        "./compiler": {
+            "import": {
+                "types": "./dist/compiler/index.d.ts",
+                "default": "./dist/compiler/index.js"
+            },
+            "require": {
+                "types": "./dist/compiler/index.d.ts",
+                "default": "./dist/compiler/index.cjs"
+            }
+        },
+        "./compiler/*": {
+            "import": {
+                "types": "./dist/compiler/*.d.ts",
+                "default": "./dist/compiler/*.js"
+            },
+            "require": {
+                "types": "./dist/compiler/*.d.ts",
+                "default": "./dist/compiler/*.cjs"
+            }
+        },
+        "./runtime": {
+            "import": {
+                "types": "./dist/runtime/index.d.ts",
+                "default": "./dist/runtime/index.js"
+            },
+            "require": {
+                "types": "./dist/runtime/index.d.ts",
+                "default": "./dist/runtime/index.cjs"
+            }
+        },
+        "./runtime/*": {
+            "import": {
+                "types": "./dist/runtime/*.d.ts",
+                "default": "./dist/runtime/*.js"
+            },
+            "require": {
+                "types": "./dist/runtime/*.d.ts",
+                "default": "./dist/runtime/*.cjs"
+            }
+        },
+        "./router": {
+            "import": {
+                "types": "./dist/router/index.d.ts",
+                "default": "./dist/router/index.js"
+            },
+            "require": {
+                "types": "./dist/router/index.d.ts",
+                "default": "./dist/router/index.cjs"
+            }
+        },
+        "./router/*": {
+            "import": {
+                "types": "./dist/router/*.d.ts",
+                "default": "./dist/router/*.js"
+            },
+            "require": {
+                "types": "./dist/router/*.d.ts",
+                "default": "./dist/router/*.cjs"
+            }
+        },
+        "./shared": {
+            "import": {
+                "types": "./dist/shared/index.d.ts",
+                "default": "./dist/shared/index.js"
+            },
+            "require": {
+                "types": "./dist/shared/index.d.ts",
+                "default": "./dist/shared/index.cjs"
+            }
+        },
+        "./shared/*": {
+            "import": {
+                "types": "./dist/shared/*.d.ts",
+                "default": "./dist/shared/*.js"
+            },
+            "require": {
+                "types": "./dist/shared/*.d.ts",
+                "default": "./dist/shared/*.cjs"
+            }
+        },
+        "./types": {
+            "import": {
+                "types": "./dist/types/index.d.ts",
+                "default": "./dist/types/index.js"
+            },
+            "require": {
+                "types": "./dist/types/index.d.ts",
+                "default": "./dist/types/index.cjs"
+            }
+        },
+        "./types/*": {
+            "import": {
+                "types": "./dist/types/*.d.ts",
+                "default": "./dist/types/*.js"
+            },
+            "require": {
+                "types": "./dist/types/*.d.ts",
+                "default": "./dist/types/*.cjs"
+            }
+        },
+        "./package.json": "./package.json"
     },
-    "./plugin": {
-      "import": {
-        "types": "./dist/plugin.d.ts",
-        "default": "./dist/plugin.js"
-      },
-      "require": {
-        "types": "./dist/plugin.d.ts",
-        "default": "./dist/plugin.cjs"
-      }
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./dist/*"
+            ]
+        }
     },
-    "./compiler": {
-      "import": {
-        "types": "./dist/compiler/index.d.ts",
-        "default": "./dist/compiler/index.js"
-      },
-      "require": {
-        "types": "./dist/compiler/index.d.ts",
-        "default": "./dist/compiler/index.cjs"
-      }
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "keywords": [
+        "ast",
+        "vnode",
+        "template",
+        "custom-element",
+        "web-component",
+        "framework",
+        "library",
+        "ui",
+        "component",
+        "design",
+        "development",
+        "esm",
+        "tree-shaking"
+    ],
+    "lint-staged": {
+        "*.{ts,tsx}": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "*.{json,md}": [
+            "prettier --write"
+        ]
     },
-    "./compiler/*": {
-      "import": {
-        "types": "./dist/compiler/*.d.ts",
-        "default": "./dist/compiler/*.js"
-      },
-      "require": {
-        "types": "./dist/compiler/*.d.ts",
-        "default": "./dist/compiler/*.cjs"
-      }
+    "author": "Sun Yue",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/solelyjs/solely.git"
     },
-    "./runtime": {
-      "import": {
-        "types": "./dist/runtime/index.d.ts",
-        "default": "./dist/runtime/index.js"
-      },
-      "require": {
-        "types": "./dist/runtime/index.d.ts",
-        "default": "./dist/runtime/index.cjs"
-      }
+    "bugs": {
+        "url": "https://github.com/solelyjs/solely/issues"
     },
-    "./runtime/*": {
-      "import": {
-        "types": "./dist/runtime/*.d.ts",
-        "default": "./dist/runtime/*.js"
-      },
-      "require": {
-        "types": "./dist/runtime/*.d.ts",
-        "default": "./dist/runtime/*.cjs"
-      }
+    "homepage": "https://github.com/solelyjs/solely#readme",
+    "engines": {
+        "node": ">=16.0.0"
     },
-    "./router": {
-      "import": {
-        "types": "./dist/router/index.d.ts",
-        "default": "./dist/router/index.js"
-      },
-      "require": {
-        "types": "./dist/router/index.d.ts",
-        "default": "./dist/router/index.cjs"
-      }
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "build:watch": "vite build --watch",
+        "build:examples": "vite build --mode examples",
+        "preview": "vite preview",
+        "preview:examples": "vite preview --outDir dist-examples",
+        "link": "npm link && echo '✅ 全局链接成功，可在其他项目中使用 npm link solely'",
+        "unlink": "npm unlink -g solely && echo '✅ 已取消全局链接'",
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:coverage": "vitest --coverage",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint . --ext .ts,.tsx",
+        "lint:fix": "eslint . --ext .ts,.tsx --fix",
+        "format": "prettier --write \"src/**/*.{ts,tsx,js,json,md}\"",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,js,json,md}\"",
+        "clean": "rimraf dist",
+        "prebuild": "npm run clean",
+        "prepublishOnly": "npm run build && npm run test",
+        "pack:local": "npm pack && echo '✅ 打包完成，可在其他项目中使用 file: 引用'",
+        "dev:debug": "node --inspect-brk ./node_modules/vite/bin/vite.js",
+        "prepare": "husky"
     },
-    "./router/*": {
-      "import": {
-        "types": "./dist/router/*.d.ts",
-        "default": "./dist/router/*.js"
-      },
-      "require": {
-        "types": "./dist/router/*.d.ts",
-        "default": "./dist/router/*.cjs"
-      }
-    },
-    "./shared": {
-      "import": {
-        "types": "./dist/shared/index.d.ts",
-        "default": "./dist/shared/index.js"
-      },
-      "require": {
-        "types": "./dist/shared/index.d.ts",
-        "default": "./dist/shared/index.cjs"
-      }
-    },
-    "./shared/*": {
-      "import": {
-        "types": "./dist/shared/*.d.ts",
-        "default": "./dist/shared/*.js"
-      },
-      "require": {
-        "types": "./dist/shared/*.d.ts",
-        "default": "./dist/shared/*.cjs"
-      }
-    },
-    "./types": {
-      "import": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/types/index.js"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/types/index.cjs"
-      }
-    },
-    "./types/*": {
-      "import": {
-        "types": "./dist/types/*.d.ts",
-        "default": "./dist/types/*.js"
-      },
-      "require": {
-        "types": "./dist/types/*.d.ts",
-        "default": "./dist/types/*.cjs"
-      }
-    },
-    "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*"
-      ]
+    "devDependencies": {
+        "@rollup/plugin-strip": "^3.0.4",
+        "@testing-library/dom": "^10.4.1",
+        "@testing-library/user-event": "^14.6.1",
+        "@types/node": "^22.10.2",
+        "@commitlint/cli": "^19.0.0",
+        "@commitlint/config-conventional": "^19.0.0",
+        "@typescript-eslint/eslint-plugin": "^8.0.0",
+        "@typescript-eslint/parser": "^8.0.0",
+        "@vitest/coverage-v8": "^3.2.4",
+        "@vitest/ui": "^3.2.4",
+        "eslint": "^8.57.0",
+        "husky": "^9.0.0",
+        "jsdom": "27.0.0",
+        "lint-staged": "^15.0.0",
+        "magic-string": "^0.30.21",
+        "prettier": "^3.0.0",
+        "rimraf": "^5.0.10",
+        "sass": "^1.83.0",
+        "terser": "^5.44.0",
+        "tsup": "^8.5.1",
+        "typescript": "~5.6.2",
+        "vite": "^5.4.10",
+        "vite-plugin-dts": "^4.4.0",
+        "vitest": "^3.2.4"
     }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": [
-    "ast",
-    "vnode",
-    "template",
-    "custom-element",
-    "web-component",
-    "framework",
-    "library",
-    "ui",
-    "component",
-    "design",
-    "development",
-    "esm",
-    "tree-shaking"
-  ],
-  "author": "Sun Yue",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yourusername/solely.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yourusername/solely/issues"
-  },
-  "homepage": "https://github.com/yourusername/solely#readme",
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:watch": "vite build --watch",
-    "build:examples": "vite build --mode examples",
-    "preview": "vite preview",
-    "preview:examples": "vite preview --outDir dist-examples",
-    "link": "npm link && echo '✅ 全局链接成功，可在其他项目中使用 npm link solely'",
-    "unlink": "npm unlink -g solely && echo '✅ 已取消全局链接'",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "typecheck": "tsc --noEmit",
-    "lint": "echo '请添加 ESLint 配置'",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean",
-    "prepublishOnly": "npm run build && npm run test",
-    "pack:local": "npm pack && echo '✅ 打包完成，可在其他项目中使用 file: 引用'",
-    "dev:debug": "node --inspect-brk ./node_modules/vite/bin/vite.js"
-  },
-  "devDependencies": {
-    "@rollup/plugin-strip": "^3.0.4",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^22.10.2",
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
-    "jsdom": "27.0.0",
-    "magic-string": "^0.30.21",
-    "rimraf": "^5.0.10",
-    "sass": "^1.83.0",
-    "terser": "^5.44.0",
-    "tsup": "^8.5.1",
-    "typescript": "~5.6.2",
-    "vite": "^5.4.10",
-    "vite-plugin-dts": "^4.4.0",
-    "vitest": "^3.2.4"
-  }
 }

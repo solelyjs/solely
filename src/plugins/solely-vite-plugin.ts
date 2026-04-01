@@ -25,7 +25,7 @@ const defaultOptions: Required<SolelyVitePluginOptions> = {
     precompile: true,
     sourceMap: true,
     minify: false,
-    include: [/\.html(?:\?|$)/],  // 匹配 .html 或 .html?xxx
+    include: [/\.html(?:\?|$)/], // 匹配 .html 或 .html?xxx
     exclude: /node_modules/,
     debug: false,
 };
@@ -49,10 +49,7 @@ export function compileTemplate(html: string, filename: string = 'anonymous'): I
 /**
  * 检查文件路径是否匹配给定的模式
  */
-function matchesPattern(
-    id: string,
-    patterns: string | RegExp | Array<string | RegExp>
-): boolean {
+function matchesPattern(id: string, patterns: string | RegExp | Array<string | RegExp>): boolean {
     const patternList = Array.isArray(patterns) ? patterns : [patterns];
     return patternList.some(pattern => {
         if (typeof pattern === 'string') {
@@ -172,8 +169,8 @@ function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: b
         map: s.generateMap({
             source: id,
             includeContent: !minify, // 核心修改：minify 时 SourceMap 不包含 HTML 源码
-            hires: !minify // 压缩模式下不需要高精度映射
-        })
+            hires: !minify, // 压缩模式下不需要高精度映射
+        }),
     };
 }
 
@@ -183,24 +180,25 @@ function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: b
 function generateTemplateCode(html: string, id: string, minify: boolean): { code: string; map: any } {
     const s = new MagicString(html);
 
-    const escapedHtml = html
-        .replace(/\\/g, '\\\\')
-        .replace(/`/g, '\\`')
-        .replace(/\$/g, '\\$');
+    const escapedHtml = html.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 
-    s.overwrite(0, html.length, `
+    s.overwrite(
+        0,
+        html.length,
+        `
 const __SOLELY_TEMPLATE__ = \`${escapedHtml}\`;
 
 export default __SOLELY_TEMPLATE__;
 export { __SOLELY_TEMPLATE__ };
-`);
+`,
+    );
 
     return {
         code: s.toString(),
         map: s.generateMap({
             source: id,
-            includeContent: !minify // 同步修改 SourceMap 策略
-        })
+            includeContent: !minify, // 同步修改 SourceMap 策略
+        }),
     };
 }
 

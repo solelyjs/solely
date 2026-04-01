@@ -1,11 +1,11 @@
-import { buildIR, parseHtml } from "../../compiler";
-import { IS_DEV } from "../../shared";
-import { IRRoot } from "../../types";
+import { buildIR, parseHtml } from '../../compiler';
+import { IS_DEV } from '../../shared';
+import { IRRoot } from '../../types';
 
-const MANIFEST_SYMBOL = Symbol.for("solely.manifest");
+const MANIFEST_SYMBOL = Symbol.for('solely.manifest');
 
 /** Prop 配置，支持类型声明 */
-export type PropType = "string" | "number" | "boolean" | "object";
+export type PropType = 'string' | 'number' | 'boolean' | 'object';
 
 /** 属性描述符 */
 export interface PropDescriptor {
@@ -32,7 +32,7 @@ export interface Manifest {
     /** 支持字符串或对象形式 */
     props?: Array<string | PropDescriptor>;
     /** 是否启用 Shadow DOM */
-    shadowDOM?: { use: boolean; mode?: "open" | "closed" };
+    shadowDOM?: { use: boolean; mode?: 'open' | 'closed' };
     /** 组件根元素类名 */
     className?: string;
     /** 注册的自定义元素标签名 */
@@ -71,7 +71,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
         }
 
         // 2. 预编译 IR (只在第一次注册时运行)
-        if (typeof manifest.template === "string" && !manifest.ir) {
+        if (typeof manifest.template === 'string' && !manifest.ir) {
             // 检查空模板
             if (!manifest.template.trim()) {
                 if (IS_DEV) {
@@ -84,51 +84,48 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
                         source: manifest.template,
                         filename: tagName,
                     });
-
-
                 } catch (e) {
                     const error = e instanceof Error ? e : new Error(String(e));
                     console.error(
                         `[Compiler Error] <${tagName}>: 模板编译失败\n` +
-                        `错误: ${error.message}\n` +
-                        `模板长度: ${manifest.template.length} 字符`,
-                        IS_DEV ? error.stack : ''
+                            `错误: ${error.message}\n` +
+                            `模板长度: ${manifest.template.length} 字符`,
+                        IS_DEV ? error.stack : '',
                     );
                 }
             }
-        }
-        else if (manifest.template && !manifest.ir) {
+        } else if (manifest.template && !manifest.ir) {
             // 如果用户直接提供了 IR 对象（跳过编译），这里进行简单验证
-            if (typeof manifest.template === "object" && manifest.template !== null) {
+            if (typeof manifest.template === 'object' && manifest.template !== null) {
                 const irCandidate = manifest.template as IRRoot;
 
                 // 验证 IR 对象的结构
-                if (irCandidate.t === "root" &&
-                    Array.isArray(irCandidate.fns) &&
-                    Array.isArray(irCandidate.n)) {
+                if (irCandidate.t === 'root' && Array.isArray(irCandidate.fns) && Array.isArray(irCandidate.n)) {
                     manifest.ir = irCandidate;
 
                     if (IS_DEV) {
-                        console.log(`[Solely] Using precompiled IR for <${tagName}> | Nodes: ${irCandidate.n.length} | Fns: ${irCandidate.fns.length}`);
+                        console.log(
+                            `[Solely] Using precompiled IR for <${tagName}> | Nodes: ${irCandidate.n.length} | Fns: ${irCandidate.fns.length}`,
+                        );
                     }
                 } else {
                     console.error(
                         `[Manifest Error] <${tagName}>: 提供的 template 不是有效的 IRRoot 对象。\n` +
-                        `期望: { t: "root", fns: [], n: [] }\n` +
-                        `实际: ${JSON.stringify(Object.keys(irCandidate))}`
+                            `期望: { t: "root", fns: [], n: [] }\n` +
+                            `实际: ${JSON.stringify(Object.keys(irCandidate))}`,
                     );
                 }
             } else {
                 console.error(
                     `[Manifest Error] <${tagName}>: template 类型无效。\n` +
-                    `期望: string 或 IRRoot 对象\n` +
-                    `实际: ${typeof manifest.template}`
+                        `期望: string 或 IRRoot 对象\n` +
+                        `实际: ${typeof manifest.template}`,
                 );
             }
         }
 
         // 3. 预创建 StyleSheet (只在第一次注册时运行)
-        if (manifest.styles && !manifest.sheet && "CSSStyleSheet" in window) {
+        if (manifest.styles && !manifest.sheet && 'CSSStyleSheet' in window) {
             try {
                 const sheet = new CSSStyleSheet();
                 // 检查 replaceSync 方法是否存在（某些测试环境可能不完整）
@@ -148,9 +145,9 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
         if (manifest.props && !manifest.propMap) {
             const map = new Map<string, PropDescriptor>();
             manifest.props.forEach(p => {
-                const desc: PropDescriptor = typeof p === "string" ? { name: p } : p;
+                const desc: PropDescriptor = typeof p === 'string' ? { name: p } : p;
                 // 转换出 HTML attribute 名 (camelCase -> kebab-case)
-                const attrName = desc.name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+                const attrName = desc.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
                 // 同时确保 desc.name 是 camelCase（用于 $data 属性访问）
                 const propName = attrName.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
                 map.set(attrName, { ...desc, name: propName });
@@ -159,7 +156,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
         }
 
         // 5. 定义新类并注册
-        class CE extends OriginalClass { }
+        class CE extends OriginalClass {}
         (CE as any)[MANIFEST_SYMBOL] = manifest;
 
         customElements.define(tagName, CE as CustomElementConstructor);

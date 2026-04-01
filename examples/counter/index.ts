@@ -6,13 +6,13 @@ import styles from './index.css?raw';
  * 计数器组件接口定义
  */
 interface CounterData {
-  count: number;
-  step: number;
-  history: Array<{
-    type: 'increment' | 'decrement' | 'random';
-    value: number;
-    timestamp: number;
-  }>;
+    count: number;
+    step: number;
+    history: Array<{
+        type: 'increment' | 'decrement' | 'random';
+        value: number;
+        timestamp: number;
+    }>;
 }
 
 /**
@@ -24,85 +24,85 @@ interface CounterData {
  * - 条件渲染 <If>
  */
 @CustomElement({
-  tagName: 'simple-counter',
-  template,
-  styles,
-  shadowDOM: { use: true },
-  props: [
-    { name: 'count', type: 'number', reflect: true },
-    { name: 'step', type: 'number' },
-  ]
+    tagName: 'simple-counter',
+    template,
+    styles,
+    shadowDOM: { use: true },
+    props: [
+        { name: 'count', type: 'number', reflect: true },
+        { name: 'step', type: 'number' },
+    ],
 })
 export class SimpleCounter extends BaseElement<CounterData> {
-  constructor() {
-    super({
-      count: 0,
-      step: 1,
-      history: []
-    });
-  }
-
-  /**
-   * 增加计数
-   */
-  increment() {
-    this.$data.count += +this.$data.step;
-    this.$data.history.push({
-      type: 'increment',
-      value: this.$data.count,
-      timestamp: Date.now()
-    });
-  }
-
-  /**
-   * 减少计数
-   */
-  decrement() {
-    if (this.$data.count > 0) {
-      this.$data.count -= +this.$data.step;
-      if (this.$data.count < 0) this.$data.count = 0;
-
-      this.$data.history.push({
-        type: 'decrement',
-        value: this.$data.count,
-        timestamp: Date.now()
-      });
+    constructor() {
+        super({
+            count: 0,
+            step: 1,
+            history: [],
+        });
     }
-  }
 
-  /**
-   * 重置计数
-   */
-  reset() {
-    this.$data.count = 0;
-    this.$data.history = [];
-  }
+    /**
+     * 增加计数
+     */
+    increment() {
+        this.$data.count += +this.$data.step;
+        this.$data.history.push({
+            type: 'increment',
+            value: this.$data.count,
+            timestamp: Date.now(),
+        });
+    }
 
-  /**
-   * 设置随机值
-   */
-  random() {
-    this.$data.count = Math.floor(Math.random() * 100) + 1;
-    this.$data.history.push({
-      type: 'random',
-      value: this.$data.count,
-      timestamp: Date.now()
-    });
-  }
+    /**
+     * 减少计数
+     */
+    decrement() {
+        if (this.$data.count > 0) {
+            this.$data.count -= +this.$data.step;
+            if (this.$data.count < 0) this.$data.count = 0;
 
-  /**
-   * 元素挂载时调用
-   */
-  onOptionMounted(label: HTMLLabelElement) {
-    console.log('Label mounted:', label);
-  }
+            this.$data.history.push({
+                type: 'decrement',
+                value: this.$data.count,
+                timestamp: Date.now(),
+            });
+        }
+    }
 
-  /**
-   * 元素更新时调用
-   */
-  onOptionUpdated(label: HTMLLabelElement) {
-    console.log('Label updated:', label);
-  }
+    /**
+     * 重置计数
+     */
+    reset() {
+        this.$data.count = 0;
+        this.$data.history = [];
+    }
+
+    /**
+     * 设置随机值
+     */
+    random() {
+        this.$data.count = Math.floor(Math.random() * 100) + 1;
+        this.$data.history.push({
+            type: 'random',
+            value: this.$data.count,
+            timestamp: Date.now(),
+        });
+    }
+
+    /**
+     * 元素挂载时调用
+     */
+    onOptionMounted(label: HTMLLabelElement) {
+        console.log('Label mounted:', label);
+    }
+
+    /**
+     * 元素更新时调用
+     */
+    onOptionUpdated(label: HTMLLabelElement) {
+        console.log('Label updated:', label);
+    }
 }
 
 console.log('SimpleCounter component registered!');

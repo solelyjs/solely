@@ -1,18 +1,18 @@
-import { IS_DEV, isObject } from "../../shared";
-import { InternalManifest, Manifest, PropDescriptor, PropType } from "./decorators";
-import { createRender, IRRenderInstance } from "../renderer";
-import { observe } from "../reactivity";
-import { ChangeItem } from "../reactivity/observe";
+import { IS_DEV, isObject } from '../../shared';
+import { InternalManifest, Manifest, PropDescriptor, PropType } from './decorators';
+import { createRender, IRRenderInstance } from '../renderer';
+import { observe } from '../reactivity';
+import { ChangeItem } from '../reactivity/observe';
 
-const MANIFEST_SYMBOL: unique symbol = Symbol.for("solely.manifest");
+const MANIFEST_SYMBOL: unique symbol = Symbol.for('solely.manifest');
 
 /* -------------------- 类型定义 -------------------- */
 declare interface BaseElement<TData = any> {
     /**
-       * 通过 ref 属性获取的 DOM 元素引用集合
-       * - 键：模板中写的 ref="xxx" 的名字
-       * - 值：对应的 DOM 元素（通常是 HTMLElement 或 SVGElement）
-       */
+     * 通过 ref 属性获取的 DOM 元素引用集合
+     * - 键：模板中写的 ref="xxx" 的名字
+     * - 值：对应的 DOM 元素（通常是 HTMLElement 或 SVGElement）
+     */
     $refs: Record<string, HTMLElement | SVGElement | any>;
 }
 
@@ -56,12 +56,10 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
         const ctor = this.constructor as typeof BaseElement & ManifestConstructor;
 
-        this.#manifest = ctor[MANIFEST_SYMBOL] || { tagName: "base-element" };
+        this.#manifest = ctor[MANIFEST_SYMBOL] || { tagName: 'base-element' };
         const manifest = this.#manifest;
 
-        this.#root = manifest.shadowDOM?.use
-            ? this.attachShadow({ mode: manifest.shadowDOM.mode || "open" })
-            : this;
+        this.#root = manifest.shadowDOM?.use ? this.attachShadow({ mode: manifest.shadowDOM.mode || 'open' }) : this;
 
         this.#initData(initialData);
         this.#initTemplate(manifest);
@@ -91,17 +89,17 @@ class BaseElement<TData extends object = any> extends HTMLElement {
                 // 这里的 key 是 PathKey，如果是顶层属性同步，它通常是 string
                 const propKey = String(key);
 
-                const desc = manifest.propMap?.get(
-                    propKey.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
-                ) || Array.from(manifest.propMap?.values() || []).find(d => d.name === propKey);
+                const desc =
+                    manifest.propMap?.get(propKey.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()) ||
+                    Array.from(manifest.propMap?.values() || []).find(d => d.name === propKey);
 
                 if (desc?.reflect) {
                     this.#reflectToAttribute(desc, newValue);
                 }
             }
 
-            this.emit("change", {
-                source: "state",
+            this.emit('change', {
+                source: 'state',
                 ...change,
             });
 
@@ -113,11 +111,11 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     }
 
     #reflectToAttribute(desc: PropDescriptor, value: any) {
-        const attrName = desc.name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+        const attrName = desc.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 
-        if (desc.type === "boolean") {
+        if (desc.type === 'boolean') {
             if (value) {
-                this.setAttribute(attrName, "");
+                this.setAttribute(attrName, '');
             } else {
                 this.removeAttribute(attrName);
             }
@@ -148,28 +146,24 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         this.#scheduleRefresh();
     }
 
-    #convertAttrValue(
-        value: string | null,
-        defaultValue: any,
-        type?: PropType
-    ) {
+    #convertAttrValue(value: string | null, defaultValue: any, type?: PropType) {
         if (value === null) {
             // 对于布尔值，不存在即为 false (除非默认值强制为 true)
-            return type === "boolean" ? (defaultValue ?? false) : defaultValue;
+            return type === 'boolean' ? (defaultValue ?? false) : defaultValue;
         }
 
         switch (type) {
-            case "boolean":
+            case 'boolean':
                 // 只要属性存在（value 不为 null），在 HTML 语义下就是 true
                 // 这里的 value 可能是 "" (例如 <my-el active>) 或 "active"
                 return true;
 
-            case "number": {
+            case 'number': {
                 const n = Number(value);
                 return isNaN(n) ? defaultValue : n;
             }
 
-            case "object":
+            case 'object':
                 try {
                     return JSON.parse(value);
                 } catch {
@@ -223,7 +217,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         const root = this.#root;
 
         // 场景 A: 存在预生成的 sheet 且使用 Shadow DOM
-        if (manifest.sheet && root instanceof ShadowRoot && "adoptedStyleSheets" in root) {
+        if (manifest.sheet && root instanceof ShadowRoot && 'adoptedStyleSheets' in root) {
             // 避免重复添加
             if (!root.adoptedStyleSheets.includes(manifest.sheet)) {
                 root.adoptedStyleSheets = [...root.adoptedStyleSheets, manifest.sheet];
@@ -232,11 +226,11 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         }
 
         // 场景 B: 回退方案 (无 Shadow DOM 或 不支持 adoptedStyleSheets)
-        const target = (root instanceof ShadowRoot) ? root : document.head;
+        const target = root instanceof ShadowRoot ? root : document.head;
         const styleId = `solely-style-${manifest.tagName}`;
 
         if (!target.querySelector(`#${styleId}`)) {
-            const styleEl = document.createElement("style");
+            const styleEl = document.createElement('style');
             styleEl.id = styleId;
             styleEl.textContent = manifest.styles;
             target.appendChild(styleEl);
@@ -251,9 +245,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         // 构建升级属性列表，确保 $data 始终被包含
         let finalUpgradeProps: string[];
         if (Array.isArray(userUpgradeProps)) {
-            finalUpgradeProps = userUpgradeProps.includes('$data')
-                ? userUpgradeProps
-                : [...userUpgradeProps, '$data'];
+            finalUpgradeProps = userUpgradeProps.includes('$data') ? userUpgradeProps : [...userUpgradeProps, '$data'];
         } else {
             finalUpgradeProps = ['$data'];
         }
@@ -264,8 +256,8 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
         const manifest = this.#manifest as InternalManifest;
 
-        const className = manifest.className || manifest.tagName || "";
-        className.split(" ").forEach((n) => n && this.classList.add(n));
+        const className = manifest.className || manifest.tagName || '';
+        className.split(' ').forEach(n => n && this.classList.add(n));
 
         /* ---------- style ---------- */
         this.#injectStyles();
@@ -281,19 +273,14 @@ class BaseElement<TData extends object = any> extends HTMLElement {
                     const raw = this.getAttribute(attrName);
                     const value = this.#convertAttrValue(raw, desc.default, desc.type);
                     (this.$data as any)[propName] = value;
-                } else if ("default" in desc) {
+                } else if ('default' in desc) {
                     // 如果 HTML 没写，使用默认值
                     (this.$data as any)[propName] = desc.default;
                 }
             }
         }
 
-        if (this.#ir)
-            this.#render = createRender(
-                this.#ir,
-                this.#root as HTMLElement,
-                this
-            );
+        if (this.#ir) this.#render = createRender(this.#ir, this.#root as HTMLElement, this);
 
         this.mounted();
         this.onInit?.();
@@ -310,11 +297,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         this.#render?.destroy?.();
         this.#render = null as any;
     }
-    attributeChangedCallback(
-        name: string,
-        oldValue: string | null,
-        newValue: string | null
-    ): void {
+    attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
         if (oldValue === newValue || !isObject(this.$data)) return;
 
         const manifest = this.#manifest as InternalManifest;
@@ -326,11 +309,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         const oldDataValue = (this.$data as any)[propName];
 
         // 2. 转换值
-        const next = this.#convertAttrValue(
-            newValue,
-            desc.default ?? oldDataValue,
-            desc.type
-        );
+        const next = this.#convertAttrValue(newValue, desc.default ?? oldDataValue, desc.type);
 
         // 3. 更新数据（触发响应式）
         (this.$data as any)[propName] = next;
@@ -349,43 +328,35 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     }
 
     /* -------------------- 事件派发 -------------------- */
-    public emit(
-        eventName: string,
-        detail?: any,
-        options?: Partial<CustomEventInit>
-    ) {
+    public emit(eventName: string, detail?: any, options?: Partial<CustomEventInit>) {
         this.dispatchEvent(
             new CustomEvent(eventName, {
                 bubbles: true,
                 composed: true,
                 detail,
                 ...options,
-            })
+            }),
         );
     }
 
     /* -------------------- 钩子 -------------------- */
-    public onInit(): void | Promise<void> { }
+    public onInit(): void | Promise<void> {}
 
-    public created(): void { }
+    public created(): void {}
 
-    public mounted(): void { }
+    public mounted(): void {}
 
-    public beforeUpdate(): void { }
+    public beforeUpdate(): void {}
 
-    public updated(): void { }
+    public updated(): void {}
 
-    public unmounted(): void { }
+    public unmounted(): void {}
 
-    public attributeChanged(
-        _name: string,
-        _oldValue: any,
-        _newValue: any
-    ): void { }
+    public attributeChanged(_name: string, _oldValue: any, _newValue: any): void {}
 
-    public beforeAttributesUpdate(): void { }
+    public beforeAttributesUpdate(): void {}
 
-    public afterAttributesUpdate(): void { }
+    public afterAttributesUpdate(): void {}
 
     /* -------------------- DEV define 保护 -------------------- */
     static {
@@ -399,16 +370,14 @@ class BaseElement<TData extends object = any> extends HTMLElement {
                     const proto = ctor.prototype;
 
                     const forbidden = [
-                        "connectedCallback",
-                        "disconnectedCallback",
-                        "attributeChangedCallback",
+                        'connectedCallback',
+                        'disconnectedCallback',
+                        'attributeChangedCallback',
                     ] as const;
 
                     for (const key of forbidden) {
                         if (proto[key] !== BaseElement.prototype[key]) {
-                            console.error(
-                                `[${name}] 禁止重写 ${key}()，请使用框架钩子`
-                            );
+                            console.error(`[${name}] 禁止重写 ${key}()，请使用框架钩子`);
                         }
                     }
                 }

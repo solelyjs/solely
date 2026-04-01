@@ -32,6 +32,6 @@ export function parseHashUrl(location: Location | string = window.location) {
 
     return {
         path: path.split('/').filter(Boolean), // 将路径分割成数组并过滤空字符串
-        query: query // 查询参数对象
+        query: query, // 查询参数对象
     };
 }

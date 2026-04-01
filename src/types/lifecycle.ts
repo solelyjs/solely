@@ -4,9 +4,9 @@ export type LifecycleKind = 'mounted' | 'updated' | 'unmounted';
 /** 生命周期属性映射表 */
 export const LIFECYCLE_ATTRS_MAP: Record<string, LifecycleKind> = {
     // 可选别名
-    'onMounted': 'mounted',
-    'onUpdated': 'updated',
-    'onUnmounted': 'unmounted',
+    onMounted: 'mounted',
+    onUpdated: 'updated',
+    onUnmounted: 'unmounted',
 };
 
 /**

@@ -1,9 +1,22 @@
-import { listeners } from "../../shared";
-import { SourceLocation, Attribute, mapAttrKeyToLifecycleKind, ASTNode, ASTType } from "../../types";
+import { listeners } from '../../shared';
+import { SourceLocation, Attribute, mapAttrKeyToLifecycleKind, ASTNode, ASTType } from '../../types';
 
 const tagNameRE = /<\/?([A-Za-z][A-Za-z0-9\-\:]*)[>\s\/]/;
 const voidElements = new Set([
-    'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
 ]);
 const attrRE = /\s*([^\s"'/>=]+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gs;
 
@@ -59,19 +72,16 @@ function parseAttributes(tag: string, tagLoc: SourceLocation): Attribute[] {
                 while (p < m0.length && /\s/.test(m0[p])) p++;
                 valueStartInMatch = p;
             }
-
         }
 
         // 将相对 match 的位置转换为 tagContent 中的绝对位置，再加上被去掉的标签名偏移，得到原始 tag 中的位置
-        let valueIndex = match.index + valueStartInMatch + offset;
+        const valueIndex = match.index + valueStartInMatch + offset;
 
         // 计算行列（基于原始 tag 的索引）
         const substring = tag.slice(0, valueIndex);
         const lines = substring.split('\n');
         const line = tagLoc[0] + lines.length - 1;
-        const col = lines.length > 1
-            ? lines[lines.length - 1].length + 1
-            : tagLoc[1] + valueIndex;
+        const col = lines.length > 1 ? lines[lines.length - 1].length + 1 : tagLoc[1] + valueIndex;
 
         attributes.push({ key, value, loc: [line, col] });
     }
@@ -81,15 +91,15 @@ function parseAttributes(tag: string, tagLoc: SourceLocation): Attribute[] {
 
 /** 解析单个标签，返回最简单的 ASTNode */
 function parseTag(tag: string, tagLoc: SourceLocation): ASTNode {
-    const tagName = (tag.match(tagNameRE) || [])[1]?.toLowerCase() ?? "";
+    const tagName = (tag.match(tagNameRE) || [])[1]?.toLowerCase() ?? '';
     const attrs = parseAttributes(tag, tagLoc);
 
     // 智能映射到 ASTType
     const typeMap: Record<string, ASTType> = {
-        'for': ASTType.For,
-        'if': ASTType.If,
-        'elseif': ASTType.ElseIf,
-        'else': ASTType.Else,
+        for: ASTType.For,
+        if: ASTType.If,
+        elseif: ASTType.ElseIf,
+        else: ASTType.Else,
     };
     const type = typeMap[tagName] ?? ASTType.Element;
     return {
@@ -97,7 +107,7 @@ function parseTag(tag: string, tagLoc: SourceLocation): ASTNode {
         tag: tagName,
         loc: tagLoc,
         children: [],
-        attrs
+        attrs,
     };
 }
 
@@ -162,15 +172,14 @@ export function parseHtml(html: string): ASTNode[] {
     const stack: ASTNode[] = [];
     const openingTags: string[] = [];
 
-    const getCurrent = (): ASTNode[] =>
-        stack.length === 0 ? astNodes : (stack[stack.length - 1].children ||= []);
+    const getCurrent = (): ASTNode[] => (stack.length === 0 ? astNodes : (stack[stack.length - 1].children ||= []));
 
     let index = 0;
     const length = html.length;
 
     // 构建 index -> line/col 映射
     const lineStarts: number[] = [0];
-    for (let i = 0; i < length; i++) if (html[i] === "\n") lineStarts.push(i + 1);
+    for (let i = 0; i < length; i++) if (html[i] === '\n') lineStarts.push(i + 1);
 
     function getLoc(idx: number): SourceLocation {
         let line = 0;
@@ -198,7 +207,7 @@ export function parseHtml(html: string): ASTNode[] {
                     tag: 'text',
                     content: trimmed,
                     loc,
-                    children: []
+                    children: [],
                 });
             }
             if (nextTagStart === -1) break;
@@ -215,7 +224,7 @@ export function parseHtml(html: string): ASTNode[] {
                     tag: 'text',
                     content: remaining.trim(),
                     children: [],
-                    loc: getLoc(index)
+                    loc: getLoc(index),
                 });
             }
             break;
@@ -226,56 +235,56 @@ export function parseHtml(html: string): ASTNode[] {
         const loc = getLoc(index);
 
         // -------- 特殊标签 --------
-        if (tag.startsWith("<!--")) {
+        if (tag.startsWith('<!--')) {
             current.push({
                 type: ASTType.Comment,
                 tag: 'comment',
                 content: tag.slice(4, -3),
                 loc,
-                children: []
+                children: [],
             });
             index = tagEnd + 1;
             continue;
         }
 
-        if (tag.startsWith("<![CDATA[")) {
+        if (tag.startsWith('<![CDATA[')) {
             current.push({
                 type: ASTType.Text,
                 tag: 'text',
                 content: tag.slice(9, -3),
                 loc,
-                children: []
+                children: [],
             });
             index = tagEnd + 1;
             continue;
         }
 
-        if (tag.startsWith("<!") && !tag.startsWith("<!--")) {
+        if (tag.startsWith('<!') && !tag.startsWith('<!--')) {
             current.push({
                 type: ASTType.Comment,
                 tag: 'comment',
                 content: tag.slice(2, -1),
                 loc,
-                children: []
+                children: [],
             });
             index = tagEnd + 1;
             continue;
         }
 
-        if (tag.startsWith("<?")) {
+        if (tag.startsWith('<?')) {
             current.push({
                 type: ASTType.Comment,
                 tag: 'comment',
                 content: tag.slice(2, -2),
                 loc,
-                children: []
+                children: [],
             });
             index = tagEnd + 1;
             continue;
         }
 
         // -------- 闭合标签 --------
-        if (tag.startsWith("</")) {
+        if (tag.startsWith('</')) {
             const lastOpeningTag = openingTags.pop();
             while (stack.length > 0) {
                 const top = stack[stack.length - 1];
@@ -297,9 +306,9 @@ export function parseHtml(html: string): ASTNode[] {
 
         // script/style 内部文本
         const tagName = ast.tag || '';
-        const isScript = tagName.toLowerCase().startsWith("script");
-        const isStyle = tagName.toLowerCase().startsWith("style");
-        const isVoidElement = tag.endsWith("/>") || voidElements.has(tagName.toLowerCase());
+        const isScript = tagName.toLowerCase().startsWith('script');
+        const isStyle = tagName.toLowerCase().startsWith('style');
+        const isVoidElement = tag.endsWith('/>') || voidElements.has(tagName.toLowerCase());
 
         if ((isScript || isStyle) && !isVoidElement) {
             const closeTag = `</${tagName}>`;
@@ -312,7 +321,7 @@ export function parseHtml(html: string): ASTNode[] {
                         tag: 'text',
                         content: rawInner,
                         loc: getLoc(tagEnd + 1),
-                        children: []
+                        children: [],
                     });
                 }
                 index = idxLower + closeTag.length;
@@ -325,7 +334,7 @@ export function parseHtml(html: string): ASTNode[] {
                         tag: 'text',
                         content: rawInner,
                         loc: getLoc(tagEnd + 1),
-                        children: []
+                        children: [],
                     });
                 }
                 index = length;

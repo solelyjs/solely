@@ -1,5 +1,15 @@
 import { genFunction, GenType, IS_DEV } from '../../shared';
-import { IRNode, IRAttr, SourceLocation, IRLocal, isLifecycleKind, ASTNode, ASTType, IRRoot, IRBranch } from '../../types';
+import {
+    IRNode,
+    IRAttr,
+    SourceLocation,
+    IRLocal,
+    isLifecycleKind,
+    ASTNode,
+    ASTType,
+    IRRoot,
+    IRBranch,
+} from '../../types';
 
 // ==================== 全局常量与环境 ====================
 const INTERPOLATION_RE = /\{\{[\s\S]*?\}\}/; // 移除 /g，使用 .test() 时无需重置 lastIndex，且更安全
@@ -117,7 +127,7 @@ export function transformModel(node: ASTNode) {
     const modelAttr = node.attrs.find(a => a.key === 's-model');
     if (!modelAttr) return;
 
-    const model = '$data.' + modelAttr.value.replace('this.', '').replace('$data.', '');   // e.g. "foo"
+    const model = '$data.' + modelAttr.value.replace('this.', '').replace('$data.', ''); // e.g. "foo"
     const loc = modelAttr.loc;
 
     const tag = (node.tag || '').toLowerCase();
@@ -136,11 +146,10 @@ export function transformModel(node: ASTNode) {
     // 1. input
     // ------------------------------------------------
     if (tag === 'input') {
-
         // checkbox
         if (inputType === 'checkbox') {
             const valueAttr = node.attrs.find(a => a.key === 'value');
-            const value = valueAttr ? JSON.stringify(valueAttr.value) : '"on"';// 默认 value
+            const value = valueAttr ? JSON.stringify(valueAttr.value) : '"on"'; // 默认 value
             // :checked 属性
             const checkedExpr = `Array.isArray(${model}) ? ${model}.includes(${value}) : ${model}`;
             add(':checked', checkedExpr);
@@ -200,15 +209,17 @@ export function transformModel(node: ASTNode) {
             // 数据 → DOM
             // add(':value', model);
             // 这个地方需要所有选择的option设置selected 更新后设置
-            add('updated', `
+            add(
+                'updated',
+                `
                     const values = Array.isArray(${model}) ? ${model} : ${model} != null ? [${model}] : [];
                     for (const opt of el.options) {
                         opt.selected = values.includes(opt.value);
-                    }`);
+                    }`,
+            );
 
             // DOM → 数据
             add('@change', `${model} = Array.from(event.target.selectedOptions).map(o => o.value)`, 'model');
-
         } else {
             // 单选
             add(':value', model);
@@ -232,13 +243,12 @@ export function transformModel(node: ASTNode) {
     add('@input', `${model} = $event`, 'model');
 }
 
-
 // ==================== 属性处理 ====================
 function processAttributes(
     node: ASTNode,
     locals: IRLocal[],
     compiler: FunctionCompiler,
-    excludeKeys: Set<string> | null = null
+    excludeKeys: Set<string> | null = null,
 ): IRAttr[] {
     if (!node.attrs || node.attrs.length === 0) return [];
 
@@ -268,11 +278,7 @@ function processAttributes(
 /**
  * 处理单个非 Conditional 节点，或者 Conditional 的子节点
  */
-function transformNode(
-    node: ASTNode,
-    locals: IRLocal[],
-    compiler: FunctionCompiler
-): IRNode {
+function transformNode(node: ASTNode, locals: IRLocal[], compiler: FunctionCompiler): IRNode {
     const ir: IRNode = { t: node.type, d: 0 };
 
     // 1. 动态性预判
@@ -363,11 +369,7 @@ function transformNode(
 /**
  * 遍历节点列表，自动合并 If/ElseIf/Else 分支
  */
-function transformList(
-    nodes: ASTNode[],
-    locals: IRLocal[],
-    compiler: FunctionCompiler
-): IRNode[] {
+function transformList(nodes: ASTNode[], locals: IRLocal[], compiler: FunctionCompiler): IRNode[] {
     const result: IRNode[] = [];
     let i = 0;
 
@@ -400,9 +402,7 @@ function transformList(
                 let expr = '';
                 let loc: SourceLocation | undefined = undefined;
                 if (type !== ASTType.Else) {
-                    const testAttr = currentNode.attrs?.find(a =>
-                        a.key === 'test' || a.key === 'condition'
-                    );
+                    const testAttr = currentNode.attrs?.find(a => a.key === 'test' || a.key === 'condition');
                     expr = testAttr?.value ?? 'false';
                     condFid = compiler.compile('expression', expr, locals);
                     loc = testAttr?.loc ?? currentNode.loc;
@@ -412,9 +412,7 @@ function transformList(
                 // 注意：If 节点本身也是容器，需要递归转换其 children
                 // 这里 locals 传递当前的 locals，因为 If 本身不改变作用域（For 才会）
                 // 除非 If 上同时有 For (AST 层面通常已拆分，若未拆分需注意优先级)
-                const children = currentNode.children
-                    ? transformList(currentNode.children, locals, compiler)
-                    : [];
+                const children = currentNode.children ? transformList(currentNode.children, locals, compiler) : [];
 
                 // 处理属性 (排除 test、condition)
                 const exclude = new Set(['test', 'condition']);
@@ -424,7 +422,7 @@ function transformList(
                     f: condFid,
                     c: children,
                     a: attrs.length > 0 ? attrs : undefined,
-                    ...(IS_DEV && { __m: { expr, loc } })
+                    ...(IS_DEV && { __m: { expr, loc } }),
                 });
 
                 currentIdx++;
@@ -439,7 +437,7 @@ function transformList(
                 t: ASTType.Conditional,
                 d: 1,
                 b: branches,
-                ...(IS_DEV && { __m: { loc: node.loc } })
+                ...(IS_DEV && { __m: { loc: node.loc } }),
             });
 
             // 跳过已处理的节点
@@ -497,20 +495,20 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
             tf: stats.total,
             cf: stats.cached,
             dn: dynamicNodeCount,
-            tn: irNodes.length
+            tn: irNodes.length,
         },
         m: {
             t: new Date().toISOString(),
             as: ast.length,
             fn: filename,
-            ...(source && { src: source })
-        }
+            ...(source && { src: source }),
+        },
     };
 
     if (IS_DEV) {
         console.log(
             `[Solely] Compiled <${filename}> in ${(end - start).toFixed(2)}ms | ` +
-            `Nodes: ${irNodes.length} | Fns: ${stats.total}`
+                `Nodes: ${irNodes.length} | Fns: ${stats.total}`,
         );
     }
 

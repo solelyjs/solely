@@ -1,4 +1,4 @@
-import { Meta } from "@/types";
+import { Meta } from '@/types';
 
 /**
  * 常量和配置
@@ -33,7 +33,7 @@ const theme = COLOR.dark;
 function displayWidth(str: string): number {
     let width = 0;
 
-    for (let i = 0; i < str.length;) {
+    for (let i = 0; i < str.length; ) {
         const code = str.codePointAt(i)!;
         const char = str[i];
 
@@ -45,19 +45,18 @@ function displayWidth(str: string): number {
         }
 
         // 全宽字符和Unicode图形字符宽度为2，其他为1
-        if ((code >= 0x2500 && code <= 0x257F) || code > 0x00FF) {
+        if ((code >= 0x2500 && code <= 0x257f) || code > 0x00ff) {
             width += 2;
         } else {
             width += 1;
         }
 
         // 处理UTF-16代理对
-        i += code > 0xFFFF ? 2 : 1;
+        i += code > 0xffff ? 2 : 1;
     }
 
     return width;
 }
-
 
 interface PointerOptions {
     /** 当前行索引（从 0 开始） */
@@ -83,7 +82,7 @@ function makePointer(width: number, opts: PointerOptions = {}): string {
     // 1. 如果总行数为 1，必然是单行错误 -> 使用 '^'
     // 2. 如果是多行错误的第一行 -> 使用 '^'
     // 3. 如果是多行错误的后续行 -> 使用 '~'
-    const char = (totalLines <= 1 || lineIndex === 0) ? '^' : '~';
+    const char = totalLines <= 1 || lineIndex === 0 ? '^' : '~';
 
     return char.repeat(effectiveWidth);
 }
@@ -95,12 +94,7 @@ function makePointer(width: number, opts: PointerOptions = {}): string {
  * @param meta 错误元数据，包含位置信息和表达式
  * @param componentName 组件名称
  */
-export function showTemplateError(
-    error: unknown,
-    source = '',
-    meta?: Meta,
-    componentName = 'component',
-): void {
+export function showTemplateError(error: unknown, source = '', meta?: Meta, componentName = 'component'): void {
     // 获取错误消息
     const errorMessage = (error as Error)?.message ?? String(error);
 
@@ -213,9 +207,8 @@ export function showTemplateError(
                     const srcLine = lines[targetLineIdx];
                     // 精确计算前导空白字符的显示宽度，确保正确对齐
                     const firstNonSpaceIndex = srcLine.search(/\S/);
-                    const leadingWhitespace = firstNonSpaceIndex === -1
-                        ? srcLine
-                        : srcLine.slice(0, firstNonSpaceIndex);
+                    const leadingWhitespace =
+                        firstNonSpaceIndex === -1 ? srcLine : srcLine.slice(0, firstNonSpaceIndex);
                     currentIndent = displayWidth(leadingWhitespace);
                 }
 

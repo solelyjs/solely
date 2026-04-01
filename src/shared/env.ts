@@ -18,8 +18,10 @@ export const IS_DEV = /* @__PURE__ */ (() => {
     }
 
     // 3. 本地主机名兜底（开发机上默认认为是 dev）
-    if (typeof window !== 'undefined' &&
-        ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location?.hostname || '')) {
+    if (
+        typeof window !== 'undefined' &&
+        ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location?.hostname || '')
+    ) {
         return true;
     }
 

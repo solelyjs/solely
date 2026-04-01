@@ -61,5 +61,5 @@ export default new Set([
     'ontimeupdate',
     'ontoggle',
     'onvolumechange',
-    'onwaiting'
+    'onwaiting',
 ]);

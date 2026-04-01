@@ -1,20 +1,20 @@
-import { isObject } from "../../shared/is-object";
+import { isObject } from '../../shared/is-object';
 
 /* ======================= Consts & Types ======================= */
 
-const RAW_SYMBOL = Symbol("solely.raw");
+const RAW_SYMBOL = Symbol('solely.raw');
 
 /** 路径键类型 - 用于表示对象路径的字符串或符号 */
 export type PathKey = string | symbol;
 
 /** 变更项的原始载荷 */
 export type ChangePayload =
-    | { type: "set"; key: PathKey; newValue: unknown; oldValue: unknown }
-    | { type: "delete"; key: PathKey; oldValue: unknown }
-    | { type: "array-push"; index: number; values: unknown[] }
-    | { type: "array-splice"; index: number; deleteCount: number; insert: unknown[] }
-    | { type: "array-replace"; oldValue: unknown[]; newValue: unknown[] }
-    | { type: "array-reset"; method: string };
+    | { type: 'set'; key: PathKey; newValue: unknown; oldValue: unknown }
+    | { type: 'delete'; key: PathKey; oldValue: unknown }
+    | { type: 'array-push'; index: number; values: unknown[] }
+    | { type: 'array-splice'; index: number; deleteCount: number; insert: unknown[] }
+    | { type: 'array-replace'; oldValue: unknown[]; newValue: unknown[] }
+    | { type: 'array-reset'; method: string };
 
 /** 完整的变更对象 */
 export type ChangeItem = ChangePayload & { path: PathKey[] };
@@ -91,15 +91,17 @@ export function toRaw<T>(observed: T): T {
 // ======================= Native Object Guard =======================
 
 const isNativeSkippable = (obj: any): boolean => {
-    if (!obj || typeof obj !== "object") return false;
+    if (!obj || typeof obj !== 'object') return false;
 
     // 浏览器原生类型，不能被 Proxy，否则会 Illegal invocation
-    return obj instanceof File ||
+    return (
+        obj instanceof File ||
         obj instanceof Blob ||
         obj instanceof FormData ||
         obj instanceof ArrayBuffer ||
         obj instanceof Response ||
-        obj instanceof Request;
+        obj instanceof Request
+    );
 };
 
 /**
@@ -120,7 +122,7 @@ const deepEqual = (a: any, b: any, seen = new WeakMap<object, object>()): boolea
     if (a == null || b == null) return a === b;
 
     // 基本类型
-    if (typeof a !== "object" || typeof b !== "object") return a === b;
+    if (typeof a !== 'object' || typeof b !== 'object') return a === b;
 
     // 类型不同（数组 vs 对象）
     if (Array.isArray(a) !== Array.isArray(b)) return false;
@@ -172,12 +174,12 @@ const resolvePathGlobal = (proxy: object): PathKey[] => {
 /** 预编译过滤器正则表达式 */
 const compileFilters = (filters: string[]): RegExp[] => {
     return filters.map(pattern => {
-        if (pattern === "") return /^.*$/;
+        if (pattern === '') return /^.*$/;
         const regexStr = pattern
-            .replace(/\./g, "\\.")
-            .replace(/\*\*/g, "(.+)")
-            .replace(/\*/g, "[^.]+")
-            .replace(/\[\d+\]/g, "\\[\\d+\\]");
+            .replace(/\./g, '\\.')
+            .replace(/\*\*/g, '(.+)')
+            .replace(/\*/g, '[^.]+')
+            .replace(/\[\d+\]/g, '\\[\\d+\\]');
         return new RegExp(`^${regexStr}$`);
     });
 };
@@ -185,7 +187,7 @@ const compileFilters = (filters: string[]): RegExp[] => {
 /** 检查路径是否匹配预编译的正则 */
 const isPathMatched = (path: PathKey[], filterRegexes: RegExp[]): boolean => {
     if (filterRegexes.length === 0) return true;
-    const pathStr = path.map(String).join(".");
+    const pathStr = path.map(String).join('.');
     return filterRegexes.some(regex => regex.test(pathStr));
 };
 
@@ -199,7 +201,7 @@ const globalEmit = (targetProxy: object, payload: ChangePayload) => {
     while (current) {
         const observers = globalObservers.get(current);
         if (observers) {
-            observers.forEach((entry) => {
+            observers.forEach(entry => {
                 // 检查观察者是否活跃
                 if (!entry.active) return;
 
@@ -250,16 +252,12 @@ const globalEmit = (targetProxy: object, payload: ChangePayload) => {
 export function observe<T extends object>(
     value: T,
     callback: (change: ChangeItem) => void,
-    options: ObserveOptions = {}
+    options: ObserveOptions = {},
 ): ObserveReturn<T> {
     const { throttle = 0, onBatch, immediate = false, deepCompare = false } = options;
 
     // 路径过滤正则缓存 - 预编译
-    const filterPatterns = Array.isArray(options.filter)
-        ? options.filter
-        : options.filter
-            ? [options.filter]
-            : [];
+    const filterPatterns = Array.isArray(options.filter) ? options.filter : options.filter ? [options.filter] : [];
     const filterRegexes = compileFilters(filterPatterns);
 
     // 当前观察者的入口
@@ -287,16 +285,16 @@ export function observe<T extends object>(
 
                 // 计算触发事件的参数
                 if (key === 'push') {
-                    globalEmit(proxy, { type: "array-push", index: target.length - args.length, values: args });
+                    globalEmit(proxy, { type: 'array-push', index: target.length - args.length, values: args });
                 } else if (key === 'unshift') {
-                    globalEmit(proxy, { type: "array-push", index: 0, values: args });
+                    globalEmit(proxy, { type: 'array-push', index: 0, values: args });
                 } else if (key === 'pop') {
-                    globalEmit(proxy, { type: "array-splice", index: target.length, deleteCount: 1, insert: [] });
+                    globalEmit(proxy, { type: 'array-splice', index: target.length, deleteCount: 1, insert: [] });
                 } else if (key === 'shift') {
-                    globalEmit(proxy, { type: "array-splice", index: 0, deleteCount: 1, insert: [] });
+                    globalEmit(proxy, { type: 'array-splice', index: 0, deleteCount: 1, insert: [] });
                 } else if (key === 'splice') {
                     const [start, deleteCount, ...insert] = args as [number, number, ...unknown[]];
-                    globalEmit(proxy, { type: "array-splice", index: start, deleteCount, insert });
+                    globalEmit(proxy, { type: 'array-splice', index: start, deleteCount, insert });
                 }
                 return res;
             };
@@ -311,7 +309,7 @@ export function observe<T extends object>(
                 globalArrayMutationDepth.set(proxy, currentDepth + 1);
                 const res = (target as any)[key].apply(target, args);
                 globalArrayMutationDepth.set(proxy, currentDepth);
-                globalEmit(proxy, { type: "array-reset", method: key });
+                globalEmit(proxy, { type: 'array-reset', method: key });
                 return res;
             };
         });
@@ -369,9 +367,7 @@ export function observe<T extends object>(
                 // 排除 Symbol.iterator 等内置属性
                 if (typeof p === 'symbol') return val;
 
-                return isObject(val) && !isNativeSkippable(val)
-                    ? createProxy(val, proxy, p)
-                    : val;
+                return isObject(val) && !isNativeSkippable(val) ? createProxy(val, proxy, p) : val;
             },
 
             set(t, p, newVal, r) {
@@ -385,9 +381,9 @@ export function observe<T extends object>(
                 const arrayDepth = globalArrayMutationDepth.get(proxy) || 0;
                 if (arrayDepth === 0) {
                     if (Array.isArray(oldVal) && Array.isArray(newVal)) {
-                        globalEmit(proxy, { type: "array-replace", oldValue: oldVal, newValue: newVal });
+                        globalEmit(proxy, { type: 'array-replace', oldValue: oldVal, newValue: newVal });
                     } else {
-                        globalEmit(proxy, { type: "set", key: p, newValue: newVal, oldValue: oldVal });
+                        globalEmit(proxy, { type: 'set', key: p, newValue: newVal, oldValue: oldVal });
                     }
                 }
                 return res;
@@ -400,10 +396,10 @@ export function observe<T extends object>(
 
                 const arrayDepth = globalArrayMutationDepth.get(proxy) || 0;
                 if (res && arrayDepth === 0) {
-                    globalEmit(proxy, { type: "delete", key: p, oldValue: oldVal });
+                    globalEmit(proxy, { type: 'delete', key: p, oldValue: oldVal });
                 }
                 return res;
-            }
+            },
         };
 
         const proxy = new Proxy(target, handler);
@@ -433,11 +429,11 @@ export function observe<T extends object>(
             if (!isObject(obj) || seen.has(obj)) return;
             seen.add(obj);
 
-            Reflect.ownKeys(obj).forEach((k) => {
+            Reflect.ownKeys(obj).forEach(k => {
                 const val = obj[k];
                 // 跳过循环引用
                 if (isObject(val) && seen.has(val)) return;
-                globalEmit(currentProxy, { type: "set", key: k, newValue: val, oldValue: undefined });
+                globalEmit(currentProxy, { type: 'set', key: k, newValue: val, oldValue: undefined });
                 if (isObject(val)) {
                     walk(val, createProxy(val, currentProxy, k), seen);
                 }
@@ -492,8 +488,8 @@ export function observe<T extends object>(
                 obs.delete(observerEntry);
             }
             // 清空回调，防止内存泄漏
-            observerEntry.callback = () => { };
+            observerEntry.callback = () => {};
             observerEntry.onBatch = undefined;
-        }
+        },
     };
 }
