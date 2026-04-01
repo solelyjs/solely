@@ -14,6 +14,8 @@ module.exports = {
                 'test',
                 'chore',
                 'revert',
+                'ci',
+                'build',
             ],
         ],
         'subject-full-stop': [0, 'never'],
