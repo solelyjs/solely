@@ -362,6 +362,8 @@ interface NodeEntry {
 export class IRRenderer {
     private nodeMap = new Map<string, NodeEntry>();
     private marker: boolean = false;
+    /** 静态子树缓存：key -> DOM节点模板 */
+    private staticSubtreeCache = new Map<string, Node>();
 
     constructor(
         private ir: IRRoot,
@@ -560,10 +562,82 @@ export class IRRenderer {
     }
 
     // ================ 核心遍历 ================
+
+    /**
+     * 创建静态子树（首次渲染）
+     * 内部节点不进入 nodeMap，只返回根节点
+     */
+    private createStaticSubtree(irNode: IRNode, parentNode: Node, loops: runtimeLoop[]): Node {
+        switch (irNode.t) {
+            case ASTType.Element: {
+                const node = this.createElement(irNode, parentNode);
+                initStaticClass(node as HTMLElement, irNode);
+                initStaticStyle(node as HTMLElement, irNode);
+
+                // 应用静态属性（静态子树不会有动态属性）
+                const postTasks = this.applyAttrs(node as HTMLElement, irNode.a ?? [], loops);
+
+                // 递归创建子节点（都是静态的）
+                irNode.c?.forEach(child => {
+                    const childNode = this.createStaticSubtree(child, node, loops);
+                    node.appendChild(childNode);
+                });
+
+                postTasks.forEach((fn: () => any) => fn());
+                return node;
+            }
+            case ASTType.Text:
+                return this.createText(irNode, loops);
+            case ASTType.Comment:
+                return this.createComment(irNode, loops);
+            default:
+                return document.createComment('unknown');
+        }
+    }
+
+    /**
+     * 处理静态子树
+     * 首次渲染创建并缓存，后续直接克隆
+     */
+    private handleStaticSubtree(irNode: IRNode, id: string, parentNode: Node, loops: runtimeLoop[]): Node {
+        const cached = this.staticSubtreeCache.get(id);
+        if (cached) {
+            // 克隆缓存的静态子树
+            const clone = cached.cloneNode(true);
+            parentNode.appendChild(clone);
+            // 静态子树只需记录根节点，不进入 nodeMap
+            return clone;
+        }
+
+        // 首次渲染：创建并缓存
+        const node = this.createStaticSubtree(irNode, parentNode, loops);
+        parentNode.appendChild(node);
+        // 缓存模板（用于后续克隆）
+        this.staticSubtreeCache.set(id, node.cloneNode(true));
+        return node;
+    }
+
     private irToNode(irNode: IRNode, index: number | string, pid: string, parentNode: Node, loops: runtimeLoop[]) {
         const id = pid + '-' + index;
         const existing = this.nodeMap.get(id);
         let node: Node | undefined = undefined;
+
+        // ========== 静态子树优化 ==========
+        // 如果是完全静态子树，使用克隆优化
+        if (irNode.s === 1) {
+            // 静态子树不走 nodeMap，直接处理
+            if (existing) {
+                // 已存在，标记为活跃
+                existing.marker = this.marker;
+                node = existing.node;
+            } else {
+                // 创建或克隆
+                node = this.handleStaticSubtree(irNode, id, parentNode, loops);
+                // 记录到 nodeMap 用于清理，但内部节点不记录
+                this.nodeMap.set(id, { irNode, node, loops, marker: this.marker });
+            }
+            return;
+        }
 
         if (existing) {
             node = existing.node;
@@ -734,6 +808,7 @@ export class IRRenderer {
     destroy() {
         this.container.innerHTML = '';
         this.nodeMap.clear();
+        this.staticSubtreeCache.clear();
     }
 }
 

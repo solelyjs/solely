@@ -53,6 +53,12 @@ export interface IRNode {
     t: ASTType;
     /** dynamicFlag (0=静态, 1=动态) 不包含子节点状态 */
     d: 0 | 1;
+    /**
+     * staticSubtreeFlag (0=非静态子树, 1=完全静态子树)
+     * 当 s=1 时，表示该节点及其所有后代都是静态的
+     * 运行时可以直接 cloneNode 而无需递归创建
+     */
+    s?: 0 | 1;
 
     /** tagName 标签名（Element 使用） */
     g?: string;
@@ -99,6 +105,8 @@ export interface IRRoot {
         dn: number;
         /** 总节点数 */
         tn: number;
+        /** 静态子树数量 */
+        sn?: number;
     };
     /** meta 编译元数据 */
     m?: {

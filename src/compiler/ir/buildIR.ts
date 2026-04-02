@@ -276,6 +276,66 @@ function processAttributes(
 // ==================== 核心转换逻辑 (Unified) ====================
 
 /**
+ * 检查节点是否是静态的（本身及所有后代都是静态）
+ */
+function isStaticNode(ir: IRNode): boolean {
+    // 如果节点本身是动态的，则不是静态节点
+    if (ir.d === 1) return false;
+
+    // 检查子节点
+    if (ir.c && ir.c.length > 0) {
+        for (const child of ir.c) {
+            if (!isStaticNode(child)) return false;
+        }
+    }
+
+    // 检查条件分支
+    if (ir.b && ir.b.length > 0) {
+        for (const branch of ir.b) {
+            if (branch.c && branch.c.length > 0) {
+                for (const child of branch.c) {
+                    if (!isStaticNode(child)) return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+/**
+ * 标记静态子树
+ * 后序遍历：先处理子节点，再判断自身是否为静态子树
+ */
+function markStaticSubtrees(ir: IRNode): void {
+    // 1. 先递归处理子节点
+    if (ir.c && ir.c.length > 0) {
+        for (const child of ir.c) {
+            markStaticSubtrees(child);
+        }
+    }
+
+    // 2. 处理条件分支
+    if (ir.b && ir.b.length > 0) {
+        for (const branch of ir.b) {
+            if (branch.c && branch.c.length > 0) {
+                for (const child of branch.c) {
+                    markStaticSubtrees(child);
+                }
+            }
+        }
+    }
+
+    // 3. 判断自身是否为完全静态子树
+    // 只有 Element 和 Text 类型可以被标记为静态子树
+    if (ir.t === ASTType.Element || ir.t === ASTType.Text) {
+        if (ir.d === 0 && isStaticNode(ir)) {
+            ir.s = 1;
+        }
+    }
+}
+
+/**
  * 处理单个非 Conditional 节点，或者 Conditional 的子节点
  */
 function transformNode(node: ASTNode, locals: IRLocal[], compiler: FunctionCompiler): IRNode {
@@ -480,22 +540,29 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
     // 入口：直接调用 transformList 处理根节点列表
     const irNodes = transformList(ast, [], compiler);
 
+    // 标记静态子树 - 后序遍历所有节点
+    for (const node of irNodes) {
+        markStaticSubtrees(node);
+    }
+
     const end = performance.now();
     const stats = compiler.getStats();
 
-    // 计算统计信息 (简单遍历根层级动态性，如果需要深度统计可以递归，这里保持轻量)
+    // 计算统计信息
     const dynamicNodeCount = irNodes.filter(n => n.d === 1).length;
+    const staticSubtreeCount = irNodes.filter(n => n.s === 1).length;
 
     const root: IRRoot = {
         t: 'root',
-        v: '1.1.0', // Bump version
-        fns: compiler.getFunctions(), // 获取函数列表快照
+        v: '1.2.0', // Bump version - static hoisting support
+        fns: compiler.getFunctions(),
         n: irNodes,
         s: {
             tf: stats.total,
             cf: stats.cached,
             dn: dynamicNodeCount,
             tn: irNodes.length,
+            sn: staticSubtreeCount, // 静态子树数量
         },
         m: {
             t: new Date().toISOString(),
@@ -508,7 +575,7 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
     if (IS_DEV) {
         console.log(
             `[Solely] Compiled <${filename}> in ${(end - start).toFixed(2)}ms | ` +
-                `Nodes: ${irNodes.length} | Fns: ${stats.total}`,
+                `Nodes: ${irNodes.length} | Fns: ${stats.total} | StaticSubtrees: ${staticSubtreeCount}`,
         );
     }
 
