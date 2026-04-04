@@ -38,6 +38,8 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     #isAttributeUpdate = false;
 
     #createdCalled = false;
+    #isActive = false;
+    #needsRefresh = false;
 
     static upgradeProps?: readonly string[]; // 需要在元素定义前设置的属性列表（Upgrade Property）
 
@@ -177,6 +179,11 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
     /* -------------------- 刷新调度 -------------------- */
     #scheduleRefresh() {
+        if (!this.#isActive) {
+            // 元素未连接，不刷新
+            this.#needsRefresh = true; // defer refresh
+            return;
+        }
         if (this.#updateScheduled || !this.#render) return;
 
         this.#updateScheduled = true;
@@ -188,7 +195,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     }
 
     #doRefresh() {
-        if (this.#isRefreshing || !this.isConnected) return;
+        if (this.#isRefreshing || !this.#isActive) return;
 
         this.#isRefreshing = true;
 
@@ -239,6 +246,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
     /* -------------------- 生命周期 -------------------- */
     connectedCallback(): void {
+        this.#isActive = true;
         const ctor = this.constructor as typeof BaseElement & UpgradePropsConstructor;
         const userUpgradeProps = ctor.upgradeProps;
 
@@ -280,22 +288,21 @@ class BaseElement<TData extends object = any> extends HTMLElement {
             }
         }
 
-        if (this.#ir) this.#render = createRender(this.#ir, this.#root as HTMLElement, this);
+        if (this.#ir && !this.#render) this.#render = createRender(this.#ir, this.#root as HTMLElement, this);
+
+        // 重新挂载强制刷新一次
+        if (this.#needsRefresh) {
+            this.#needsRefresh = false;
+            this.#scheduleRefresh();
+        }
 
         this.mounted();
         this.onInit?.();
     }
 
     disconnectedCallback(): void {
+        this.#isActive = false;
         this.unmounted();
-
-        // 清理响应式
-        this.#dispose?.();
-        this.#dispose = undefined;
-
-        // 销毁渲染实例
-        this.#render?.destroy?.();
-        this.#render = null as any;
     }
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
         if (oldValue === newValue || !isObject(this.$data)) return;

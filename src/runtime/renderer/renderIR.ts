@@ -1,7 +1,7 @@
 import { ASTType } from '../../types';
 import { IRAttr, IRNode, IRRoot, Meta } from '../../types';
 import { runtimeLoop } from '../../types';
-import { showTemplateError } from '../../shared';
+import { IS_DEV, showTemplateError } from '../../shared';
 
 const IRCTX_SYMBOL = Symbol('solely.irCtx');
 const IR_EVENTS_SYMBOL = Symbol('solely.irEvents');
@@ -98,17 +98,35 @@ const setElementStyles = (el: HTMLElement, dynamicStyle: any): void => {
     }
 };
 
+const isValidClassName = (name: string): boolean => {
+    if (!name || name.length === 0) return false;
+    if (/\s/.test(name)) {
+        if (IS_DEV) {
+            console.warn(`[Solely] Invalid class name "${name}" contains whitespace, will be ignored`);
+        }
+        return false;
+    }
+    return true;
+};
+
 const setElementClasses = (el: HTMLElement | SVGElement, dynamicClass: any): void => {
     const anyEl = el as any;
     const lastDynamic = anyEl[PREV_CLASS_OBJ];
     const currentDynamic = flattenClasses(dynamicClass);
 
+    const validCurrent: Record<string, boolean> = {};
+    for (const cls in currentDynamic) {
+        if (isValidClassName(cls)) {
+            validCurrent[cls] = currentDynamic[cls];
+        }
+    }
+
     // 1. 初次渲染处理
     if (!lastDynamic) {
-        for (const cls in currentDynamic) {
+        for (const cls in validCurrent) {
             el.classList.add(cls);
         }
-        anyEl[PREV_CLASS_OBJ] = currentDynamic;
+        anyEl[PREV_CLASS_OBJ] = validCurrent;
         return;
     }
 
@@ -116,14 +134,14 @@ const setElementClasses = (el: HTMLElement | SVGElement, dynamicClass: any): voi
 
     // 2. 移除旧的：在上一次有，但这一次没有的 class
     for (const cls in lastDynamic) {
-        if (!currentDynamic[cls]) {
+        if (!validCurrent[cls]) {
             el.classList.remove(cls);
             hasChanged = true;
         }
     }
 
     // 3. 添加新的：在这一次有，但上一次没有的 class
-    for (const cls in currentDynamic) {
+    for (const cls in validCurrent) {
         if (!lastDynamic[cls]) {
             el.classList.add(cls);
             hasChanged = true;
@@ -132,7 +150,7 @@ const setElementClasses = (el: HTMLElement | SVGElement, dynamicClass: any): voi
 
     // 4. 只有发生变化时才覆盖缓存
     if (hasChanged) {
-        anyEl[PREV_CLASS_OBJ] = currentDynamic;
+        anyEl[PREV_CLASS_OBJ] = validCurrent;
     }
 };
 

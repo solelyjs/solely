@@ -8,33 +8,17 @@
     <button @click="this.router.push('/about')">关于</button>
     <button @click="this.router.push('/user/123')">用户 123</button>
     <button @click="this.router.push('/user/456')">用户 456</button>
+    <button @click="this.router.push('/search?keyword=hello&category=tech&page=2')">Query参数</button>
+    <button class="async-btn" @click="this.router.push('/async')">异步加载成功</button>
+    <button class="error-btn" @click="this.router.push('/error-demo')">测试加载错误</button>
+    <button @click="this.router.push('/nested/child1')">嵌套路由</button>
+    <button class="keepalive-btn" @click="this.router.push('/keepalive')">KeepAlive缓存</button>
     <button @click="this.router.back()">返回</button>
     <button @click="this.router.forward()">前进</button>
   </div>
 
-  <div class="route-content">
-    <If test="$data.currentPath === '/'">
-      <div class="page home">
-        <h3>🏠 首页</h3>
-        <p>欢迎来到 Solely 路由测试！</p>
-      </div>
-    </If>
-
-    <If test="$data.currentPath === '/about'">
-      <div class="page about">
-        <h3>ℹ️ 关于</h3>
-        <p>Solely 是一个轻量级 Web 组件框架</p>
-      </div>
-    </If>
-
-    <If test="$data.currentPath.startsWith('/user')">
-      <div class="page user">
-        <h3>👤 用户详情</h3>
-        <p>用户ID: {{ $data.params.id }}</p>
-        <p>这是动态路由参数的示例</p>
-      </div>
-    </If>
-  </div>
+  <!-- 使用 router-view 动态渲染路由组件 -->
+  <router-view></router-view>
 
   <div class="history-info">
     <h4>导航历史</h4>

@@ -190,14 +190,35 @@
     }
 
     .highlight {
-      background: #fff59d;
-      padding: 2px 6px;
-      border-radius: 3px;
+       background: #fff59d;
+       padding: 2px 6px;
+       border-radius: 3px;
+     }
+
+    .back-link {
+      max-width: 900px;
+      margin: 0 auto 20px;
+      padding: 0 20px;
+    }
+
+    .back-link a {
+      color: #666;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+
+    .back-link a:hover {
+      color: #333;
     }
   </style>
 </head>
 
 <body>
+  <div class="back-link">
+    <a href="../index.html">← 返回示例首页</a>
+  </div>
+
   <h1>🛡️ Solely 框架安全机制演示</h1>
 
   <div class="intro">
@@ -278,6 +299,45 @@
 
     <div id="urlContainer"></div>
     <div id="urlResult" class="result"></div>
+  </div>
+
+  <!-- 场景 4: Class 绑定特殊字符测试 -->
+  <div class="demo-section safe">
+    <h2>✅ 场景 4: Class 绑定特殊字符测试</h2>
+    <p>测试框架如何处理包含特殊字符的 class 名称，以及验证 class 绑定的安全性。</p>
+
+    <div class="mechanism-box">
+      <h4>框架的安全机制：</h4>
+      <ul>
+        <li><code>classList.add()</code> 接受字符串作为 class 名称</li>
+        <li><strong>包含空格的 class 名称会被自动过滤</strong>（开发模式下会警告）</li>
+        <li>不会解析字符串内容为选择器或代码</li>
+        <li>无法通过 class 名称执行 JavaScript 代码</li>
+      </ul>
+    </div>
+
+    <div class="mechanism-box">
+      <h4>测试数据示例：</h4>
+      <div class="code-block">{
+  // 有效的 class 名称
+  'has-dash': true,
+  'has_underscore': true,
+  'emoji-😀': true,
+  '中文类名': true,
+  // 无效的 class 名称（会被过滤）
+  'has space': true,
+  // XSS 尝试（不会执行）
+  '&lt;script&gt;alert("XSS")&lt;/script&gt;': true,
+  'onclick=alert("XSS")': true,
+  'onerror=alert("XSS")': true
+}</div>
+    </div>
+
+    <button onclick="testClassSpecialChars()">测试特殊字符（连字符、中文、Emoji）</button>
+    <button onclick="testClassXSSAttempt()">测试 XSS 注入尝试</button>
+
+    <div id="classContainer"></div>
+    <div id="classResult" class="result"></div>
   </div>
 
   <!-- 安全机制总结 -->

@@ -39,6 +39,190 @@ h3 {
   transform: translateY(-2px);
 }
 
+.nav-buttons button.async-btn {
+  background: #52c41a;
+}
+
+.nav-buttons button.async-btn:hover {
+  background: #73d13d;
+}
+
+.nav-buttons button.error-btn {
+  background: #ff4d4f;
+}
+
+.nav-buttons button.error-btn:hover {
+  background: #ff7875;
+}
+
+.nav-buttons button.keepalive-btn {
+  background: #722ed1;
+}
+
+.nav-buttons button.keepalive-btn:hover {
+  background: #9254de;
+}
+
+.async {
+  background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.async h3 {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.async p {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+}
+
+.query {
+  background: linear-gradient(135deg, #faad14 0%, #d48806 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.query h3 {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.query p {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+}
+
+.nested {
+  background: linear-gradient(135deg, #13c2c2 0%, #08979c 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.nested h3 {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.nested-nav {
+  margin: 15px 0;
+  display: flex;
+  gap: 10px;
+}
+
+.nested-nav button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+}
+
+.nested-nav button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.nested-link {
+  padding: 8px 16px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.nested-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.nested-content {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.nested-content input {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+.nested-content input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.nested-child {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.nested-child h4 {
+  color: #08979c;
+  margin-bottom: 10px;
+}
+
+.nested-child input {
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.keepalive {
+  background: linear-gradient(135deg, #722ed1 0%, #531dab 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.keepalive h3 {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.keepalive p {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+}
+
+.keepalive button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.keepalive button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.keepalive input {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
 .route-content {
   margin: 20px 0;
   padding: 20px;
@@ -56,6 +240,7 @@ h3 {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -69,6 +254,16 @@ h3 {
   border-radius: 8px;
 }
 
+.home h3 {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.home p {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+}
+
 .about {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   color: white;
@@ -76,11 +271,31 @@ h3 {
   border-radius: 8px;
 }
 
+.about h3 {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.about p {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+}
+
 .user {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
   padding: 20px;
   border-radius: 8px;
+}
+
+.user h3 {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.user p {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
 }
 
 .history-info {

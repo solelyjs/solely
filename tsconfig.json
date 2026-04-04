@@ -24,6 +24,6 @@
             "@/*": ["src/*"]
         }
     },
-    "include": ["src"],
-    "exclude": ["examples", "tests", "dist"]
+    "include": ["src", "examples"],
+    "exclude": ["tests", "dist"]
 }

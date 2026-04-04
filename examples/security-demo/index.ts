@@ -205,6 +205,91 @@ class DynamicTemplate extends BaseElement<{
     }
 }
 
+/**
+ * class 绑定测试组件 - 展示特殊字符处理
+ */
+@CustomElement({
+    tagName: 'class-test',
+    template: `
+    <div class="class-binding-demo">
+      <h3>Class 绑定测试结果</h3>
+      <div class="demo-content">
+        <div :class="$data.classObj" class="target">目标元素 - 查看应用的 class 名称</div>
+        <div class="info">
+          <strong>应用的 class 数量：</strong>{{ $data.classKeys.length }}
+        </div>
+        <div class="tags">
+          <strong>所有 class 名称：</strong>
+          <For each="$data.classKeys">
+            <span class="tag">{{ item }}</span>
+          </For>
+        </div>
+      </div>
+    </div>
+  `,
+    styles: `
+    .class-binding-demo {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .class-binding-demo h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .demo-content {
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    .target {
+      padding: 15px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .info {
+      margin: 10px 0;
+      padding: 10px;
+      background: white;
+      border-radius: 4px;
+    }
+    .tags {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .tag {
+      background: #007bff;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+  `,
+})
+class ClassTest extends BaseElement<{
+    classObj: Record<string, boolean>;
+    classKeys: string[];
+}> {
+    constructor() {
+        super({
+            classObj: {},
+            classKeys: [],
+        });
+    }
+
+    updateClassObj(obj: Record<string, boolean>) {
+        this.$data.classObj = obj;
+        this.$data.classKeys = Object.keys(obj).filter(k => obj[k]);
+    }
+}
+
 // ============================================================
 // 演示控制逻辑
 // ============================================================
@@ -329,6 +414,64 @@ async function fetchUserData(userId: string): Promise<any> {
         'info',
         'ℹ️ 模板在编译时就已经确定，URL 参数只能影响数据，不能改变模板结构。' +
             '即使模板中包含 {{ alert("XSS") }}，它也会被当作纯文本显示。',
+    );
+};
+
+// 场景 5: Class 绑定特殊字符测试
+(window as any).testClassSpecialChars = () => {
+    const container = document.getElementById('classContainer')!;
+    container.innerHTML = '';
+
+    const classTest = document.createElement('class-test') as ClassTest;
+    container.appendChild(classTest);
+
+    // 测试各种特殊字符（包含有效和无效的 class 名称）
+    const specialClassNames: Record<string, boolean> = {
+        // 有效的 class 名称
+        'has-dash': true,
+        has_underscore: true,
+        'has.dot': true,
+        'emoji-😀': true,
+        中文类名: true,
+        camelCase: true,
+        SCREAMING_CASE: true,
+        // 无效的 class 名称（会被过滤，开发模式下会警告）
+        'has space': true,
+    };
+
+    classTest.updateClassObj(specialClassNames);
+
+    showResult(
+        'classResult',
+        'safe',
+        '✅ 特殊字符 class 名称处理成功！有效的 class 名称已应用，包含空格的无效名称已被过滤（开发模式下会输出警告）。' +
+            '框架使用 classList.add() 添加 class，不会导致 XSS 或其他安全问题。',
+    );
+};
+
+(window as any).testClassXSSAttempt = () => {
+    const container = document.getElementById('classContainer')!;
+    container.innerHTML = '';
+
+    const classTest = document.createElement('class-test') as ClassTest;
+    container.appendChild(classTest);
+
+    // 尝试 XSS 注入（这些字符串会被当作纯文本 class 名称，不会执行）
+    const xssClassNames: Record<string, boolean> = {
+        '<script>alert("XSS")</script>': true,
+        'onclick=alert("XSS")': true,
+        'onerror=alert("XSS")': true,
+        '"><img src=x onerror=alert("XSS")>': true,
+        "javascript:alert('XSS')": true,
+    };
+
+    classTest.updateClassObj(xssClassNames);
+
+    showResult(
+        'classResult',
+        'warning',
+        '⚠️ 尝试注入 XSS 作为 class 名称。这些字符串会被当作纯文本（class 名称），' +
+            '不会执行任何 JavaScript。classList.add() 本身是安全的，不会解析内容为代码。',
     );
 };
 
