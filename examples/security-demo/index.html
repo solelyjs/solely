@@ -233,11 +233,14 @@
 
     <div class="mechanism-box" style="background: #ffebee; border: 2px solid #f44336;">
       <h4 style="color: #c62828;">⚠️ 重要安全警告</h4>
-      <p>本示例使用了 <code>:innerHTML</code> 指令来展示 XSS 风险。<strong>在实际项目中：</strong></p>
+      <p>本示例使用了 <code>:innerHTML</code>、<code>:href</code> 和 <code>:src</code> 指令来展示 XSS 风险。<strong>在实际项目中：</strong></p>
       <ul style="color: #c62828;">
         <li><strong>永远不要</strong>将用户输入的内容直接绑定到 <code>:innerHTML</code></li>
         <li><strong>永远不要</strong>将第三方 API 数据直接绑定到 <code>:innerHTML</code></li>
-        <li><code>:innerHTML</code> 应该只用于<strong>完全可信</strong>的静态内容</li>
+        <li><strong>永远不要</strong>将用户输入的 URL 直接绑定到 <code>:href</code></li>
+        <li>恶意 URL 如 <code>javascript:alert('XSS')</code> 会在点击时执行代码！</li>
+        <li><code>:src</code> 绑定 javascript: 协议在现代浏览器中不会执行，但仍建议过滤</li>
+        <li><code>:innerHTML</code> 和 <code>:href</code> 应该只用于<strong>完全可信</strong>的静态内容</li>
         <li>使用 <code>{{ }}</code> 插值会自动转义 HTML，是安全的选择</li>
       </ul>
     </div>
@@ -248,7 +251,8 @@
   username: <span class="string">'&lt;img src=x onerror="alert(\'XSS\')"&gt;'</span>,
   bio: <span class="string">'&lt;script&gt;alert("XSS")&lt;/script&gt;正常简介'</span>,
   website: <span class="string">'javascript:alert("XSS")'</span>,
-  userContent: <span class="string">'&lt;div onclick="alert(\'点击攻击\')"&gt;点击我&lt;/div&gt;'</span>
+  userContent: <span class="string">'&lt;div onclick="alert(\'点击攻击\')"&gt;点击我&lt;/div&gt;'</span>,
+  avatarUrl: <span class="string">'javascript:alert("XSS via img")'</span>
 }</div>
     </div>
 
@@ -340,6 +344,50 @@
     <div id="classResult" class="result"></div>
   </div>
 
+  <!-- 场景 5: 事件处理器属性绑定行为 -->
+  <div class="demo-section warning">
+    <h2>⚠️ 场景 5: 事件处理器属性绑定行为</h2>
+    <p>测试 :onclick 属性绑定的实际行为。Solely 框架通过设置 DOM property 实现绑定，字符串不会被执行。</p>
+
+    <div class="mechanism-box" style="background: #fff8e1; border: 2px solid #ff9800;">
+      <h4 style="color: #e65100;">ℹ️ 框架行为说明</h4>
+      <p>Solely 的 <code>:attr</code> 绑定设置的是 DOM property（<code>el.onclick = value</code>），不是 HTML attribute。</p>
+      <p>当 value 是字符串时，由于 <code>onclick</code> property 期望的是函数，所以字符串<strong>不会被执行</strong>。</p>
+      <div class="code-block">{
+  clickHandler: <span class="string">"alert('XSS via onclick: ' + document.cookie)"</span>
+  <span class="comment">// 结果：el.onclick 被设置为字符串，但不会执行</span>
+}</div>
+    </div>
+
+    <button onclick="testSafeEventBinding()">测试安全状态（无绑定）</button>
+    <button class="danger-btn" onclick="testEventBindingXSS()">测试属性绑定（无害但不应使用）</button>
+
+    <div id="eventContainer"></div>
+    <div id="eventResult" class="result"></div>
+  </div>
+
+  <!-- 场景 6: Style 属性绑定行为 -->
+  <div class="demo-section info">
+    <h2>📘 场景 6: Style 属性绑定行为</h2>
+    <p>测试 :style 属性绑定的行为。由于 Solely 不支持 IE，style 中的 javascript: 协议不会执行。</p>
+
+    <div class="mechanism-box" style="background: #e3f2fd; border: 2px solid #2196f3;">
+      <h4 style="color: #1565c0;">ℹ️ 框架说明</h4>
+      <p>通过 style 属性执行 XSS（如 background-image: url('javascript:...')）仅在旧版 IE 中有效。</p>
+      <p>Solely 框架不支持 IE，且现代浏览器已修复此漏洞，因此这种攻击方式在本框架下<strong>不存在风险</strong>。</p>
+      <div class="code-block">{
+  userStyle: <span class="string">"background-image: url('javascript:alert(\"XSS\")')"</span>
+  <span class="comment">// 结果：样式会被应用，但 javascript: 代码不会执行</span>
+}</div>
+    </div>
+
+    <button onclick="testSafeStyleBinding()">测试正常样式</button>
+    <button onclick="testStyleBindingXSS()">测试含 javascript: 的样式（无害演示）</button>
+
+    <div id="styleContainer"></div>
+    <div id="styleResult" class="result"></div>
+  </div>
+
   <!-- 安全机制总结 -->
   <div class="demo-section safe">
     <h2>✅ Solely 框架的安全机制总结</h2>
@@ -358,7 +406,7 @@
         <h4>⚠️ 需要注意</h4>
         <ul>
           <li>:innerHTML 指令（如果存在）会渲染原始 HTML</li>
-          <li>javascript: 伪协议在 href 中</li>
+          <li>javascript: 伪协议在 href/src 中</li>
           <li>动态模板构造（如果支持）</li>
           <li>第三方脚本引入</li>
         </ul>
@@ -397,6 +445,54 @@
       </p>
     </div>
 
+    <div class="mechanism-box" style="background: #fff3e0; border: 2px solid #ff9800;">
+      <h4 style="color: #e65100;">⚠️ 危险：使用 :href / :src 绑定用户输入的 URL</h4>
+      <div class="code-block" style="background: #3e2723;"><span class="comment">// ❌ 危险：用户输入的 URL 可能包含 javascript: 协议</span>
+&lt;a :href="$data.userWebsite"&gt;访问网站&lt;/a&gt;
+
+<span class="comment">// ❌ 危险：图片 src 可能被注入恶意协议</span>
+&lt;img :src="$data.userAvatar"&gt;
+
+<span class="comment">// ❌ 危险：不验证的外部链接</span>
+&lt;a :href="externalLink"&gt;外部链接&lt;/a&gt;</div>
+      <p style="color: #e65100; margin-top: 10px;">
+        <strong>后果：</strong>攻击者可以使用 <code>javascript:alert('XSS')</code> 等伪协议，
+        用户点击链接时执行恶意代码，窃取 localStorage、Cookie 等敏感信息。
+      </p>
+    </div>
+
+    <div class="mechanism-box" style="background: #e3f2fd; border: 2px solid #2196f3;">
+      <h4 style="color: #1565c0;">ℹ️ :style 绑定说明</h4>
+      <div class="code-block" style="background: #0d47a1;"><span class="comment">// 虽然可以绑定包含 javascript: 协议的样式</span>
+&lt;div :style="$data.userStyle"&gt;样式区域&lt;/div&gt;
+<span class="comment">// 用户输入: background-image: url('javascript:alert("XSS")')</span>
+<span class="comment">// 但在 Solely 框架中（不支持 IE），这种攻击无效</span></div>
+      <p style="color: #1565c0; margin-top: 10px;">
+        <strong>说明：</strong>通过 CSS 的 url('javascript:...') 执行代码仅在旧版 IE 中有效。
+        Solely 框架不支持 IE，且现代浏览器已修复此漏洞，因此不存在 XSS 风险。
+      </p>
+    </div>
+
+    <div class="mechanism-box" style="background: #e8f5e9; border: 2px solid #4caf50;">
+      <h4 style="color: #2e7d32;">✅ 正确的做法：使用 @click 绑定事件（而非 :onclick）</h4>
+      <div class="code-block" style="background: #1b5e20;"><span class="comment">// ❌ 不推荐：虽然 Solely 中不会执行，但语义不清晰</span>
+&lt;div :onclick="$data.userScript"&gt;点击我&lt;/div&gt;
+
+<span class="comment">// ✅ 正确：使用框架提供的 @click 事件绑定</span>
+&lt;button @click="handleClick()"&gt;点击我&lt;/button&gt;
+
+<span class="comment">// ✅ 正确：事件处理函数在组件中定义，不是用户输入</span>
+<span class="keyword">class</span> MyComponent extends BaseElement {
+  handleClick() {
+    <span class="comment">// 安全的处理逻辑</span>
+  }
+}</div>
+      <p style="color: #2e7d32; margin-top: 10px;">
+        <strong>说明：</strong>Solely 的 <code>:onclick</code> 绑定设置的是 DOM property，字符串不会被执行。
+        但仍建议使用框架的 <code>@click</code> 语法，语义更清晰，且完全不受用户输入影响。
+      </p>
+    </div>
+
     <div class="mechanism-box">
       <h4>其他应该避免的做法：</h4>
       <div class="code-block"><span class="comment">// ❌ 不要手动构造模板字符串</span>
@@ -423,6 +519,25 @@ element.innerHTML = userContent;
 &lt;rich-text :content="sanitizedHtml"&gt;&lt;/rich-text&gt;</div>
     </div>
 
+    <div class="mechanism-box" style="background: #e3f2fd; border: 2px solid #2196f3;">
+      <h4 style="color: #1565c0;">✅ 正确的做法：URL 白名单过滤</h4>
+      <div class="code-block" style="background: #0d47a1;"><span class="comment">// ✅ 正确：对 URL 进行协议白名单过滤</span>
+<span class="keyword">function</span> <span class="function">sanitizeUrl</span>(url) {
+  <span class="keyword">if</span> (!url) <span class="keyword">return</span> <span class="string">'#'</span>;
+  <span class="comment">// 只允许 http/https 协议</span>
+  <span class="keyword">if</span> (<span class="string">/^(https?:)?\/\//i</span>.test(url)) {
+    <span class="keyword">return</span> url;
+  }
+  <span class="keyword">return</span> <span class="string">'#'</span>;
+}
+
+<span class="comment">// ✅ 正确：过滤后再绑定到 :href</span>
+&lt;a :href="sanitizeUrl($data.userWebsite)"&gt;访问网站&lt;/a&gt;
+
+<span class="comment">// ✅ 正确：图片 URL 同样过滤</span>
+&lt;img :src="sanitizeUrl($data.userAvatar)"&gt;</div>
+    </div>
+
     <div class="mechanism-box">
       <h4>其他推荐的安全实践：</h4>
       <ul>
@@ -431,6 +546,10 @@ element.innerHTML = userContent;
         <li>✅ 对第三方 API 数据进行 schema 验证</li>
         <li>✅ 如果必须使用 :innerHTML，确保内容经过严格的 HTML 净化（如 DOMPurify）</li>
         <li>✅ 设置 HttpOnly Cookie，防止 JavaScript 读取敏感 Cookie</li>
+        <li>✅ 对 :href 绑定的 URL 进行协议白名单过滤（防止 javascript: 协议执行）</li>
+        <li>✅ 对 :src 绑定的 URL 也建议进行过滤（虽然现代浏览器不会执行 javascript: 协议）</li>
+        <li>✅ 用户输入的链接显示前，检查并过滤 javascript:, data:, vbscript: 等危险协议</li>
+        <li>✅ 使用 @click 框架事件绑定语法（预编译的函数），而不是 :onclick（字符串不会执行但语义不清）</li>
       </ul>
     </div>
   </div>

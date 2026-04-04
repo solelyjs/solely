@@ -458,15 +458,53 @@ Solely 框架内置了多层安全防护机制，有效防止常见的 XSS（跨
 | 对用户输入进行验证和清理           | 直接操作 DOM 插入不可信内容   |
 | 使用 CSP (Content Security Policy) | 信任未经检验的第三方 API 数据 |
 | 富文本使用白名单过滤               | 动态构造模板字符串            |
+| 对 `:href` 进行协议白名单过滤      | 将用户输入直接绑定到 `:href`  |
+| 对 `:src` 也建议进行过滤           | -                             |
+| 使用 `@click` 框架事件绑定         | -                             |
 
 ### 注意事项
 
-⚠️ **如果框架支持 `:innerHTML` 指令**：
+⚠️ **`:innerHTML` 指令（高危）**：
 
-- 永远不要将用户输入绑定到 `:innerHTML`
-- 永远不要将第三方 API 数据直接绑定到 `:innerHTML`
+- **永远不要**将用户输入绑定到 `:innerHTML`
+- **永远不要**将第三方 API 数据直接绑定到 `:innerHTML`
 - 仅对完全可信的静态内容使用 `:innerHTML`
 - 如需渲染富文本，请使用专门的富文本组件并进行白名单过滤
+
+⚠️ **`:href` 属性绑定（高危）**：
+
+- **永远不要**将用户输入直接绑定到 `:href`
+- 恶意 URL 如 `javascript:alert('XSS')` 会在点击时执行代码
+- 建议对 URL 进行协议白名单过滤（只允许 `http://`, `https://`）
+- 示例：
+
+    ```typescript
+    function sanitizeUrl(url: string): string {
+      if (!url) return '#';
+      // 只允许 http/https 协议
+      if (/^(https?:)?\/\//i.test(url)) {
+        return url;
+      }
+      return '#';
+    }
+    // 使用过滤后的 URL
+    <a :href="sanitizeUrl($data.userWebsite)">链接</a>
+    ```
+
+ℹ️ **`:src` 属性绑定（低风险）**：
+
+- 虽然现代浏览器不会执行 `javascript:` 协议，但仍建议进行过滤
+- Solely 框架不支持 IE，因此不存在旧版浏览器的风险
+
+ℹ️ **`:onclick` 属性绑定（无风险）**：
+
+- Solely 通过设置 DOM property 实现绑定，字符串值不会被执行
+- 但仍建议使用 `@click` 框架事件绑定语法，语义更清晰
+
+ℹ️ **`:style` 属性绑定（无风险）**：
+
+- 通过 CSS `url('javascript:...')` 执行代码仅在旧版 IE 中有效
+- Solely 框架不支持 IE，且现代浏览器已修复此漏洞
 
 查看 [安全演示示例](./examples/security-demo/) 了解框架如何防护 XSS 攻击。
 
