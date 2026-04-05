@@ -14,8 +14,7 @@ interface TodoItem {
     styles,
     shadowDOM: { use: true },
 })
-// @ts-expect-error: 类通过装饰器注册为自定义元素
-class TodoList extends BaseElement<{
+export class TodoList extends BaseElement<{
     todos: TodoItem[];
     newTodoText: string;
     filter: 'all' | 'active' | 'completed';

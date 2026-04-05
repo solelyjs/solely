@@ -26,8 +26,7 @@ interface WeatherData {
     styles,
     shadowDOM: { use: true },
 })
-// @ts-expect-error: 类通过装饰器注册为自定义元素
-class WeatherApp extends BaseElement<{
+export class WeatherApp extends BaseElement<{
     city: string;
     isLoading: boolean;
     error: string;

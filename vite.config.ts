@@ -143,9 +143,8 @@ export default defineConfig(({ command, mode }) => {
                 ? undefined
                 : {
                       compress: {
-                          drop_console: true,
+                          drop_console: false, // 保留 console，让错误信息能显示
                           drop_debugger: true,
-                          pure_funcs: ['console.log', 'console.info', 'console.debug'],
                           passes: 2,
                       },
                       mangle: {

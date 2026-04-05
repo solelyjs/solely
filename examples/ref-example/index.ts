@@ -13,8 +13,7 @@ interface RefExampleData {
     template: template,
     styles: styles,
 })
-// @ts-expect-error: 类通过装饰器注册为自定义元素
-class RefExample extends BaseElement<RefExampleData> {
+export class RefExample extends BaseElement<RefExampleData> {
     constructor() {
         super({
             username: '',

@@ -110,9 +110,8 @@ function hasInterpolation(text: string | undefined): boolean {
 
 // 统一的 Meta 添加工具
 function attachMeta(target: any, expr: string | undefined, loc?: SourceLocation | null) {
-    if (IS_DEV) {
-        target.__m = { expr: expr ?? '', loc: loc ?? null };
-    }
+    // 始终生成元数据，由插件根据 minify 选项决定是否序列化
+    target.__m = { expr: expr ?? '', loc: loc ?? null };
 }
 
 // ==================== 双向绑定 ====================
@@ -482,7 +481,7 @@ function transformList(nodes: ASTNode[], locals: IRLocal[], compiler: FunctionCo
                     f: condFid,
                     c: children,
                     a: attrs.length > 0 ? attrs : undefined,
-                    ...(IS_DEV && { __m: { expr, loc } }),
+                    __m: { expr, loc },
                 });
 
                 currentIdx++;
@@ -497,7 +496,7 @@ function transformList(nodes: ASTNode[], locals: IRLocal[], compiler: FunctionCo
                 t: ASTType.Conditional,
                 d: 1,
                 b: branches,
-                ...(IS_DEV && { __m: { loc: node.loc } }),
+                __m: { loc: node.loc },
             });
 
             // 跳过已处理的节点
