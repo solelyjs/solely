@@ -100,6 +100,7 @@ function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: b
             d: node.d,
         };
 
+        if (node.s !== undefined) serialized.s = node.s;
         if (node.g !== undefined) serialized.g = node.g;
         if (node.x !== undefined) serialized.x = node.x;
         if (node.f !== undefined) serialized.f = node.f;
