@@ -14,6 +14,7 @@ import styles from './index.css?raw';
     </div>
   `,
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class HomePage extends BaseElement {}
 
 /**
@@ -28,6 +29,7 @@ class HomePage extends BaseElement {}
     </div>
   `,
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class AboutPage extends BaseElement {}
 
 /**
@@ -44,6 +46,7 @@ class AboutPage extends BaseElement {}
   `,
     props: [{ name: 'id', type: 'string' }],
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class UserPage extends BaseElement<{ id: string }> {
     constructor() {
         super({ id: '' });
@@ -62,6 +65,7 @@ class UserPage extends BaseElement<{ id: string }> {
     </div>
   `,
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class AsyncPage extends BaseElement {}
 
 /**
@@ -83,6 +87,7 @@ class AsyncPage extends BaseElement {}
         { name: 'queryPage', type: 'string' },
     ],
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class QueryPage extends BaseElement<{
     queryKeyword: string;
     queryCategory: string;
@@ -112,11 +117,14 @@ class QueryPage extends BaseElement<{
     </div>
   `,
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class NestedLayout extends BaseElement<{ text: string }> {
     constructor() {
         super({ text: '' });
     }
-} /**
+}
+
+/**
  * 嵌套路由子页面1
  */
 @CustomElement({
@@ -129,6 +137,7 @@ class NestedLayout extends BaseElement<{ text: string }> {
     </div>
   `,
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class NestedChild1 extends BaseElement<{ text: string }> {
     constructor() {
         super({ text: '' });
@@ -148,6 +157,7 @@ class NestedChild1 extends BaseElement<{ text: string }> {
     </div>
   `,
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class NestedChild2 extends BaseElement<{ text: string }> {
     constructor() {
         super({ text: '' });
@@ -169,6 +179,7 @@ class NestedChild2 extends BaseElement<{ text: string }> {
     </div>
   `,
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class KeepAlivePage extends BaseElement<{ count: number; text: string }> {
     constructor() {
         super({ count: 0, text: '' });

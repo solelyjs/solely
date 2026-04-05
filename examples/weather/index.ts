@@ -26,6 +26,7 @@ interface WeatherData {
     styles,
     shadowDOM: { use: true },
 })
+// @ts-expect-error: 类通过装饰器注册为自定义元素
 class WeatherApp extends BaseElement<{
     city: string;
     isLoading: boolean;
@@ -92,7 +93,7 @@ class WeatherApp extends BaseElement<{
                 humidity: 45,
                 windSpeed: 12,
                 visibility: 10,
-                uvIndex: '强',
+                uvIndex: '高',
             },
             上海: {
                 city: '上海',
@@ -112,7 +113,7 @@ class WeatherApp extends BaseElement<{
                 humidity: 82,
                 windSpeed: 8,
                 visibility: 6,
-                uvIndex: '弱',
+                uvIndex: '低',
             },
             深圳: {
                 city: '深圳',
@@ -132,7 +133,7 @@ class WeatherApp extends BaseElement<{
                 humidity: 72,
                 windSpeed: 14,
                 visibility: 5,
-                uvIndex: '弱',
+                uvIndex: '低',
             },
             成都: {
                 city: '成都',
@@ -142,7 +143,7 @@ class WeatherApp extends BaseElement<{
                 humidity: 88,
                 windSpeed: 6,
                 visibility: 4,
-                uvIndex: '弱',
+                uvIndex: '低',
             },
         };
 
@@ -154,7 +155,7 @@ class WeatherApp extends BaseElement<{
             humidity: Math.floor(Math.random() * 50) + 40,
             windSpeed: Math.floor(Math.random() * 20) + 5,
             visibility: Math.floor(Math.random() * 10) + 5,
-            uvIndex: ['弱', '中等', '强'][Math.floor(Math.random() * 3)],
+            uvIndex: ['低', '中等', '高'][Math.floor(Math.random() * 3)],
         };
 
         const weather = cities[city] || defaultWeather;
@@ -197,16 +198,4 @@ class WeatherApp extends BaseElement<{
         this.$data.city = city;
         this.searchWeather();
     }
-
-    clearError() {
-        this.$data.error = '';
-    }
-
-    async refresh() {
-        if (this.$data.city) {
-            await this.searchWeather();
-        }
-    }
 }
-
-console.log('Weather app component registered successfully!');
