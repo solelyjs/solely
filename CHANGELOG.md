@@ -7,6 +7,78 @@
 
 ## [Unreleased]
 
+## [0.2.8] - 2025-04-06
+
+### Changed
+
+- 改进路由系统和组件类型定义
+
+## [0.2.7] - 2025-04-05
+
+### Changed
+
+- 优化编译器元数据生成和日志配置
+
+## [0.2.6] - 2025-04-04
+
+### Added
+
+- 增强路由创建功能并添加安全演示页面
+
+## [0.2.5] - 2025-04-03
+
+### Fixed
+
+- 添加缺失的依赖 `magic-string`
+
+### Security
+
+- 完善安全文档和示例，增加对 `href` 和 `src` 绑定的风险说明
+
+## [0.2.4] - 2025-04-02
+
+### Added
+
+- 实现嵌套路由和 KeepAlive 缓存功能
+
+### Changed
+
+- 更新仓库 URL 和 Node.js 版本配置
+
+## [0.2.3] - 2025-04-01
+
+### Changed
+
+- 更新版本号至 0.2.3
+
+## [0.2.2] - 2025-03-31
+
+### Changed
+
+- 移除更新 npm 到最新版本的步骤
+- 更新 release.yml 添加 npm 升级步骤
+- 更新 Node.js 版本至 22
+- 移除发布到 npm 时的 NODE_AUTH_TOKEN 环境变量
+
+## [0.2.1] - 2025-03-31
+
+### Added
+
+- 添加静态子树优化支持
+
+### Changed
+
+- 使用 Trusted Publishing 替代 NPM_TOKEN
+- 使用 npm publish with GitHub token for Trusted Publishing
+- 使用 JS-DevTools/npm-publish 以获得更好的 provenance 支持
+- 从测试矩阵中移除 Node 18 以修复 jsdom 兼容性问题
+
+### Fixed
+
+- 修复 tsconfig 排除 examples 目录
+
+## [0.2.0] - 2025-03-31
+
 ### Added
 
 - 添加 CI/CD 自动化工作流
@@ -17,6 +89,18 @@
 ### Changed
 
 - 优化 `gen-function.ts`，移除重复的缓存逻辑，由上层 `FunctionCompiler` 统一管理
+- 重构路由模块并优化插件系统
+- 增强安全机制并优化函数生成逻辑
+- 为接口添加详细的 TSDoc 注释
+- 重构响应式系统，优化组件生命周期管理，完善文档
+- 优化 `observe` 函数处理循环引用和路径解析
+- 将登录结果的条件渲染从 `p` 标签改为 If/Else 结构
+- 优化动态样式和类处理逻辑
+
+### Fixed
+
+- 修复 README 中的 logo 显示方式，使用 `img` 标签替代 markdown 语法
+- 优化路由器逻辑和组件状态管理，优化 style 和 class 的处理
 
 ## [0.1.10] - 2025-03-31
 
@@ -33,9 +117,6 @@
 - 装饰器 API（`@CustomElement`）
 - 模板语法支持：插值表达式、事件绑定、条件渲染、列表渲染
 - 完整的单元测试覆盖
-
-### Features
-
 - **编译器**：HTML 模板解析、IR（中间表示）生成
 - **运行时**：组件生命周期管理、响应式系统、虚拟 DOM 渲染
 - **路由**：声明式路由配置、路由守卫、嵌套路由
@@ -62,5 +143,12 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.1.10...HEAD
-[0.1.10]: https://github.com/solelyjs/solely/releases/tag/v0.1.10
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.2.8...HEAD
+[0.2.8]: https://github.com/solelyjs/solely/compare/v0.2.7...v0.2.8
+[0.2.7]: https://github.com/solelyjs/solely/compare/v0.2.6...v0.2.7
+[0.2.6]: https://github.com/solelyjs/solely/compare/v0.2.5...v0.2.6
+[0.2.5]: https://github.com/solelyjs/solely/compare/v0.2.4...v0.2.5
+[0.2.4]: https://github.com/solelyjs/solely/compare/v0.2.4...main
+[0.2.3]: https://www.npmjs.com/package/solely/v/0.2.3
+[0.2.0]: https://www.npmjs.com/package/solely/v/0.2.0
+[0.1.10]: https://www.npmjs.com/package/solely/v/0.1.10
