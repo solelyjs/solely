@@ -3,17 +3,21 @@ import { InternalManifest, Manifest, PropDescriptor, PropType } from './decorato
 import { createRender, IRRenderInstance } from '../renderer';
 import { observe } from '../reactivity';
 import { ChangeItem } from '../reactivity/observe';
+import { IRRoot } from '@/types';
 
 const MANIFEST_SYMBOL: unique symbol = Symbol.for('solely.manifest');
 
 /* -------------------- 类型定义 -------------------- */
-declare interface BaseElement<TData = any> {
+declare interface BaseElement<
+    TData extends object = Record<string, unknown>,
+    TRefs extends Record<string, Element> = Record<string, Element>,
+> {
     /**
      * 通过 ref 属性获取的 DOM 元素引用集合
      * - 键：模板中写的 ref="xxx" 的名字
      * - 值：对应的 DOM 元素（通常是 HTMLElement 或 SVGElement）
      */
-    $refs: Record<string, HTMLElement | SVGElement | any>;
+    $refs: TRefs;
 }
 
 interface ManifestConstructor {
@@ -25,10 +29,17 @@ interface UpgradePropsConstructor {
 }
 
 /* -------------------- 实现 -------------------- */
-class BaseElement<TData extends object = any> extends HTMLElement {
+class BaseElement<
+    TData extends object = Record<string, unknown>,
+    TRefs extends Record<string, Element> = Record<string, Element>,
+>
+    extends HTMLElement
+    implements BaseElement<TData, TRefs>
+{
+    $refs: TRefs = {} as TRefs;
     #manifest: Manifest;
     #render!: IRRenderInstance;
-    #ir: any;
+    #ir!: IRRoot;
     #data!: TData;
     #root!: Element | ShadowRoot;
     #dispose?: () => void;
@@ -45,7 +56,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
     /* -------------------- observedAttributes -------------------- */
     static get observedAttributes(): string[] {
-        const manifest = (this as any)[MANIFEST_SYMBOL] as InternalManifest;
+        const manifest = (this as typeof BaseElement & ManifestConstructor)[MANIFEST_SYMBOL] as InternalManifest;
         if (!manifest?.propMap) return [];
 
         // 直接从预处理好的 Map 中获取所有 kebab-case 的键
@@ -70,12 +81,12 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     }
 
     // 升级属性（Upgrade Property）, 保障在元素被定义前设置的属性能正确触发响应式更新
-    #upgradeProperties(props: string[]) {
+    #upgradeProperties<K extends keyof this>(props: K[]) {
         for (const prop of props) {
             if (this.hasOwnProperty(prop)) {
-                const value = (this as any)[prop];
-                delete (this as any)[prop];
-                (this as any)[prop] = value;
+                const value = this[prop];
+                delete this[prop];
+                this[prop] = value;
             }
         }
     }
@@ -112,7 +123,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         this.#dispose = dispose;
     }
 
-    #reflectToAttribute(desc: PropDescriptor, value: any) {
+    #reflectToAttribute(desc: PropDescriptor, value: unknown) {
         const attrName = desc.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 
         if (desc.type === 'boolean') {
@@ -148,7 +159,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         this.#scheduleRefresh();
     }
 
-    #convertAttrValue(value: string | null, defaultValue: any, type?: PropType) {
+    #convertAttrValue(value: string | null, defaultValue: unknown, type?: PropType) {
         if (value === null) {
             // 对于布尔值，不存在即为 false (除非默认值强制为 true)
             return type === 'boolean' ? (defaultValue ?? false) : defaultValue;
@@ -258,7 +269,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
             finalUpgradeProps = ['$data'];
         }
 
-        this.#upgradeProperties(finalUpgradeProps);
+        this.#upgradeProperties(finalUpgradeProps as (keyof this)[]);
 
         this.#callCreatedOnce();
 
@@ -280,10 +291,10 @@ class BaseElement<TData extends object = any> extends HTMLElement {
                 if (this.hasAttribute(attrName)) {
                     const raw = this.getAttribute(attrName);
                     const value = this.#convertAttrValue(raw, desc.default, desc.type);
-                    (this.$data as any)[propName] = value;
+                    (this.$data as Record<string, unknown>)[propName] = value;
                 } else if ('default' in desc) {
                     // 如果 HTML 没写，使用默认值
-                    (this.$data as any)[propName] = desc.default;
+                    (this.$data as Record<string, unknown>)[propName] = desc.default;
                 }
             }
         }
@@ -313,13 +324,13 @@ class BaseElement<TData extends object = any> extends HTMLElement {
         if (!desc) return;
 
         const propName = desc.name;
-        const oldDataValue = (this.$data as any)[propName];
+        const oldDataValue = (this.$data as Record<string, unknown>)[propName];
 
         // 2. 转换值
         const next = this.#convertAttrValue(newValue, desc.default ?? oldDataValue, desc.type);
 
         // 3. 更新数据（触发响应式）
-        (this.$data as any)[propName] = next;
+        (this.$data as Record<string, unknown>)[propName] = next;
 
         this.#isAttributeUpdate = true;
         this.attributeChanged(name, oldDataValue, next);
@@ -335,7 +346,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
     }
 
     /* -------------------- 事件派发 -------------------- */
-    public emit(eventName: string, detail?: any, options?: Partial<CustomEventInit>) {
+    public emit(eventName: string, detail?: unknown, options?: Partial<CustomEventInit>) {
         this.dispatchEvent(
             new CustomEvent(eventName, {
                 bubbles: true,
@@ -359,7 +370,7 @@ class BaseElement<TData extends object = any> extends HTMLElement {
 
     public unmounted(): void {}
 
-    public attributeChanged(_name: string, _oldValue: any, _newValue: any): void {}
+    public attributeChanged(_name: string, _oldValue: unknown, _newValue: unknown): void {}
 
     public beforeAttributesUpdate(): void {}
 

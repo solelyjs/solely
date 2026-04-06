@@ -109,9 +109,9 @@ function hasInterpolation(text: string | undefined): boolean {
 }
 
 // 统一的 Meta 添加工具
-function attachMeta(target: any, expr: string | undefined, loc?: SourceLocation | null) {
+function attachMeta(target: IRNode | IRAttr, expr: string | undefined, loc?: SourceLocation | undefined) {
     // 始终生成元数据，由插件根据 minify 选项决定是否序列化
-    target.__m = { expr: expr ?? '', loc: loc ?? null };
+    target.__m = { expr: expr ?? '', loc: loc ?? undefined };
 }
 
 // ==================== 双向绑定 ====================
@@ -395,7 +395,7 @@ function transformNode(node: ASTNode, locals: IRLocal[], compiler: FunctionCompi
             ir.a = processAttributes(node, locals, compiler, exclude);
 
             // 构造新的作用域
-            const nextLocals = [...locals, { i: ir.i!, x: ir.n! }];
+            const nextLocals = [...locals, { i: ir.i, x: ir.n }];
 
             if (node.children) {
                 ir.c = transformList(node.children, nextLocals, compiler);
@@ -572,7 +572,7 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
     };
 
     if (IS_DEV) {
-        console.log(
+        console.info(
             `[Solely] Compiled <${filename}> in ${(end - start).toFixed(2)}ms | ` +
                 `Nodes: ${irNodes.length} | Fns: ${stats.total} | StaticSubtrees: ${staticSubtreeCount}`,
         );

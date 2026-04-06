@@ -1,4 +1,4 @@
-import { ASTType } from '../../types';
+import { ASTType, IRBranch } from '../../types';
 import { IRAttr, IRNode, IRRoot, Meta } from '../../types';
 import { runtimeLoop } from '../../types';
 import { IS_DEV, showTemplateError } from '../../shared';
@@ -37,6 +37,7 @@ function initStaticClass(el: HTMLElement | SVGElement, irNode: IRNode) {
 }
 
 function initStaticStyle(el: HTMLElement | SVGElement, irNode: IRNode) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anyEl = el as any;
     if (!anyEl.style) return;
     const staticAttr = irNode.a?.find(a => a.k === 'style' && !a.d);
@@ -47,6 +48,7 @@ function initStaticStyle(el: HTMLElement | SVGElement, irNode: IRNode) {
     for (const key in staticStyle) {
         const val = staticStyle[key];
         if (key.startsWith('--')) el.style.setProperty(key, val);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         else (el.style as any)[key] = val;
     }
 }
@@ -54,7 +56,9 @@ function initStaticStyle(el: HTMLElement | SVGElement, irNode: IRNode) {
 /**
  * 样式动态设置函数 (支持引用检查 + 增量更新)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const setElementStyles = (el: HTMLElement, dynamicStyle: any): void => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anyEl = el as any;
 
     const dynamic = flattenStyle(dynamicStyle);
@@ -64,6 +68,7 @@ const setElementStyles = (el: HTMLElement, dynamicStyle: any): void => {
         for (const key in dynamic) {
             const val = dynamic[key];
             if (key.startsWith('--')) el.style.setProperty(key, val);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             else (el.style as any)[key] = val;
         }
         anyEl[PREV_STYLE_OBJ] = dynamic;
@@ -76,6 +81,7 @@ const setElementStyles = (el: HTMLElement, dynamicStyle: any): void => {
     for (const key in prevDynamic) {
         if (!(key in dynamic)) {
             if (key.startsWith('--')) el.style.removeProperty(key);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             else (el.style as any)[key] = '';
             hasChanged = true;
         }
@@ -88,6 +94,7 @@ const setElementStyles = (el: HTMLElement, dynamicStyle: any): void => {
 
         if (newVal !== oldVal) {
             if (key.startsWith('--')) el.style.setProperty(key, newVal);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             else (el.style as any)[key] = newVal;
             hasChanged = true;
         }
@@ -109,7 +116,9 @@ const isValidClassName = (name: string): boolean => {
     return true;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const setElementClasses = (el: HTMLElement | SVGElement, dynamicClass: any): void => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anyEl = el as any;
     const lastDynamic = anyEl[PREV_CLASS_OBJ];
     const currentDynamic = flattenClasses(dynamicClass);
@@ -161,12 +170,14 @@ const setElementClasses = (el: HTMLElement | SVGElement, dynamicClass: any): voi
  * 2. 数组: [{color: 'red'}, "margin: 10px"]
  * 3. 对象: { color: 'red', '--custom-var': 'blue', nested: { opacity: 0.5 } }
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function flattenStyle(styleObj: any): Record<string, string> {
     const result: Record<string, string> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stack: [any, string?][] = [[styleObj]];
 
     while (stack.length) {
-        const [obj, prefix] = stack.pop()!;
+        const [obj, prefix] = stack.pop() || [];
 
         if (!obj) continue;
 
@@ -221,6 +232,7 @@ function flattenStyle(styleObj: any): Record<string, string> {
     return result;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function flattenClasses(classObj: any): Record<string, boolean> {
     const result: Record<string, boolean> = {};
     const stack = [classObj];
@@ -258,6 +270,7 @@ function flattenClasses(classObj: any): Record<string, boolean> {
 /**
  * 带有“脏检查”和命名空间支持的 Attribute 设置函数
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setAttribute(el: Element, key: string, value: any): void {
     const strVal = value == null ? '' : String(value);
 
@@ -288,6 +301,7 @@ function setAttribute(el: Element, key: string, value: any): void {
  * @param propKey - 原始属性名（如 'data-id', 'class', 'value'）
  * @param value - 要设置的值，可以是任意类型
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setProperty(el: Element, propKey: string, value: any): void {
     // 1. 将 propKey 映射为 DOM property 的键名（驼峰形式）
     const camelKey = HTML_PROP_MAP[propKey] || propKey;
@@ -299,6 +313,7 @@ function setProperty(el: Element, propKey: string, value: any): void {
         return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const anyEl = el as any;
     const tagName = anyEl.tagName;
 
@@ -386,13 +401,16 @@ export class IRRenderer {
     constructor(
         private ir: IRRoot,
         private container: HTMLElement,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         private scope: any = {},
     ) {}
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evalIR(fid: number, args: any[], meta?: Meta) {
         const fn = this.ir.fns[fid - 1];
         try {
             return fn ? fn.apply(this.scope, args) : '';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             showTemplateError(e.message || e.toString(), this.ir.m?.src || '', meta, this.scope.tagName);
             return '';
@@ -401,7 +419,7 @@ export class IRRenderer {
 
     // ================ 创建节点 ================
     private createElement(irNode: IRNode, parent: Node): SVGElement | HTMLElement {
-        const tag = irNode.g!;
+        const tag = irNode.g ?? '';
 
         const isSVG = parent instanceof SVGElement || tag === 'svg';
 
@@ -411,18 +429,19 @@ export class IRRenderer {
     }
 
     private createText(irNode: IRNode, loops: runtimeLoop[]): Text {
-        const value = irNode.d ? this.evalIR(irNode.f!, [loops], irNode.__m) : irNode.x || '';
+        const value = irNode.d ? this.evalIR(irNode.f ?? -1, [loops], irNode.__m) : irNode.x || '';
         return document.createTextNode(value);
     }
 
     private createComment(irNode: IRNode, loops: runtimeLoop[]): Comment {
-        const value = irNode.d ? this.evalIR(irNode.f!, [loops], irNode.__m) : irNode.x || '';
+        const value = irNode.d ? this.evalIR(irNode.f ?? -1, [loops], irNode.__m) : irNode.x || '';
         return document.createComment(value);
     }
 
     // ================ 属性全量应用（创建或更新时用） ================
     private applyAttrs(el: Element, attrs: IRAttr[], loops: runtimeLoop[], isUpdate: boolean = false) {
         const postTasks: (() => void)[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const anyEl = el as any;
 
         /** =============================
@@ -443,15 +462,17 @@ export class IRRenderer {
             anyEl[IR_EVENTS_SYMBOL] = Object.create(null) as Record<
                 string,
                 {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     model: Array<(e: any) => void>;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     user: Array<(e: any) => void>;
                 }
             >;
         }
 
-        let dynamicClassVal: any = undefined;
+        let dynamicClassVal: string | undefined = undefined;
         let hasDynamicClass = false;
-        let dynamicStyleVal: any = undefined;
+        let dynamicStyleVal: string | undefined = undefined;
         let hasDynamicStyle = false;
 
         for (const attr of attrs) {
@@ -459,12 +480,12 @@ export class IRRenderer {
 
             // 拦截：完全接管 class 和 style
             if (key === ':class') {
-                dynamicClassVal = this.evalIR(fid!, [loops], attr.__m);
+                dynamicClassVal = this.evalIR(fid ?? -1, [loops], attr.__m);
                 hasDynamicClass = true;
                 continue;
             }
             if (key === ':style') {
-                dynamicStyleVal = this.evalIR(fid!, [loops], attr.__m);
+                dynamicStyleVal = this.evalIR(fid ?? -1, [loops], attr.__m);
                 hasDynamicStyle = true;
                 continue;
             }
@@ -489,7 +510,7 @@ export class IRRenderer {
                     };
 
                     // 只注册一次 DOM listener
-                    el.addEventListener(eventName, (e: any) => {
+                    el.addEventListener(eventName, (e: Event) => {
                         // ① s-model 先执行
                         for (const fn of bucket.model) {
                             fn(e);
@@ -504,7 +525,7 @@ export class IRRenderer {
 
                 // handler 只在首次渲染时创建
                 if (!isUpdate) {
-                    const handler = (e: any) => this.evalIR(fid!, [e, anyEl[IRCTX_SYMBOL].loops], attr.__m);
+                    const handler = (e: Event) => this.evalIR(fid ?? -1, [e, anyEl[IRCTX_SYMBOL].loops], attr.__m);
 
                     bucket[role].push(handler);
                 }
@@ -517,14 +538,14 @@ export class IRRenderer {
              * ----------------------------- */
             if (key === 'mounted') {
                 if (!isUpdate) {
-                    requestAnimationFrame(() => this.evalIR(fid!, [el, loops], attr.__m));
+                    requestAnimationFrame(() => this.evalIR(fid ?? -1, [el, loops], attr.__m));
                 }
                 continue;
             }
 
             if (key === 'updated') {
                 if (isUpdate) {
-                    requestAnimationFrame(() => this.evalIR(fid!, [el, loops], attr.__m));
+                    requestAnimationFrame(() => this.evalIR(fid ?? -1, [el, loops], attr.__m));
                 }
                 continue;
             }
@@ -541,7 +562,7 @@ export class IRRenderer {
             /** -----------------------------
              *  普通属性 / 动态属性
              * ----------------------------- */
-            const val = dynamic ? this.evalIR(fid!, [loops], attr.__m) : (staticValue ?? '');
+            const val = dynamic ? this.evalIR(fid ?? -1, [loops], attr.__m) : (staticValue ?? '');
 
             if (first === ':') {
                 const prop = key.slice(1);
@@ -573,7 +594,7 @@ export class IRRenderer {
 
     // ================ 更新已有节点 Text Or Comment ================
     private updateNode(node: Node, irNode: IRNode, loops: runtimeLoop[]) {
-        const newText = irNode.d ? this.evalIR(irNode.f!, [loops], irNode.__m) : irNode.x || '';
+        const newText = irNode.d ? this.evalIR(irNode.f ?? -1, [loops], irNode.__m) : irNode.x || '';
         if (irNode.d && node.textContent !== newText) {
             node.textContent = newText;
         }
@@ -601,7 +622,7 @@ export class IRRenderer {
                     node.appendChild(childNode);
                 });
 
-                postTasks.forEach((fn: () => any) => fn());
+                postTasks.forEach((fn: () => void) => fn());
                 return node;
             }
             case ASTType.Text:
@@ -675,7 +696,7 @@ export class IRRenderer {
 
             // children 始终递归（结构变化由 IR 保证）
             irNode.c?.forEach((child, childIdx) => {
-                this.irToNode(child, childIdx, id, node!, loops);
+                this.irToNode(child, childIdx, id, node as Node, loops);
             });
 
             // post-children 属性
@@ -694,9 +715,9 @@ export class IRRenderer {
                     this.nodeMap.set(id, { irNode, node, loops, marker: this.marker });
                     // 递归子节点
                     irNode.c?.forEach((child, childIdx) => {
-                        this.irToNode(child, childIdx, id, node!, loops);
+                        this.irToNode(child, childIdx, id, node as Node, loops);
                     });
-                    postTasks.forEach((fn: () => any) => fn());
+                    postTasks.forEach((fn: () => void) => fn());
                     break;
                 case ASTType.Text:
                     node = this.createText(irNode, loops);
@@ -716,27 +737,27 @@ export class IRRenderer {
                         anchor = document.createComment(`for:${id}`);
                         parentNode.appendChild(anchor);
                         this.nodeMap.set(anchorId, {
-                            irNode: { t: ASTType.Comment } as any,
+                            irNode: { t: ASTType.Comment } as IRNode,
                             node: anchor,
                             loops,
                             marker: this.marker,
                         });
                     } else {
-                        this.nodeMap.get(anchorId)!.marker = this.marker;
+                        (this.nodeMap.get(anchorId) as NodeEntry).marker = this.marker;
                     }
 
                     // 清空旧内容（简单方式：等会 cleanup 会处理）
-                    const list = this.evalIR(irNode.f!, [loops], irNode.__m) || [];
+                    const list = this.evalIR(irNode.f ?? -1, [loops], irNode.__m) || [];
                     const fragment = document.createDocumentFragment();
 
-                    list.forEach((item: any, i: number) => {
+                    list.forEach((item: unknown, i: number) => {
                         const childLoops = [...loops, { itmVal: item, idxVal: i }];
                         irNode.c?.forEach((child, childIdx) => {
-                            this.irToNode(child, childIdx, `${id}-for-${i}`, fragment as any, childLoops);
+                            this.irToNode(child, childIdx, `${id}-for-${i}`, fragment as Node, childLoops);
                         });
                     });
 
-                    anchor.parentNode!.insertBefore(fragment, anchor);
+                    anchor.parentNode?.insertBefore(fragment, anchor);
                     break;
                 }
                 case ASTType.Conditional: {
@@ -746,22 +767,22 @@ export class IRRenderer {
                     if (!anchor) {
                         anchor = document.createComment(`if:${id}`);
                         parentNode.appendChild(anchor);
-                        this.nodeMap.set(anchorId, { irNode: {} as any, node: anchor, loops, marker: this.marker });
+                        this.nodeMap.set(anchorId, { irNode: {} as IRNode, node: anchor, loops, marker: this.marker });
                     } else {
-                        this.nodeMap.get(anchorId)!.marker = this.marker;
+                        (this.nodeMap.get(anchorId) as NodeEntry).marker = this.marker;
                     }
 
                     // 找到第一个真的分支
                     for (let ifIdx = 0; ifIdx < (irNode.b || []).length; ifIdx++) {
-                        const branch = irNode.b![ifIdx];
+                        const branch = irNode.b?.[ifIdx] as IRBranch;
                         const matched = branch.f === null || this.evalIR(branch.f, [loops], branch.__m);
 
                         if (matched) {
                             const fragment = document.createDocumentFragment();
                             branch.c.forEach((child, childIdx) => {
-                                this.irToNode(child, childIdx, `${id}-if-${ifIdx}`, fragment as any, loops);
+                                this.irToNode(child, childIdx, `${id}-if-${ifIdx}`, fragment as Node, loops);
                             });
-                            anchor.parentNode!.insertBefore(fragment, anchor);
+                            anchor.parentNode?.insertBefore(fragment, anchor);
                             break;
                         }
                     }
@@ -784,7 +805,7 @@ export class IRRenderer {
                     const unmountedAttr = irNode.a.find(a => a.k === 'unmounted');
                     if (unmountedAttr) {
                         requestAnimationFrame(() => {
-                            this.evalIR(unmountedAttr.f!, [node, loops], unmountedAttr.__m);
+                            this.evalIR(unmountedAttr.f ?? -1, [node, loops], unmountedAttr.__m);
                         });
                     }
 
@@ -846,6 +867,7 @@ export interface IRRenderInstance {
  * @param ctx 上下文数据
  * @returns 渲染实例
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createRender = (ir: IRRoot, el: HTMLElement, ctx: any = {}): IRRenderInstance => {
     const renderer = new IRRenderer(ir, el, ctx);
     renderer.mount();

@@ -43,5 +43,5 @@ export { solelyVitePlugin as default } from './plugins/solely-vite-plugin';
 
 // 防 tree-shake
 if (typeof window !== 'undefined') {
-    (window as any).__SOLELY_PLUGIN_LOADED__ = true;
+    window.__SOLELY_PLUGIN_LOADED__ = true;
 }

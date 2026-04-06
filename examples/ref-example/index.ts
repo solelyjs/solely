@@ -13,7 +13,15 @@ interface RefExampleData {
     template: template,
     styles: styles,
 })
-export class RefExample extends BaseElement<RefExampleData> {
+export class RefExample extends BaseElement<
+    RefExampleData,
+    {
+        usernameInput: HTMLInputElement;
+        passwordInput: HTMLInputElement;
+        loginButton: HTMLButtonElement;
+        resultDiv: HTMLDivElement;
+    }
+> {
     constructor() {
         super({
             username: '',

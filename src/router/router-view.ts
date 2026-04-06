@@ -1,6 +1,6 @@
 import { BaseElement, CustomElement } from '../runtime/component';
-import type { RouteMatch } from './types';
-import { routerReady } from './core';
+import type { RouteConfig, RouteMatch } from './types';
+import { Router, routerReady } from './core';
 
 // 全局缓存，所有 router-view 实例共享，支持跨实例 keepAlive
 const globalKeepAliveCache = new Map<string, HTMLElement>();
@@ -24,7 +24,7 @@ class RouterView extends BaseElement {
 
     /* -------------------- 生命周期 -------------------- */
 
-    private router: any = null;
+    private router: Router | null = null;
 
     async mounted() {
         this.detectLevel();
@@ -45,12 +45,14 @@ class RouterView extends BaseElement {
     /* -------------------- 逻辑核心 -------------------- */
 
     private scheduleLoad() {
+        if (!this.router) return;
+        const route = this.router;
         if (this.scheduled) return;
         this.scheduled = true;
         queueMicrotask(() => {
             this.scheduled = false;
             // 重新获取当前路由，确保是最新的
-            this.loadRoute(this.router.getCurrentRoute());
+            this.loadRoute(route.getCurrentRoute());
         });
     }
 
@@ -92,7 +94,16 @@ class RouterView extends BaseElement {
             const signal = this.abortController.signal;
 
             try {
-                const result = await config.component();
+                let result: string | { tagName: string };
+
+                // 优先从缓存获取组件（避免重复加载）
+                const cached = this.router?.getComponentFromCache?.(route?.fullPath);
+                if (cached) {
+                    result = await cached;
+                } else {
+                    result = await config.component();
+                }
+
                 // 检查是否已被取消
                 if (signal.aborted || loadId !== this.latestLoadId) {
                     return;
@@ -139,17 +150,23 @@ class RouterView extends BaseElement {
         this.currentTagName = tagName.toLowerCase();
     }
 
-    private getOrCreateComponent(tagName: string, config: any): HTMLElement {
+    private getOrCreateComponent(tagName: string, config: RouteConfig): HTMLElement {
         const key = `${this.level}-${tagName.toLowerCase()}`;
         if (config.keepAlive && globalKeepAliveCache.has(key)) {
-            return globalKeepAliveCache.get(key)!;
+            const cached = globalKeepAliveCache.get(key);
+            if (cached) return cached;
         }
         const el = document.createElement(tagName);
         if (config.keepAlive) globalKeepAliveCache.set(key, el);
         return el;
     }
 
-    private syncState(el: HTMLElement, params: any, query: any, props: any = {}) {
+    private syncState(
+        el: HTMLElement,
+        params: Record<string, string>,
+        query: Record<string, string>,
+        props: Record<string, unknown> = {},
+    ) {
         const toKebab = (s: string) => s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
         const newAttrs = new Map<string, string>();
 
@@ -169,9 +186,11 @@ class RouterView extends BaseElement {
 
         const newPropKeys = new Set(Object.keys(props));
         this.prevPropKeys.forEach(k => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (!newPropKeys.has(k)) (el as any)[k] = undefined;
         });
         Object.entries(props).forEach(([k, v]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((el as any)[k] !== v) (el as any)[k] = v;
         });
         this.prevPropKeys = newPropKeys;

@@ -62,7 +62,7 @@ function matchesPattern(id: string, patterns: string | RegExp | Array<string | R
 /**
  * 序列化 IR 为可执行的 JavaScript 代码，并使用 magic-string 生成 SourceMap
  */
-function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: boolean): { code: string; map: any } {
+function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: boolean) {
     // 使用原始 HTML 初始化 MagicString
     const s = new MagicString(originalCode);
 
@@ -94,8 +94,8 @@ function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: b
     s.append(`  ],\n\n`);
 
     // --- 2. 处理 nodes ---
-    const serializeNode = (node: IRNode): any => {
-        const serialized: any = {
+    const serializeNode = (node: IRNode): IRNode => {
+        const serialized: IRNode = {
             t: node.t,
             d: node.d,
         };
@@ -119,6 +119,7 @@ function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: b
                 f: attr.f,
                 d: attr.d,
                 r: attr.r,
+                ...(!minify && attr.__m && { __m: { ...attr.__m } }),
             }));
         }
 
@@ -178,7 +179,7 @@ function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: b
 /**
  * 生成简化版的模板导出（用于非预编译模式）
  */
-function generateTemplateCode(html: string, id: string, minify: boolean): { code: string; map: any } {
+function generateTemplateCode(html: string, id: string, minify: boolean) {
     const s = new MagicString(html);
 
     const escapedHtml = html.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
@@ -215,7 +216,7 @@ export function solelyVitePlugin(options: SolelyVitePluginOptions = {}): Plugin 
 
         configResolved(_resolvedConfig) {
             if (opts.debug) {
-                console.log('[Solely] Plugin initialized with options:', opts);
+                console.info('[Solely] Plugin initialized with options:', opts);
             }
         },
 
@@ -235,7 +236,7 @@ export function solelyVitePlugin(options: SolelyVitePluginOptions = {}): Plugin 
 
             try {
                 if (opts.debug) {
-                    console.log(`[Solely] Processing: ${id}`);
+                    console.info(`[Solely] Processing: ${id}`);
                 }
 
                 if (opts.precompile) {
@@ -247,8 +248,8 @@ export function solelyVitePlugin(options: SolelyVitePluginOptions = {}): Plugin 
                     const result = serializeIR(irRoot, code, id, !!opts.minify);
 
                     if (opts.debug) {
-                        console.log(`[Solely] Compiled IR for: ${id}`);
-                        console.log(`[Solely] Stats:`, irRoot.s);
+                        console.info(`[Solely] Compiled IR for: ${id}`);
+                        console.info(`[Solely] Stats:`, irRoot.s);
                     }
 
                     return {
@@ -264,7 +265,9 @@ export function solelyVitePlugin(options: SolelyVitePluginOptions = {}): Plugin 
                     };
                 }
             } catch (error) {
-                const errorMessage = `[Solely] Error processing ${id}: ${error instanceof Error ? error.message : String(error)}`;
+                const errorMessage = `[Solely] Error processing ${id}: ${
+                    error instanceof Error ? error.message : String(error)
+                }`;
                 console.error(errorMessage);
 
                 // 编译失败时回退到原始模板
@@ -283,7 +286,7 @@ export function solelyVitePlugin(options: SolelyVitePluginOptions = {}): Plugin 
         handleHotUpdate({ file, server, modules }) {
             if (matchesPattern(file, opts.include) && !matchesPattern(file, opts.exclude)) {
                 if (opts.debug) {
-                    console.log(`[Solely] HMR triggered for: ${file}`);
+                    console.info(`[Solely] HMR triggered for: ${file}`);
                 }
 
                 // 通知客户端刷新
@@ -303,5 +306,5 @@ export default solelyVitePlugin;
 
 // 防 tree-shake
 if (typeof window !== 'undefined') {
-    (window as any).__SOLELY_VITE_PLUGIN__ = solelyVitePlugin;
+    window.__SOLELY_VITE_PLUGIN__ = solelyVitePlugin;
 }

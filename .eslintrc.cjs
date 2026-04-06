@@ -34,7 +34,7 @@ module.exports = {
         '@typescript-eslint/no-unsafe-function-type': 'off',
 
         // 最佳实践
-        'no-console': ['warn', { 'allow': ['warn', 'error'] }],
+        'no-console': ['warn', { 'allow': ['warn', 'error', 'info'] }],
         'no-debugger': 'error',
         'no-case-declarations': 'off',
         'no-prototype-builtins': 'off',
@@ -44,6 +44,19 @@ module.exports = {
         '@typescript-eslint/no-unsafe-declaration-merging': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
     },
+    // 为示例文件放宽规则
+    overrides: [
+        {
+            files: ['examples/**/*.ts'],
+            rules: {
+                'no-console': 'off',
+                '@typescript-eslint/no-explicit-any': 'off',
+                '@typescript-eslint/no-non-null-assertion': 'off',
+                'max-len': 'off',
+            },
+        },
+    ],
+
     ignorePatterns: [
         'dist/',
         'node_modules/',

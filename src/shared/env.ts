@@ -7,7 +7,8 @@ export const IS_DEV = /* @__PURE__ */ (() => {
             return true;
         }
         // 全局变量（用户可以在自己的 index.html 或代码里注入）
-        if ((globalThis as any).__DEBUG__ === true || (globalThis as any).__IS_DEV__ === true) {
+        const global = globalThis as Record<string, unknown>;
+        if (global.__DEBUG__ === true || global.__IS_DEV__ === true) {
             return true;
         }
     }

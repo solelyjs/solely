@@ -34,7 +34,7 @@ function displayWidth(str: string): number {
     let width = 0;
 
     for (let i = 0; i < str.length; ) {
-        const code = str.codePointAt(i)!;
+        const code = str.codePointAt(i) ?? 0;
         const char = str[i];
 
         // 处理制表符
@@ -110,14 +110,14 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
         console.error(badge, ...badgeCss);
 
         if (meta?.expr) {
-            console.log(`Expression: ${meta.expr.trim()}`);
+            console.info(`Expression: ${meta.expr.trim()}`);
         }
 
         return;
     }
 
     // 获取并规范化行号和列号
-    const loc = meta.loc!; // 1-based
+    const loc = meta.loc; // 1-based
     let lineNum = loc[0] || 0;
     let colNum = loc[1] || 0;
 
@@ -164,6 +164,7 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
     const stylePointer = `color:${theme.arrow};font-weight:bold;padding:0 4px;`;
 
     // 开始错误详情组
+    // eslint-disable-next-line no-console
     console.groupCollapsed(
         `${badge} %c(Line:${lineNum}, Col:${colNum})`,
         ...badgeCss,
@@ -178,7 +179,7 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
 
         // 非错误行的处理
         if (!isErrorLine) {
-            console.log(`%c${lineNumber} │%c ${line}`, styleNumGutter, styleCodeGutter);
+            console.info(`%c${lineNumber} │%c ${line}`, styleNumGutter, styleCodeGutter);
             continue;
         }
 
@@ -190,7 +191,7 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
         const formattedLineNum = lineNumber.padEnd(maxLen, ' ');
 
         // 先打印源码行
-        console.log(`%c${formattedLineNum} │%c ${line}`, styleNumErr, styleCodeErr);
+        console.info(`%c${formattedLineNum} │%c ${line}`, styleNumErr, styleCodeErr);
 
         // 波浪线总是显示在错误行下方
         if (isMultiExpr) {
@@ -220,14 +221,14 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
 
                 // 对于首行，直接在错误行下方显示波浪线
                 if (j === 0) {
-                    console.log(`%c${prefix}%c${pointer}`, stylePointerPrefix, stylePointer);
+                    console.info(`%c${prefix}%c${pointer}`, stylePointerPrefix, stylePointer);
                 }
                 // 对于后续行，确保行号正确
                 else if (targetLineIdx < lines.length) {
                     const targetLineNum = String(targetLineIdx + 1).padEnd(maxLen, ' ');
                     const targetLine = lines[targetLineIdx];
-                    console.log(`%c${targetLineNum} │%c ${targetLine}`, styleNumErr, styleCodeErr);
-                    console.log(`%c${prefix}%c${pointer}`, stylePointerPrefix, stylePointer);
+                    console.info(`%c${targetLineNum} │%c ${targetLine}`, styleNumErr, styleCodeErr);
+                    console.info(`%c${prefix}%c${pointer}`, stylePointerPrefix, stylePointer);
                 }
             }
         } else {
@@ -235,13 +236,13 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
             // 确保正确处理开头的空格或换行
             const prefix = basePrefixSpaces + ' '.repeat(errorIndent);
             const pointer = makePointer(exprWidth || ARROW_MIN);
-            console.log(`%c${prefix}%c${pointer}`, stylePointerPrefix, stylePointer);
+            console.info(`%c${prefix}%c${pointer}`, stylePointerPrefix, stylePointer);
         }
     }
 
     // 打印错误表达式（如果有）
     if (expr) {
-        console.log(
+        console.info(
             `%cExpression:%c ${expr}`,
             `color:${theme.exprLabel};font-weight:bold;`,
             `color:${theme.exprCode};font-family:monospace;`,
@@ -249,5 +250,6 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
     }
 
     // 结束错误详情组
+    // eslint-disable-next-line no-console
     console.groupEnd();
 }

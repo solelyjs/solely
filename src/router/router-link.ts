@@ -53,7 +53,7 @@ class RouterLink extends BaseElement<{
         return this.$data.to;
     }
 
-    private _prefetched = false;
+    #prefetched = false;
 
     async mounted() {
         const router = await routerReady;
@@ -127,13 +127,13 @@ class RouterLink extends BaseElement<{
     // 预加载路由的具体实现
     private prefetchRoute() {
         // 如果已经预加载过，或者用户没有显式开启 prefetch 属性，则跳过
-        if (this._prefetched || !this.hasAttribute('prefetch')) return;
+        if (this.#prefetched || !this.hasAttribute('prefetch')) return;
 
         const router = getRouter();
-        // 假设你的 Router 核心里有 prefetch 方法，如果没有可以去掉这段逻辑或在 core 里实现
-        if (router && typeof (router as any).prefetch === 'function') {
-            (router as any).prefetch(this.$data.to);
-            this._prefetched = true;
+        // 调用 Router 的 prefetch 方法预加载路由组件
+        if (router) {
+            router.prefetch(this.$data.to);
+            this.#prefetched = true;
         }
     }
 }

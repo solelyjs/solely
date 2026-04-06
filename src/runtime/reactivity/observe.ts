@@ -62,6 +62,7 @@ type ObserverEntry = {
 const globalObservers = new WeakMap<object, Set<ObserverEntry>>();
 
 // 全局 Proxy 缓存：原始对象 -> Proxy
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalProxyCache = new WeakMap<object, any>();
 
 // 全局父子关系映射
@@ -82,6 +83,7 @@ const globalArrayMutationDepth = new WeakMap<object, number>();
  */
 export function toRaw<T>(observed: T): T {
     if (observed && typeof observed === 'object') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const raw = (observed as any)[RAW_SYMBOL];
         if (raw) return raw;
     }
@@ -90,6 +92,7 @@ export function toRaw<T>(observed: T): T {
 
 // ======================= Native Object Guard =======================
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isNativeSkippable = (obj: any): boolean => {
     if (!obj || typeof obj !== 'object') return false;
 
@@ -109,11 +112,13 @@ const isNativeSkippable = (obj: any): boolean => {
  * @param value 要检查的值
  * @returns 如果是代理对象返回 true，否则返回 false
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isProxy(value: any): boolean {
     return !!(value && value[RAW_SYMBOL]);
 }
 
 /** 深度比较 - 支持循环引用检测 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const deepEqual = (a: any, b: any, seen = new WeakMap<object, object>()): boolean => {
     // 同一引用
     if (a === b) return true;
@@ -207,7 +212,7 @@ const globalEmit = (targetProxy: object, payload: ChangePayload) => {
 
                 // 计算相对于该观察者的路径
                 // observerBasePath 是观察者根代理到当前代理的路径
-                const observerBasePath = resolvePathGlobal(current!);
+                const observerBasePath = current ? resolvePathGlobal(current) : [];
                 const observerFullPath = [...observerBasePath, ...basePath.slice(observerBasePath.length)];
 
                 if (!isPathMatched(observerFullPath, entry.filterRegexes)) return;
@@ -271,6 +276,7 @@ export function observe<T extends object>(
         active: true,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const createArrayInstrumentations = (target: unknown[], proxy: object): Record<string, Function> => {
         const instrumentations: Record<string, Function> = {};
         // 1. 变异方法 (Mutation)
@@ -280,6 +286,7 @@ export function observe<T extends object>(
 
                 const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
                 globalArrayMutationDepth.set(proxy, currentDepth + 1);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const res = (target as any)[key].apply(target, args);
                 globalArrayMutationDepth.set(proxy, currentDepth);
 
@@ -302,11 +309,13 @@ export function observe<T extends object>(
 
         // 2. 结构重置方法 (Reset)
         (['sort', 'reverse', 'fill', 'copyWithin'] as const).forEach(key => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             instrumentations[key] = function (this: unknown[], ...args: any[]) {
                 if (!proxy) return;
 
                 const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
                 globalArrayMutationDepth.set(proxy, currentDepth + 1);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const res = (target as any)[key].apply(target, args);
                 globalArrayMutationDepth.set(proxy, currentDepth);
                 globalEmit(proxy, { type: 'array-reset', method: key });
@@ -316,10 +325,13 @@ export function observe<T extends object>(
 
         // 3. 身份感知查找方法 (Search)
         (['indexOf', 'lastIndexOf', 'includes'] as const).forEach(key => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             instrumentations[key] = function (this: unknown[], searchElement: unknown, ...args: any[]) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let res = (target as any)[key].apply(target, [searchElement, ...args]);
                 // 如果没找到且搜索的是 Proxy，尝试用原始值找
                 if ((res === -1 || res === false) && isProxy(searchElement)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     res = (target as any)[key].apply(target, [toRaw(searchElement), ...args]);
                 }
                 return res;
@@ -329,6 +341,7 @@ export function observe<T extends object>(
         return instrumentations;
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const createProxy = (target: object, parent: object | null, key: PathKey | null): any => {
         // 如果是不可扩展的对象（如 Object.freeze 过的），不进行代理，防止报错
         if (!Object.isExtensible(target)) {
@@ -341,6 +354,7 @@ export function observe<T extends object>(
         }
 
         // 如果 target 本身就是一个代理对象（即能响应 RAW_SYMBOL），直接返回它
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((target as any)[RAW_SYMBOL]) {
             return target;
         }
@@ -371,6 +385,7 @@ export function observe<T extends object>(
             },
 
             set(t, p, newVal, r) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const oldVal = (t as any)[p];
                 // 深度比较或引用比较
                 if (deepCompare ? deepEqual(oldVal, newVal) : oldVal === newVal) return true;
@@ -391,6 +406,7 @@ export function observe<T extends object>(
 
             deleteProperty(t, p) {
                 if (!Reflect.has(t, p)) return false;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const oldVal = (t as any)[p];
                 const res = Reflect.deleteProperty(t, p);
 
@@ -425,11 +441,13 @@ export function observe<T extends object>(
 
     // immediate 处理
     if (immediate) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const walk = (obj: any, currentProxy: any, seen = new WeakSet<object>()) => {
             if (!isObject(obj) || seen.has(obj)) return;
             seen.add(obj);
 
             Reflect.ownKeys(obj).forEach(k => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const val = obj[k];
                 // 跳过循环引用
                 if (isObject(val) && seen.has(val)) return;

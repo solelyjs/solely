@@ -316,7 +316,7 @@ export function parseHtml(html: string): ASTNode[] {
             if (idxLower !== -1) {
                 const rawInner = html.substring(tagEnd + 1, idxLower);
                 if (rawInner.length) {
-                    ast.children!.push({
+                    ast.children.push({
                         type: ASTType.Text,
                         tag: 'text',
                         content: rawInner,
@@ -329,7 +329,7 @@ export function parseHtml(html: string): ASTNode[] {
             } else {
                 const rawInner = html.substring(tagEnd + 1);
                 if (rawInner.length) {
-                    ast.children!.push({
+                    ast.children.push({
                         type: ASTType.Text,
                         tag: 'text',
                         content: rawInner,

@@ -14,7 +14,7 @@ export interface PropDescriptor {
     /** 输入转换类型 */
     type?: PropType;
     /** 渲染兜底值（非状态） */
-    default?: any;
+    default?: unknown;
     /** 是否同步回 HTML Attribute */
     reflect?: boolean;
 }
@@ -58,6 +58,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
     // 将用户配置强制断言为内部版本，方便后续挂载编译产物
     const manifest = config as InternalManifest;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (OriginalClass: any) => {
         const { tagName } = manifest;
 
@@ -104,8 +105,9 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
                     manifest.ir = irCandidate;
 
                     if (IS_DEV) {
-                        console.log(
-                            `[Solely] Using precompiled IR for <${tagName}> | Nodes: ${irCandidate.n.length} | Fns: ${irCandidate.fns.length}`,
+                        console.info(
+                            `[Solely] Using precompiled IR for <${tagName}> | ` +
+                                `Nodes: ${irCandidate.n.length} | Fns: ${irCandidate.fns.length}`,
                         );
                     }
                 } else {
@@ -157,6 +159,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
 
         // 5. 定义新类并注册
         class CE extends OriginalClass {}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (CE as any)[MANIFEST_SYMBOL] = manifest;
 
         customElements.define(tagName, CE as CustomElementConstructor);

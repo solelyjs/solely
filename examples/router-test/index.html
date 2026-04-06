@@ -1,29 +1,111 @@
 <div class="router-test">
-  <h2>🧭 路由测试页面</h2>
-  <p>当前路径: {{ $data.currentPath }}</p>
-  <p>路由参数: {{ JSON.stringify($data.params) }}</p>
+  <!-- 头部 -->
+  <header class="header">
+    <h1>🧭 路由测试中心</h1>
+    <p class="subtitle">体验 Solely 路由系统的强大功能</p>
+  </header>
 
-  <div class="nav-buttons">
-    <button @click="this.router.push('/')">首页</button>
-    <button @click="this.router.push('/about')">关于</button>
-    <button @click="this.router.push('/user/123')">用户 123</button>
-    <button @click="this.router.push('/user/456')">用户 456</button>
-    <button @click="this.router.push('/search?keyword=hello&category=tech&page=2')">Query参数</button>
-    <button class="async-btn" @click="this.router.push('/async')">异步加载成功</button>
-    <button class="error-btn" @click="this.router.push('/error-demo')">测试加载错误</button>
-    <button @click="this.router.push('/nested/child1')">嵌套路由</button>
-    <button class="keepalive-btn" @click="this.router.push('/keepalive')">KeepAlive缓存</button>
-    <button @click="this.router.back()">返回</button>
-    <button @click="this.router.forward()">前进</button>
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="status-label">当前路径</span>
+      <code class="status-value path">{{ $data.currentPath }}</code>
+    </div>
+    <div class="status-item">
+      <span class="status-label">路由参数</span>
+      <code class="status-value">{{ JSON.stringify($data.params) }}</code>
+    </div>
   </div>
 
-  <!-- 使用 router-view 动态渲染路由组件 -->
-  <router-view></router-view>
+  <!-- 主体区域：左右布局 -->
+  <div class="main-layout">
+    <!-- 左侧：路由视图（主要内容） -->
+    <div class="view-panel">
+      <div class="panel-header">
+        <span class="panel-icon">🎯</span>
+        <h3>路由视图</h3>
+      </div>
+      <div class="view-container">
+        <router-view></router-view>
+      </div>
+    </div>
 
-  <div class="history-info">
-    <h4>导航历史</h4>
-    <For each="$data.history" item="item" index="i">
-      <div class="history-item">{{ i + 1 }}. {{ item }}</div>
-    </For>
+    <!-- 右侧：导航和历史 -->
+    <div class="side-panel">
+      <!-- 导航卡片 -->
+      <div class="nav-card">
+        <div class="card-header">
+          <span class="card-icon">📍</span>
+          <h4>基础页面</h4>
+        </div>
+        <div class="card-body">
+          <button class="btn btn-primary" @click="this.router.push('/')">🏠 首页</button>
+          <button class="btn btn-primary" @click="this.router.push('/about')">ℹ️ 关于</button>
+          <button class="btn btn-secondary" @click="this.router.push('/user/123')">👤 用户 123</button>
+          <button class="btn btn-secondary" @click="this.router.push('/user/456')">👤 用户 456</button>
+        </div>
+      </div>
+
+      <div class="nav-card">
+        <div class="card-header">
+          <span class="card-icon">🧪</span>
+          <h4>功能测试</h4>
+        </div>
+        <div class="card-body">
+          <button class="btn btn-info" @click="this.router.push('/search?keyword=hello&category=tech&page=2')">🔍 Query</button>
+          <button class="btn btn-info" @click="this.router.push('/nested/child1')">📁 嵌套</button>
+          <button class="btn btn-purple" @click="this.router.push('/keepalive')">💾 KeepAlive</button>
+        </div>
+      </div>
+
+      <div class="nav-card">
+        <div class="card-header">
+          <span class="card-icon">🔄</span>
+          <h4>浏览器操作</h4>
+        </div>
+        <div class="card-body">
+          <button class="btn btn-gray" @click="this.router.back()">⬅️ 返回</button>
+          <button class="btn btn-gray" @click="this.router.forward()">➡️ 前进</button>
+        </div>
+      </div>
+
+      <!-- 异步加载对比 -->
+      <div class="compare-card">
+        <div class="card-header">
+          <span class="card-icon">⚡</span>
+          <h4>预加载对比</h4>
+        </div>
+        <div class="compare-body">
+          <div class="compare-group">
+            <span class="group-label">异步页面</span>
+            <div class="link-row">
+              <router-link class="link-normal" to="/async">普通</router-link>
+              <router-link class="link-prefetch" to="/async" prefetch>预加载</router-link>
+            </div>
+          </div>
+          <div class="compare-group">
+            <span class="group-label">错误页面</span>
+            <router-link class="link-error" to="/error-demo">测试错误</router-link>
+          </div>
+        </div>
+      </div>
+
+      <!-- 导航历史 -->
+      <div class="history-card">
+        <div class="card-header">
+          <span class="card-icon">📜</span>
+          <h4>历史记录</h4>
+          <span class="history-badge">{{ $data.history.length }}</span>
+        </div>
+        <div class="history-list">
+          <For each="$data.history" item="item" index="i">
+            <div class="history-item">
+              <span class="history-number">{{ i + 1 }}</span>
+              <code class="history-path">{{ item }}</code>
+            </div>
+          </For>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

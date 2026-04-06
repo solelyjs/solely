@@ -39,9 +39,13 @@ export class Router {
     private base: string;
     private mode: 'hash' | 'history';
     private beforeEachGuard?: NavigationGuard;
-    private afterEachGuard?: (to: RouteMatch, from: RouteMatch) => void;
+    private afterEachGuard?: (to: RouteMatch, from: RouteMatch | null) => void;
     private currentRoute: RouteMatch | null = null;
     private listeners: Set<() => void> = new Set();
+    // 缓存已加载的异步组件（避免重复加载）
+    private componentCache = new Map<string, Promise<string | { tagName: string }>>();
+    // 正在加载中的路径
+    private loadingComponents = new Set<string>();
 
     constructor(options: RouterOptions) {
         this.routes = options.routes;
@@ -233,7 +237,7 @@ export class Router {
 
         if (this.beforeEachGuard) {
             try {
-                const result = await this.beforeEachGuard(to, from!);
+                const result = await this.beforeEachGuard(to, from);
                 if (result === false) return { success: false, cancelled: true };
                 if (typeof result === 'string') return this.navigate(result, replace);
             } catch (error) {
@@ -246,7 +250,7 @@ export class Router {
         if (!fromEvent) this.updateBrowserHistory(safePath, replace);
 
         this.notifyListeners();
-        if (this.afterEachGuard) this.afterEachGuard(to, from!);
+        if (this.afterEachGuard) this.afterEachGuard(to, from);
 
         return { success: true };
     }
@@ -320,5 +324,50 @@ export class Router {
 
     public getCurrentRoute(): RouteMatch | null {
         return this.currentRoute;
+    }
+
+    /**
+     * 预加载路由组件
+     * @param path 要预加载的路径
+     */
+    public prefetch(path: string): void {
+        const route = this.matchRoute(path);
+        if (!route) return;
+
+        // 获取叶子路由配置
+        const leafRoute = route.matched[route.matched.length - 1];
+        if (!leafRoute?.config.component) return;
+
+        const componentLoader = leafRoute.config.component;
+        if (typeof componentLoader !== 'function') return;
+
+        // 如果正在加载中或已缓存，直接返回
+        if (this.loadingComponents.has(path) || this.componentCache.has(path)) return;
+
+        // 标记为正在加载
+        this.loadingComponents.add(path);
+
+        // 执行预加载，成功才缓存
+        componentLoader()
+            .then(result => {
+                // 只有成功才缓存
+                this.componentCache.set(path, Promise.resolve(result));
+            })
+            .catch(() => {
+                // 预加载失败，不缓存，允许后续正常加载时再次尝试
+            })
+            .finally(() => {
+                // 移除加载标记
+                this.loadingComponents.delete(path);
+            });
+    }
+
+    /**
+     * 从缓存中获取已加载的组件
+     * @param path 路径
+     * @returns 缓存的组件 Promise 或 undefined
+     */
+    public getComponentFromCache(path: string): Promise<string | { tagName: string }> | undefined {
+        return this.componentCache.get(path);
     }
 }

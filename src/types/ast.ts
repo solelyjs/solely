@@ -43,7 +43,7 @@ export interface ASTNode {
     /** 源代码位置 */
     loc: SourceLocation;
     /** 子节点数组 */
-    children?: ASTNode[];
+    children: ASTNode[];
     /** 属性数组 */
     attrs?: Attribute[];
     /** 内容（只有文本/注释使用） */

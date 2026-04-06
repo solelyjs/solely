@@ -9,7 +9,7 @@ import styles from './index.css?raw';
     tagName: 'home-page',
     template: `
     <div class="page home">
-      <h3>🏠 首页</h3>
+      <h3>首页</h3>
       <p>欢迎来到 Solely 路由测试！</p>
     </div>
   `,
@@ -23,7 +23,7 @@ export class HomePage extends BaseElement {}
     tagName: 'about-page',
     template: `
     <div class="page about">
-      <h3>ℹ️ 关于</h3>
+      <h3>关于</h3>
       <p>Solely 是一个轻量级 Web 组件框架</p>
     </div>
   `,
@@ -37,7 +37,7 @@ export class AboutPage extends BaseElement {}
     tagName: 'user-page',
     template: `
     <div class="page user">
-      <h3>👤 用户详情</h3>
+      <h3>用户详情</h3>
       <p>用户ID: {{ $data.id || '未提供' }}</p>
       <p>这是动态路由参数的示例</p>
     </div>
@@ -57,7 +57,7 @@ export class UserPage extends BaseElement<{ id: string }> {
     tagName: 'async-page',
     template: `
     <div class="page async">
-      <h3>⚡ 异步加载页面</h3>
+      <h3>异步加载页面</h3>
       <p>此页面通过异步加载成功！</p>
     </div>
   `,
@@ -71,7 +71,7 @@ export class AsyncPage extends BaseElement {}
     tagName: 'query-page',
     template: `
     <div class="page query">
-      <h3>🔍 Query 参数示例</h3>
+      <h3>Query 参数示例</h3>
       <p>搜索关键词: {{ $data.queryKeyword || '无' }}</p>
       <p>分类: {{ $data.queryCategory || '全部' }}</p>
       <p>页码: {{ $data.queryPage || 1 }}</p>
@@ -100,7 +100,7 @@ export class QueryPage extends BaseElement<{
     tagName: 'nested-layout',
     template: `
     <div class="page nested">
-      <h3>📁 嵌套路由示例</h3>
+      <h3>嵌套路由示例</h3>
       <div class="nested-nav">
         <router-link to="/nested/child1" class="nested-link">子页面1</router-link>
         <router-link to="/nested/child2" class="nested-link">子页面2</router-link>
@@ -163,7 +163,7 @@ export class NestedChild2 extends BaseElement<{ text: string }> {
     tagName: 'keepalive-page',
     template: `
     <div class="page keepalive">
-      <h3>💾 KeepAlive 缓存示例</h3>
+      <h3>KeepAlive 缓存示例</h3>
       <p>此页面启用 KeepAlive，切换路由后状态会被保留</p>
       <p>计数器: {{ $data.count }}</p>
       <button @click="$data.count++">增加</button>
