@@ -183,6 +183,16 @@ class BaseElement<
                     return defaultValue;
                 }
 
+            case 'array':
+                try {
+                    // 处理单引号格式的数组字符串，如 "['a', 'b']" 转换为 '["a", "b"]'
+                    const normalizedValue = value.replace(/'/g, '"');
+                    const parsed = JSON.parse(normalizedValue);
+                    return Array.isArray(parsed) ? parsed : defaultValue;
+                } catch {
+                    return defaultValue;
+                }
+
             default:
                 return value;
         }

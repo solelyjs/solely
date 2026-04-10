@@ -5,7 +5,7 @@ import { IRRoot } from '../../types';
 const MANIFEST_SYMBOL = Symbol.for('solely.manifest');
 
 /** Prop 配置，支持类型声明 */
-export type PropType = 'string' | 'number' | 'boolean' | 'object';
+export type PropType = 'string' | 'number' | 'boolean' | 'object' | 'array';
 
 /** 属性描述符 */
 export interface PropDescriptor {
