@@ -196,20 +196,55 @@ export function parseHtml(html: string): ASTNode[] {
         // -------- 文本节点 --------
         if (nextTagStart === -1 || nextTagStart > index) {
             const rawText = html.substring(index, nextTagStart === -1 ? undefined : nextTagStart);
-            const trimmed = rawText.trim();
-            if (trimmed) {
-                const relativeStart = rawText.indexOf(trimmed);
-                const startPos = index + relativeStart;
-                const loc = getLoc(startPos);
 
-                getCurrent().push({
+            // 检查父标签是否需要保留空白
+            const parent = stack.length > 0 ? stack[stack.length - 1] : null;
+            const preserveWhitespace =
+                parent &&
+                (parent.tag === 'pre' ||
+                    parent.tag === 'code' ||
+                    parent.tag === 'textarea' ||
+                    parent.tag === 'script' ||
+                    parent.tag === 'style');
+
+            let textContent: string;
+            let startPos: number;
+
+            if (preserveWhitespace) {
+                // 特殊标签：原样保留原始文本（包括首尾空白和空字符串）
+                textContent = rawText;
+                startPos = index;
+            } else {
+                // 普通标签：去除首尾空白
+                textContent = rawText.trim();
+                if (textContent === '') {
+                    // 纯空白节点直接丢弃
+                    index = nextTagStart;
+                    if (nextTagStart === -1) break;
+                    continue;
+                }
+                // 计算内容实际起始位置（跳过前导空白）
+                const leadingWhitespace = rawText.length - rawText.trimStart().length;
+                startPos = index + leadingWhitespace;
+            }
+
+            const current = getCurrent();
+            const lastNode = current[current.length - 1];
+
+            // 合并相邻文本节点（属于同一父节点）
+            if (lastNode && lastNode.type === ASTType.Text) {
+                lastNode.content += textContent;
+            } else {
+                const loc = getLoc(startPos);
+                current.push({
                     type: ASTType.Text,
                     tag: 'text',
-                    content: trimmed,
+                    content: textContent,
                     loc,
                     children: [],
                 });
             }
+
             if (nextTagStart === -1) break;
             index = nextTagStart;
         }

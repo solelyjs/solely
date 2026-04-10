@@ -2,6 +2,7 @@ import { ASTType, IRBranch } from '../../types';
 import { IRAttr, IRNode, IRRoot, Meta } from '../../types';
 import { runtimeLoop } from '../../types';
 import { IS_DEV, showTemplateError } from '../../shared';
+import htmlDecode from './html-decode';
 
 const IRCTX_SYMBOL = Symbol('solely.irCtx');
 const IR_EVENTS_SYMBOL = Symbol('solely.irEvents');
@@ -429,7 +430,8 @@ export class IRRenderer {
     }
 
     private createText(irNode: IRNode, loops: runtimeLoop[]): Text {
-        const value = irNode.d ? this.evalIR(irNode.f ?? -1, [loops], irNode.__m) : irNode.x || '';
+        // 动态内容不处理，静态内容使用 htmlDecode 解码 HTML 实体
+        const value = irNode.d ? this.evalIR(irNode.f ?? -1, [loops], irNode.__m) : htmlDecode(irNode.x || '');
         return document.createTextNode(value);
     }
 

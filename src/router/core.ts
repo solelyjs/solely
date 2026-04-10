@@ -307,12 +307,19 @@ export class Router {
     private isStarted = false;
     public setupListeners(): void {
         if (this.isStarted) return; // 已经启动过了，直接返回
-        const handlePopState = () => {
+        this.isStarted = true;
+
+        const handleRouteChange = () => {
             // 传入 true，告知 navigate 此次导航来自系统事件
             this.navigate(this.getPath(), true, true);
         };
 
-        window.addEventListener('popstate', handlePopState);
+        // hash 模式监听 hashchange，history 模式监听 popstate
+        if (this.mode === 'hash') {
+            window.addEventListener('hashchange', handleRouteChange);
+        } else {
+            window.addEventListener('popstate', handleRouteChange);
+        }
 
         if (this.mode === 'hash' && !window.location.hash) {
             window.location.hash = '/';

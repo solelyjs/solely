@@ -40,3 +40,8 @@ coverage/
 test
 test.*
 dist-examples
+
+# 尚未完成的组件 以及 组件文档的代码
+examples/components-docs
+src/components
+
