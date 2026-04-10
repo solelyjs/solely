@@ -179,7 +179,8 @@ class BaseElement<
             case 'object':
                 try {
                     return JSON.parse(value);
-                } catch {
+                } catch (e) {
+                    console.error(`[Solely] Failed to parse object value: "${value}", using default value.`, e);
                     return defaultValue;
                 }
 
@@ -189,7 +190,8 @@ class BaseElement<
                     const normalizedValue = value.replace(/'/g, '"');
                     const parsed = JSON.parse(normalizedValue);
                     return Array.isArray(parsed) ? parsed : defaultValue;
-                } catch {
+                } catch (e) {
+                    console.error(`[Solely] Failed to parse array value: "${value}", using default value.`, e);
                     return defaultValue;
                 }
 
