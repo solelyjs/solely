@@ -58,11 +58,35 @@ class RouterView extends BaseElement {
 
     private detectLevel() {
         let level = 0;
-        let node = this.parentElement;
+        let node: Element | null = this.parentElement;
+
         while (node) {
-            if (node instanceof RouterView) level++;
-            node = node.parentElement;
+            // 1. 在当前文档流（或当前 ShadowRoot）中直接“瞬移”到最近的 RouterView
+            const found = node.closest('router-view');
+
+            if (found) {
+                level++;
+                // 找到了一个，从它的父节点继续往上找，避免死循环
+                node = found.parentElement;
+
+                // 如果 found.parentElement 为空，说明 found 已经是 ShadowRoot 的顶层元素
+                if (!node) {
+                    const root = found.getRootNode();
+                    node = root instanceof ShadowRoot ? root.host : null;
+                }
+            } else {
+                // 2. 当前层级找不到了，尝试跨越 Shadow Boundary
+                const root = node.getRootNode();
+                if (root instanceof ShadowRoot) {
+                    // 跳出 Shadow DOM 到宿主元素，继续下一轮 closest 查找
+                    node = root.host;
+                } else {
+                    // 已经到达真正的 document 根部了
+                    node = null;
+                }
+            }
         }
+
         this.level = level;
     }
 

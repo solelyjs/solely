@@ -111,6 +111,74 @@ export class QueryPage extends BaseElement<{
       </div>
     </div>
   `,
+    styles: `
+    :host {
+      display: block;
+    }
+    .nested {
+      color: #333;
+      line-height: 1.5;
+    }
+    .nested h3 {
+      color: #13c2c2;
+      margin-bottom: 16px;
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .nested h3::before {
+      content: '📁';
+      font-size: 24px;
+    }
+    .nested-nav {
+      margin: 16px 0;
+      display: flex;
+      gap: 10px;
+    }
+    .nested-link {
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: #f0f5ff;
+      color: #2b4acb;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+    .nested-link:hover {
+      background: #d6e4ff;
+    }
+    .nested-content {
+      background: #fafafa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+      border: 1px solid #f0f0f0;
+    }
+    .nested-content input[type="text"] {
+      padding: 8px 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      margin-left: 8px;
+      background: white;
+      color: #333;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .nested-content input[type="text"]:focus {
+      border-color: #13c2c2;
+      box-shadow: 0 0 0 2px rgba(19, 194, 194, 0.2);
+      outline: none;
+    }
+    `,
+    shadowDOM: {
+        use: true,
+        mode: 'open',
+    },
 })
 export class NestedLayout extends BaseElement<{ text: string }> {
     constructor() {
