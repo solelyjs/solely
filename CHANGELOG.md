@@ -7,6 +7,30 @@
 
 ## [Unreleased]
 
+## [0.2.9] - 2025-04-11
+
+### Fixed
+
+- **fix(router)**: 修复嵌套路由视图层级检测问题
+    - 改进 router-view 的层级检测逻辑，正确处理 Shadow DOM 边界情况
+    - 添加嵌套路由测试页面的样式和 Shadow DOM 配置
+
+- **fix(runtime)**: 添加对象和数组解析错误的日志输出
+    - 在解析对象和数组值时捕获异常并输出错误日志，便于调试问题
+
+### Added
+
+- **feat(component)**: 增加对数组类型的属性支持
+    - 添加 'array' 类型到 PropType 并在 base-element 中实现数组属性的解析逻辑
+    - 支持处理单引号格式的数组字符串
+
+- **feat(renderer)**: 添加 HTML 实体解码功能并优化文本处理
+    - 新增 htmlDecode 工具函数用于解码 HTML 实体
+    - 在文本渲染时处理静态内容的 HTML 实体解码
+    - 优化路由器事件监听逻辑，区分 hash 和 history 模式
+    - 改进 HTML 解析器对空白文本节点的处理逻辑
+    - 更新 .gitignore 忽略未完成组件目录
+
 ## [0.2.8] - 2025-04-06
 
 ### Changed
@@ -143,7 +167,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.2.8...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.2.9...HEAD
+[0.2.9]: https://github.com/solelyjs/solely/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/solelyjs/solely/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/solelyjs/solely/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/solelyjs/solely/compare/v0.2.5...v0.2.6

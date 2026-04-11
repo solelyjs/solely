@@ -216,8 +216,8 @@ refactor(router): 优化路由匹配算法
 5. 打标签并发布：
 
     ```bash
-    git tag v0.1.11
-    git push origin v0.1.11
+    git tag v0.2.9
+    git push origin v0.2.9
     ```
 
 6. GitHub Actions 将自动发布到 npm
