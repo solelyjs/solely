@@ -20,12 +20,10 @@ declare interface BaseElement<
     $refs: TRefs;
 }
 
+type DataRecord = Record<string, unknown>;
+
 interface ManifestConstructor {
     [MANIFEST_SYMBOL]?: Manifest;
-}
-
-interface UpgradePropsConstructor {
-    upgradeProps?: readonly string[];
 }
 
 /* -------------------- 实现 -------------------- */
@@ -52,15 +50,16 @@ class BaseElement<
     #isActive = false;
     #needsRefresh = false;
 
-    static upgradeProps?: readonly string[]; // 需要在元素定义前设置的属性列表（Upgrade Property）
+    // 非 Shadow DOM 样式引用计数（用于组件卸载时清理）
+    static #styleRefCount = new Map<string, number>();
 
     /* -------------------- observedAttributes -------------------- */
     static get observedAttributes(): string[] {
         const manifest = (this as typeof BaseElement & ManifestConstructor)[MANIFEST_SYMBOL] as InternalManifest;
-        if (!manifest?.propMap) return [];
+        if (!manifest?.attributeMap) return [];
 
         // 直接从预处理好的 Map 中获取所有 kebab-case 的键
-        return Array.from(manifest.propMap.keys());
+        return Array.from(manifest.attributeMap.keys());
     }
 
     /* -------------------- 构造 -------------------- */
@@ -81,12 +80,53 @@ class BaseElement<
     }
 
     // 升级属性（Upgrade Property）, 保障在元素被定义前设置的属性能正确触发响应式更新
-    #upgradeProperties<K extends keyof this>(props: K[]) {
-        for (const prop of props) {
-            if (this.hasOwnProperty(prop)) {
-                const value = this[prop];
-                delete this[prop];
-                this[prop] = value;
+    #upgradeAllOwnDataProperties() {
+        // 1. 获取实例所有自有属性键（包括不可枚举）
+        const ownKeys = Object.getOwnPropertyNames(this);
+
+        // 可选的过滤规则：跳过内部属性（以 #、_、$ 开头的内部保留字段）
+        const internalPrefixes = ['#', '_'];
+        const internalFields = new Set([
+            '$data',
+            '$refs',
+            'constructor',
+            'onInit',
+            'created',
+            'mounted',
+            'beforeUpdate',
+            'updated',
+            'unmounted',
+            'attributeChanged',
+            'beforeAttributesUpdate',
+            'afterAttributesUpdate',
+            'emit',
+            'refresh',
+        ]);
+
+        for (const key of ownKeys) {
+            // 过滤内部字段
+            if (internalFields.has(key)) continue;
+            if (internalPrefixes.some(p => key.startsWith(p))) continue;
+
+            // 只处理自有数据属性（value 描述符），不处理访问器属性
+            const desc = Object.getOwnPropertyDescriptor(this, key);
+            if (!desc || !('value' in desc)) continue;
+
+            const value = desc.value;
+
+            // 沿原型链查找是否存在 setter（可能是用户自定义的或 @Prop 生成的）
+            let protoTarget: object = this as object;
+            let setterDesc: PropertyDescriptor | undefined;
+            while (protoTarget) {
+                setterDesc = Object.getOwnPropertyDescriptor(protoTarget, key);
+                if (setterDesc?.set) break;
+                protoTarget = Object.getPrototypeOf(protoTarget);
+            }
+
+            if (setterDesc?.set) {
+                // 删除自有数据属性，触发 setter
+                delete this[key as keyof this];
+                (this as DataRecord)[key] = value;
             }
         }
     }
@@ -102,17 +142,14 @@ class BaseElement<
                 // 这里的 key 是 PathKey，如果是顶层属性同步，它通常是 string
                 const propKey = String(key);
 
-                const desc =
-                    manifest.propMap?.get(propKey.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()) ||
-                    Array.from(manifest.propMap?.values() || []).find(d => d.name === propKey);
+                const desc = manifest.propMap?.get(propKey);
 
                 if (desc?.reflect) {
                     this.#reflectToAttribute(desc, newValue);
                 }
             }
 
-            this.emit('change', {
-                source: 'state',
+            this.emit('dataChange', {
                 ...change,
             });
 
@@ -146,6 +183,32 @@ class BaseElement<
         }
     }
 
+    #installReactiveProps() {
+        const manifest = this.#manifest as InternalManifest;
+        if (!manifest.attributeMap) return;
+
+        for (const [_attrName, desc] of manifest.attributeMap) {
+            // 跳过非响应式
+            if (desc.reactive === false) continue;
+
+            const protoDesc = Object.getOwnPropertyDescriptor(this.constructor.prototype, desc.name);
+
+            if (protoDesc?.get || protoDesc?.set) {
+                continue;
+            } else {
+                // 无用户自定义：生成标准 getter/setter
+                Object.defineProperty(this, desc.name, {
+                    get: () => (this.$data as DataRecord)[desc.name],
+                    set: val => {
+                        (this.$data as DataRecord)[desc.name] = val;
+                    },
+                    configurable: true,
+                    enumerable: true,
+                });
+            }
+        }
+    }
+
     /* -------------------- $data -------------------- */
     get $data(): TData {
         return this.#data;
@@ -153,6 +216,7 @@ class BaseElement<
 
     set $data(value: TData) {
         if (!isObject(value)) value = {} as TData;
+        if ((value as unknown) === (this.#data as unknown)) return; // 引用相同则跳过
 
         this.#dispose?.();
         this.#initData(value);
@@ -161,8 +225,8 @@ class BaseElement<
 
     #convertAttrValue(value: string | null, defaultValue: unknown, type?: PropType) {
         if (value === null) {
-            // 对于布尔值，不存在即为 false (除非默认值强制为 true)
-            return type === 'boolean' ? (defaultValue ?? false) : defaultValue;
+            // 对于布尔值，属性不存在即为 false（HTML 标准语义）
+            return false;
         }
 
         switch (type) {
@@ -222,18 +286,18 @@ class BaseElement<
 
         this.#isRefreshing = true;
 
-        if (this.#isAttributeUpdate) this.beforeAttributesUpdate();
-
-        this.beforeUpdate();
-        this.#render.update();
-        this.updated();
-
-        if (this.#isAttributeUpdate) {
-            this.afterAttributesUpdate();
-            this.#isAttributeUpdate = false;
+        try {
+            if (this.#isAttributeUpdate) this.beforeAttributesUpdate();
+            this.beforeUpdate();
+            this.#render.update();
+            this.updated();
+            if (this.#isAttributeUpdate) {
+                this.afterAttributesUpdate();
+                this.#isAttributeUpdate = false;
+            }
+        } finally {
+            this.#isRefreshing = false;
         }
-
-        this.#isRefreshing = false;
     }
 
     public refresh(): void {
@@ -258,6 +322,7 @@ class BaseElement<
         // 场景 B: 回退方案 (无 Shadow DOM 或 不支持 adoptedStyleSheets)
         const target = root instanceof ShadowRoot ? root : document.head;
         const styleId = `solely-style-${manifest.tagName}`;
+        const isNonSD = !manifest.shadowDOM?.use;
 
         if (!target.querySelector(`#${styleId}`)) {
             const styleEl = document.createElement('style');
@@ -265,27 +330,21 @@ class BaseElement<
             styleEl.textContent = manifest.styles;
             target.appendChild(styleEl);
         }
+
+        // 非 Shadow DOM 模式：增加引用计数
+        if (isNonSD) {
+            const count = BaseElement.#styleRefCount.get(styleId) || 0;
+            BaseElement.#styleRefCount.set(styleId, count + 1);
+        }
     }
 
     /* -------------------- 生命周期 -------------------- */
     connectedCallback(): void {
         this.#isActive = true;
-        const ctor = this.constructor as typeof BaseElement & UpgradePropsConstructor;
-        const userUpgradeProps = ctor.upgradeProps;
-
-        // 构建升级属性列表，确保 $data 始终被包含
-        let finalUpgradeProps: string[];
-        if (Array.isArray(userUpgradeProps)) {
-            finalUpgradeProps = userUpgradeProps.includes('$data') ? userUpgradeProps : [...userUpgradeProps, '$data'];
-        } else {
-            finalUpgradeProps = ['$data'];
-        }
-
-        this.#upgradeProperties(finalUpgradeProps as (keyof this)[]);
-
-        this.#callCreatedOnce();
 
         const manifest = this.#manifest as InternalManifest;
+
+        this.#callCreatedOnce();
 
         const className = manifest.className || manifest.tagName || '';
         className.split(' ').forEach(n => n && this.classList.add(n));
@@ -295,21 +354,31 @@ class BaseElement<
 
         /* ---------- attribute → state ---------- */
 
-        if (manifest.propMap && isObject(this.$data)) {
+        if (manifest.attributeMap && isObject(this.$data)) {
             // 遍历预设好的属性映射
-            for (const [attrName, desc] of manifest.propMap) {
+            for (const [attrName, desc] of manifest.attributeMap) {
                 const propName = desc.name; // 对应的驼峰或原始变量名
 
                 if (this.hasAttribute(attrName)) {
                     const raw = this.getAttribute(attrName);
                     const value = this.#convertAttrValue(raw, desc.default, desc.type);
-                    (this.$data as Record<string, unknown>)[propName] = value;
+                    (this.$data as DataRecord)[propName] = value;
                 } else if ('default' in desc) {
                     // 如果 HTML 没写，使用默认值
-                    (this.$data as Record<string, unknown>)[propName] = desc.default;
+                    (this.$data as DataRecord)[propName] = desc.default;
+                    // 对于布尔类型，如果默认值是 true，同步设置到 HTML 属性
+                    if (desc.type === 'boolean' && desc.default === true) {
+                        this.setAttribute(attrName, '');
+                    }
                 }
             }
+
+            // 安装响应式属性访问器（如果用户没有自定义 getter/setter）
+            this.#installReactiveProps();
         }
+
+        // 自动升级所有自有数据属性（不需要手动声明 upgradeProps）
+        this.#upgradeAllOwnDataProperties();
 
         if (this.#ir && !this.#render) this.#render = createRender(this.#ir, this.#root as HTMLElement, this);
 
@@ -325,6 +394,20 @@ class BaseElement<
 
     disconnectedCallback(): void {
         this.#isActive = false;
+
+        // 非 Shadow DOM 模式：清理样式引用
+        const manifest = this.#manifest as InternalManifest;
+        if (!manifest.shadowDOM?.use && manifest.styles) {
+            const styleId = `solely-style-${manifest.tagName}`;
+            const count = BaseElement.#styleRefCount.get(styleId) || 0;
+            if (count <= 1) {
+                document.head.querySelector(`#${styleId}`)?.remove();
+                BaseElement.#styleRefCount.delete(styleId);
+            } else {
+                BaseElement.#styleRefCount.set(styleId, count - 1);
+            }
+        }
+
         this.unmounted();
     }
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
@@ -332,17 +415,17 @@ class BaseElement<
 
         const manifest = this.#manifest as InternalManifest;
         // 1. 直接从 Map 拿到描述符，无需正则转换
-        const desc = manifest.propMap?.get(name);
+        const desc = manifest.attributeMap?.get(name);
         if (!desc) return;
 
         const propName = desc.name;
-        const oldDataValue = (this.$data as Record<string, unknown>)[propName];
+        const oldDataValue = (this.$data as DataRecord)[propName];
 
         // 2. 转换值
         const next = this.#convertAttrValue(newValue, desc.default ?? oldDataValue, desc.type);
 
         // 3. 更新数据（触发响应式）
-        (this.$data as Record<string, unknown>)[propName] = next;
+        (this.$data as DataRecord)[propName] = next;
 
         this.#isAttributeUpdate = true;
         this.attributeChanged(name, oldDataValue, next);
@@ -369,6 +452,16 @@ class BaseElement<
         );
     }
 
+    public emitNative(eventName: string, options?: EventInit) {
+        this.dispatchEvent(
+            new Event(eventName, {
+                bubbles: true,
+                composed: true,
+                ...options,
+            }),
+        );
+    }
+
     /* -------------------- 钩子 -------------------- */
     public onInit(): void | Promise<void> {}
 
@@ -390,7 +483,7 @@ class BaseElement<
 
     /* -------------------- DEV define 保护 -------------------- */
     static {
-        if (IS_DEV) {
+        if (IS_DEV && typeof customElements !== 'undefined') {
             const original = customElements.define;
             const checkedCtors = new WeakSet<CustomElementConstructor>();
 

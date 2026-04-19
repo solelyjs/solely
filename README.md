@@ -522,8 +522,96 @@ Solely 框架内置了多层安全防护机制，有效防止常见的 XSS（跨
   styles: '...',               // 可选：组件样式
   shadowDOM: { use: true }     // 可选：使用 Shadow DOM
 })
+```
+
+#### Props 属性名转换规则
+
+框架会自动处理属性名的转换，遵循 **HTML attribute 使用 kebab-case，组件内部使用 camelCase** 的约定：
+
+| 声明方式                        | HTML 使用                 | 组件内部访问    | `$data` 键名 |
+| ------------------------------- | ------------------------- | --------------- | ------------ |
+| `props: ['myProp']`             | `<my-comp my-prop="x">`   | `this.myProp`   | `myProp`     |
+| `props: [{ name: 'userName' }]` | `<my-comp user-name="x">` | `this.userName` | `userName`   |
+
+**转换规则**：
+
+- HTML attribute 名：camelCase → kebab-case（如 `myProp` → `my-prop`）
+- 组件代码中：保持原始 camelCase（如 `this.myProp`）
+- `$data` 对象：使用 camelCase 作为键名（如 `$data.myProp`）
+
+> **注意**：如果属性名已经是 kebab-case（如 `a-b`），框架**不会**进行额外转换。此时 HTML 和代码中都需使用原始名称：
+>
+> ```typescript
+> props: ['a-b']; // HTML: <my-comp a-b="x">, 代码: this['a-b'], $data['a-b']
+> ```
+>
+> 建议统一使用 camelCase 命名，让框架自动处理转换。
+
+```typescript
+@CustomElement({
+    tagName: 'user-card',
+    template: `<div>{{ $data.userName }} - {{ $data.age }}</div>`,
+    props: [
+        { name: 'userName', type: 'string' }, // HTML: user-name, 内部: userName
+        { name: 'age', type: 'number' }, // HTML: age, 内部: age
+    ],
+})
+class UserCard extends BaseElement<{ userName: string; age: number }> {
+    // 使用方式：
+    // HTML: <user-card user-name="张三" age="25"></user-card>
+    // 代码: this.userName, this.$data.userName
+}
+```
+
+```typescript
 class MyComponent extends BaseElement<MyData> {
-  // 组件逻辑
+    // 组件逻辑
+}
+```
+
+#### Props 配置选项
+
+完整的 `PropDescriptor` 配置：
+
+```typescript
+interface PropDescriptor {
+    name: string; // 属性名（camelCase）
+    type?: 'string' | 'number' | 'boolean' | 'object' | 'array'; // 类型转换
+    default?: unknown; // 默认值
+    reflect?: boolean; // 是否同步回 HTML attribute
+    reactive?: boolean; // 是否响应式同步到 $data（默认 true）
+}
+```
+
+**`reactive` 参数说明**：
+
+| 值             | 行为                                            | 适用场景                     |
+| -------------- | ----------------------------------------------- | ---------------------------- |
+| `true`（默认） | 属性变化自动同步到 `$data`，触发模板更新        | 需要响应式绑定的数据         |
+| `false`        | 仅作为普通属性，不触发 `$data` 更新和模板重渲染 | 纯配置项，如 `theme`、`size` |
+
+**示例**：
+
+```typescript
+@CustomElement({
+    tagName: 'my-button',
+    template: `
+        <button class="btn {{ $data.size }}">
+            {{ $data.label }}
+        </button>
+    `,
+    props: [
+        { name: 'label', type: 'string', default: 'Button' }, // reactive: true（默认）
+        { name: 'size', type: 'string', default: 'medium', reactive: false }, // 非响应式
+        { name: 'disabled', type: 'boolean', reactive: true },
+    ],
+})
+class MyButton extends BaseElement<{ label: string; size: string; disabled: boolean }> {
+    // 使用方式：
+    // <my-button label="提交" size="large" :disabled="$data.isLoading"></my-button>
+    // - label 变化 → 自动更新模板
+    // - size 变化 → 不触发模板更新（需在样式中处理）
+    // - disabled 变化 → 自动更新模板
 }
 ```
 
@@ -544,64 +632,44 @@ Solely 支持两种属性设置方式：
 2. **动态属性绑定** (`:attr="表达式"`)：
     - 语法：`:attr="表达式"`
     - 作用：绑定动态表达式的值
-    - 行为：**不会自动触发响应式更新**，需要用户自己实现 `get`/`set` 方法来处理响应式逻辑
-    - 注意：如果需要在元素定义前设置该属性，需要在 `upgradeProps` 中添加，以防止属性失效
+    - 行为：声明在 `props` 中的属性**会自动触发响应式更新**；对于自定义逻辑，可实现 `get`/`set` 方法来处理
     - 示例：`<my-component :title="$data.pageTitle"></my-component>`
 
-#### Upgrade Property
+#### 属性自动升级（Upgrade Property）
 
-`upgradeProps` 是一个静态属性，用于指定需要在元素定义前设置的属性列表，确保这些属性的 getter/setter 能够正常工作：
-
-**示例**：
+框架会自动处理元素定义前设置的属性，无需手动配置：
 
 ```typescript
 // 1. 创建元素实例（此时自定义元素尚未注册）
 const element = document.createElement('my-component');
 
-// 2. 设置属性（此时属性会直接成为实例属性，不会触发 getter/setter）
+// 2. 设置属性（此时属性会直接成为实例属性）
 element.value = 'initial value';
-element.disabled = true;
+element.count = 5;
 
-// 3. 定义自定义元素
-class MyComponent extends BaseElement<{ value: string; disabled: boolean }> {
-    static upgradeProps = ['value', 'disabled']; // 指定需要升级的属性
-
+// 3. 定义并注册自定义元素
+class MyComponent extends BaseElement<{ value: string; count: number }> {
     constructor() {
-        super({ value: '', disabled: false });
-    }
-
-    // 假设我们有自定义的 getter/setter
-    get value() {
-        return this.$data.value;
-    }
-
-    set value(newValue) {
-        this.$data.value = newValue;
-        console.log('Value changed:', newValue);
-    }
-
-    get disabled() {
-        return this.$data.disabled;
-    }
-
-    set disabled(newValue) {
-        this.$data.disabled = newValue;
-        console.log('Disabled changed:', newValue);
+        super({ value: '', count: 0 });
     }
 }
 
-// 4. 注册自定义元素
 customElements.define('my-component', MyComponent);
 
-// 5. 添加到 DOM
+// 4. 添加到 DOM
 document.body.appendChild(element);
-// 此时，upgradeProps 会确保之前设置的属性重新通过 getter/setter 进行设置
-// 控制台会输出：
-// Value changed: initial value
-// Disabled changed: true
+// 框架自动升级属性：
+// - 声明在 props 中的属性 → 同步到 $data 并触发响应式
+// - 有自定义 getter/setter 的属性 → 触发 setter 让用户逻辑处理
 ```
 
-**作用**：当元素在自定义元素注册前就被设置了属性时，这些属性会直接成为元素的实例属性，而不会触发自定义元素的 getter/setter。通过 `upgradeProps` 可以确保这些属性在元素注册后重新通过 getter/setter 进行设置，从而保证属性的响应式功能正常工作。
+**自动升级规则**：
+
+| 属性类型                      | 升级行为       | 说明                                 |
+| ----------------------------- | -------------- | ------------------------------------ |
+| 声明在 `props` 中的属性       | 同步到 `$data` | 通过框架生成的 setter 自动同步       |
+| 有自定义 getter/setter 的属性 | 触发 setter    | 用户自定义逻辑执行，同时同步 `$data` |
+| 普通数据属性                  | 保持原样       | 不干预，作为普通实例属性             |
 
 #### 生命周期钩子
 
@@ -757,6 +825,7 @@ class MyComponent extends BaseElement<MyData> {
 | `$data`                            | 获取/设置组件数据 | 新数据对象（设置时）                                       | 当前数据对象 |
 | `refresh()`                        | 手动触发组件刷新  | 无                                                         | 无           |
 | `emit(eventName, detail, options)` | 派发自定义事件    | eventName: 事件名<br>detail: 事件详情<br>options: 事件选项 | 无           |
+| `emitNative(eventName, options)`   | 派发原生事件      | eventName: 事件名<br>options: 事件选项                     | 无           |
 
 ### observe
 

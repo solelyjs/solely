@@ -22,6 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.trae
 
 # 编译的文件
 dist
@@ -42,6 +43,6 @@ test.*
 dist-examples
 
 # 尚未完成的组件 以及 组件文档的代码
-examples/components-docs
+docs/components-docs
 src/components
 

@@ -17,6 +17,14 @@ export interface PropDescriptor {
     default?: unknown;
     /** 是否同步回 HTML Attribute */
     reflect?: boolean;
+
+    /**
+     * 是否响应式同步到 $data
+     * - true: 支持 :a="xx" 绑定，变化自动更新模板
+     * - false: 仅作为普通 prop，不触发模板更新
+     * @default true
+     */
+    reactive?: boolean;
 }
 
 /**
@@ -46,6 +54,8 @@ export interface InternalManifest extends Manifest {
     /** 预编译的样式表 */
     sheet?: CSSStyleSheet;
     /** 预处理后的属性映射表：attr-name -> PropDescriptor */
+    attributeMap?: Map<string, PropDescriptor>;
+    /** prop 原始名索引：prop name -> PropDescriptor */
     propMap?: Map<string, PropDescriptor>;
 }
 
@@ -144,17 +154,30 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
         }
 
         // 4. 预处理 Props (将 string[] 或对象混合数组 统一转为 Map)
-        if (manifest.props && !manifest.propMap) {
+        // 属性名处理规则：
+        // - attributeMap: HTML attribute 名 (kebab-case) -> PropDescriptor
+        //   用于 HTML 属性到组件状态的映射（如 my-prop -> { name: 'myProp' }）
+        // - propMap: 组件内部属性名 (camelCase/原始名) -> PropDescriptor
+        //   用于代码中通过属性名访问（如 this.myProp）
+        //
+        // 示例：{ name: 'myProp', type: 'string' }
+        //   -> attributeMap: 'my-prop' -> { name: 'myProp', ... }
+        //   -> propMap: 'myProp' -> { name: 'myProp', ... }
+        if (manifest.props && !manifest.attributeMap) {
             const map = new Map<string, PropDescriptor>();
+            const nameIndex = new Map<string, PropDescriptor>();
             manifest.props.forEach(p => {
                 const desc: PropDescriptor = typeof p === 'string' ? { name: p } : p;
-                // 转换出 HTML attribute 名 (camelCase -> kebab-case)
+                // HTML attribute 名使用 kebab-case（符合 HTML 规范）
                 const attrName = desc.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-                // 同时确保 desc.name 是 camelCase（用于 $data 属性访问）
-                const propName = attrName.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-                map.set(attrName, { ...desc, name: propName });
+                // 组件内部保持原始属性名（通常为 camelCase）
+                const propName = desc.name;
+                const normalized = { ...desc, name: propName };
+                map.set(attrName, normalized);
+                nameIndex.set(propName, normalized);
             });
-            manifest.propMap = map;
+            manifest.attributeMap = map;
+            manifest.propMap = nameIndex;
         }
 
         // 5. 定义新类并注册
