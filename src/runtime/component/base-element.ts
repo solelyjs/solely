@@ -226,7 +226,8 @@ class BaseElement<
     #convertAttrValue(value: string | null, defaultValue: unknown, type?: PropType) {
         if (value === null) {
             // 对于布尔值，属性不存在即为 false（HTML 标准语义）
-            return false;
+            // 对于其他类型，保持当前值（defaultValue）
+            return type === 'boolean' ? false : defaultValue;
         }
 
         switch (type) {
