@@ -7,6 +7,24 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-04-19
+
+### Added
+
+- **feat(component)**: 增强属性处理机制并优化响应式系统
+    - 新增 `reactive` 配置项控制属性是否响应式更新
+    - 重构属性映射逻辑，分离 `attributeMap` 和 `propMap`
+    - 实现自动属性升级机制，无需手动声明 `upgradeProps`
+    - 优化样式管理，支持非 Shadow DOM 模式的样式引用计数
+    - 添加 `emitNative` 方法用于派发原生事件
+    - 更新文档说明属性名转换规则和响应式配置
+
+### Fixed
+
+- **fix(base-element)**: 修正属性值转换逻辑并统一属性命名风格
+    - 修复布尔类型属性不存在时的默认值处理逻辑
+    - 将测试用例中的属性名从 kebab-case 改为 camelCase 以保持一致
+
 ## [0.2.9] - 2025-04-11
 
 ### Fixed
@@ -167,7 +185,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.2.9...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/solelyjs/solely/compare/v0.2.9...v0.3.0
 [0.2.9]: https://github.com/solelyjs/solely/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/solelyjs/solely/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/solelyjs/solely/compare/v0.2.6...v0.2.7
