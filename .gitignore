@@ -42,7 +42,5 @@ test
 test.*
 dist-examples
 
-# 尚未完成的组件 以及 组件文档的代码
-docs/components-docs
-src/components
-
+# 开发工具
+dev-tool/

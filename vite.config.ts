@@ -18,6 +18,11 @@ const entries = {
     'router/index': path.resolve(__dirname, 'src/router/index.ts'),
     'shared/index': path.resolve(__dirname, 'src/shared/index.ts'),
     'types/index': path.resolve(__dirname, 'src/types/index.ts'),
+    // 组件库入口
+    'components/index': path.resolve(__dirname, 'src/components/index.ts'),
+    'components/elements/index': path.resolve(__dirname, 'src/components/elements/index.ts'),
+    'components/commands/index': path.resolve(__dirname, 'src/components/commands/index.ts'),
+    'components/theme/index': path.resolve(__dirname, 'src/components/theme/index.ts'),
 };
 
 // 外部依赖 - 不打包进库
@@ -148,7 +153,8 @@ export default defineConfig(({ command, mode }) => {
                           passes: 2,
                       },
                       mangle: {
-                          properties: { regex: /^_/ },
+                          // 只混淆局部变量名，不混淆对象属性名
+                          properties: false,
                       },
                       format: { comments: false },
                   },

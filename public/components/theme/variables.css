@@ -1,0 +1,274 @@
+/* Solely 组件库 - CSS 变量定义 (统一规范版) */
+
+:root {
+    /* ==================== 品牌色 ==================== */
+    --solely-primary: #1890ff;
+    --solely-primary-hover: #40a9ff;
+    --solely-primary-active: #096dd9;
+    --solely-primary-light: #e6f7ff;
+
+    /* 次色 - 用于次要按钮、标签等 */
+    --solely-secondary: #722ed1;
+    --solely-secondary-hover: #9254de;
+    --solely-secondary-active: #531dab;
+    --solely-secondary-light: #f9f0ff;
+
+    /* ==================== 功能色 ==================== */
+    --solely-success: #52c41a;
+    --solely-success-hover: #73d13d;
+    --solely-success-active: #389e0d;
+    --solely-success-light: #f6ffed;
+
+    --solely-warning: #faad14;
+    --solely-warning-hover: #ffc53d;
+    --solely-warning-active: #d48806;
+    --solely-warning-light: #fffbe6;
+
+    --solely-error: #ff4d4f;
+    --solely-error-hover: #ff7875;
+    --solely-error-active: #cf1322;
+    --solely-error-light: #fff2f0;
+
+    --solely-info: #1890ff;
+    --solely-info-hover: #40a9ff;
+    --solely-info-active: #096dd9;
+    --solely-info-light: #e6f7ff;
+
+    /* ==================== 扩展色板 ==================== */
+    --solely-cyan: #13c2c2;
+    --solely-cyan-hover: #36cfc9;
+    --solely-cyan-active: #08979c;
+    --solely-cyan-light: #e6fffb;
+
+    --solely-purple: #722ed1;
+    --solely-purple-hover: #9254de;
+    --solely-purple-active: #531dab;
+    --solely-purple-light: #f9f0ff;
+
+    --solely-pink: #eb2f96;
+    --solely-pink-hover: #f759ab;
+    --solely-pink-active: #c41d7f;
+    --solely-pink-light: #fff0f6;
+
+    --solely-orange: #fa8c16;
+    --solely-orange-hover: #ffa940;
+    --solely-orange-active: #d46b08;
+    --solely-orange-light: #fff7e6;
+
+    /* ==================== 中性色 ==================== */
+    --solely-black: #000000;
+    --solely-white: #ffffff;
+    --solely-gray-1: #ffffff;
+    --solely-gray-2: #fafafa;
+    --solely-gray-3: #f5f5f5;
+    --solely-gray-4: #f0f0f0;
+    --solely-gray-5: #d9d9d9;
+    --solely-gray-6: #bfbfbf;
+    --solely-gray-7: #8c8c8c;
+    --solely-gray-8: #595959;
+    --solely-gray-9: #434343;
+    --solely-gray-10: #262626;
+    --solely-gray-11: #1f1f1f;
+    --solely-gray-12: #141414;
+    --solely-gray-13: #000000;
+
+    /* ==================== 文字颜色 ==================== */
+    --solely-text-primary: rgba(0, 0, 0, 0.85);
+    --solely-text-secondary: rgba(0, 0, 0, 0.65);
+    --solely-text-tertiary: rgba(0, 0, 0, 0.45);
+    --solely-text-quaternary: rgba(0, 0, 0, 0.25);
+
+    /* ==================== 边框颜色 ==================== */
+    --solely-border-color: #d9d9d9;
+    --solely-border-color-split: #f0f0f0;
+
+    /* ==================== 背景色 ==================== */
+    --solely-bg-color: #f0f2f5;
+    --solely-bg-color-light: #fafafa;
+    --solely-bg-color-dark: #1f1f1f;
+
+    /* ==================== 组件背景色 ==================== */
+    --solely-component-bg: #ffffff;
+    --solely-component-bg-hover: #f5f5f5;
+
+    /* ==================== 填充色 ==================== */
+    --solely-fill-color: #e8e8e8;
+    --solely-fill-color-light: #f5f5f5;
+
+    /* ==================== 反转色 ==================== */
+    /* 用于 Tooltip 等需要反转背景/文字颜色的元素 */
+    --solely-inverted-bg: rgba(0, 0, 0, 0.75);
+    --solely-inverted-text: var(--solely-white);
+
+    /* ==================== 圆角 - 统一命名 xs/sm/md/lg/xl/full/circle ==================== */
+    --solely-border-radius-sm: 2px;
+    --solely-border-radius-md: 4px;
+    --solely-border-radius-lg: 8px;
+    --solely-border-radius-xl: 12px;
+    --solely-border-radius-full: 9999px;
+    --solely-border-radius-circle: 50%;
+
+    /* ==================== 阴影 - 统一命名 sm/md/lg ==================== */
+    --solely-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --solely-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --solely-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+
+    /* ==================== 字体 - 统一命名 xs/sm/md/lg/xl/2xl ==================== */
+    --solely-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --solely-font-size-xs: 10px;
+    --solely-font-size-sm: 12px;
+    --solely-font-size-md: 14px;
+    --solely-font-size-lg: 16px;
+    --solely-font-size-xl: 18px;
+    --solely-font-size-2xl: 20px;
+
+    /* ==================== 行高 - 统一命名 sm/md/lg ==================== */
+    --solely-line-height-sm: 1.25;
+    --solely-line-height-md: 1.5;
+    --solely-line-height-lg: 1.75;
+
+    /* ==================== 间距 - 统一命名 xs/sm/md/lg/xl/2xl ==================== */
+    --solely-spacing-xs: 4px;
+    --solely-spacing-sm: 8px;
+    --solely-spacing-md: 12px;
+    --solely-spacing-lg: 16px;
+    --solely-spacing-xl: 24px;
+    --solely-spacing-2xl: 32px;
+
+    /* ==================== 高度 - 统一命名 xs/sm/md/lg/xl ==================== */
+    --solely-height-xs: 20px;
+    --solely-height-sm: 24px;
+    --solely-height-md: 32px;
+    --solely-height-lg: 40px;
+    --solely-height-xl: 48px;
+
+    /* ==================== 过渡 ==================== */
+    --solely-transition-duration: 0.3s;
+    --solely-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ==================== 禁用状态 ==================== */
+    --solely-disabled-opacity: 0.6;
+
+    /* ==================== z-index 层级 ==================== */
+    --solely-z-index-base: 1;
+    --solely-z-index-dropdown: 1000;
+    --solely-z-index-fixed: 100;
+    --solely-z-index-modal: 1050;
+    --solely-z-index-popover: 1060;
+    --solely-z-index-tooltip: 1070;
+    --solely-z-index-toast: 1100;
+    --solely-z-index-table-fixed: 2;
+    --solely-z-index-table-header: 3;
+    --solely-z-index-switch-handle: 2;
+    --solely-z-index-timeline-dot: 1;
+    --solely-z-index-slider-handle: 1;
+
+    /* ==================== 遮罩层 ==================== */
+    --solely-mask-bg: rgba(0, 0, 0, 0.45);
+
+    /* ==================== 箭头尺寸 ==================== */
+    --solely-tooltip-arrow-size: 5px;
+    --solely-popconfirm-arrow-size: 8px;
+}
+
+/* ==================== 暗色主题 ==================== */
+[data-theme='dark'] {
+    /* 品牌色 */
+    --solely-primary: #177ddc;
+    --solely-primary-hover: #3c9ae8;
+    --solely-primary-active: #0958d9;
+    --solely-primary-light: rgba(23, 125, 220, 0.2);
+
+    /* 次色 */
+    --solely-secondary: #9254de;
+    --solely-secondary-hover: #b37feb;
+    --solely-secondary-active: #722ed1;
+    --solely-secondary-light: rgba(146, 84, 222, 0.2);
+
+    /* 功能色 */
+    --solely-success: #49aa19;
+    --solely-success-hover: #6abe39;
+    --solely-success-active: #3c8618;
+    --solely-success-light: rgba(73, 170, 25, 0.2);
+
+    --solely-warning: #d89614;
+    --solely-warning-hover: #e8b339;
+    --solely-warning-active: #aa7714;
+    --solely-warning-light: rgba(216, 150, 20, 0.2);
+
+    --solely-error: #d32029;
+    --solely-error-hover: #e84749;
+    --solely-error-active: #ad2122;
+    --solely-error-light: rgba(211, 32, 41, 0.2);
+
+    --solely-info: #177ddc;
+    --solely-info-hover: #3c9ae8;
+    --solely-info-active: #0958d9;
+    --solely-info-light: rgba(23, 125, 220, 0.2);
+
+    /* 扩展色板 */
+    --solely-cyan: #13a8a8;
+    --solely-cyan-hover: #36cfc9;
+    --solely-cyan-active: #119595;
+    --solely-cyan-light: rgba(19, 168, 168, 0.2);
+
+    --solely-purple: #9254de;
+    --solely-purple-hover: #b37feb;
+    --solely-purple-active: #722ed1;
+    --solely-purple-light: rgba(146, 84, 222, 0.2);
+
+    --solely-pink: #c41d7f;
+    --solely-pink-hover: #e0529c;
+    --solely-pink-active: #9e1068;
+    --solely-pink-light: rgba(196, 29, 127, 0.2);
+
+    --solely-orange: #d87a16;
+    --solely-orange-hover: #e89a3c;
+    --solely-orange-active: #aa5b15;
+    --solely-orange-light: rgba(216, 122, 22, 0.2);
+
+    /* 文字颜色 */
+    --solely-text-primary: rgba(255, 255, 255, 0.85);
+    --solely-text-secondary: rgba(255, 255, 255, 0.65);
+    --solely-text-tertiary: rgba(255, 255, 255, 0.45);
+    --solely-text-quaternary: rgba(255, 255, 255, 0.25);
+
+    /* 边框颜色 */
+    --solely-border-color: #434343;
+    --solely-border-color-split: #303030;
+
+    /* 中性色 */
+    --solely-gray-1: #141414;
+    --solely-gray-2: #1f1f1f;
+    --solely-gray-3: #2c2c2c;
+    --solely-gray-4: #303030;
+    --solely-gray-5: #434343;
+    --solely-gray-6: #595959;
+    --solely-gray-7: #8c8c8c;
+    --solely-gray-8: #a6a6a6;
+    --solely-gray-9: #bfbfbf;
+    --solely-gray-10: #d9d9d9;
+    --solely-gray-11: #f0f0f0;
+    --solely-gray-12: #f5f5f5;
+    --solely-gray-13: #ffffff;
+
+    /* 背景色 */
+    --solely-bg-color: #141414;
+    --solely-bg-color-light: #1f1f1f;
+    --solely-bg-color-dark: #000000;
+
+    /* 组件背景色 */
+    --solely-component-bg: #1f1f1f;
+    --solely-component-bg-hover: #2c2c2c;
+
+    /* 填充色 */
+    --solely-fill-color: #2c2c2c;
+    --solely-fill-color-light: #1f1f1f;
+
+    /* 反转色 - 暗色主题下反转 */
+    --solely-inverted-bg: rgba(255, 255, 255, 0.9);
+    --solely-inverted-text: var(--solely-black);
+
+    /* 遮罩层（暗色主题下稍微轻一点） */
+    --solely-mask-bg: rgba(0, 0, 0, 0.65);
+}
