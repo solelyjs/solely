@@ -1,0 +1,10 @@
+<label
+    class="radio"
+    :class="this.getRadioClasses()"
+    @click="this.handleClick(event)"
+>
+    <span class="radio__input"></span>
+    <span class="radio__content">
+        <slot>{{$data.content}}</slot>
+    </span>
+</label>

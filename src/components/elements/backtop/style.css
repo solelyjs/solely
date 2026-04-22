@@ -1,0 +1,62 @@
+/* Solely BackTop 组件样式 */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: var(--solely-z-index-fixed);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+:host(.backtop--visible) {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+.backtop {
+  width: var(--solely-height-lg);
+  height: var(--solely-height-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--solely-primary);
+  background-color: var(--solely-component-bg);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform var(--solely-transition-duration),
+              background-color var(--solely-transition-duration),
+              box-shadow var(--solely-transition-duration);
+  transform: translateY(20px);
+}
+
+:host(.backtop--visible) .backtop {
+  transform: translateY(0);
+}
+
+.backtop:hover {
+  background-color: var(--solely-primary);
+  color: var(--solely-white);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+}
+
+.backtop__icon {
+  font-size: var(--solely-font-size-lg);
+  font-weight: bold;
+}

@@ -1,0 +1,248 @@
+/* Solely FAB 组件样式 */
+
+:host {
+  display: contents;
+}
+
+/* 基础重置 */
+.fab,
+.fab::before,
+.fab::after {
+  box-sizing: border-box;
+}
+
+.fab {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: var(--solely-z-index-fixed);
+  outline: none;
+  padding: 0;
+}
+
+/* 容器内绝对定位模式 */
+.fab--absolute {
+  position: absolute;
+}
+
+.fab:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transform: var(--fab-position-transform, none) scale(1.05);
+}
+
+.fab:active {
+  transform: var(--fab-position-transform, none) scale(0.95);
+}
+
+.fab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fab:disabled:hover {
+  transform: var(--fab-position-transform, none);
+}
+
+/* 图标样式 */
+.fab__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.fab__icon svg {
+  width: 60%;
+  height: 60%;
+}
+
+/* 尺寸变体 */
+.fab--sm {
+  width: 40px;
+  height: 40px;
+}
+
+.fab--sm .fab__icon {
+  font-size: 16px;
+}
+
+.fab--md {
+  width: 56px;
+  height: 56px;
+}
+
+.fab--md .fab__icon {
+  font-size: 24px;
+}
+
+.fab--lg {
+  width: 72px;
+  height: 72px;
+}
+
+.fab--lg .fab__icon {
+  font-size: 32px;
+}
+
+/* 形状变体 */
+.fab--circle {
+  border-radius: 50%;
+}
+
+.fab--square {
+  border-radius: 8px;
+}
+
+.fab--rounded {
+  border-radius: 16px;
+}
+
+/* 类型变体 */
+.fab--primary {
+  background: linear-gradient(135deg, var(--solely-primary) 0%, var(--solely-primary-hover) 100%);
+  color: #fff;
+}
+
+.fab--primary:hover {
+  background: linear-gradient(135deg, var(--solely-primary-hover) 0%, var(--solely-primary-active) 100%);
+}
+
+.fab--secondary {
+  background: linear-gradient(135deg, var(--solely-secondary) 0%, var(--solely-secondary-hover) 100%);
+  color: #fff;
+}
+
+.fab--secondary:hover {
+  background: linear-gradient(135deg, var(--solely-secondary-hover) 0%, var(--solely-secondary-active) 100%);
+}
+
+.fab--success {
+  background: linear-gradient(135deg, var(--solely-success) 0%, var(--solely-success-hover) 100%);
+  color: #fff;
+}
+
+.fab--success:hover {
+  background: linear-gradient(135deg, var(--solely-success-hover) 0%, var(--solely-success-active) 100%);
+}
+
+.fab--warning {
+  background: linear-gradient(135deg, var(--solely-warning) 0%, var(--solely-warning-hover) 100%);
+  color: #fff;
+}
+
+.fab--warning:hover {
+  background: linear-gradient(135deg, var(--solely-warning-hover) 0%, var(--solely-warning-active) 100%);
+}
+
+.fab--error {
+  background: linear-gradient(135deg, var(--solely-error) 0%, var(--solely-error-hover) 100%);
+  color: #fff;
+}
+
+.fab--error:hover {
+  background: linear-gradient(135deg, var(--solely-error-hover) 0%, var(--solely-error-active) 100%);
+}
+
+.fab--default {
+  background: var(--solely-component-bg);
+  color: var(--solely-text-primary);
+  border: 1px solid var(--solely-border-color);
+}
+
+.fab--default:hover {
+  color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+/* 位置变体 */
+.fab--top-left {
+  top: var(--fab-offset-y, 24px);
+  left: var(--fab-offset-x, 24px);
+  --fab-position-transform: none;
+}
+
+.fab--top-center {
+  top: var(--fab-offset-y, 24px);
+  left: 50%;
+  --fab-position-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+
+.fab--top-right {
+  top: var(--fab-offset-y, 24px);
+  right: var(--fab-offset-x, 24px);
+  --fab-position-transform: none;
+}
+
+.fab--left-center {
+  left: var(--fab-offset-x, 24px);
+  top: 50%;
+  --fab-position-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.fab--center {
+  left: 50%;
+  top: 50%;
+  --fab-position-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.fab--right-center {
+  right: var(--fab-offset-x, 24px);
+  top: 50%;
+  --fab-position-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.fab--bottom-left {
+  bottom: var(--fab-offset-y, 24px);
+  left: var(--fab-offset-x, 24px);
+  --fab-position-transform: none;
+}
+
+.fab--bottom-center {
+  bottom: var(--fab-offset-y, 24px);
+  left: 50%;
+  --fab-position-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+
+.fab--bottom-right {
+  bottom: var(--fab-offset-y, 24px);
+  right: var(--fab-offset-x, 24px);
+  --fab-position-transform: none;
+}
+
+/* 隐藏状态 */
+.fab--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 涟漪效果 */
+.fab::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: var(--solely-component-bg);
+  opacity: 0.3;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.fab:active::after {
+  width: 200%;
+  height: 200%;
+}

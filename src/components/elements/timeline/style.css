@@ -1,0 +1,507 @@
+/* ==================== Timeline 组件样式 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Timeline 组件样式 ==================== */
+:host {
+  display: block;
+  width: 100%;
+  font-size: var(--solely-font-size-md);
+}
+
+.timeline {
+  --timeline-dot-size: 10px;
+  --timeline-icon-size: 32px;
+  --timeline-tail-color: var(--solely-border-color);
+  --timeline-font-family: var(--solely-font-family);
+
+  width: 100%;
+  font-family: var(--timeline-font-family);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  line-height: 1.5714;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.timeline__list {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline__item {
+  position: relative;
+  padding-bottom: 20px;
+  margin: 0;
+  list-style: none;
+  box-sizing: border-box;
+}
+
+.timeline__item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline__item-wrapper {
+  display: flex;
+  align-items: flex-start;
+}
+
+.timeline__item-tail {
+  position: absolute;
+  top: 16px;
+  left: 7px;
+  width: 2px;
+  height: calc(100% - 6px);
+  background: var(--timeline-tail-color);
+  transition: background var(--solely-transition-duration);
+}
+
+.timeline__item:last-child>.timeline__item-tail {
+  display: none;
+}
+
+.timeline__item-head {
+  position: relative;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+}
+
+.timeline__dot {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: var(--timeline-dot-size);
+  height: var(--timeline-dot-size);
+  border-radius: 50%;
+  border: 2px solid var(--solely-primary);
+  background-color: var(--solely-component-bg);
+  background-clip: padding-box;
+  transition: all var(--solely-transition-duration);
+  box-sizing: border-box;
+}
+
+.timeline__icon-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--timeline-icon-size);
+  height: var(--timeline-icon-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--solely-primary-light);
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--solely-primary);
+  transform: translate(calc(-1 * (var(--timeline-icon-size) - 16px) / 2), calc(-1 * (var(--timeline-icon-size) - 16px) / 2));
+  cursor: default;
+  transition: all var(--solely-transition-duration);
+}
+
+.timeline__item-content {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: var(--solely-spacing-md);
+  word-break: break-word;
+}
+
+.timeline__title {
+  display: inline-block;
+  margin-bottom: var(--solely-spacing-xs);
+  font-weight: 500;
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  line-height: 1.5714;
+}
+
+.timeline__content-text {
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-secondary);
+  line-height: 1.5714;
+  word-break: break-word;
+  margin-top: var(--solely-spacing-xs);
+}
+
+.timeline__time {
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-tertiary);
+  margin-top: var(--solely-spacing-xs);
+}
+
+/* ===== 左侧模式 ===== */
+.timeline--left .timeline__item-tail {
+  left: 7px;
+}
+
+.timeline--left .timeline__item-head {
+  left: 0;
+}
+
+.timeline--left .timeline__item-content {
+  margin-left: var(--solely-spacing-md);
+}
+
+/* ===== 右侧模式 ===== */
+.timeline--right .timeline__item-wrapper {
+  flex-direction: row-reverse;
+}
+
+.timeline--right .timeline__item-tail {
+  right: 7px;
+  left: auto;
+}
+
+.timeline--right .timeline__item-head {
+  right: 0;
+  left: auto;
+}
+
+.timeline--right .timeline__item-content {
+  margin-left: 0;
+  margin-right: var(--solely-spacing-md);
+  text-align: right;
+}
+
+/* ===== 交替模式 ===== */
+.timeline--alternate .timeline__item {
+  min-height: 48px;
+  overflow: visible;
+}
+
+.timeline--alternate .timeline__item-tail {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 16px;
+}
+
+.timeline--alternate .timeline__item-wrapper {
+  display: block;
+  position: relative;
+}
+
+.timeline--alternate .timeline__item-head {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  z-index: 2;
+  margin-top: 3px;
+}
+
+.timeline--alternate .timeline__item-content {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  margin-left: 0;
+  padding-top: 3px;
+}
+
+.timeline--alternate .timeline__item:nth-child(odd) .timeline__item-content {
+  text-align: right;
+  padding-right: calc(50% + 20px);
+}
+
+.timeline--alternate .timeline__item:nth-child(even) .timeline__item-content {
+  text-align: left;
+  padding-left: calc(50% + 20px);
+}
+
+/* ===== 横向模式通用 ===== */
+.timeline--horizontal-top,
+.timeline--horizontal-bottom,
+.timeline--horizontal-alternate {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.timeline--horizontal-top .timeline__list,
+.timeline--horizontal-bottom .timeline__list,
+.timeline--horizontal-alternate .timeline__list {
+  display: flex;
+  align-items: stretch;
+}
+
+.timeline--horizontal-top .timeline__item,
+.timeline--horizontal-bottom .timeline__item,
+.timeline--horizontal-alternate .timeline__item {
+  display: block;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 100px;
+  max-width: 240px;
+  padding: 0 !important;
+}
+
+.timeline--horizontal-top .timeline__item-wrapper,
+.timeline--horizontal-bottom .timeline__item-wrapper,
+.timeline--horizontal-alternate .timeline__item-wrapper {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.timeline--horizontal-top .timeline__item-head,
+.timeline--horizontal-bottom .timeline__item-head,
+.timeline--horizontal-alternate .timeline__item-head {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.timeline--horizontal-top .timeline__dot,
+.timeline--horizontal-bottom .timeline__dot,
+.timeline--horizontal-alternate .timeline__dot {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+}
+
+.timeline--horizontal-top .timeline__icon-wrapper,
+.timeline--horizontal-bottom .timeline__icon-wrapper,
+.timeline--horizontal-alternate .timeline__icon-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-8px, -8px);
+}
+
+.timeline--horizontal-top .timeline__item-tail,
+.timeline--horizontal-bottom .timeline__item-tail,
+.timeline--horizontal-alternate .timeline__item-tail {
+  position: absolute;
+  left: calc(50% + 5px);
+  right: calc(-50% + 5px);
+  width: auto;
+  height: 2px;
+}
+
+.timeline--horizontal-top .timeline__item:last-child>.timeline__item-tail,
+.timeline--horizontal-bottom .timeline__item:last-child>.timeline__item-tail,
+.timeline--horizontal-alternate .timeline__item:last-child>.timeline__item-tail {
+  display: none !important;
+}
+
+.timeline--horizontal-top .timeline__item-content,
+.timeline--horizontal-bottom .timeline__item-content,
+.timeline--horizontal-alternate .timeline__item-content {
+  text-align: center;
+  margin-left: 0;
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+}
+
+/* --- 横向顶部模式：圆点在上，内容在下 --- */
+.timeline--horizontal-top .timeline__item {
+  min-height: 80px;
+}
+
+.timeline--horizontal-top .timeline__item-head {
+  top: var(--solely-spacing-sm);
+}
+
+.timeline--horizontal-top .timeline__item-tail {
+  top: 15px;
+}
+
+.timeline--horizontal-top .timeline__item-content {
+  padding-top: 36px;
+  padding-bottom: var(--solely-spacing-xs);
+}
+
+/* --- 横向底部模式：内容在上，圆点在下 --- */
+.timeline--horizontal-bottom .timeline__item {
+  min-height: 80px;
+}
+
+.timeline--horizontal-bottom .timeline__item-head {
+  bottom: var(--solely-spacing-sm);
+  top: auto;
+}
+
+.timeline--horizontal-bottom .timeline__item-tail {
+  bottom: 15px;
+  top: auto;
+}
+
+.timeline--horizontal-bottom .timeline__item-content {
+  padding-bottom: 36px;
+  padding-top: var(--solely-spacing-xs);
+}
+
+/* --- 横向交替模式：圆点居中，内容上下交替 --- */
+.timeline--horizontal-alternate .timeline__item {
+  min-height: 120px;
+}
+
+.timeline--horizontal-alternate .timeline__item-head {
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.timeline--horizontal-alternate .timeline__item-tail {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.timeline--horizontal-alternate .timeline__item:nth-child(odd) .timeline__item-content {
+  padding-top: 100px;
+  padding-bottom: var(--solely-spacing-xs);
+}
+
+.timeline--horizontal-alternate .timeline__item:nth-child(even) .timeline__item-content {
+  padding-bottom: 0;
+  padding-top: var(--solely-spacing-xs);
+}
+
+/* ===== 交替模式项目位置类 ===== */
+.timeline__item--left .timeline__item-content {
+  text-align: right;
+  padding-right: calc(50% + 20px);
+  margin-left: 0;
+}
+
+.timeline__item--right .timeline__item-content {
+  text-align: left;
+  padding-left: calc(50% + 20px);
+  margin-left: 0;
+}
+
+.timeline__item--top .timeline__item-content {
+  padding-top: calc(50% + 20px);
+  padding-bottom: var(--solely-spacing-xs);
+}
+
+.timeline__item--bottom .timeline__item-content {
+  padding-bottom: calc(50% + 20px);
+  padding-top: var(--solely-spacing-xs);
+}
+
+/* ===== 待定状态 ===== */
+.timeline__item--pending>.timeline__item-tail {
+  display: block !important;
+  background-color: transparent !important;
+  background-image: repeating-linear-gradient(to bottom,
+      var(--timeline-tail-color) 0,
+      var(--timeline-tail-color) 4px,
+      transparent 4px,
+      transparent 8px) !important;
+  animation: timeline-tail-flow 1s linear infinite;
+}
+
+.timeline--horizontal-top .timeline__item--pending>.timeline__item-tail,
+.timeline--horizontal-bottom .timeline__item--pending>.timeline__item-tail,
+.timeline--horizontal-alternate .timeline__item--pending>.timeline__item-tail {
+  background-image: repeating-linear-gradient(90deg,
+      rgba(5, 5, 5, 0.15) 0,
+      rgba(5, 5, 5, 0.15) 4px,
+      transparent 4px,
+      transparent 8px) !important;
+}
+
+.timeline__item--pending .timeline__dot {
+  background-color: transparent !important;
+  border-color: var(--solely-primary) !important;
+  border-style: dashed;
+  animation: timeline-pending-pulse 1.5s ease-in-out infinite;
+}
+
+.timeline__item--pending .timeline__item-content {
+  color: var(--solely-text-tertiary);
+}
+
+/* ===== 预设颜色（outlined 模式 - 边框色）===== */
+.timeline__dot--blue {
+  border-color: var(--solely-primary) !important;
+}
+
+.timeline__dot--green {
+  border-color: var(--solely-success) !important;
+}
+
+.timeline__dot--red {
+  border-color: var(--solely-error) !important;
+}
+
+.timeline__dot--orange {
+  border-color: var(--solely-warning) !important;
+}
+
+.timeline__dot--gray {
+  border-color: var(--solely-border-color) !important;
+}
+
+/* ===== Filled 变体 ===== */
+.timeline--filled .timeline__dot {
+  border-width: 0 !important;
+  background-clip: border-box;
+}
+
+.timeline--filled .timeline__dot--blue {
+  background-color: var(--solely-primary) !important;
+}
+
+.timeline--filled .timeline__dot--green {
+  background-color: var(--solely-success) !important;
+}
+
+.timeline--filled .timeline__dot--red {
+  background-color: var(--solely-error) !important;
+}
+
+.timeline--filled .timeline__dot--orange {
+  background-color: var(--solely-warning) !important;
+}
+
+.timeline--filled .timeline__dot--gray {
+  background-color: var(--solely-border-color) !important;
+}
+
+/* ===== Loading 状态 ===== */
+.timeline__item--loading .timeline__dot {
+  border-color: var(--solely-primary) var(--solely-primary-light) var(--solely-primary) var(--solely-primary-light);
+  animation: timeline-loading-spin 0.8s linear infinite;
+}
+
+/* ===== 动画关键帧 ===== */
+@keyframes timeline-tail-flow {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 0 16px;
+  }
+}
+
+@keyframes timeline-pending-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes timeline-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

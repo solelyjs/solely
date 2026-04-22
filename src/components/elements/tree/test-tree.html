@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>树组件连接线测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>树组件连接线测试</h1>
+    
+    <div class="test-container">
+        <h2>测试1: 带连接线的树结构</h2>
+        <solely-tree 
+            tree-data='[
+                {"key": "1", "title": "根节点1", "children": [
+                    {"key": "1-1", "title": "子节点1-1"},
+                    {"key": "1-2", "title": "子节点1-2", "children": [
+                        {"key": "1-2-1", "title": "孙节点1-2-1"},
+                        {"key": "1-2-2", "title": "孙节点1-2-2"}
+                    ]}
+                ]},
+                {"key": "2", "title": "根节点2", "children": [
+                    {"key": "2-1", "title": "子节点2-1"},
+                    {"key": "2-2", "title": "子节点2-2"}
+                ]}
+            ]'
+            show-line="true"
+            default-expand-all="true"
+        ></solely-tree>
+    </div>
+
+    <div class="test-container">
+        <h2>测试2: 不带连接线的树结构</h2>
+        <solely-tree 
+            tree-data='[
+                {"key": "1", "title": "根节点1", "children": [
+                    {"key": "1-1", "title": "子节点1-1"},
+                    {"key": "1-2", "title": "子节点1-2"}
+                ]}
+            ]'
+            show-line="false"
+            default-expand-all="true"
+        ></solely-tree>
+    </div>
+
+    <script type="module">
+        import './index.js';
+    </script>
+</body>
+</html>

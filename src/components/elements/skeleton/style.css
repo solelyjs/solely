@@ -1,0 +1,105 @@
+/* Solely Skeleton 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.skeleton {
+  width: 100%;
+  font-family: var(--solely-font-family);
+}
+
+.skeleton__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--solely-spacing-md);
+  margin-bottom: var(--solely-spacing-md);
+}
+
+.skeleton__content {
+  flex: 1;
+}
+
+/* 基础元素样式 */
+.skeleton__element {
+  background-color: var(--solely-fill-color);
+  border-radius: var(--solely-border-radius-sm);
+}
+
+.skeleton.is-active .skeleton__element {
+  background: linear-gradient(
+    90deg,
+    var(--solely-fill-color) 25%,
+    var(--solely-fill-color-light) 37%,
+    var(--solely-fill-color) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* 头像 */
+.skeleton__avatar {
+  flex-shrink: 0;
+}
+
+.skeleton__avatar--circle {
+  border-radius: 50%;
+}
+
+.skeleton__avatar--square {
+  border-radius: var(--solely-border-radius-md);
+}
+
+/* 标题 */
+.skeleton__title {
+  width: 100%;
+  height: 16px;
+  margin-bottom: var(--solely-spacing-sm);
+}
+
+/* 段落 */
+.skeleton__paragraph {
+  display: flex;
+  flex-direction: column;
+  gap: var(--solely-spacing-sm);
+}
+
+.skeleton__row {
+  width: 100%;
+  height: 14px;
+}
+
+/* 多行时最后一行宽度为 60% */
+.skeleton__paragraph .skeleton__row:not(:only-child):last-child {
+  width: 60%;
+}
+
+/* 内容显示 */
+.skeleton__real-content {
+  animation: skeleton-fade-in 0.4s ease-out;
+}
+
+@keyframes skeleton-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

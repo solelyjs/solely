@@ -1,0 +1,352 @@
+<div class="page-header">
+    <h1 class="page-title">Message 全局提示</h1>
+    <p class="page-desc">全局展示操作反馈信息，支持多种消息类型和自定义配置。</p>
+</div>
+
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">提供五种不同级别的消息提示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showInfo()">信息提示</solely-button>
+                <solely-button type="success" @click="this.showSuccess()">成功提示</solely-button>
+                <solely-button type="warning" @click="this.showWarning()">警告提示</solely-button>
+                <solely-button type="error" @click="this.showError()">错误提示</solely-button>
+                <div ref="messageLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">import</span> { <span class="code-type">Message</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+
+<span class="code-type">Message</span>.<span class="code-attr">info</span>(<span class="code-value">'这是一条信息提示'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'操作成功完成'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">warning</span>(<span class="code-value">'请注意操作安全'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">error</span>(<span class="code-value">'操作失败，请重试'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">loading</span>(<span class="code-value">'正在加载中...'</span>);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">加载状态</h3>
+        <p class="demo-block-desc">显示加载中的提示信息，默认不会自动关闭，需手动调用 close()。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showLoading()">显示加载中</solely-button>
+                <solely-button type="primary" @click="this.hideLoading()">隐藏加载中</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> loading = <span class="code-type">Message</span>.<span class="code-attr">loading</span>(<span class="code-value">'正在加载中...'</span>);
+
+<span class="code-comment">// 完成后手动关闭</span>
+loading.<span class="code-attr">close</span>();
+
+<span class="code-comment">// 也可以指定自动关闭时间</span>
+<span class="code-type">Message</span>.<span class="code-attr">loading</span>(<span class="code-value">'加载中'</span>, <span class="code-value">5000</span>);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义时长</h3>
+        <p class="demo-block-desc">可以自定义消息的显示时长，或设置 <code>duration: 0</code> 不自动关闭。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showCustomDuration()">5秒后关闭</solely-button>
+                <solely-button type="primary" @click="this.showPersistent()">不自动关闭</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'这条提示将持续5秒'</span>, <span class="code-value">5000</span>);
+
+<span class="code-type">Message</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">content</span>: <span class="code-value">'这条提示不会自动关闭'</span>,
+    <span class="code-attr">type</span>: <span class="code-value">'info'</span>,
+    <span class="code-attr">duration</span>: <span class="code-value">0</span>,
+    <span class="code-attr">closable</span>: <span class="code-value">true</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">带描述的消息</h3>
+        <p class="demo-block-desc">消息可以包含标题和描述信息。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showWithDescription()">带描述的消息</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Message</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">content</span>: <span class="code-value">'操作成功'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'您的数据已成功保存到服务器'</span>,
+    <span class="code-attr">type</span>: <span class="code-value">'success'</span>,
+    <span class="code-attr">duration</span>: <span class="code-value">5000</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义图标</h3>
+        <p class="demo-block-desc">可以传入自定义图标元素。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showCustomIcon()">自定义图标</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> customIcon = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'span'</span>);
+customIcon.<span class="code-attr">textContent</span> = <span class="code-value">'★'</span>;
+customIcon.<span class="code-attr">style</span>.<span class="code-attr">fontSize</span> = <span class="code-value">'16px'</span>;
+
+<span class="code-type">Message</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">content</span>: <span class="code-value">'自定义图标消息'</span>,
+    <span class="code-attr">icon</span>: customIcon,
+    <span class="code-attr">duration</span>: <span class="code-value">3000</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">更新消息内容</h3>
+        <p class="demo-block-desc">使用 <code>update()</code> 方法更新消息内容。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.updateMessage()">更新消息</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> instance = <span class="code-type">Message</span>.<span class="code-attr">loading</span>(<span class="code-value">'正在加载中...'</span>);
+
+<span class="code-comment">// 更新内容</span>
+instance.<span class="code-attr">update</span>(<span class="code-value">'加载完成！'</span>);
+
+<span class="code-comment">// 或同时更新内容和描述</span>
+instance.<span class="code-attr">update</span>({
+    <span class="code-attr">content</span>: <span class="code-value">'上传成功'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'文件已保存'</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">全局配置</h3>
+        <p class="demo-block-desc">使用 <code>config()</code> 方法配置全局默认设置。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.configMessage()">更新全局配置</solely-button>
+                <solely-button type="primary" @click="this.destroyAll()">销毁所有消息</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Message</span>.<span class="code-attr">config</span>({
+    <span class="code-attr">duration</span>: <span class="code-value">5000</span>,
+    <span class="code-attr">maxCount</span>: <span class="code-value">3</span>,
+    <span class="code-attr">top</span>: <span class="code-value">50</span>
+});
+
+<span class="code-type">Message</span>.<span class="code-attr">destroy</span>();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="api-block">
+        <h3 class="api-block-title">API</h3>
+        
+        <h4 class="api-block-subtitle">Message 方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Message.open</td>
+                    <td>打开消息</td>
+                    <td>options: MessageOptions</td>
+                    <td>MessageInstance</td>
+                </tr>
+                <tr>
+                    <td>Message.info</td>
+                    <td>信息提示</td>
+                    <td>content: string, duration?: number</td>
+                    <td>MessageInstance</td>
+                </tr>
+                <tr>
+                    <td>Message.success</td>
+                    <td>成功提示</td>
+                    <td>content: string, duration?: number</td>
+                    <td>MessageInstance</td>
+                </tr>
+                <tr>
+                    <td>Message.warning</td>
+                    <td>警告提示</td>
+                    <td>content: string, duration?: number</td>
+                    <td>MessageInstance</td>
+                </tr>
+                <tr>
+                    <td>Message.error</td>
+                    <td>错误提示</td>
+                    <td>content: string, duration?: number</td>
+                    <td>MessageInstance</td>
+                </tr>
+                <tr>
+                    <td>Message.loading</td>
+                    <td>加载中提示（默认不自动关闭）</td>
+                    <td>content: string, duration?: number</td>
+                    <td>MessageInstance</td>
+                </tr>
+                <tr>
+                    <td>Message.config</td>
+                    <td>全局配置</td>
+                    <td>options: Partial&lt;MessageConfig&gt;</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>Message.destroy</td>
+                    <td>销毁所有消息</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">MessageOptions</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>content</td>
+                    <td>消息内容</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>消息描述</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>type</td>
+                    <td>消息类型</td>
+                    <td>'info' | 'success' | 'warning' | 'error' | 'loading'</td>
+                    <td>'info'</td>
+                </tr>
+                <tr>
+                    <td>showIcon</td>
+                    <td>是否显示图标</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>自定义图标</td>
+                    <td>string | HTMLElement</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>duration</td>
+                    <td>显示时长（毫秒），0 表示不自动关闭</td>
+                    <td>number</td>
+                    <td>3000</td>
+                </tr>
+                <tr>
+                    <td>closable</td>
+                    <td>是否显示关闭按钮</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>className</td>
+                    <td>自定义类名</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>style</td>
+                    <td>自定义样式</td>
+                    <td>Partial&lt;CSSStyleDeclaration&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onClose</td>
+                    <td>关闭时的回调</td>
+                    <td>() => void</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">MessageInstance</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>close()</td>
+                    <td>关闭当前消息</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>update(content)</td>
+                    <td>更新消息内容或描述</td>
+                    <td>string 或 { content?: string, description?: string }</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">MessageConfig</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>duration</td>
+                    <td>默认显示时长</td>
+                    <td>number</td>
+                    <td>3000</td>
+                </tr>
+                <tr>
+                    <td>maxCount</td>
+                    <td>最大显示数量</td>
+                    <td>number</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>gap</td>
+                    <td>消息之间的间距</td>
+                    <td>number</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td>top</td>
+                    <td>距离顶部的距离</td>
+                    <td>number</td>
+                    <td>24</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

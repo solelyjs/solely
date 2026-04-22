@@ -1,0 +1,137 @@
+/**
+ * Solely Alert 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-block;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+/* ==================== 警告提示基础样式 (.alert) ==================== */
+.alert {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--solely-spacing-sm);
+  padding: var(--solely-spacing-md) var(--solely-spacing-lg);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  border-radius: var(--solely-border-radius-md);
+  transition: all var(--solely-transition-duration);
+  box-sizing: border-box;
+}
+
+/* 警告类型 */
+.alert--info {
+  color: var(--solely-primary);
+  background-color: var(--solely-primary-light);
+  border: 1px solid var(--solely-primary);
+}
+
+.alert--success {
+  color: var(--solely-success);
+  background-color: var(--solely-success-light);
+  border: 1px solid var(--solely-success);
+}
+
+.alert--warning {
+  color: var(--solely-warning);
+  background-color: var(--solely-warning-light);
+  border: 1px solid var(--solely-warning);
+}
+
+.alert--error {
+  color: var(--solely-error);
+  background-color: var(--solely-error-light);
+  border: 1px solid var(--solely-error);
+}
+
+/* 警告子元素 */
+.alert__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--solely-height-md);
+  height: var(--solely-height-md);
+  font-size: var(--solely-font-size-md);
+  flex-shrink: 0;
+  margin-top: var(--solely-spacing-xs);
+}
+
+.alert__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert__message {
+  color: var(--solely-text-primary);
+  font-weight: 500;
+}
+
+.alert__description {
+  color: var(--solely-text-secondary);
+  font-size: var(--solely-font-size-sm);
+  margin-top: var(--solely-spacing-xs);
+  line-height: var(--solely-line-height-md);
+}
+
+.alert__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--solely-height-md);
+  height: var(--solely-height-md);
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  flex-shrink: 0;
+}
+
+.alert__close:hover {
+  color: var(--solely-text-secondary);
+}
+
+/* 块级显示 */
+.alert--block {
+  display: flex;
+  width: 100%;
+}
+
+/* ==================== 警告提示特有样式 ==================== */
+/* 关闭动画 - 组件特有 */
+.alert.is-closing {
+  animation: alert-close 0.3s ease-in forwards;
+}
+
+@keyframes alert-close {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+}

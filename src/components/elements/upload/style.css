@@ -1,0 +1,277 @@
+/* Solely Upload 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: inline-block;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+:host([block]) .upload__button {
+  width: 100%;
+  justify-content: center;
+}
+
+:host([block]) .upload__drag {
+  width: 100%;
+}
+
+.upload {
+  font-family: var(--solely-font-family);
+}
+
+/* 上传按钮 */
+.upload__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border: 1px dashed var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  font-size: var(--solely-font-size-md);
+}
+
+.upload__button:hover {
+  border-color: var(--solely-primary);
+  color: var(--solely-primary);
+}
+
+.upload.is-disabled .upload__button {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
+}
+
+/* 拖拽上传区域 */
+.upload__drag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--solely-spacing-xl);
+  border: 2px dashed var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  background-color: var(--solely-gray-1);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  text-align: center;
+}
+
+.upload__drag:hover {
+  border-color: var(--solely-primary);
+}
+
+.upload__drag--active {
+  border-color: var(--solely-primary);
+  background-color: var(--solely-primary-light);
+}
+
+.upload__drag-icon {
+  font-size: 48px;
+  color: var(--solely-text-tertiary);
+  margin-bottom: var(--solely-spacing-md);
+}
+
+.upload__drag-text {
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  margin-bottom: var(--solely-spacing-xs);
+}
+
+.upload__drag-hint {
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-text-tertiary);
+}
+
+/* 文件列表 */
+.upload__list {
+  margin-top: var(--solely-spacing-md);
+  padding: 0;
+  list-style: none;
+}
+
+.upload__list-item {
+  display: flex;
+  align-items: center;
+  padding: var(--solely-spacing-sm);
+  margin-bottom: var(--solely-spacing-xs);
+  border-radius: var(--solely-border-radius-md);
+  background-color: var(--solely-gray-1);
+  transition: all var(--solely-transition-duration);
+}
+
+.upload__list-item:hover {
+  background-color: var(--solely-gray-2);
+}
+
+.upload__list-item--error {
+  background-color: var(--solely-error-light);
+}
+
+.upload__list-item--error .upload__list-name {
+  color: var(--solely-error);
+}
+
+.upload__list-thumb {
+  width: 48px;
+  height: 48px;
+  margin-right: var(--solely-spacing-sm);
+  border-radius: var(--solely-border-radius-sm);
+  object-fit: cover;
+  background-color: var(--solely-gray-3);
+}
+
+.upload__list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.upload__list-name {
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upload__list-size {
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-text-tertiary);
+  margin-top: 2px;
+}
+
+.upload__list-status {
+  margin-left: var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+.upload__list-status--uploading {
+  color: var(--solely-primary);
+}
+
+.upload__list-status--done {
+  color: var(--solely-success);
+}
+
+.upload__list-status--error {
+  color: var(--solely-error);
+}
+
+.upload__list-remove {
+  margin-left: var(--solely-spacing-sm);
+  padding: var(--solely-spacing-xs);
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.upload__list-remove:hover {
+  color: var(--solely-error);
+}
+
+/* 进度条 */
+.upload__progress {
+  width: 100%;
+  height: 2px;
+  background-color: var(--solely-gray-3);
+  border-radius: 1px;
+  margin-top: var(--solely-spacing-xs);
+  overflow: hidden;
+}
+
+.upload__progress-bar {
+  height: 100%;
+  background-color: var(--solely-primary);
+  transition: width 0.3s ease;
+}
+
+/* 文本列表样式 (默认) */
+.upload--text .upload__list-item {
+  display: flex;
+  align-items: center;
+}
+
+/* 图片列表样式 */
+.upload--picture .upload__list-item {
+  display: flex;
+  align-items: center;
+}
+
+.upload--picture .upload__list-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--solely-border-radius-sm);
+}
+
+/* 图片卡片样式 */
+.upload--picture-card .upload__button {
+  width: 104px;
+  height: 104px;
+  padding: 0;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.upload--picture-card .upload__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--solely-spacing-sm);
+}
+
+.upload--picture-card .upload__list-item {
+  width: 104px;
+  height: 104px;
+  padding: 0;
+  margin-bottom: 0;
+  position: relative;
+}
+
+.upload--picture-card .upload__list-thumb {
+  width: 100%;
+  height: 100%;
+  margin-right: 0;
+  border-radius: var(--solely-border-radius-md);
+}
+
+.upload--picture-card .upload__list-info {
+  display: none;
+}
+
+.upload--picture-card .upload__list-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  margin-left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: var(--solely-white);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.upload--picture-card .upload__list-remove:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: var(--solely-white);
+}
+
+/* 隐藏文件输入 */
+.upload__input {
+  display: none;
+}

@@ -1,0 +1,28 @@
+<div class="select" :class="this.getSelectClasses()" @click="this.handleClick(event)">
+    <div class="select__selector">
+        <If test="!$data.selectedLabel">
+            <span class="select__placeholder">{{$data.placeholder || '请选择'}}</span>
+        </If>
+        <If test="$data.selectedLabel">
+            <span class="select__value">{{$data.selectedLabel}}</span>
+        </If>
+        <If test="$data.clearable && $data.selectedLabel && !$data.disabled">
+            <span class="select__clear" @click="this.handleClear(event)">×</span>
+        </If>
+        <span class="select__arrow">▼</span>
+    </div>
+
+    <!-- 下拉菜单 -->
+    <If test="$data.isOpen">
+        <div class="select__dropdown" :class="this.getDropdownClasses()">
+            <If test="$data.parsedOptions.length === 0">
+                <div class="select__empty">暂无数据</div>
+            </If>
+            <For each="$data.parsedOptions" item="option">
+                <div class="select__option" :class="this.getOptionClasses(option)" @click="this.handleSelect(option, event)">
+                    {{option.label}}
+                </div>
+            </For>
+        </div>
+    </If>
+</div>

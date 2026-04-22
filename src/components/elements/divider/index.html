@@ -1,0 +1,10 @@
+<div
+    class="divider"
+     :class="this.getDividerClasses()"
+>
+    <If test="$data.content || $data.hasSlotContent">
+        <span class="divider__content">
+            <slot>{{$data.content}}</slot>
+        </span>
+    </If>
+</div>

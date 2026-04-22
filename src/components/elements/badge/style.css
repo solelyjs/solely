@@ -1,0 +1,122 @@
+/* Solely Badge 组件样式 */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: inline-block;
+  position: relative;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+.badge {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* 徽标数 */
+.badge__count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  z-index: var(--solely-z-index-base);
+  min-width: var(--solely-height-xs);
+  height: var(--solely-height-xs);
+  padding: 0 6px;
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-xs);
+  font-weight: 400;
+  line-height: var(--solely-height-xs);
+  color: var(--solely-white);
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--solely-error);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--solely-white);
+  box-sizing: border-box;
+}
+
+/* 小红点 */
+.badge__dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  z-index: var(--solely-z-index-base);
+  width: 8px;
+  height: 8px;
+  background-color: var(--solely-error);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--solely-white);
+}
+
+/* 状态点 */
+.badge__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-secondary);
+}
+
+.badge__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.badge__status-dot--success {
+  background-color: var(--solely-success);
+}
+
+.badge__status-dot--processing {
+  background-color: var(--solely-primary);
+  animation: badge-processing 1.2s infinite ease-in-out;
+}
+
+.badge__status-dot--default {
+  background-color: var(--solely-gray-6);
+}
+
+.badge__status-dot--error {
+  background-color: var(--solely-error);
+}
+
+.badge__status-dot--warning {
+  background-color: var(--solely-warning);
+}
+
+.badge__status-text {
+  color: var(--solely-text-secondary);
+}
+
+/* 零值隐藏 */
+.badge--zero .badge__count {
+  display: none;
+}
+
+/* 动画 */
+@keyframes badge-processing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+}

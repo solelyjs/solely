@@ -1,0 +1,43 @@
+<div class="tree"  :class="this.getTreeClasses()">
+    <ul class="tree__list">
+        <For each="$data.flattenedTree" item="node">
+            <li
+                class="tree__node"
+                 :class="this.getNodeClasses(node)"
+                :style="'padding-left: ' + (node.level * 24 + 12) + 'px'"
+            >
+                <div
+                    class="tree__content"
+                     :class="this.getContentClasses(node)"
+                    @click="this.handleNodeClick(node)"
+                >
+                    <!-- 展开/折叠图标 -->
+                    <span
+                        class="tree__switcher"
+                         :class="this.getSwitcherClasses(node)"
+                        @click="this.handleToggle(node, event)"
+                    >
+                        ▶
+                    </span>
+
+                    <!-- 复选框 -->
+                    <If condition="$data.checkable">
+                        <span
+                            class="tree__checkbox"
+                             :class="this.getCheckboxClasses(node)"
+                            @click="this.handleCheck(node, event)"
+                        ></span>
+                    </If>
+
+                    <!-- 节点图标 -->
+                    <If condition="node.icon">
+                        <span class="tree__icon">{{node.icon}}</span>
+                    </If>
+
+                    <!-- 节点标题 -->
+                    <span class="tree__title">{{node.title}}</span>
+                </div>
+            </li>
+        </For>
+    </ul>
+</div>

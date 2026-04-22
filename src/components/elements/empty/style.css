@@ -1,0 +1,58 @@
+/* Solely Empty 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--solely-spacing-xl);
+  font-family: var(--solely-font-family);
+  text-align: center;
+}
+
+/* 图片 */
+.empty__image {
+  width: 120px;
+  height: 120px;
+  margin-bottom: var(--solely-spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty__image img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* 默认图标 */
+.empty__icon {
+  font-size: 64px;
+  color: var(--solely-text-tertiary);
+}
+
+/* 描述 */
+.empty__description {
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-tertiary);
+  line-height: var(--solely-line-height-md);
+}
+
+/* 底部内容 */
+.empty__footer {
+  margin-top: var(--solely-spacing-md);
+}

@@ -1,0 +1,304 @@
+<div class="page-header">
+    <h1 class="page-title">Timeline 时间轴</h1>
+    <p class="page-desc">垂直展示的时间流信息，用于展示一系列信息按时间排列。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，通过 items 属性传入时间轴数据。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline items='[{"title":"创建服务站点","content":"2024-01-01","time":"2024-01-01"},{"title":"解决初始网络问题","content":"2024-01-15","time":"2024-01-15"},{"title":"技术测试阶段","content":"2024-02-01","time":"2024-02-01"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">items</span>=<span class="code-value">'[{"title":"创建服务站点","time":"2024-01-01"},...]'</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 纵向模式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">纵向模式</h3>
+        <p class="demo-block-desc">支持 left（左侧）、right（右侧）、alternate（交替）三种纵向布局。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="display: flex; gap: 48px;">
+                <div style="flex: 1; min-width: 200px;">
+                    <h4 class="demo-subtitle">左侧模式</h4>
+                    <solely-timeline mode="left" items='[{"title":"创建服务站点","time":"2024-01-01"},{"title":"解决初始网络问题","time":"2024-01-15"},{"title":"技术测试阶段","time":"2024-02-01"},{"title":"持续记录中..."}]'></solely-timeline>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <h4 class="demo-subtitle">右侧模式</h4>
+                    <solely-timeline mode="right" items='[{"title":"创建服务站点","time":"2024-01-01"},{"title":"解决初始网络问题","content":"完成了网络问题的初步排查与修复方案设计，包括服务器配置优化和负载均衡调整。","time":"2024-01-15","color":"green","icon":"🕐"},{"title":"网络问题已修复","time":"2024-02-01","color":"red"},{"title":"服务正式上线","time":"2024-02-15","icon":"🕐"}]'></solely-timeline>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 左侧模式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">mode</span>=<span class="code-value">"left"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 右侧模式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">mode</span>=<span class="code-value">"right"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交替模式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">交替模式</h3>
+        <p class="demo-block-desc">内容在时间轴两侧轮流出现。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline mode="alternate" items='[{"title":"创建服务站点","time":"2024-01-01"},{"title":"解决初始网络问题","time":"2024-01-15","position":"right"},{"title":"技术测试阶段","time":"2024-02-01"},{"title":"网络问题已修复","time":"2024-02-15","position":"right"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">mode</span>=<span class="code-value">"alternate"</span> <span class="code-attr">items</span>=<span class="code-value">"[...]"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义颜色 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义颜色</h3>
+        <p class="demo-block-desc">通过 color 属性设置节点颜色，支持预设颜色或自定义颜色值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline items='[{"title":"蓝色 (blue)","color":"blue"},{"title":"绿色 (green)","color":"green"},{"title":"红色 (red)","color":"red"},{"title":"橙色 (orange)","color":"orange"},{"title":"灰色 (gray)","color":"gray"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 预设颜色：blue、green、red、orange、gray</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">items</span>=<span class="code-value">'[{"title":"蓝色","color":"blue"},...]'</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filled 变体 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">Filled 变体</h3>
+        <p class="demo-block-desc">通过 variant="filled" 设置实心圆点样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline variant="filled" items='[{"title":"已完成","color":"blue"},{"title":"进行中","color":"green"},{"title":"警告","color":"orange"},{"title":"错误","color":"red"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">variant</span>=<span class="code-value">"filled"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义图标 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义图标</h3>
+        <p class="demo-block-desc">通过 icon 属性设置自定义图标，支持 Emoji 或单字符图标。图标会以圆形背景包裹显示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline items='[{"title":"项目启动","icon":"🚀","time":"2024-01-01"},{"title":"开发阶段","icon":"💻","time":"2024-01-15"},{"title":"测试验收","icon":"🧪","time":"2024-02-01","color":"green"},{"title":"正式发布","icon":"🎉","time":"2024-02-15","color":"orange"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">items</span>=<span class="code-value">'[{"title":"项目启动","icon":"🚀","time":"2024-01-01"},...]'</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 待定状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">待定状态 / Pending</h3>
+        <p class="demo-block-desc">设置 pending 属性显示最后一条虚线节点，带有流动动画效果。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline pending pending-content="持续记录中..." items='[{"title":"创建服务站点","time":"2024-01-01"},{"title":"解决初始网络问题","time":"2024-01-15"},{"title":"技术测试阶段","time":"2024-02-01"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">pending</span> <span class="code-attr">pending-content</span>=<span class="code-value">"持续记录中..."</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading 状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">Loading 状态</h3>
+        <p class="demo-block-desc">通过 item 的 loading 属性设置加载中的旋转动画。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline items='[{"title":"步骤一：初始化完成","time":"2024-01-01"},{"title":"步骤二：处理数据中...","loading":true,"time":"2024-01-15"},{"title":"步骤三：等待响应...","loading":true,"time":"2024-02-01"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">items</span>=<span class="code-value">'[{"title":"步骤一"}, {"title":"处理中...", "loading": true}]'</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 横向模式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">横向模式</h3>
+        <p class="demo-block-desc">支持 horizontal-top（顶部）、horizontal-bottom（底部）、horizontal-alternate（交替）三种横向布局。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <h4 class="demo-subtitle">顶部模式</h4>
+                <solely-timeline mode="horizontal-top" items='[{"title":"步骤一","time":"2024-01-01"},{"title":"已完成","color":"blue","icon":"🚀","time":"2024-01-15"},{"title":"进行中","color":"green","time":"2024-02-01"},{"title":"警告","color":"orange","icon":"⚠️","time":"2024-02-15"}]'></solely-timeline>
+                <h4 class="demo-subtitle">底部模式</h4>
+                <solely-timeline mode="horizontal-bottom" items='[{"title":"错误","color":"red","icon":"❌","time":"2024-01-01"},{"title":"步骤二","time":"2024-01-15"},{"title":"开发中","color":"green","icon":"💻","time":"2024-02-01"},{"title":"步骤四","time":"2024-02-15"}]'></solely-timeline>
+                <h4 class="demo-subtitle">交替模式</h4>
+                <solely-timeline mode="horizontal-alternate" items='[{"title":"启动项目","color":"blue","icon":"🚀","time":"2024-01-01"},{"title":"需求分析","color":"gray","time":"2024-01-15"},{"title":"开发阶段","color":"green","icon":"💻","time":"2024-02-01"},{"title":"测试验收","color":"orange","icon":"🧪","time":"2024-02-15"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 顶部模式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">mode</span>=<span class="code-value">"horizontal-top"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 底部模式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">mode</span>=<span class="code-value">"horizontal-bottom"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 交替模式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">mode</span>=<span class="code-value">"horizontal-alternate"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 倒序 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">倒序</h3>
+        <p class="demo-block-desc">设置 reverse 属性可使时间轴倒序显示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-timeline reverse items='[{"title":"最早的事件","time":"2024-01-01"},{"title":"中间的事件","time":"2024-01-15"},{"title":"最新的事件","time":"2024-02-01"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">reverse</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>mode</td>
+                    <td>时间轴模式：left / right / alternate / horizontal-top / horizontal-bottom / horizontal-alternate</td>
+                    <td>string</td>
+                    <td>'left'</td>
+                </tr>
+                <tr>
+                    <td>items</td>
+                    <td>时间轴数据（JSON字符串）</td>
+                    <td>string</td>
+                    <td>'[]'</td>
+                </tr>
+                <tr>
+                    <td>variant</td>
+                    <td>样式变体：outlined（空心圆点）/ filled（实心圆点）</td>
+                    <td>string</td>
+                    <td>'outlined'</td>
+                </tr>
+                <tr>
+                    <td>pending</td>
+                    <td>是否显示待定节点（虚线圆点 + 流动连接线）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>pendingContent</td>
+                    <td>待定节点的内容文字</td>
+                    <td>string</td>
+                    <td>'待定'</td>
+                </tr>
+                <tr>
+                    <td>reverse</td>
+                    <td>是否倒序排列节点</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">Items 数据结构</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>字段</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>title</td>
+                    <td>标题文字</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>详细内容</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>time</td>
+                    <td>时间文字</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>color</td>
+                    <td>颜色：blue / green / red / orange / gray 或自定义色值</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>自定义图标（Emoji 或字符），以圆形背景包裹</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
+                    <td>是否为 loading 状态（旋转动画）</td>
+                    <td>boolean</td>
+                </tr>
+                <tr>
+                    <td>position</td>
+                    <td>位置（仅 alternate 模式）：'left' | 'right'</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>verticalPosition</td>
+                    <td>垂直位置（仅 horizontal-alternate 模式）：'top' | 'bottom'</td>
+                    <td>string</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setItems(items)</td>
+                    <td>动态设置时间轴项</td>
+                    <td>items: TimelineItem[]</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,114 @@
+/**
+ * Solely Tooltip 组件样式
+ * 基于 BEM 命名规范，参照 Popconfirm 实现
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== 遮罩层样式 ==================== */
+.tooltip-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+  z-index: var(--solely-z-index-tooltip);
+  pointer-events: none;
+}
+
+/* ==================== 提示框容器 ==================== */
+.tooltip {
+  position: absolute;
+  background-color: var(--solely-inverted-bg);
+  border-radius: var(--solely-border-radius-md);
+  box-shadow: var(--solely-shadow-md);
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  min-width: 30px;
+  max-width: 250px;
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  font-weight: 400;
+  line-height: var(--solely-line-height-md);
+  color: var(--solely-inverted-text);
+  text-align: left;
+  text-decoration: none;
+  word-wrap: break-word;
+  z-index: var(--solely-z-index-tooltip);
+  animation: tooltip-fade-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.tooltip.is-closing {
+  animation: tooltip-fade-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+/* ==================== 内容区域 ==================== */
+.tooltip__content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ==================== 箭头样式 ==================== */
+.tooltip__arrow {
+  position: absolute;
+  width: var(--solely-tooltip-arrow-size, 8px);
+  height: var(--solely-tooltip-arrow-size, 8px);
+  background-color: var(--solely-inverted-bg);
+  transform: rotate(45deg);
+  z-index: 0;
+}
+
+/* 上方位置箭头 */
+.tooltip--top .tooltip__arrow,
+.tooltip--topLeft .tooltip__arrow,
+.tooltip--topRight .tooltip__arrow {
+  bottom: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+}
+
+/* 下方位置箭头 */
+.tooltip--bottom .tooltip__arrow,
+.tooltip--bottomLeft .tooltip__arrow,
+.tooltip--bottomRight .tooltip__arrow {
+  top: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+}
+
+/* 左侧位置箭头 */
+.tooltip--left .tooltip__arrow,
+.tooltip--leftTop .tooltip__arrow,
+.tooltip--leftBottom .tooltip__arrow {
+  right: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+}
+
+/* 右侧位置箭头 */
+.tooltip--right .tooltip__arrow,
+.tooltip--rightTop .tooltip__arrow,
+.tooltip--rightBottom .tooltip__arrow {
+  left: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+}
+
+/* ==================== 动画定义 ==================== */
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tooltip-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}

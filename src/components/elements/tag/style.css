@@ -1,0 +1,134 @@
+/**
+ * Solely Tag 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-block;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+/* ==================== 标签基础样式 (.tag) ==================== */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  height: var(--solely-height-xs);
+  padding: 0 var(--solely-spacing-sm);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-sm);
+  line-height: var(--solely-line-height-sm);
+  border-radius: var(--solely-border-radius-sm);
+  transition: all var(--solely-transition-duration);
+  box-sizing: border-box;
+}
+
+/* 标签尺寸 */
+.tag--sm {
+  height: var(--solely-height-xs);
+  padding: 0 var(--solely-spacing-xs);
+  font-size: var(--solely-font-size-xs);
+}
+
+.tag--lg {
+  height: var(--solely-height-sm);
+  padding: 0 var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-md);
+}
+
+/* 标签形状 */
+.tag--round {
+  border-radius: var(--solely-border-radius-full);
+}
+
+/* 标签类型 */
+.tag--default {
+  color: var(--solely-text-secondary);
+  background-color: var(--solely-gray-3);
+  border: 1px solid var(--solely-border-color);
+}
+
+.tag--default:hover:not(.is-disabled) {
+  color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.tag--primary {
+  color: var(--solely-primary);
+  background-color: var(--solely-primary-light);
+  border: 1px solid var(--solely-primary-light);
+}
+
+.tag--success {
+  color: var(--solely-success);
+  background-color: var(--solely-success-light);
+  border: 1px solid var(--solely-success-light);
+}
+
+.tag--warning {
+  color: var(--solely-warning);
+  background-color: var(--solely-warning-light);
+  border: 1px solid var(--solely-warning-light);
+}
+
+.tag--error {
+  color: var(--solely-error);
+  background-color: var(--solely-error-light);
+  border: 1px solid var(--solely-error-light);
+}
+
+/* 标签关闭按钮 */
+.tag__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--solely-height-xs);
+  height: var(--solely-height-xs);
+  margin-left: var(--solely-spacing-xs);
+  font-size: var(--solely-font-size-xs);
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--solely-border-radius-circle);
+  transition: all var(--solely-transition-duration);
+}
+
+.tag__close:hover {
+  background-color: var(--solely-fill-color);
+}
+
+.tag--primary .tag__close:hover {
+  background-color: var(--solely-primary);
+  color: var(--solely-white);
+}
+
+.tag--success .tag__close:hover {
+  background-color: var(--solely-success);
+  color: var(--solely-white);
+}
+
+.tag--warning .tag__close:hover {
+  background-color: var(--solely-warning);
+  color: var(--solely-white);
+}
+
+.tag--error .tag__close:hover {
+  background-color: var(--solely-error);
+  color: var(--solely-white);
+}
+
+/* ==================== 状态类 ==================== */
+.is-disabled {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
+}

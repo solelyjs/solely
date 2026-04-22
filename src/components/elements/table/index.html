@@ -1,0 +1,41 @@
+<div class="table-wrapper">
+    <table class="table" :class="this.getTableClasses()">
+        <thead>
+            <tr>
+                <For each="$data.parsedColumns" item="col">
+                    <th :class="this.getThClasses(col)"
+                        :style="col.width ? 'width: ' + (typeof col.width === 'number' ? col.width + 'px' : col.width) : ''">
+                        {{col.title}}
+                    </th>
+                </For>
+            </tr>
+        </thead>
+        <tbody>
+            <For each="$data.parsedDataSource" item="row" index="rowIndex">
+                <tr @click="this.handleRowClick(row, rowIndex)">
+                    <For each="$data.parsedColumns" item="col">
+                        <td :class="this.getTdClasses(col)">
+                            <slot :name="'col-' + col.key + '-' + rowIndex">
+                                {{this.getCellValue(row, col)}}
+                            </slot>
+                        </td>
+                    </For>
+                </tr>
+            </For>
+        </tbody>
+    </table>
+
+    <!-- 加载状态 -->
+    <If condition="$data.loading">
+        <div class="table__loading">
+            <span class="table__loading-icon"></span>
+        </div>
+    </If>
+
+    <!-- 空状态 -->
+    <If condition="!$data.loading && $data.parsedDataSource?.length === 0">
+        <div class="table__empty">
+            暂无数据
+        </div>
+    </If>
+</div>

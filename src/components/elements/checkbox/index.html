@@ -1,0 +1,18 @@
+<label
+    class="checkbox"
+    :class="this.getCheckboxClasses()"
+    @click="this.handleClick(event)"
+    tabindex="0"
+    @keydown="this.handleKeyDown(event)"
+    role="checkbox"
+    :aria-checked="$data.checked ? 'true' : 'false'"
+    :aria-disabled="$data.disabled ? 'true' : 'false'"
+>
+    <span class="checkbox__input">
+        <span class="checkbox__icon">✓</span>
+        <span class="checkbox__indeterminate"></span>
+    </span>
+    <span class="checkbox__content">
+        <slot>{{$data.content}}</slot>
+    </span>
+</label>

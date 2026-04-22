@@ -1,0 +1,184 @@
+/**
+ * Solely Checkbox 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-flex;
+  align-items: center;
+  --checkbox-size-xs: 14px;
+  --checkbox-size-sm: 14px;
+  --checkbox-size-md: 16px;
+  --checkbox-size-lg: 20px;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+/* ==================== 复选框特有样式 ==================== */
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  outline: none;
+  user-select: none;
+}
+
+.checkbox.is-disabled {
+  cursor: not-allowed;
+}
+
+/* 复选框输入�?- 组件特有 */
+.checkbox__input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--checkbox-size-md);
+  height: var(--checkbox-size-md);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-sm);
+  background-color: var(--solely-component-bg);
+  transition: all var(--solely-transition-duration);
+  flex-shrink: 0;
+}
+
+/* 尺寸变体 */
+.checkbox--xs .checkbox__input {
+  width: var(--checkbox-size-xs);
+  height: var(--checkbox-size-xs);
+}
+
+.checkbox--sm .checkbox__input {
+  width: var(--checkbox-size-sm);
+  height: var(--checkbox-size-sm);
+}
+
+.checkbox--lg .checkbox__input {
+  width: var(--checkbox-size-lg);
+  height: var(--checkbox-size-lg);
+}
+
+/* 聚焦状�?*/
+.checkbox:focus-visible .checkbox__input,
+.checkbox.focus-visible .checkbox__input {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
+/* 类型变体 - Primary */
+.checkbox--primary:hover:not(.is-disabled) .checkbox__input {
+  border-color: var(--solely-primary);
+}
+
+.checkbox--primary.is-checked .checkbox__input {
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.checkbox--primary.is-indeterminate .checkbox__input {
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+/* 类型变体 - Success */
+.checkbox--success:hover:not(.is-disabled) .checkbox__input {
+  border-color: var(--solely-success);
+}
+
+.checkbox--success .checkbox__input:focus-visible,
+.checkbox--success.focus-visible .checkbox__input {
+  box-shadow: 0 0 0 2px var(--solely-success-light);
+}
+
+.checkbox--success.is-checked .checkbox__input,
+.checkbox--success.is-indeterminate .checkbox__input {
+  background-color: var(--solely-success);
+  border-color: var(--solely-success);
+}
+
+/* 类型变体 - Warning */
+.checkbox--warning:hover:not(.is-disabled) .checkbox__input {
+  border-color: var(--solely-warning);
+}
+
+.checkbox--warning .checkbox__input:focus-visible,
+.checkbox--warning.focus-visible .checkbox__input {
+  box-shadow: 0 0 0 2px var(--solely-warning-light);
+}
+
+.checkbox--warning.is-checked .checkbox__input,
+.checkbox--warning.is-indeterminate .checkbox__input {
+  background-color: var(--solely-warning);
+  border-color: var(--solely-warning);
+}
+
+/* 类型变体 - Error */
+.checkbox--error:hover:not(.is-disabled) .checkbox__input {
+  border-color: var(--solely-error);
+}
+
+.checkbox--error .checkbox__input:focus-visible,
+.checkbox--error.focus-visible .checkbox__input {
+  box-shadow: 0 0 0 2px var(--solely-error-light);
+}
+
+.checkbox--error.is-checked .checkbox__input,
+.checkbox--error.is-indeterminate .checkbox__input {
+  background-color: var(--solely-error);
+  border-color: var(--solely-error);
+}
+
+/* 勾选图�?- 组件特有 */
+.checkbox__icon {
+  display: none;
+  color: var(--solely-white);
+  line-height: 1;
+}
+
+.checkbox.is-checked .checkbox__icon {
+  display: block;
+}
+
+/* 半选状�?- 组件特有 */
+.checkbox__indeterminate {
+  display: none;
+  width: 50%;
+  height: 2px;
+  background-color: var(--solely-component-bg);
+  border-radius: 1px;
+}
+
+.checkbox.is-indeterminate .checkbox__indeterminate {
+  display: block;
+}
+
+.checkbox.is-indeterminate .checkbox__icon {
+  display: none;
+}
+
+/* 内容 */
+.checkbox__content {
+  user-select: none;
+}
+
+/* ==================== Block 样式 ==================== */
+.checkbox--block {
+  display: flex;
+  width: 100%;
+}

@@ -1,0 +1,344 @@
+/**
+ * Solely Button 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-block;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+/* ==================== 按钮基础样式 (.btn) ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--solely-spacing-xs);
+  height: var(--solely-height-md);
+  padding: 0 var(--solely-spacing-md);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  font-weight: 400;
+  line-height: var(--solely-line-height-md);
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: var(--solely-border-radius-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  user-select: none;
+  touch-action: manipulation;
+  outline: none;
+  position: relative;
+}
+
+.btn:hover:not(:disabled):not(.is-loading) {
+  opacity: 0.9;
+}
+
+.btn:active:not(:disabled):not(.is-loading) {
+  opacity: 0.8;
+}
+
+/* 按钮尺寸 */
+.btn--sm {
+  height: var(--solely-height-sm);
+  padding: 0 var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+.btn--lg {
+  height: var(--solely-height-lg);
+  padding: 0 var(--solely-spacing-lg);
+  font-size: var(--solely-font-size-lg);
+}
+
+/* 按钮形状 */
+.btn--circle {
+  border-radius: var(--solely-border-radius-circle);
+  padding: 0;
+  width: var(--solely-height-md);
+}
+
+.btn--circle.btn--sm {
+  width: var(--solely-height-sm);
+}
+
+.btn--circle.btn--lg {
+  width: var(--solely-height-lg);
+}
+
+.btn--round {
+  border-radius: var(--solely-border-radius-full);
+}
+
+/* 按钮类型 - 实心 */
+.btn--primary {
+  color: var(--solely-white);
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.btn--primary:hover:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-primary-hover);
+  border-color: var(--solely-primary-hover);
+}
+
+.btn--primary:active:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-primary-active);
+  border-color: var(--solely-primary-active);
+}
+
+.btn--secondary {
+  color: var(--solely-white);
+  background-color: var(--solely-secondary);
+  border-color: var(--solely-secondary);
+}
+
+.btn--secondary:hover:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-secondary-hover);
+  border-color: var(--solely-secondary-hover);
+}
+
+.btn--success {
+  color: var(--solely-white);
+  background-color: var(--solely-success);
+  border-color: var(--solely-success);
+}
+
+.btn--success:hover:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-success-hover);
+  border-color: var(--solely-success-hover);
+}
+
+.btn--warning {
+  color: var(--solely-white);
+  background-color: var(--solely-warning);
+  border-color: var(--solely-warning);
+}
+
+.btn--warning:hover:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-warning-hover);
+  border-color: var(--solely-warning-hover);
+}
+
+.btn--error {
+  color: var(--solely-white);
+  background-color: var(--solely-error);
+  border-color: var(--solely-error);
+}
+
+.btn--error:hover:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-error-hover);
+  border-color: var(--solely-error-hover);
+}
+
+/* 按钮类型 - 默认/描边 */
+.btn--default {
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border-color: var(--solely-border-color);
+}
+
+.btn--default:hover:not(:disabled):not(.is-loading) {
+  color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.btn--dashed {
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border-color: var(--solely-border-color);
+  border-style: dashed;
+}
+
+.btn--dashed:hover:not(:disabled):not(.is-loading) {
+  color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+/* 按钮类型 - 文字/链接 */
+.btn--text {
+  color: var(--solely-text-primary);
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.btn--text:hover:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-gray-3);
+}
+
+.btn--link {
+  color: var(--solely-primary);
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.btn--link:hover:not(:disabled):not(.is-loading) {
+  color: var(--solely-primary-hover);
+}
+
+/* 幽灵按钮 */
+.btn--ghost {
+  background-color: transparent !important;
+}
+
+.btn--ghost.btn--primary {
+  color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.btn--ghost.btn--primary:hover:not(:disabled):not(.is-loading) {
+  color: var(--solely-white);
+  background-color: var(--solely-primary) !important;
+}
+
+.btn--ghost.btn--secondary {
+  color: var(--solely-secondary);
+  border-color: var(--solely-secondary);
+}
+
+.btn--ghost.btn--secondary:hover:not(:disabled):not(.is-loading) {
+  color: var(--solely-white);
+  background-color: var(--solely-secondary) !important;
+}
+
+/* 按钮子元素 */
+.btn__icon,
+.btn__icon-right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.btn__icon {
+  margin-right: var(--solely-spacing-xs);
+}
+
+.btn__icon-right {
+  margin-left: var(--solely-spacing-xs);
+}
+
+.btn__content {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 仅图标按钮 */
+.btn--icon-only {
+  padding: 0;
+  width: var(--solely-height-md);
+}
+
+.btn--icon-only.btn--sm {
+  width: var(--solely-height-sm);
+  height: var(--solely-height-sm);
+}
+
+.btn--icon-only.btn--lg {
+  width: var(--solely-height-lg);
+  height: var(--solely-height-lg);
+}
+
+.btn--icon-only .btn__icon,
+.btn--icon-only .btn__icon-right {
+  margin: 0;
+}
+
+/* 块级按钮 */
+.btn--block {
+  display: flex;
+  width: 100%;
+}
+
+/* ==================== 状态类 ==================== */
+.is-disabled {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
+}
+
+.is-loading {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ==================== 按钮特有样式 ==================== */
+/* 按钮加载图标 - 组件特有 */
+.btn__loading-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 默认加载图标样式（当没有自定义 loadingIcon 时显示 CSS 动画圆圈） */
+.btn__loading-icon:empty {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--solely-border-radius-circle);
+}
+
+/* 按钮加载动画 - 组件特有 */
+.btn.is-loading .btn__loading-icon {
+  animation: btn-spin 1s linear infinite;
+}
+
+@keyframes btn-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 危险按钮特殊处理 - 向后兼容 */
+.btn--danger.btn--primary {
+  background-color: var(--solely-error);
+  border-color: var(--solely-error);
+}
+
+.btn--danger.btn--primary:hover:not(.is-disabled):not(.is-loading) {
+  background-color: var(--solely-error-hover);
+  border-color: var(--solely-error-hover);
+}
+
+.btn--danger.btn--primary:active:not(.is-disabled):not(.is-loading) {
+  background-color: var(--solely-error-active);
+  border-color: var(--solely-error-active);
+}
+
+.btn--danger:not(.btn--primary):not(.btn--success):not(.btn--warning):not(.btn--error) {
+  color: var(--solely-error);
+  border-color: var(--solely-error);
+}
+
+.btn--danger:not(.btn--primary):not(.btn--success):not(.btn--warning):not(.btn--error):hover:not(.is-disabled):not(.is-loading) {
+  color: var(--solely-error-hover);
+  border-color: var(--solely-error-hover);
+}

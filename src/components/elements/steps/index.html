@@ -1,0 +1,29 @@
+<div class="steps" :class="this.getStepsClasses()">
+    <For each="$data.parsedItems" item="item" index="index">
+        <div class="step" :class="this.getStepClasses(item, index)" @click="this.handleStepClick(item, index)">
+            <div class="step__tail"></div>
+            <div class="step__wrapper">
+                <div class="step__icon-wrapper" :class="this.getIconClasses(item)"
+                    :style="item.icon ? this.getIconStyle(item) : ''">
+                    <div class="step__icon">
+                        <If test="!$data.progressDot">
+                            <If
+                                test="item.icon || this.getStepStatus(index) === 'finish' || this.getStepStatus(index) === 'error'">
+                                <span class="step__icon-substitution">{{this.getStepIcon(item, index)}}</span>
+                            </If>
+                            <Else>
+                                <span class="step__icon-text">{{index + 1}}</span>
+                            </Else>
+                        </If>
+                    </div>
+                </div>
+                <div class="step__content">
+                    <div class="step__title">{{item.title}}</div>
+                    <If test="item.description">
+                        <div class="step__description">{{item.description}}</div>
+                    </If>
+                </div>
+            </div>
+        </div>
+    </For>
+</div>

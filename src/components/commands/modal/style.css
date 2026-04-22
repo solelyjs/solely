@@ -1,0 +1,264 @@
+/**
+ * Solely Modal 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== 遮罩层样式 ==================== */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--solely-mask-bg);
+  z-index: 1;
+  pointer-events: auto;
+  animation: modal-mask-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.modal-mask.is-closing {
+  animation: modal-mask-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+/* ==================== 容器包装样式 ==================== */
+.modal-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--solely-z-index-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  outline: 0;
+  pointer-events: none;
+}
+
+/* ==================== 弹窗容器样式 ==================== */
+.modal {
+  position: relative;
+  z-index: 2;
+  background-color: var(--solely-component-bg);
+  border-radius: var(--solely-border-radius-md);
+  box-shadow: var(--solely-shadow-lg);
+  animation: modal-container-in var(--solely-transition-duration) var(--solely-transition-timing);
+  max-width: calc(100vw - var(--solely-spacing-xl));
+  margin: var(--solely-spacing-md);
+  pointer-events: auto;
+}
+
+.modal.is-closing {
+  animation: modal-container-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+/* ==================== 头部样式 ==================== */
+.modal__header {
+  padding: var(--solely-spacing-lg) var(--solely-spacing-xl);
+  border-bottom: 1px solid var(--solely-border-color-split);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal__title {
+  margin: 0;
+  font-size: var(--solely-font-size-lg);
+  font-weight: 500;
+  color: var(--solely-text-primary);
+  line-height: var(--solely-line-height-lg);
+}
+
+.modal__close {
+  width: var(--solely-height-sm);
+  height: var(--solely-height-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  font-size: var(--solely-font-size-lg);
+  line-height: 1;
+  border: none;
+  background: none;
+  border-radius: var(--solely-border-radius-sm);
+}
+
+.modal__close:hover {
+  color: var(--solely-text-secondary);
+  background-color: var(--solely-gray-3);
+}
+
+.modal__close:active {
+  color: var(--solely-text-primary);
+}
+
+/* ==================== 内容区域样式 ==================== */
+.modal__body {
+  padding: var(--solely-spacing-xl);
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  color: var(--solely-text-secondary);
+}
+
+/* 内容包装器 */
+.modal__content-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--solely-spacing-sm);
+}
+
+/* ==================== 底部样式 ==================== */
+.modal__footer {
+  padding: var(--solely-spacing-md) var(--solely-spacing-lg);
+  border-top: 1px solid var(--solely-border-color-split);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--solely-spacing-sm);
+}
+
+/* ==================== 图标样式 ==================== */
+.modal__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--solely-height-sm);
+  height: var(--solely-height-sm);
+  border-radius: var(--solely-border-radius-circle);
+  margin-right: var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-md);
+}
+
+.modal__icon--info {
+  background-color: var(--solely-info-light);
+  color: var(--solely-info);
+}
+
+.modal__icon--success {
+  background-color: var(--solely-success-light);
+  color: var(--solely-success);
+}
+
+.modal__icon--warning {
+  background-color: var(--solely-warning-light);
+  color: var(--solely-warning);
+}
+
+.modal__icon--error {
+  background-color: var(--solely-error-light);
+  color: var(--solely-error);
+}
+
+.modal__icon--confirm {
+  background-color: var(--solely-warning-light);
+  color: var(--solely-warning);
+}
+
+/* ==================== 按钮样式 ==================== */
+.modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--solely-spacing-xs);
+  height: var(--solely-height-md);
+  padding: 0 var(--solely-spacing-md);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  font-weight: 400;
+  line-height: var(--solely-line-height-md);
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: var(--solely-border-radius-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  user-select: none;
+  touch-action: manipulation;
+  outline: none;
+  position: relative;
+}
+
+.modal__btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.modal__btn:active:not(:disabled) {
+  opacity: 0.8;
+}
+
+.modal__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 按钮类型 */
+.modal__btn--primary {
+  color: var(--solely-white);
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.modal__btn--default {
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border-color: var(--solely-border-color);
+}
+
+.modal__btn--danger {
+  color: var(--solely-white);
+  background-color: var(--solely-error);
+  border-color: var(--solely-error);
+}
+
+/* ==================== 动画定义 ==================== */
+@keyframes modal-mask-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-mask-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-container-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-container-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}

@@ -1,0 +1,62 @@
+<div
+    class="timeline"
+    :class="this.getTimelineClasses()"
+>
+    <ul class="timeline__list">
+        <For each="$data.parsedItems" item="item" index="index">
+            <li
+                class="timeline__item"
+                :class="this.getItemClasses(item, index)"
+            >
+                <div class="timeline__item-tail"></div>
+                <div class="timeline__item-wrapper">
+                    <div class="timeline__item-head">
+                        <If test="item.loading">
+                            <div
+                                class="timeline__dot"
+                                :class="this.getDotClasses(item)"
+                                :style="this.getDotStyle(item)"
+                            ></div>
+                        </If>
+                        <ElseIf test="item.icon">
+                            <div
+                                class="timeline__icon-wrapper"
+                                :style="this.getIconStyle(item)"
+                            >{{item.icon}}</div>
+                        </ElseIf>
+                        <Else>
+                            <div
+                                class="timeline__dot"
+                                :class="this.getDotClasses(item)"
+                                :style="this.getDotStyle(item)"
+                            ></div>
+                        </Else>
+                    </div>
+                    <div class="timeline__item-content">
+                        <div class="timeline__title">{{item.title}}</div>
+                        <If test="item.content">
+                            <div class="timeline__content-text">{{item.content}}</div>
+                        </If>
+                        <If test="item.time">
+                            <div class="timeline__time">{{item.time}}</div>
+                        </If>
+                    </div>
+                </div>
+            </li>
+        </For>
+
+        <If test="$data.pending">
+            <li class="timeline__item timeline__item--pending">
+                <div class="timeline__item-tail"></div>
+                <div class="timeline__item-wrapper">
+                    <div class="timeline__item-head">
+                        <div class="timeline__dot"></div>
+                    </div>
+                    <div class="timeline__item-content">
+                        <span>{{$data.pendingContent || '待定'}}</span>
+                    </div>
+                </div>
+            </li>
+        </If>
+    </ul>
+</div>

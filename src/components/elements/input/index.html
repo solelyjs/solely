@@ -1,0 +1,90 @@
+<div
+    class="form-control"
+    :class="this.getWrapperClasses()"
+>
+    <If test="$data.prefix">
+        <span class="form-control__prefix">{{$data.prefix}}</span>
+    </If>
+
+    <If test="$data.type === 'textarea'">
+        <textarea
+            class="form-control__input form-control__textarea"
+            :value="$data.value"
+            :placeholder="$data.placeholder"
+            :disabled="$data.disabled"
+            :readonly="$data.readonly"
+            :maxlength="$data.maxlength"
+            :minlength="$data.minlength"
+            :rows="$data.rows"
+            @input="this.handleInput(event)"
+            @focus="this.handleFocus(event)"
+            @blur="this.handleBlur(event)"
+            @change="this.handleChange(event)"
+            @keydown="this.handleKeydown(event)"
+        ></textarea>
+    </If>
+    <Else>
+        <input
+            class="form-control__input"
+            :type="$data.passwordVisible && $data.type === 'password' ? 'text' : $data.type"
+            :value="$data.value"
+            :placeholder="$data.placeholder"
+            :disabled="$data.disabled"
+            :readonly="$data.readonly"
+            :maxlength="$data.maxlength"
+            :minlength="$data.minlength"
+            @input="this.handleInput(event)"
+            @focus="this.handleFocus(event)"
+            @blur="this.handleBlur(event)"
+            @change="this.handleChange(event)"
+            @keydown="this.handleKeydown(event)"
+        />
+    </Else>
+
+    <If test="$data.clearable && $data.value && !$data.disabled">
+        <span
+            class="close-btn form-control__clear"
+            @click="this.handleClear(event)"
+        >×</span>
+    </If>
+    <ElseIf test="$data.type === 'password' && $data.showpassword">
+        <span
+            class="form-control__password-toggle"
+            @click="this.togglePassword(event)"
+        >{{$data.passwordVisible ? '🙈' : '👁'}}</span>
+    </ElseIf>
+    <ElseIf test="$data.copyable && $data.value">
+        <span
+            class="form-control__copy"
+            @click="this.handleCopy(event)"
+        >📋</span>
+    </ElseIf>
+    <ElseIf test="$data.suffix">
+        <span class="form-control__suffix">{{$data.suffix}}</span>
+    </ElseIf>
+
+    <If test="$data.suggestions && $data.suggestions.length > 0 && this.filteredSuggestions && this.filteredSuggestions.length > 0">
+        <div class="dropdown">
+            <For each="this.filteredSuggestions" item="suggestion">
+                <div
+                    class="dropdown__item"
+                    @click="this.selectSuggestion(suggestion)"
+                >{{suggestion}}</div>
+            </For>
+        </div>
+    </If>
+</div>
+
+<If test="$data.showcount && $data.maxlength">
+    <div class="form-control__count">
+        <span class="form-control__count-current">{{this.getCharCount()}}</span>
+        <span class="form-control__count-separator">/</span>
+        <span class="form-control__count-max">{{$data.maxlength}}</span>
+    </div>
+</If>
+
+<If test="$data.message">
+    <div class="form-control__message form-control__message--{{$data.status || 'default'}}">
+        {{$data.message}}
+    </div>
+</If>

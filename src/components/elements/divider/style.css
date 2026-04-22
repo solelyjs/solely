@@ -1,0 +1,77 @@
+/* Solely Divider 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+:host([type="vertical"]) {
+  display: inline-block;
+  width: auto;
+}
+
+.divider {
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-secondary);
+}
+
+/* 水平分割线 */
+.divider--horizontal {
+  display: flex;
+  align-items: center;
+  margin: var(--solely-spacing-md) 0;
+  clear: both;
+  width: 100%;
+}
+
+.divider--horizontal::before,
+.divider--horizontal::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--solely-border-color);
+  display: block;
+}
+
+.divider--horizontal.divider--dashed::before,
+.divider--horizontal.divider--dashed::after {
+  border-top-style: dashed;
+}
+
+/* 垂直分割线 */
+.divider--vertical {
+  display: inline-block;
+  width: 1px;
+  height: 0.9em;
+  margin: 0 var(--solely-spacing-sm);
+  vertical-align: middle;
+  border-left: 1px solid var(--solely-border-color);
+}
+
+.divider--vertical.divider--dashed {
+  border-left-style: dashed;
+}
+
+/* 标题 */
+.divider__content {
+  padding: 0 var(--solely-spacing-md);
+  font-size: var(--solely-font-size-md);
+  font-weight: 500;
+  color: var(--solely-text-primary);
+  white-space: nowrap;
+}
+
+/* 标题位置 */
+.divider--left::before {
+  flex: 0 0 5%;
+}
+
+.divider--right::after {
+  flex: 0 0 5%;
+}

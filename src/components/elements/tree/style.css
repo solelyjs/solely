@@ -1,0 +1,229 @@
+/* Solely Tree 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: inline-block;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+:host([block]) .tree {
+  width: 100%;
+}
+
+:host([block]) .tree__content {
+  width: 100%;
+}
+
+.tree {
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+}
+
+.tree__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree__node {
+  position: relative;
+}
+
+.tree__content {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  border-radius: var(--solely-border-radius-sm);
+}
+
+.tree__content:hover {
+  background-color: var(--solely-gray-1);
+}
+
+.tree__content--selected {
+  background-color: var(--solely-primary-light);
+  color: var(--solely-primary);
+}
+
+.tree__content--disabled {
+  cursor: not-allowed;
+  color: var(--solely-text-tertiary);
+}
+
+/* 展开/折叠图标 */
+.tree__switcher {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: transform var(--solely-transition-duration);
+  font-size: 12px;
+}
+
+.tree__switcher--expanded {
+  transform: rotate(90deg);
+}
+
+.tree__switcher--leaf {
+  visibility: hidden;
+}
+
+/* 复选框 */
+.tree__checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 1px solid var(--solely-border-color);
+  border-radius: 2px;
+  background-color: var(--solely-component-bg);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+}
+
+.tree__checkbox:hover {
+  border-color: var(--solely-primary);
+}
+
+.tree__checkbox--checked {
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.tree__checkbox--checked::after {
+  content: '✓';
+  color: var(--solely-white);
+  font-size: 12px;
+}
+
+.tree__checkbox--half-checked {
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.tree__checkbox--half-checked::after {
+  content: '';
+  width: 8px;
+  height: 2px;
+  background-color: var(--solely-component-bg);
+}
+
+.tree__checkbox--disabled {
+  cursor: not-allowed;
+  background-color: var(--solely-gray-2);
+  border-color: var(--solely-border-color);
+}
+
+/* 节点图标 */
+.tree__icon {
+  margin-right: 4px;
+  color: var(--solely-text-tertiary);
+  font-size: 14px;
+}
+
+/* 节点标题 */
+.tree__title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 子节点列表 */
+.tree__children {
+  margin: 0;
+  padding: 0 0 0 24px;
+  list-style: none;
+}
+
+/* 连接线样式 */
+.tree--show-line .tree__node {
+  position: relative;
+}
+
+/* 垂直连接线 - 连接父子节点 */
+.tree--show-line .tree__node::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(16px + (var(--level, 0) * 24px));
+  width: 1px;
+  height: 100%;
+  background-color: var(--solely-border-color);
+}
+
+/* 根节点不显示垂直连接线 */
+.tree--show-line .tree__node--level-0::before {
+  display: none;
+}
+
+/* 最后一个子节点垂直连接线缩短 */
+.tree--show-line .tree__node--last-child::before {
+  height: 50%;
+}
+
+/* 水平连接线 - 从垂直连接线到内容 */
+.tree--show-line .tree__content::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(16px + (var(--level, 0) * 24px));
+  width: 12px;
+  height: 1px;
+  background-color: var(--solely-border-color);
+  transform: translateY(-50%);
+}
+
+/* 根节点不显示水平连接线 */
+.tree--show-line .tree__node--level-0 .tree__content::before {
+  display: none;
+}
+
+/* 动态层级连接线支持 - 使用CSS变量 */
+.tree--show-line .tree__node--level-1 {
+  --level: 1;
+}
+
+.tree--show-line .tree__node--level-2 {
+  --level: 2;
+}
+
+.tree--show-line .tree__node--level-3 {
+  --level: 3;
+}
+
+.tree--show-line .tree__node--level-4 {
+  --level: 4;
+}
+
+.tree--show-line .tree__node--level-5 {
+  --level: 5;
+}
+
+/* 搜索高亮 */
+.tree__title--highlight {
+  color: var(--solely-primary);
+  font-weight: 500;
+}
+
+/* 过滤隐藏 */
+.tree__node--filtered {
+  display: none;
+}

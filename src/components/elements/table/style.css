@@ -1,0 +1,171 @@
+/* Solely Table 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+}
+
+.table-wrapper {
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  background-color: var(--solely-component-bg);
+}
+
+/* 边框 */
+.table--bordered {
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+}
+
+.table--bordered th,
+.table--bordered td {
+  border-right: 1px solid var(--solely-border-color);
+  border-bottom: 1px solid var(--solely-border-color);
+}
+
+.table--bordered th:last-child,
+.table--bordered td:last-child {
+  border-right: none;
+}
+
+.table--bordered tr:last-child td {
+  border-bottom: none;
+}
+
+/* 表头 */
+.table th {
+  padding: var(--solely-spacing-md) var(--solely-spacing-md);
+  font-weight: 500;
+  color: var(--solely-text-primary);
+  background-color: var(--solely-gray-2);
+  border-bottom: 1px solid var(--solely-border-color);
+  white-space: nowrap;
+}
+
+/* 单元格 */
+.table td {
+  padding: var(--solely-spacing-md) var(--solely-spacing-md);
+  color: var(--solely-text-secondary);
+  border-bottom: 1px solid var(--solely-border-color);
+  transition: background-color var(--solely-transition-duration);
+}
+
+/* 尺寸 */
+.table--sm th,
+.table--sm td {
+  padding: var(--solely-spacing-xs) var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+.table--lg th,
+.table--lg td {
+  padding: var(--solely-spacing-md) var(--solely-spacing-lg);
+  font-size: var(--solely-font-size-lg);
+}
+
+.table--md th,
+.table--md td {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+}
+
+/* 斑马纹 */
+.table--striped tbody tr:nth-child(even) {
+  background-color: var(--solely-gray-3);
+}
+
+/* 行悬停 */
+.table--clickable tbody tr {
+  cursor: pointer;
+}
+
+.table tbody tr:hover {
+  background-color: var(--solely-primary-light);
+}
+
+/* 固定列 */
+.table th.fixed-left,
+.table td.fixed-left {
+  position: sticky;
+  left: 0;
+  z-index: var(--solely-z-index-table-fixed);
+  background-color: var(--solely-component-bg);
+}
+
+.table th.fixed-right,
+.table td.fixed-right {
+  position: sticky;
+  right: 0;
+  z-index: var(--solely-z-index-table-fixed);
+  background-color: var(--solely-component-bg);
+}
+
+.table th.fixed-left,
+.table th.fixed-right {
+  z-index: var(--solely-z-index-table-header);
+  background-color: var(--solely-gray-2);
+}
+
+/* 加载状态 */
+.is-loading {
+  opacity: var(--solely-disabled-opacity);
+  pointer-events: none;
+}
+
+.table__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--solely-spacing-xl);
+  color: var(--solely-text-tertiary);
+}
+
+.table__loading-icon {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--solely-border-color);
+  border-top-color: var(--solely-primary);
+  border-radius: 50%;
+  animation: table-spin 1s linear infinite;
+}
+
+@keyframes table-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 空状态 */
+.table__empty {
+  text-align: center;
+  padding: var(--solely-spacing-xl);
+  color: var(--solely-text-tertiary);
+}
+
+/* 对齐方式 */
+.table .align-left {
+  text-align: left;
+}
+
+.table .align-center {
+  text-align: center;
+}
+
+.table .align-right {
+  text-align: right;
+}

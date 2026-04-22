@@ -1,0 +1,82 @@
+<div
+    class="pagination"
+     :class="this.getPaginationClasses()"
+>
+    <!-- 总数 -->
+    <If test="$data.showTotal">
+        <span class="pagination__total">
+            共 {{$data.total}} 条
+        </span>
+    </If>
+
+    <!-- 上一页 -->
+    <span
+        class="pagination__prev"
+         :class="this.getPrevClasses()"
+        @click="this.handlePrev(event)"
+    >
+        &lt;
+    </span>
+
+    <!-- 页码 -->
+    <For each="$data.visiblePages" item="page">
+        <If test="page !== '...'">
+            <span
+                class="pagination__item"
+                 :class="this.getItemClasses(page)"
+                @click="this.handlePageClick(page, event)"
+            >
+                {{page}}
+            </span>
+        </If>
+        <If test="page === '...'">
+            <span class="pagination__ellipsis">...</span>
+        </If>
+    </For>
+
+    <!-- 下一页 -->
+    <span
+        class="pagination__next"
+         :class="this.getNextClasses()"
+        @click="this.handleNext(event)"
+    >
+        &gt;
+    </span>
+
+    <!-- 每页条数选择器 -->
+    <If test="$data.showSizeChanger">
+        <span class="pagination__size-changer">
+            <select @change="this.handleSizeChange(event)">
+                <For each="$data.parsedPageSizeOptions" item="size">
+                    <option
+                        :value="size"
+                        :selected="size === $data.pageSize"
+                    >
+                        {{size}} 条/页
+                    </option>
+                </For>
+            </select>
+        </span>
+    </If>
+
+    <!-- 快速跳转 -->
+    <If test="$data.showQuickJumper">
+        <span class="pagination__jumper">
+            跳至
+            <span class="pagination__jumper-input-wrapper">
+                <input
+                    type="number"
+                    min="1"
+                    :max="$data.totalPages"
+                    s-model="$data.jumperValue"
+                    @keydown="this.handleJumperKeydown(event)"
+                />
+                <span class="pagination__jumper-controls">
+                    <span class="pagination__jumper-up" @click="this.handleJumperStep(1)">▲</span>
+                    <span class="pagination__jumper-down" @click="this.handleJumperStep(-1)">▼</span>
+                </span>
+            </span>
+            页
+        </span>
+    </If>
+</div>

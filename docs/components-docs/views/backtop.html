@@ -1,0 +1,293 @@
+<style>
+    .usage-intro {
+        background: linear-gradient(135deg, var(--solely-primary-light, #e6f7ff) 0%, rgba(24, 144, 255, 0.3) 100%);
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        border-left: 4px solid var(--solely-primary, #1890ff);
+    }
+    .usage-desc {
+        margin: 0;
+        color: var(--solely-text-primary, #262626);
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .usage-tips {
+        background: var(--solely-bg-color-light, #fafafa);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    .usage-tips-title {
+        margin: 0 0 16px 0;
+        font-size: 16px;
+        color: var(--solely-text-primary, #262626);
+        font-weight: 600;
+    }
+    .usage-tips-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 12px;
+    }
+    .usage-tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background: var(--solely-component-bg, #fff);
+        padding: 12px 16px;
+        border-radius: 6px;
+        border: 1px solid var(--solely-border-color, #f0f0f0);
+        transition: all 0.3s ease;
+    }
+    .usage-tip-item:hover {
+        border-color: var(--solely-primary, #1890ff);
+        box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+    }
+    .usage-tip-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    .usage-tip-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .usage-tip-content strong {
+        color: var(--solely-text-primary, #262626);
+        font-size: 14px;
+    }
+    .usage-tip-content span {
+        color: var(--solely-text-secondary, #8c8c8c);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .usage-example {
+        background: var(--solely-bg-color-light, #fafafa);
+        border-radius: 8px;
+        padding: 20px;
+    }
+    .usage-example-title {
+        margin: 0 0 16px 0;
+        font-size: 16px;
+        color: var(--solely-text-primary, #262626);
+        font-weight: 600;
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">BackTop 回到顶部</h1>
+    <p class="page-desc">用于页面长距离滚动后快速返回顶部的按钮组件。组件会自动检测最近的滚动父元素。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">将组件放在滚动容器内，当滚动距离超过 400px 时，会在容器右下角显示回到顶部按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview backtop-scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid var(--solely-border-color); position: relative; padding: 0;">
+                <div style="height: 1000px; padding: 20px;">
+                    <p>👇 向下滚动查看效果...</p>
+                    <p style="margin-top: 400px; color: var(--solely-primary);">继续向下滚动...</p>
+                    <p style="margin-top: 400px; color: var(--solely-text-secondary);">到底了，点击右下角按钮回到顶部</p>
+                </div>
+                <solely-backtop></solely-backtop>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 在页面中使用 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 在指定容器中使用 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">style</span>=<span class="code-value">"overflow-y: auto; height: 300px; position: relative;"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义显示高度 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义显示高度</h3>
+        <p class="demo-block-desc">通过 visibility-height 属性设置按钮显示时距离顶部的滚动距离。</p>
+        <div class="demo-box">
+            <div class="demo-preview backtop-scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid var(--solely-border-color); position: relative; padding: 0;">
+                <div style="height: 1000px; padding: 20px;">
+                    <p>👇 滚动 100px 后显示按钮（默认是 400px）...</p>
+                    <p style="margin-top: 400px; color: var(--solely-primary);">继续滚动...</p>
+                    <p style="margin-top: 400px; color: var(--solely-text-secondary);">到底了</p>
+                </div>
+                <solely-backtop visibility-height="100"></solely-backtop>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 滚动 100px 后显示 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">visibility-height</span>=<span class="code-value">"100"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 滚动 200px 后显示 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">visibility-height</span>=<span class="code-value">"200"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义滚动时间 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义滚动时间</h3>
+        <p class="demo-block-desc">通过 duration 属性设置滚动动画的持续时间（毫秒）。</p>
+        <div class="demo-box">
+            <div class="demo-preview backtop-scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid var(--solely-border-color); position: relative; padding: 0;">
+                <div style="height: 1000px; padding: 20px;">
+                    <p>👇 快速滚动回顶部（200ms）...</p>
+                    <p style="margin-top: 400px; color: var(--solely-primary);">继续滚动...</p>
+                    <p style="margin-top: 400px; color: var(--solely-text-secondary);">到底了</p>
+                </div>
+                <solely-backtop duration="200"></solely-backtop>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 快速滚动（200ms） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">duration</span>=<span class="code-value">"200"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 慢速滚动（1000ms） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">duration</span>=<span class="code-value">"1000"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 点击事件 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">点击事件</h3>
+        <p class="demo-block-desc">监听 click 事件，在回到顶部后执行自定义操作。</p>
+        <div class="demo-box">
+            <div class="demo-preview backtop-scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid var(--solely-border-color); position: relative; padding: 0;">
+                <div style="height: 1000px; padding: 20px;">
+                    <p>👇 点击按钮查看事件...</p>
+                    <p style="margin-top: 400px; color: var(--solely-primary);">继续滚动...</p>
+                    <p style="margin-top: 400px; color: var(--solely-text-secondary);">到底了</p>
+                </div>
+                <solely-backtop></solely-backtop>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">@click</span>=<span class="code-value">"handleClick()"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> backtop = document.querySelector(<span class="code-value">'solely-backtop'</span>);
+backtop.addEventListener(<span class="code-value">'click'</span>, () => {
+  console.log(<span class="code-value">'已回到顶部'</span>);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>visibilityHeight</td>
+                    <td>滚动高度达到此参数值时才显示按钮</td>
+                    <td>number</td>
+                    <td>400</td>
+                </tr>
+                <tr>
+                    <td>duration</td>
+                    <td>回到顶部的动画持续时间（毫秒）</td>
+                    <td>number</td>
+                    <td>450</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>click</td>
+                    <td>点击按钮时触发</td>
+                    <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">使用指南</h4>
+        
+        <div class="usage-intro">
+            <p class="usage-desc">BackTop 组件会自动检测最近的滚动父元素（overflow-y 为 auto 或 scroll 的元素），并在该容器右下角显示按钮。</p>
+        </div>
+
+        <div class="usage-tips">
+            <h5 class="usage-tips-title">💡 使用要点</h5>
+            <div class="usage-tips-list">
+                <div class="usage-tip-item">
+                    <span class="usage-tip-icon">📦</span>
+                    <div class="usage-tip-content">
+                        <strong>容器要求</strong>
+                        <span>容器需要设置 <code>overflow-y: auto</code> 或 <code>overflow-y: scroll</code> 才能被检测到</span>
+                    </div>
+                </div>
+                <div class="usage-tip-item">
+                    <span class="usage-tip-icon">📍</span>
+                    <div class="usage-tip-content">
+                        <strong>放置位置</strong>
+                        <span>组件本身应该放在可滚动容器内部</span>
+                    </div>
+                </div>
+                <div class="usage-tip-item">
+                    <span class="usage-tip-icon">🎯</span>
+                    <div class="usage-tip-content">
+                        <strong>定位方式</strong>
+                        <span>按钮使用固定定位，会显示在容器右下角（相对于视口）</span>
+                    </div>
+                </div>
+                <div class="usage-tip-item">
+                    <span class="usage-tip-icon">🔀</span>
+                    <div class="usage-tip-content">
+                        <strong>多实例支持</strong>
+                        <span>多个 BackTop 组件可以共存，各自显示在自己的容器内</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="usage-example">
+            <h5 class="usage-example-title">📝 完整示例</h5>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 基础用法 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">class</span>=<span class="code-value">"scroll-container"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">class</span>=<span class="code-value">"content"</span><span class="code-bracket">&gt;</span>
+    长内容...
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+
+<span class="code-tag">.scroll-container</span> {
+  <span class="code-attr">height</span>: <span class="code-value">500px</span>;
+  <span class="code-attr">overflow-y</span>: <span class="code-value">auto</span>;
+  <span class="code-attr">position</span>: <span class="code-value">relative</span>;
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,221 @@
+<div class="page-header">
+    <h1 class="page-title">Alert 警告提示</h1>
+    <p class="page-desc">用于页面中展示重要的提示信息，适用于需要引起用户注意的场景。</p>
+</div>
+
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，适用于简短的提示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-alert type="info" message="Info text"></solely-alert>
+                <solely-alert type="success" message="Success text"></solely-alert>
+                <solely-alert type="warning" message="Warning text"></solely-alert>
+                <solely-alert type="error" message="Error text"></solely-alert>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"Info text"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">message</span>=<span class="code-value">"Success text"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">message</span>=<span class="code-value">"Warning text"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span> <span class="code-attr">message</span>=<span class="code-value">"Error text"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">可关闭</h3>
+        <p class="demo-block-desc">显示关闭按钮，点击可关闭警告提示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-alert type="info" message="Info Text" closable></solely-alert>
+                <solely-alert type="success" message="Success Text" closable></solely-alert>
+                <solely-alert type="warning" message="Warning Text" closable></solely-alert>
+                <solely-alert type="error" message="Error Text" closable></solely-alert>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"Info Text"</span> <span class="code-attr">closable</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">message</span>=<span class="code-value">"Success Text"</span> <span class="code-attr">closable</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">message</span>=<span class="code-value">"Warning Text"</span> <span class="code-attr">closable</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span> <span class="code-attr">message</span>=<span class="code-value">"Error Text"</span> <span class="code-attr">closable</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">含有辅助性文字介绍</h3>
+        <p class="demo-block-desc">含有辅助性文字介绍的警告提示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-alert type="info" message="Info Text" description="Detailed description and advice about successful copywriting." show-icon></solely-alert>
+                <solely-alert type="success" message="Success Text" description="Detailed description and advice about successful copywriting." show-icon></solely-alert>
+                <solely-alert type="warning" message="Warning Text" description="Detailed description and advice about successful copywriting." show-icon></solely-alert>
+                <solely-alert type="error" message="Error Text" description="Detailed description and advice about successful copywriting." show-icon></solely-alert>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"Info Text"</span>
+  <span class="code-attr">description</span>=<span class="code-value">"Detailed description..."</span> <span class="code-attr">show-icon</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">message</span>=<span class="code-value">"Success Text"</span>
+  <span class="code-attr">description</span>=<span class="code-value">"Detailed description..."</span> <span class="code-attr">show-icon</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">message</span>=<span class="code-value">"Warning Text"</span>
+  <span class="code-attr">description</span>=<span class="code-value">"Detailed description..."</span> <span class="code-attr">show-icon</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span> <span class="code-attr">message</span>=<span class="code-value">"Error Text"</span>
+  <span class="code-attr">description</span>=<span class="code-value">"Detailed description..."</span> <span class="code-attr">show-icon</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件监听</h3>
+        <p class="demo-block-desc">监听关闭事件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-alert id="alert-event-demo" type="info" message="Click the close button" closable></solely-alert>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"Click the close button"</span> <span class="code-attr">closable</span> <span class="code-attr">@close</span>=<span class="code-value">"handleClose()"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">script</span><span class="code-bracket">&gt;</span>
+<span class="code-keyword">function</span> <span class="code-function">handleClose</span>() {
+    console.<span class="code-function">log</span>(<span class="code-value">'Alert closed'</span>);
+}
+<span class="code-bracket">&lt;/</span><span class="code-tag">script</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 块级显示 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">块级显示</h3>
+        <p class="demo-block-desc">添加 block 属性可以让警告提示宽度占满父容器。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch;">
+                <solely-alert block type="info" message="块级显示的 Info 警告提示"></solely-alert>
+                <solely-alert block type="success" message="块级显示的 Success 警告提示"></solely-alert>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 块级显示，宽度占满父容器 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">block</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"块级显示的 Info 警告提示"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">block</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">message</span>=<span class="code-value">"块级显示的 Success 警告提示"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>type</td>
+                    <td>指定警告提示的样式，有四种选择：info、success、warning、error</td>
+                    <td>string</td>
+                    <td>info</td>
+                </tr>
+                <tr>
+                    <td>message</td>
+                    <td>警告提示内容</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>警告提示的辅助性文字介绍</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>closable</td>
+                    <td>是否显示关闭按钮</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>showIcon</td>
+                    <td>是否显示辅助图标</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>block</td>
+                    <td>是否块级显示</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>close</td>
+                    <td>关闭时触发的事件</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setMessage</td>
+                    <td>设置消息内容</td>
+                    <td>message: string</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>setType</td>
+                    <td>设置类型</td>
+                    <td>type: AlertType</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-keyword">type</span> <span class="code-type">AlertType</span> = <span class="code-value">'info'</span> | <span class="code-value">'success'</span> | <span class="code-value">'warning'</span> | <span class="code-value">'error'</span>;
+
+<span class="code-keyword">interface</span> <span class="code-type">AlertProps</span> {
+    <span class="code-attr">type</span>?: <span class="code-type">AlertType</span>;
+    <span class="code-attr">message</span>?: <span class="code-type">string</span>;
+    <span class="code-attr">description</span>?: <span class="code-type">string</span>;
+    <span class="code-attr">closable</span>?: <span class="code-type">boolean</span>;
+    <span class="code-attr">showIcon</span>?: <span class="code-type">boolean</span>;
+    <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;
+}</code></pre>
+    </div>
+</div>

@@ -1,0 +1,241 @@
+<div class="page-header">
+    <h1 class="page-title">Badge 徽标数</h1>
+    <p class="page-desc">图标右上角的数字徽标，用于显示消息数量、状态点等。</p>
+</div>
+
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">简单的数字徽标。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-badge count="5">
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+                <solely-badge count="0">
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+                <solely-badge count="99">
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"5"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"0"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"99"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">封顶数字</h3>
+        <p class="demo-block-desc">超过 overflowCount 会显示为 ${overflowCount}+。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-badge count="99" overflow-count="99">
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+                <solely-badge count="100" overflow-count="99">
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+                <solely-badge count="1000" overflow-count="999">
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"99"</span> <span class="code-attr">overflow-count</span>=<span class="code-value">"99"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"100"</span> <span class="code-attr">overflow-count</span>=<span class="code-value">"99"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">小红点</h3>
+        <p class="demo-block-desc">只显示小红点，不显示数字。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-badge dot>
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+                <solely-badge dot>
+                    <span>Link</span>
+                </solely-badge>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">dot</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">状态点</h3>
+        <p class="demo-block-desc">用于表示状态的小圆点。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-badge status="success" text="Success"></solely-badge>
+                <solely-badge status="error" text="Error"></solely-badge>
+                <solely-badge status="default" text="Default"></solely-badge>
+                <solely-badge status="processing" text="Processing"></solely-badge>
+                <solely-badge status="warning" text="Warning"></solely-badge>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">status</span>=<span class="code-value">"success"</span> <span class="code-attr">text</span>=<span class="code-value">"Success"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">status</span>=<span class="code-value">"error"</span> <span class="code-attr">text</span>=<span class="code-value">"Error"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">status</span>=<span class="code-value">"default"</span> <span class="code-attr">text</span>=<span class="code-value">"Default"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">status</span>=<span class="code-value">"processing"</span> <span class="code-attr">text</span>=<span class="code-value">"Processing"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">status</span>=<span class="code-value">"warning"</span> <span class="code-attr">text</span>=<span class="code-value">"Warning"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义颜色</h3>
+        <p class="demo-block-desc">自定义徽标的背景颜色。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-badge count="5" color="#108ee9">
+                    <solely-button>Custom Color</solely-button>
+                </solely-badge>
+                <solely-badge dot color="#87d068">
+                    <solely-button>Custom Dot</solely-button>
+                </solely-badge>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"5"</span> <span class="code-attr">color</span>=<span class="code-value">"#108ee9"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Custom Color<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">dot</span> <span class="code-attr">color</span>=<span class="code-value">"#87d068"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Custom Dot<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>count</td>
+                    <td>显示的数字，大于 overflowCount 时显示为 ${overflowCount}+</td>
+                    <td>number</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>dot</td>
+                    <td>不展示数字，只有一个小红点</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>overflowCount</td>
+                    <td>展示封顶的数字值</td>
+                    <td>number</td>
+                    <td>99</td>
+                </tr>
+                <tr>
+                    <td>status</td>
+                    <td>设置状态点的颜色，可选：success、processing、default、error、warning</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>text</td>
+                    <td>在设置了 status 的前提下有效，设置状态点的文本</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>color</td>
+                    <td>自定义背景颜色</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setCount</td>
+                    <td>设置数字</td>
+                    <td>count: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>increase</td>
+                    <td>增加数字</td>
+                    <td>delta?: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>decrease</td>
+                    <td>减少数字</td>
+                    <td>delta?: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>showDot</td>
+                    <td>显示小红点</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>hideDot</td>
+                    <td>隐藏小红点</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-keyword">type</span> <span class="code-type">BadgeStatus</span> = <span class="code-value">'success'</span> | <span class="code-value">'processing'</span> | <span class="code-value">'default'</span> | <span class="code-value">'error'</span> | <span class="code-value">'warning'</span>;
+
+<span class="code-keyword">interface</span> <span class="code-type">BadgeProps</span> {
+    <span class="code-attr">count</span>?: <span class="code-type">number</span>;
+    <span class="code-attr">dot</span>?: <span class="code-type">boolean</span>;
+    <span class="code-attr">overflowCount</span>?: <span class="code-type">number</span>;
+    <span class="code-attr">status</span>?: <span class="code-type">BadgeStatus</span>;
+    <span class="code-attr">text</span>?: <span class="code-type">string</span>;
+    <span class="code-attr">color</span>?: <span class="code-type">string</span>;
+}</code></pre>
+    </div>
+</div>

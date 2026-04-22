@@ -1,0 +1,372 @@
+<div class="page-header">
+    <h1 class="page-title">Tabs 标签页</h1>
+    <p class="page-desc">用于内容的分组展示，支持切换、关闭、新增等操作。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，通过 items 属性设置标签页数据。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tabs items='[{"key":"1","label":"Tab 1"},{"key":"2","label":"Tab 2"},{"key":"3","label":"Tab 3"}]' activeKey="1">
+                    <div slot="tab-1">内容 1</div>
+                    <div slot="tab-2">内容 2</div>
+                    <div slot="tab-3">内容 3</div>
+                </solely-tabs>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[{"key":"1","label":"Tab 1"},{"key":"2","label":"Tab 2"},{"key":"3","label":"Tab 3"}]'</span>
+  <span class="code-attr">activeKey</span>=<span class="code-value">"1"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-1"</span><span class="code-bracket">&gt;</span>内容 1<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-2"</span><span class="code-bracket">&gt;</span>内容 2<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-3"</span><span class="code-bracket">&gt;</span>内容 3<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 卡片类型 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">卡片类型</h3>
+        <p class="demo-block-desc">设置 type="card" 使用卡片风格的标签页。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tabs type="card" items='[{"key":"1","label":"用户管理"},{"key":"2","label":"系统配置"},{"key":"3","label":"权限设置"}]' activeKey="1">
+                    <div slot="tab-1">用户管理内容</div>
+                    <div slot="tab-2">系统配置内容</div>
+                    <div slot="tab-3">权限设置内容</div>
+                </solely-tabs>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span> <span class="code-attr">type</span>=<span class="code-value">"card"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[{"key":"1","label":"用户管理"},{"key":"2","label":"系统配置"},{"key":"3","label":"权限设置"}]'</span>
+  <span class="code-attr">activeKey</span>=<span class="code-value">"1"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-1"</span><span class="code-bracket">&gt;</span>用户管理内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-2"</span><span class="code-bracket">&gt;</span>系统配置内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-3"</span><span class="code-bracket">&gt;</span>权限设置内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">尺寸</h3>
+        <p class="demo-block-desc">支持 small、default（默认）、large 三种尺寸。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 24px;">
+                <solely-tabs size="small" items='[{"key":"1","label":"小尺寸"},{"key":"2","label":"Tab 2"}]' activeKey="1">
+                    <div slot="tab-1">小尺寸内容</div>
+                    <div slot="tab-2">内容 2</div>
+                </solely-tabs>
+                <solely-tabs size="default" items='[{"key":"1","label":"默认尺寸"},{"key":"2","label":"Tab 2"}]' activeKey="1">
+                    <div slot="tab-1">默认尺寸内容</div>
+                    <div slot="tab-2">内容 2</div>
+                </solely-tabs>
+                <solely-tabs size="large" items='[{"key":"1","label":"大尺寸"},{"key":"2","label":"Tab 2"}]' activeKey="1">
+                    <div slot="tab-1">大尺寸内容</div>
+                    <div slot="tab-2">内容 2</div>
+                </solely-tabs>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- small --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- default --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span> <span class="code-attr">size</span>=<span class="code-value">"default"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- large --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">在 items 数据中设置 disabled: true 可禁用单个标签页。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tabs items='[{"key":"1","label":"可用"},{"key":"2","label":"禁用","disabled":true},{"key":"3","label":"可用"}]' activeKey="1">
+                    <div slot="tab-1">内容 1</div>
+                    <div slot="tab-2">内容 2（禁用）</div>
+                    <div slot="tab-3">内容 3</div>
+                </solely-tabs>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[{"key":"1","label":"可用"},{"key":"2","label":"禁用","disabled":true},{"key":"3","label":"可用"}]'</span>
+  <span class="code-attr">activeKey</span>=<span class="code-value">"1"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-1"</span><span class="code-bracket">&gt;</span>内容 1<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-2"</span><span class="code-bracket">&gt;</span>内容 2（禁用）<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-3"</span><span class="code-bracket">&gt;</span>内容 3<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 可关闭 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">可关闭</h3>
+        <p class="demo-block-desc">设置 closable 属性显示关闭按钮，点击会触发 close 事件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tabs closable items='[{"key":"1","label":"标签 1"},{"key":"2","label":"标签 2"},{"key":"3","label":"标签 3"}]' activeKey="1">
+                    <div slot="tab-1">标签 1 内容</div>
+                    <div slot="tab-2">标签 2 内容</div>
+                    <div slot="tab-3">标签 3 内容</div>
+                </solely-tabs>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span> <span class="code-attr">closable</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[{"key":"1","label":"标签 1"},{"key":"2","label":"标签 2"},{"key":"3","label":"标签 3"}]'</span>
+  <span class="code-attr">activeKey</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">@close</span>=<span class="code-value">"handleClose(event)"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-1"</span><span class="code-bracket">&gt;</span>标签 1 内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-2"</span><span class="code-bracket">&gt;</span>标签 2 内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-3"</span><span class="code-bracket">&gt;</span>标签 3 内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 可新增 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">可新增</h3>
+        <p class="demo-block-desc">设置 addable 属性显示新增按钮，点击会触发 add 事件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tabs addable closable items='[{"key":"1","label":"首页"},{"key":"2","label":"设置"}]' activeKey="1">
+                    <div slot="tab-1">首页内容</div>
+                    <div slot="tab-2">设置内容</div>
+                </solely-tabs>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span> <span class="code-attr">addable</span> <span class="code-attr">closable</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[{"key":"1","label":"首页"},{"key":"2","label":"设置"}]'</span>
+  <span class="code-attr">activeKey</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">@add</span>=<span class="code-value">"handleAdd()"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-1"</span><span class="code-bracket">&gt;</span>首页内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-2"</span><span class="code-bracket">&gt;</span>设置内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件演示 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件演示</h3>
+        <p class="demo-block-desc">点击标签页、关闭按钮、新增按钮查看事件触发情况。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px;">
+                <solely-tabs
+                    closable
+                    addable
+                    items='[{"key":"1","label":"标签 1"},{"key":"2","label":"标签 2"},{"key":"3","label":"标签 3"}]'
+                    activeKey="1"
+                    @change="this.handleChange(event)"
+                    @close="this.handleClose(event)"
+                    @add="this.handleAdd()">
+                    <div slot="tab-1">标签 1 内容</div>
+                    <div slot="tab-2">标签 2 内容</div>
+                    <div slot="tab-3">标签 3 内容</div>
+                </solely-tabs>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span>
+  <span class="code-attr">closable</span> <span class="code-attr">addable</span>
+  <span class="code-attr">items</span>=<span class="code-value">"..."</span>
+  <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span>
+  <span class="code-attr">@close</span>=<span class="code-value">"handleClose(event)"</span>
+  <span class="code-attr">@add</span>=<span class="code-value">"handleAdd()"</span><span class="code-bracket">&gt;</span>
+  ...
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-comment">// change 事件 - 通过 event.target.activeKey 获取当前激活的标签</span>
+<span class="code-keyword">const</span> tabs = document.querySelector(<span class="code-value">'solely-tabs'</span>);
+tabs.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  console.log(<span class="code-value">'当前激活标签:'</span>, e.target.activeKey);
+});
+
+<span class="code-comment">// close 事件 - 通过 event.detail 获取关闭的标签信息</span>
+tabs.addEventListener(<span class="code-value">'close'</span>, (e) => {
+  console.log(<span class="code-value">'关闭标签:'</span>, e.detail.key, e.detail.label);
+});
+
+<span class="code-comment">// add 事件</span>
+tabs.addEventListener(<span class="code-value">'add'</span>, () => {
+  console.log(<span class="code-value">'新增标签'</span>);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>activeKey</td>
+                    <td>当前激活标签页的 key</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>type</td>
+                    <td>标签页类型，可选值为 line、card</td>
+                    <td>string</td>
+                    <td>line</td>
+                </tr>
+                <tr>
+                    <td>position</td>
+                    <td>标签页位置，可选值为 top、right、bottom、left</td>
+                    <td>string</td>
+                    <td>top</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>标签页大小，可选值为 small、default、large</td>
+                    <td>string</td>
+                    <td>default</td>
+                </tr>
+                <tr>
+                    <td>items</td>
+                    <td>标签页数据（JSON字符串）</td>
+                    <td>string</td>
+                    <td>[]</td>
+                </tr>
+                <tr>
+                    <td>closable</td>
+                    <td>是否可关闭</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>addable</td>
+                    <td>是否可新增</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>切换标签时触发</td>
+                    <td>Event</td>
+                </tr>
+                <tr>
+                    <td>close</td>
+                    <td>关闭标签时触发</td>
+                    <td>CustomEvent&lt;{ key: string; label: string }&gt;</td>
+                </tr>
+                <tr>
+                    <td>add</td>
+                    <td>点击新增按钮时触发</td>
+                    <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setActiveKey(key)</td>
+                    <td>设置当前激活的标签</td>
+                    <td>key: string</td>
+                </tr>
+                <tr>
+                    <td>getActiveKey()</td>
+                    <td>获取当前激活的标签</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>setItems(items)</td>
+                    <td>设置标签项</td>
+                    <td>items: TabItem[]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 标签项类型</span>
+<span class="code-keyword">interface</span> <span class="code-type">TabItem</span> {
+  <span class="code-attr">key</span>: <span class="code-type">string</span>;      <span class="code-comment">// 标签页标识</span>
+  <span class="code-attr">label</span>: <span class="code-type">string</span>;    <span class="code-comment">// 标签页标题</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否禁用</span>
+}
+
+<span class="code-comment">// Tabs 类型</span>
+<span class="code-keyword">type</span> <span class="code-type">TabsType</span> = <span class="code-value">'line'</span> | <span class="code-value">'card'</span>;
+
+<span class="code-comment">// Tabs 位置</span>
+<span class="code-keyword">type</span> <span class="code-type">TabsPosition</span> = <span class="code-value">'top'</span> | <span class="code-value">'right'</span> | <span class="code-value">'bottom'</span> | <span class="code-value">'left'</span>;
+
+<span class="code-comment">// Tabs 尺寸</span>
+<span class="code-keyword">type</span> <span class="code-type">TabsSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'default'</span> | <span class="code-value">'large'</span>;</code></pre>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>tab-{key}</td>
+                    <td>对应 key 的标签页内容，如 tab-1、tab-2</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

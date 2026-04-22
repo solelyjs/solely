@@ -1,0 +1,550 @@
+<h1 class="page-title">CoordinateInput 经纬度输入框</h1>
+<p class="page-desc">用于输入经纬度坐标，支持度分秒（DMS）格式，可自动转换为十进制。</p>
+
+<div class="component-section" id="coordinate-input">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">同时输入纬度和经度，使用度分秒格式。输入完成后会自动跳转到下一个输入框。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-coordinate-input></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">仅纬度或经度</h3>
+        <p class="demo-block-desc">通过 type 属性设置只输入纬度或经度。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <solely-coordinate-input type="latitude"></solely-coordinate-input>
+                <solely-coordinate-input type="longitude"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 仅纬度 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">type</span>=<span class="code-value">"latitude"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 仅经度 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">type</span>=<span class="code-value">"longitude"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">不同尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium、large 三种尺寸。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <solely-coordinate-input size="small" type="latitude"></solely-coordinate-input>
+                <solely-coordinate-input size="medium" type="latitude"></solely-coordinate-input>
+                <solely-coordinate-input size="large" type="latitude"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">设置 disabled 属性禁用输入。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-coordinate-input disabled latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">只读状态</h3>
+        <p class="demo-block-desc">设置 readonly 属性使输入框只读。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-coordinate-input readonly latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">readonly</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">设置默认值</h3>
+        <p class="demo-block-desc">通过 latitude 和 longitude 属性设置默认值（十进制）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-coordinate-input latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 北京天安门坐标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> 
+    <span class="code-attr">latitude</span>=<span class="code-value">"39.9042"</span> 
+    <span class="code-attr">longitude</span>=<span class="code-value">"116.4074"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">显示十进制值</h3>
+        <p class="demo-block-desc">添加 show-decimal 属性显示对应的十进制坐标值（默认不显示）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-coordinate-input show-decimal latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">show-decimal</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">显示方向选择</h3>
+        <p class="demo-block-desc">添加 show-direction 属性显示 N/S/E/W 方向选择（默认不显示）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-coordinate-input show-direction latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 添加 show-direction 属性显示方向选择 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">show-direction</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自动跳转</h3>
+        <p class="demo-block-desc">添加 auto-tab 属性开启输入完成后自动跳转到下一个输入框的功能（默认关闭）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-coordinate-input auto-tab type="latitude"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 设置 auto-tab，开启自动跳转 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">auto-tab</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 不设置 auto-tab，关闭自动跳转 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">组合使用</h3>
+        <p class="demo-block-desc">可以同时开启多个功能，如显示方向、显示十进制值、自动跳转等。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <solely-coordinate-input 
+                    show-direction 
+                    show-decimal 
+                    auto-tab 
+                    latitude="39.9042" 
+                    longitude="116.4074">
+                </solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> 
+    <span class="code-attr">show-direction</span>
+    <span class="code-attr">show-decimal</span>
+    <span class="code-attr">auto-tab</span>
+    <span class="code-attr">latitude</span>=<span class="code-value">"39.9042"</span>
+    <span class="code-attr">longitude</span>=<span class="code-value">"116.4074"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">秒输入精度控制</h3>
+        <p class="demo-block-desc">通过 precision 属性控制秒输入的小数位数（默认3位）。输入时会根据小数位数决定是否自动跳转到下一个输入框。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <div>
+                    <span style="font-size: 12px; color: #666; margin-bottom: 4px; display: block;">precision="0"（整数秒）</span>
+                    <solely-coordinate-input precision="0" type="latitude"></solely-coordinate-input>
+                </div>
+                <div>
+                    <span style="font-size: 12px; color: #666; margin-bottom: 4px; display: block;">precision="2"（2位小数）</span>
+                    <solely-coordinate-input precision="2" type="latitude"></solely-coordinate-input>
+                </div>
+                <div>
+                    <span style="font-size: 12px; color: #666; margin-bottom: 4px; display: block;">precision="3"（3位小数，默认）</span>
+                    <solely-coordinate-input precision="3" type="latitude"></solely-coordinate-input>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 整数秒，输入12后自动跳转 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">precision</span>=<span class="code-value">"0"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 2位小数，输入12.34后自动跳转 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">precision</span>=<span class="code-value">"2"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 3位小数（默认），输入12.345后自动跳转 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">precision</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">块级显示</h3>
+        <p class="demo-block-desc">添加 block 属性可以让组件宽度占满父容器。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <solely-coordinate-input block type="latitude"></solely-coordinate-input>
+                <solely-coordinate-input block show-direction show-decimal></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 块级显示，宽度占满父容器 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">block</span> <span class="code-attr">type</span>=<span class="code-value">"latitude"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> 
+    <span class="code-attr">block</span>
+    <span class="code-attr">show-direction</span>
+    <span class="code-attr">show-decimal</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件监听</h3>
+        <p class="demo-block-desc">监听 input、change、focus、blur、keydown、clear 等事件来响应经纬度输入的交互。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch;">
+                <solely-coordinate-input 
+                    ref="eventCoordinateInput" 
+                    type="latitude"
+                    @input="this.handleInputEvent(event)" 
+                    @change="this.handleChangeEvent(event)"
+                    @focus="this.handleFocusEvent(event)"
+                    @blur="this.handleBlurEvent(event)"
+                    @keydown="this.handleKeyDownEvent(event)"
+                    @clear="this.handleClearEvent(event)">
+                </solely-coordinate-input>
+                <div style="margin-top: 12px; padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 13px; font-family: monospace; min-height: 100px;">
+                    <div>事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="margin-top: 8px; color: #666; white-space: pre-line;">等待输入...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 监听所有事件 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span>
+  <span class="code-attr">@input</span>=<span class="code-value">"handleInput(event)"</span>
+  <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span>
+  <span class="code-attr">@focus</span>=<span class="code-value">"handleFocus(event)"</span>
+  <span class="code-attr">@blur</span>=<span class="code-value">"handleBlur(event)"</span>
+  <span class="code-attr">@keydown</span>=<span class="code-value">"handleKeyDown(event)"</span>
+  <span class="code-attr">@clear</span>=<span class="code-value">"handleClear(event)"</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 原生事件：通过 event.target.value 获取值</span>
+<span class="code-keyword">function</span> <span class="code-attr">handleInput</span>(<span class="code-attr">event</span>: <span class="code-type">Event</span>) {
+  <span class="code-keyword">const</span> <span class="code-attr">target</span> = <span class="code-attr">event</span>.<span class="code-attr">target</span> <span class="code-keyword">as</span> <span class="code-type">HTMLInputElement</span>;
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'input:'</span>, <span class="code-attr">target</span>.<span class="code-attr">value</span>); <span class="code-comment">// { latitude, longitude }</span>
+}
+
+<span class="code-keyword">function</span> <span class="code-attr">handleChange</span>(<span class="code-attr">event</span>: <span class="code-type">Event</span>) {
+  <span class="code-keyword">const</span> <span class="code-attr">target</span> = <span class="code-attr">event</span>.<span class="code-attr">target</span> <span class="code-keyword">as</span> <span class="code-type">HTMLInputElement</span>;
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'change:'</span>, <span class="code-attr">target</span>.<span class="code-attr">value</span>); <span class="code-comment">// { latitude, longitude }</span>
+}
+
+<span class="code-comment">// 原生事件：focus、blur</span>
+<span class="code-keyword">function</span> <span class="code-attr">handleFocus</span>(<span class="code-attr">event</span>: <span class="code-type">FocusEvent</span>) {
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'focus'</span>);
+}
+
+<span class="code-keyword">function</span> <span class="code-attr">handleBlur</span>(<span class="code-attr">event</span>: <span class="code-type">FocusEvent</span>) {
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'blur'</span>);
+}
+
+<span class="code-keyword">function</span> <span class="code-attr">handleKeyDown</span>(<span class="code-attr">event</span>: <span class="code-type">KeyboardEvent</span>) {
+  <span class="code-keyword">if</span> (<span class="code-attr">event</span>.<span class="code-attr">key</span> === <span class="code-value">'Enter'</span>) {
+    <span class="code-keyword">const</span> <span class="code-attr">target</span> = <span class="code-attr">event</span>.<span class="code-attr">target</span> <span class="code-keyword">as</span> <span class="code-type">HTMLInputElement</span>;
+    <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'enter:'</span>, <span class="code-attr">target</span>.<span class="code-attr">value</span>); <span class="code-comment">// { latitude, longitude }</span>
+  }
+}
+
+<span class="code-keyword">function</span> <span class="code-attr">handleClear</span>(<span class="code-attr">event</span>: <span class="code-type">Event</span>) {
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'clear'</span>);
+}
+
+<span class="code-comment">// 通过属性获取/设置值</span>
+<span class="code-keyword">const</span> <span class="code-attr">coordinateInput</span> = <span class="code-attr">document</span>.<span class="code-attr">querySelector</span>(<span class="code-value">'solely-coordinate-input'</span>);
+
+<span class="code-comment">// 获取值</span>
+<span class="code-keyword">const</span> <span class="code-attr">value</span> = <span class="code-attr">coordinateInput</span>.<span class="code-attr">value</span>; <span class="code-comment">// { latitude: 39.9042, longitude: 116.4074 }</span>
+
+<span class="code-comment">// 设置值（对象形式）</span>
+<span class="code-attr">coordinateInput</span>.<span class="code-attr">value</span> = { <span class="code-attr">latitude</span>: <span class="code-value">39.9042</span>, <span class="code-attr">longitude</span>: <span class="code-value">116.4074</span> };
+
+<span class="code-comment">// 设置值（数组形式）</span>
+<span class="code-attr">coordinateInput</span>.<span class="code-attr">value</span> = [<span class="code-value">39.9042</span>, <span class="code-value">116.4074</span>];
+
+<span class="code-comment">// 使用方法</span>
+<span class="code-attr">coordinateInput</span>.<span class="code-attr">getValue</span>(); <span class="code-comment">// 获取十进制坐标</span>
+<span class="code-attr">coordinateInput</span>.<span class="code-attr">setValue</span>(<span class="code-value">39.9042</span>, <span class="code-value">116.4074</span>); <span class="code-comment">// 设置坐标</span>
+<span class="code-attr">coordinateInput</span>.<span class="code-attr">clear</span>(); <span class="code-comment">// 清空</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- API 文档 -->
+    <div class="api-section">
+        <h3 class="api-section-title">API</h3>
+
+        <div class="api-block">
+            <h4 class="api-block-title">属性</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>属性名</th>
+                        <th>说明</th>
+                        <th>类型</th>
+                        <th>默认值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>type</td>
+                        <td>坐标类型：latitude（纬度）、longitude（经度）、both（两者）</td>
+                        <td>string</td>
+                        <td>'both'</td>
+                    </tr>
+                    <tr>
+                        <td>latitude</td>
+                        <td>纬度值（十进制）</td>
+                        <td>number</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>longitude</td>
+                        <td>经度值（十进制）</td>
+                        <td>number</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>value</td>
+                        <td>坐标值对象（支持属性和方法操作）</td>
+                        <td>{ latitude: number, longitude: number } | [number, number]</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>disabled</td>
+                        <td>是否禁用</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>readonly</td>
+                        <td>是否只读</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>size</td>
+                        <td>尺寸大小</td>
+                        <td>'small' | 'medium' | 'large'</td>
+                        <td>'medium'</td>
+                    </tr>
+                    <tr>
+                        <td>showDirection</td>
+                        <td>是否显示方向选择（N/S/E/W），添加属性即显示</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>showDecimal</td>
+                        <td>是否显示十进制值，添加属性即显示</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>precision</td>
+                        <td>秒输入精度（小数位数），控制秒的小数位数和自动跳转行为</td>
+                        <td>number</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>autoTab</td>
+                        <td>是否自动跳转到下一个输入框，添加属性即开启</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>block</td>
+                        <td>是否块级显示，设置为 true 时宽度占满父容器</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">方法</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>方法名</th>
+                        <th>说明</th>
+                        <th>参数</th>
+                        <th>返回值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>getValue()</td>
+                        <td>获取坐标值（十进制）</td>
+                        <td>-</td>
+                        <td>{ latitude: number, longitude: number }</td>
+                    </tr>
+                    <tr>
+                        <td>setValue(latitude, longitude)</td>
+                        <td>设置坐标值（十进制）</td>
+                        <td>latitude: number, longitude: number</td>
+                        <td>void</td>
+                    </tr>
+                    <tr>
+                        <td>getDmsCoordinateValue()</td>
+                        <td>获取 DMS 格式的坐标值</td>
+                        <td>-</td>
+                        <td>{ latitude: DMS, longitude: DMS }</td>
+                    </tr>
+                    <tr>
+                        <td>clear()</td>
+                        <td>清空坐标值</td>
+                        <td>-</td>
+                        <td>void</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">事件</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>事件名</th>
+                        <th>说明</th>
+                        <th>回调参数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>input</td>
+                        <td>输入值变化时触发（原生事件）</td>
+                        <td>Event</td>
+                    </tr>
+                    <tr>
+                        <td>change</td>
+                        <td>方向选择变化或调用 setValue 时触发（原生事件）</td>
+                        <td>Event</td>
+                    </tr>
+                    <tr>
+                        <td>focus</td>
+                        <td>输入框获得焦点时触发（原生事件）</td>
+                        <td>FocusEvent</td>
+                    </tr>
+                    <tr>
+                        <td>blur</td>
+                        <td>输入框失去焦点时触发（原生事件）</td>
+                        <td>FocusEvent</td>
+                    </tr>
+                    <tr>
+                        <td>keydown</td>
+                        <td>按下键盘按键时触发（原生事件），回车键可通过 event.key === 'Enter' 判断</td>
+                        <td>KeyboardEvent</td>
+                    </tr>
+                    <tr>
+                        <td>clear</td>
+                        <td>调用 clear 方法时触发</td>
+                        <td>Event</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">方法</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>方法名</th>
+                        <th>说明</th>
+                        <th>参数</th>
+                        <th>返回值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>getValue()</td>
+                        <td>获取坐标值（十进制）</td>
+                        <td>-</td>
+                        <td>{ latitude, longitude }</td>
+                    </tr>
+                    <tr>
+                        <td>getDmsCoordinateValue()</td>
+                        <td>获取 DMS 格式的坐标值</td>
+                        <td>-</td>
+                        <td>{ latitude: DMS, longitude: DMS }</td>
+                    </tr>
+                    <tr>
+                        <td>setValue(latitude, longitude)</td>
+                        <td>设置坐标值（十进制）</td>
+                        <td>latitude: number, longitude: number</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>clear()</td>
+                        <td>清空所有值</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">类型定义</h4>
+            <pre><code><span class="code-keyword">interface</span> <span class="code-type">DMS</span> {
+  <span class="code-attr">degrees</span>: <span class="code-type">number</span>;    <span class="code-comment">// 度 (0-90 纬度, 0-180 经度)</span>
+  <span class="code-attr">minutes</span>: <span class="code-type">number</span>;    <span class="code-comment">// 分 (0-59)</span>
+  <span class="code-attr">seconds</span>: <span class="code-type">number</span>;    <span class="code-comment">// 秒 (0-59.999)</span>
+  <span class="code-attr">direction</span>: <span class="code-value">'N'</span> | <span class="code-value">'S'</span> | <span class="code-value">'E'</span> | <span class="code-value">'W'</span>;  <span class="code-comment">// 方向</span>
+}
+
+<span class="code-keyword">interface</span> <span class="code-type">Coordinate</span> {
+  <span class="code-attr">latitude</span>: <span class="code-type">number</span>;   <span class="code-comment">// 纬度（十进制）</span>
+  <span class="code-attr">longitude</span>: <span class="code-type">number</span>;  <span class="code-comment">// 经度（十进制）</span>
+}
+
+<span class="code-keyword">interface</span> <span class="code-type">DMSCoordinate</span> {
+  <span class="code-attr">latitude</span>: <span class="code-type">DMS</span>;      <span class="code-comment">// 纬度 DMS 格式</span>
+  <span class="code-attr">longitude</span>: <span class="code-type">DMS</span>;     <span class="code-comment">// 经度 DMS 格式</span>
+}
+
+<span class="code-keyword">interface</span> <span class="code-type">CoordinateInputProps</span> {
+  <span class="code-attr">type</span>?: <span class="code-value">'latitude'</span> | <span class="code-value">'longitude'</span> | <span class="code-value">'both'</span>;  <span class="code-comment">// 坐标类型</span>
+  <span class="code-attr">latitude</span>?: <span class="code-type">number</span>;   <span class="code-comment">// 纬度值</span>
+  <span class="code-attr">longitude</span>?: <span class="code-type">number</span>;  <span class="code-comment">// 经度值</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">readonly</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否只读</span>
+  <span class="code-attr">size</span>?: <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;  <span class="code-comment">// 尺寸</span>
+  <span class="code-attr">showDirection</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否显示方向选择</span>
+  <span class="code-attr">showDecimal</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否显示十进制值</span>
+  <span class="code-attr">autoTab</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否自动跳转</span>
+  <span class="code-attr">precision</span>?: <span class="code-type">number</span>;       <span class="code-comment">// 精度（小数位数）</span>
+  <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;         <span class="code-comment">// 是否块级显示</span>
+}</code></pre>
+        </div>
+    </div>
+</div>

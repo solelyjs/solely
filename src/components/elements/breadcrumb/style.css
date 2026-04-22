@@ -1,0 +1,49 @@
+/* Solely Breadcrumb 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.breadcrumb {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-secondary);
+}
+
+.breadcrumb__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumb__link {
+  color: var(--solely-text-secondary);
+  text-decoration: none;
+  transition: color var(--solely-transition-duration);
+  cursor: pointer;
+}
+
+.breadcrumb__link:hover {
+  color: var(--solely-primary);
+}
+
+.breadcrumb__separator {
+  margin: 0 var(--solely-spacing-sm);
+  color: var(--solely-text-tertiary);
+  user-select: none;
+}
+
+.breadcrumb__current {
+  color: var(--solely-text-primary);
+  font-weight: 500;
+}

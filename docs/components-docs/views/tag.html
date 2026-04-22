@@ -1,0 +1,268 @@
+<div class="page-header">
+    <h1 class="page-title">Tag 标签</h1>
+    <p class="page-desc">用于标记和分类的标签组件，支持多种类型、尺寸和可关闭功能。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">使用 type 属性设置标签类型，默认为 default。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tag content="默认"></solely-tag>
+                <solely-tag type="primary" content="主要"></solely-tag>
+                <solely-tag type="success" content="成功"></solely-tag>
+                <solely-tag type="warning" content="警告"></solely-tag>
+                <solely-tag type="error" content="错误"></solely-tag>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">content</span>=<span class="code-value">"默认"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">content</span>=<span class="code-value">"主要"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">content</span>=<span class="code-value">"成功"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">content</span>=<span class="code-value">"警告"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span> <span class="code-attr">content</span>=<span class="code-value">"错误"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">尺寸</h3>
+        <p class="demo-block-desc">使用 size 属性设置标签尺寸，支持 small、medium（默认）、large。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tag type="primary" size="small" content="小尺寸"></solely-tag>
+                <solely-tag type="primary" size="medium" content="中尺寸"></solely-tag>
+                <solely-tag type="primary" size="large" content="大尺寸"></solely-tag>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">content</span>=<span class="code-value">"小尺寸"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span> <span class="code-attr">content</span>=<span class="code-value">"中尺寸"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">content</span>=<span class="code-value">"大尺寸"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圆角 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">圆角</h3>
+        <p class="demo-block-desc">使用 round 属性设置圆角标签。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tag type="primary" round content="圆角标签"></solely-tag>
+                <solely-tag type="success" round content="圆角标签"></solely-tag>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">round</span> <span class="code-attr">content</span>=<span class="code-value">"圆角标签"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 可关闭 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">可关闭</h3>
+        <p class="demo-block-desc">使用 closable 属性设置可关闭标签，点击关闭按钮会触发 close 事件并从 DOM 中移除。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tag type="primary" closable content="可关闭" @close="this.handleClose(event)"></solely-tag>
+                <solely-tag type="success" closable content="可关闭" @close="this.handleClose(event)"></solely-tag>
+                <solely-tag type="warning" closable content="可关闭" @close="this.handleClose(event)"></solely-tag>
+                <solely-tag type="error" closable content="可关闭" @close="this.handleClose(event)"></solely-tag>
+                <If test="$data.closedTags.length > 0">
+                    <div style="margin-top: 10px; color: var(--solely-text-secondary);">
+                        已关闭: {{$data.closedTags.join(', ')}}
+                    </div>
+                </If>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">closable</span> <span class="code-attr">content</span>=<span class="code-value">"可关闭"</span> <span class="code-attr">@close</span>=<span class="code-value">"handleClose"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">使用 disabled 属性设置禁用状态，禁用后关闭按钮不可用。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tag type="primary" disabled content="禁用标签"></solely-tag>
+                <solely-tag type="primary" disabled closable content="禁用且可关闭"></solely-tag>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">disabled</span> <span class="code-attr">content</span>=<span class="code-value">"禁用标签"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">disabled</span> <span class="code-attr">closable</span> <span class="code-attr">content</span>=<span class="code-value">"禁用且可关闭"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义颜色 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义颜色</h3>
+        <p class="demo-block-desc">使用 color 属性设置自定义背景色。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tag color="#722ed1" content="紫色"></solely-tag>
+                <solely-tag color="#eb2f96" content="粉色"></solely-tag>
+                <solely-tag color="#13c2c2" content="青色"></solely-tag>
+                <solely-tag color="#fa8c16" content="橙色"></solely-tag>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">color</span>=<span class="code-value">"#722ed1"</span> <span class="code-attr">content</span>=<span class="code-value">"紫色"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">color</span>=<span class="code-value">"#eb2f96"</span> <span class="code-attr">content</span>=<span class="code-value">"粉色"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">color</span>=<span class="code-value">"#13c2c2"</span> <span class="code-attr">content</span>=<span class="code-value">"青色"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">color</span>=<span class="code-value">"#fa8c16"</span> <span class="code-attr">content</span>=<span class="code-value">"橙色"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>type</td>
+                    <td>标签类型</td>
+                    <td>'default' | 'primary' | 'success' | 'warning' | 'error'</td>
+                    <td>'default'</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>标签尺寸</td>
+                    <td>'small' | 'medium' | 'large'</td>
+                    <td>'medium'</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>标签内容</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>closable</td>
+                    <td>是否可关闭</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>round</td>
+                    <td>是否为圆角</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>color</td>
+                    <td>自定义颜色</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>标签内容，优先级高于 content 属性</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>close</td>
+                    <td>关闭标签时触发</td>
+                    <td>CustomEvent&lt;{ content: string }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setContent(content)</td>
+                    <td>设置标签内容</td>
+                    <td>content: string</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>setType(type)</td>
+                    <td>设置标签类型</td>
+                    <td>type: TagType</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 标签类型</span>
+<span class="code-keyword">type</span> <span class="code-type">TagType</span> = <span class="code-value">'default'</span> | <span class="code-value">'primary'</span> | <span class="code-value">'success'</span> | <span class="code-value">'warning'</span> | <span class="code-value">'error'</span>;
+
+<span class="code-comment">// 标签尺寸</span>
+<span class="code-keyword">type</span> <span class="code-type">TagSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
+
+<span class="code-comment">// 标签属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">TagProps</span> {
+  <span class="code-attr">type</span>?: <span class="code-type">TagType</span>;        <span class="code-comment">// 标签类型</span>
+  <span class="code-attr">size</span>?: <span class="code-type">TagSize</span>;        <span class="code-comment">// 标签尺寸</span>
+  <span class="code-attr">content</span>?: <span class="code-type">string</span>;     <span class="code-comment">// 标签内容</span>
+  <span class="code-attr">closable</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否可关闭</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">round</span>?: <span class="code-type">boolean</span>;      <span class="code-comment">// 是否为圆角</span>
+  <span class="code-attr">color</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 自定义颜色</span>
+}</code></pre>
+    </div>
+</div>

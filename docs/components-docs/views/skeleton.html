@@ -1,0 +1,338 @@
+<div class="page-header">
+    <h1 class="page-title">Skeleton 骨架屏</h1>
+    <p class="page-desc">在需要等待加载内容的位置提供一个占位图形组合，提升页面加载体验。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的骨架屏，显示段落占位。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton ref="skeleton1" paragraph-rows="3">
+                    <div style="padding: 16px;">
+                        <h3>内容已加载</h3>
+                        <p>这是真实的内容文本，加载完成后会显示在这里。</p>
+                        <p>骨架屏会在加载时显示占位效果。</p>
+                    </div>
+                </solely-skeleton>
+                <div style="margin-top: 16px;">
+                    <solely-button type="primary" @click="this.toggleLoading()">
+                        {{$data.loading ? '加载完成' : '重新加载'}}
+                    </solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">id</span>=<span class="code-value">"skeleton"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">h3</span><span class="code-bracket">&gt;</span>内容已加载<span class="code-bracket">&lt;/</span><span class="code-tag">h3</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>这是真实的内容文本<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> skeleton = document.<span class="code-method">getElementById</span>(<span class="code-value">'skeleton'</span>);
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'paragraph-rows'</span>, <span class="code-value">'3'</span>);
+<span class="code-comment">// 控制加载状态（布尔属性：存在即为 true）</span>
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'loading'</span>, <span class="code-value">''</span>);      <span class="code-comment">// 显示骨架屏</span>
+skeleton.<span class="code-method">removeAttribute</span>(<span class="code-value">'loading'</span>); <span class="code-comment">// 显示真实内容</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 带动画效果 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">带动画效果</h3>
+        <p class="demo-block-desc">使用 active 属性开启加载动画。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton active paragraph-rows="3"></solely-skeleton>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">id</span>=<span class="code-value">"skeleton"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> skeleton = document.<span class="code-method">getElementById</span>(<span class="code-value">'skeleton'</span>);
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'active'</span>, <span class="code-value">''</span>);      <span class="code-comment">// 开启动画</span>
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'paragraph-rows'</span>, <span class="code-value">'3'</span>);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 头像组合 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">头像组合</h3>
+        <p class="demo-block-desc">使用 avatar 和 title 属性显示头像和标题占位。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton avatar title paragraph-rows="2"></solely-skeleton>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">id</span>=<span class="code-value">"skeleton"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> skeleton = document.<span class="code-method">getElementById</span>(<span class="code-value">'skeleton'</span>);
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'avatar'</span>, <span class="code-value">''</span>);       <span class="code-comment">// 显示头像</span>
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'title'</span>, <span class="code-value">''</span>);        <span class="code-comment">// 显示标题</span>
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'paragraph-rows'</span>, <span class="code-value">'2'</span>);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 头像形状和大小 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">头像形状和大小</h3>
+        <p class="demo-block-desc">使用 avatar-shape 和 avatar-size 属性自定义头像。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton avatar title paragraph-rows="2"></solely-skeleton>
+                <solely-skeleton avatar avatar-shape="square" title paragraph-rows="2"></solely-skeleton>
+                <solely-skeleton avatar avatar-size="64" title paragraph-rows="2"></solely-skeleton>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 圆形头像（默认） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"2"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 方形头像 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">avatar-shape</span>=<span class="code-value">"square"</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"2"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 大尺寸头像 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">avatar-size</span>=<span class="code-value">"64"</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"2"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 标题宽度 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">标题宽度</h3>
+        <p class="demo-block-desc">使用 title-width 属性设置标题宽度。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton avatar title title-width="30%"></solely-skeleton>
+                <solely-skeleton avatar title title-width="50%"></solely-skeleton>
+                <solely-skeleton avatar title title-width="200px"></solely-skeleton>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">title</span> <span class="code-attr">title-width</span>=<span class="code-value">"30%"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">title</span> <span class="code-attr">title-width</span>=<span class="code-value">"50%"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">title</span> <span class="code-attr">title-width</span>=<span class="code-value">"200px"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 段落行数 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">段落行数</h3>
+        <p class="demo-block-desc">使用 paragraph-rows 属性设置段落行数。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton title paragraph-rows="1"></solely-skeleton>
+                <solely-skeleton title paragraph-rows="3"></solely-skeleton>
+                <solely-skeleton title paragraph-rows="5"></solely-skeleton>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"1"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"5"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 列表加载示例 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">列表加载示例</h3>
+        <p class="demo-block-desc">模拟列表数据加载场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton ref="skeleton2" avatar title paragraph-rows="2" active>
+                    <div
+                        style="padding: 16px; border: 1px solid var(--solely-border-color); border-radius: var(--solely-border-radius-base);">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div
+                                style="width: 40px; height: 40px; border-radius: 50%; background: var(--solely-primary); display: flex; align-items: center; justify-content: center; color: white;">
+                                U</div>
+                            <div>
+                                <h4 style="margin: 0;">用户名</h4>
+                                <p style="margin: 4px 0 0; color: var(--solely-text-secondary);">这是一段描述文本</p>
+                            </div>
+                        </div>
+                    </div>
+                </solely-skeleton>
+                <div style="margin-top: 16px;">
+                    <solely-button type="primary" @click="this.toggleListLoading()">
+                        {{$data.listLoading ? '加载完成' : '重新加载'}}
+                    </solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">id</span>=<span class="code-value">"skeleton"</span><span class="code-bracket">&gt;</span>
+  <span class="code-comment">&lt;!-- 真实内容 --&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">class</span>=<span class="code-value">"user-card"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">img</span> <span class="code-attr">src</span>=<span class="code-value">"avatar.png"</span> <span class="code-attr">class</span>=<span class="code-value">"avatar"</span> <span class="code-bracket">/&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+      <span class="code-bracket">&lt;</span><span class="code-tag">h4</span><span class="code-bracket">&gt;</span>用户名<span class="code-bracket">&lt;/</span><span class="code-tag">h4</span><span class="code-bracket">&gt;</span>
+      <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>描述文本<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> skeleton = document.<span class="code-method">getElementById</span>(<span class="code-value">'skeleton'</span>);
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'avatar'</span>, <span class="code-value">''</span>);
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'title'</span>, <span class="code-value">''</span>);
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'paragraph-rows'</span>, <span class="code-value">'2'</span>);
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'active'</span>, <span class="code-value">''</span>);
+<span class="code-comment">// 控制加载状态</span>
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'loading'</span>, <span class="code-value">''</span>);      <span class="code-comment">// 显示骨架屏</span>
+skeleton.<span class="code-method">removeAttribute</span>(<span class="code-value">'loading'</span>); <span class="code-comment">// 显示真实内容</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>active</td>
+                    <td>是否显示动画效果</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>avatar</td>
+                    <td>是否显示头像占位图</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>avatar-shape</td>
+                    <td>头像形状</td>
+                    <td>'circle' | 'square'</td>
+                    <td>'circle'</td>
+                </tr>
+                <tr>
+                    <td>avatar-size</td>
+                    <td>头像大小</td>
+                    <td>number</td>
+                    <td>40</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>是否显示标题占位图</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>title-width</td>
+                    <td>标题宽度</td>
+                    <td>string | number</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>paragraph-rows</td>
+                    <td>段落行数</td>
+                    <td>number</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
+                    <td>是否显示加载结束后的内容</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>加载完成后显示的真实内容</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>startLoading()</td>
+                    <td>开始加载</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>finishLoading()</td>
+                    <td>结束加载</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>setLoading(loading)</td>
+                    <td>设置加载状态</td>
+                    <td>loading: boolean</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 头像形状</span>
+<span class="code-keyword">type</span> <span class="code-type">SkeletonAvatarShape</span> = <span class="code-value">'circle'</span> | <span class="code-value">'square'</span>;
+
+<span class="code-comment">// 骨架屏元素类型</span>
+<span class="code-keyword">type</span> <span class="code-type">SkeletonElement</span> = <span class="code-value">'avatar'</span> | <span class="code-value">'title'</span> | <span class="code-value">'paragraph'</span> | <span class="code-value">'button'</span> | <span class="code-value">'input'</span> | <span class="code-value">'image'</span>;
+
+<span class="code-comment">// 骨架屏属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">SkeletonProps</span> {
+  <span class="code-attr">active</span>?: <span class="code-type">boolean</span>;              <span class="code-comment">// 是否显示动画</span>
+  <span class="code-attr">avatar</span>?: <span class="code-type">boolean</span>;              <span class="code-comment">// 是否显示头像</span>
+  <span class="code-attr">avatarShape</span>?: <span class="code-type">SkeletonAvatarShape</span>; <span class="code-comment">// 头像形状</span>
+  <span class="code-attr">avatarSize</span>?: <span class="code-type">number</span>;            <span class="code-comment">// 头像大小</span>
+  <span class="code-attr">title</span>?: <span class="code-type">boolean</span>;               <span class="code-comment">// 是否显示标题</span>
+  <span class="code-attr">titleWidth</span>?: <span class="code-type">string</span> | <span class="code-type">number</span>; <span class="code-comment">// 标题宽度</span>
+  <span class="code-attr">paragraphRows</span>?: <span class="code-type">number</span>;        <span class="code-comment">// 段落行数</span>
+  <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;           <span class="code-comment">// 是否加载中</span>
+}</code></pre>
+    </div>
+</div>

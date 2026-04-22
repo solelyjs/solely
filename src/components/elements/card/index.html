@@ -1,0 +1,46 @@
+<div
+    class="card"
+     :class="this.getCardClasses()"
+>
+    <!-- 封面 -->
+    <If test="$data.cover">
+        <div class="card__cover">
+            <img :src="$data.cover" alt="" />
+        </div>
+    </If>
+
+    <!-- 头部 -->
+    <If test="$data.title">
+        <div class="card__header">
+            <h3 class="card__title">{{$data.title}}</h3>
+            <div class="card__extra">
+                <slot name="extra">{{$data.extra}}</slot>
+            </div>
+        </div>
+    </If>
+
+    <!-- 加载状态 -->
+    <If test="$data.loading">
+        <div class="card__loading">
+            <span class="card__loading-icon"></span>
+        </div>
+    </If>
+
+    <!-- 内容区 -->
+    <If test="!$data.loading">
+        <div class="card__body">
+            <slot></slot>
+        </div>
+    </If>
+
+    <!-- 操作区 -->
+    <div class="card__actions">
+        <slot name="actions">
+            <If test="$data.actions">
+                <For each="this.getActionItems()" item="action" index="index">
+                    <span class="card__action" @click="this.handleActionClick(index, event)">{{action}}</span>
+                </For>
+            </If>
+        </slot>
+    </div>
+</div>

@@ -1,0 +1,522 @@
+<div class="page-header">
+    <h1 class="page-title">Modal 对话框</h1>
+    <p class="page-desc">模态对话框，支持多种类型和自定义配置。</p>
+</div>
+
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">基本的对话框使用方式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openBasicModal()">打开对话框</solely-button>
+                <div ref="modalLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">import</span> { <span class="code-type">Modal</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+
+<span class="code-keyword">const</span> modal = <span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'对话框标题'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'对话框内容'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户点击了确定'</span>);
+    },
+    <span class="code-attr">onCancel</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户点击了取消'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">确认对话框</h3>
+        <p class="demo-block-desc">用于确认重要操作的对话框。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openConfirmModal()">确认对话框</solely-button>
+                <solely-button type="error" @click="this.openDeleteConfirm()">删除确认</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Modal</span>.<span class="code-attr">confirm</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'确认操作'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'您确定要执行此操作吗？'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认了操作'</span>);
+    },
+    <span class="code-attr">onCancel</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户取消了操作'</span>);
+    }
+});
+
+<span class="code-type">Modal</span>.<span class="code-attr">confirm</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'删除确认'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'此操作将永久删除数据，是否继续？'</span>,
+    <span class="code-attr">okText</span>: <span class="code-value">'删除'</span>,
+    <span class="code-attr">cancelText</span>: <span class="code-value">'取消'</span>,
+    <span class="code-attr">okType</span>: <span class="code-value">'danger'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认删除'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">信息对话框</h3>
+        <p class="demo-block-desc">用于展示信息的对话框。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openInfoModal()">信息对话框</solely-button>
+                <solely-button type="success" @click="this.openSuccessModal()">成功对话框</solely-button>
+                <solely-button type="warning" @click="this.openWarningModal()">警告对话框</solely-button>
+                <solely-button type="error" @click="this.openErrorModal()">错误对话框</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Modal</span>.<span class="code-attr">info</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'信息提示'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'这是一条信息提示'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认了信息'</span>);
+    }
+});
+
+<span class="code-type">Modal</span>.<span class="code-attr">success</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'操作成功'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'您的操作已成功完成'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认了成功信息'</span>);
+    }
+});
+
+<span class="code-type">Modal</span>.<span class="code-attr">warning</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'警告提示'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'请注意操作风险'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认了警告信息'</span>);
+    }
+});
+
+<span class="code-type">Modal</span>.<span class="code-attr">error</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'操作失败'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'操作过程中出现错误'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认了错误信息'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">异步操作</h3>
+        <p class="demo-block-desc"><code>onOk</code> 支持异步函数，操作完成后才会关闭对话框。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openAsyncModal()">异步操作</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'异步操作对话框'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'点击确定将执行异步操作'</span>,
+    <span class="code-attr">okText</span>: <span class="code-value">'提交'</span>,
+    <span class="code-attr">onOk</span>: <span class="code-keyword">async</span> () => {
+        <span class="code-keyword">await</span> <span class="code-keyword">new</span> <span class="code-type">Promise</span>(<span class="code-attr">resolve</span> => <span class="code-type">setTimeout</span>(resolve, <span class="code-value">1500</span>));
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'异步操作完成'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义按钮</h3>
+        <p class="demo-block-desc">通过 <code>buttons</code> 数组自定义底部按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openCustomButtonsModal()">自定义按钮</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'自定义按钮对话框'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'这个对话框有三个自定义按钮'</span>,
+    <span class="code-attr">buttons</span>: [
+        {
+            <span class="code-attr">text</span>: <span class="code-value">'取消'</span>,
+            <span class="code-attr">type</span>: <span class="code-value">'default'</span>,
+            <span class="code-attr">onClick</span>: () => {
+                <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'点击了取消'</span>);
+            }
+        },
+        {
+            <span class="code-attr">text</span>: <span class="code-value">'稍后处理'</span>,
+            <span class="code-attr">type</span>: <span class="code-value">'default'</span>,
+            <span class="code-attr">onClick</span>: () => {
+                <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'点击了稍后处理'</span>);
+            }
+        },
+        {
+            <span class="code-attr">text</span>: <span class="code-value">'立即处理'</span>,
+            <span class="code-attr">type</span>: <span class="code-value">'primary'</span>,
+            <span class="code-attr">onClick</span>: () => {
+                <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'点击了立即处理'</span>);
+            }
+        }
+    ]
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">可点击遮罩关闭</h3>
+        <p class="demo-block-desc">设置 <code>maskClosable: true</code> 允许点击遮罩层关闭对话框。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openMaskClosableModal()">点击遮罩关闭</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'可点击遮罩关闭'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'点击遮罩层可以关闭此对话框'</span>,
+    <span class="code-attr">maskClosable</span>: <span class="code-value">true</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户点击了确定'</span>);
+    },
+    <span class="code-attr">onCancel</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户点击了遮罩或取消'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">更新对话框</h3>
+        <p class="demo-block-desc">使用 <code>update()</code> 方法动态更新对话框的标题、内容、宽度、按钮文字等属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.updateModal()">更新对话框</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> modal = <span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'可更新的对话框'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'这是初始内容'</span>,
+    <span class="code-attr">width</span>: <span class="code-value">400</span>,
+    <span class="code-attr">okText</span>: <span class="code-value">'更新内容'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        modal.<span class="code-attr">update</span>({
+            <span class="code-attr">title</span>: <span class="code-value">'已更新'</span>,
+            <span class="code-attr">content</span>: <span class="code-value">'内容已更新为新的文本'</span>,
+            <span class="code-attr">width</span>: <span class="code-value">600</span>,
+            <span class="code-attr">className</span>: <span class="code-value">'my-updated-modal'</span>,
+            <span class="code-attr">style</span>: { <span class="code-attr">backgroundColor</span>: <span class="code-value">'#f5f5f5'</span> }
+        });
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">全局配置</h3>
+        <p class="demo-block-desc">使用 <code>config()</code> 方法配置全局默认设置。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.configModal()">更新全局配置</solely-button>
+                <solely-button type="error" @click="this.destroyAll()">销毁所有对话框</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Modal</span>.<span class="code-attr">config</span>({
+    <span class="code-attr">width</span>: <span class="code-value">600</span>,
+    <span class="code-attr">okText</span>: <span class="code-value">'确认'</span>,
+    <span class="code-attr">cancelText</span>: <span class="code-value">'关闭'</span>
+});
+
+<span class="code-type">Modal</span>.<span class="code-attr">destroy</span>();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="api-block">
+        <h3 class="api-block-title">API</h3>
+        
+        <h4 class="api-block-subtitle">Modal.open(options)</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>title</td>
+                    <td>对话框标题</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>对话框内容</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>type</td>
+                    <td>对话框类型</td>
+                    <td>'info' | 'success' | 'warning' | 'error' | 'confirm'</td>
+                    <td>'info'</td>
+                </tr>
+                <tr>
+                    <td>width</td>
+                    <td>对话框宽度</td>
+                    <td>number | string</td>
+                    <td>520</td>
+                </tr>
+                <tr>
+                    <td>mask</td>
+                    <td>是否显示遮罩</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>maskClosable</td>
+                    <td>点击遮罩层是否关闭</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>closable</td>
+                    <td>是否显示关闭按钮</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>okText</td>
+                    <td>确定按钮文字</td>
+                    <td>string</td>
+                    <td>'确定'</td>
+                </tr>
+                <tr>
+                    <td>cancelText</td>
+                    <td>取消按钮文字</td>
+                    <td>string</td>
+                    <td>'取消'</td>
+                </tr>
+                <tr>
+                    <td>okType</td>
+                    <td>确定按钮类型</td>
+                    <td>'primary' | 'default' | 'danger'</td>
+                    <td>'primary'</td>
+                </tr>
+                <tr>
+                    <td>showCancel</td>
+                    <td>是否显示取消按钮</td>
+                    <td>boolean</td>
+                    <td>type === 'confirm' ? true : false</td>
+                </tr>
+                <tr>
+                    <td>buttons</td>
+                    <td>自定义按钮数组（如果提供，将忽略 okText/cancelText/showCancel）</td>
+                    <td>ModalButton[]</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>className</td>
+                    <td>自定义类名</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>style</td>
+                    <td>自定义样式</td>
+                    <td>Partial&lt;CSSStyleDeclaration&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onOk</td>
+                    <td>确定按钮回调（支持异步）。回调执行后默认关闭对话框，若返回 <code>false</code> 则不关闭</td>
+                    <td>() => void | Promise&lt;void | false&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onCancel</td>
+                    <td>取消按钮回调</td>
+                    <td>() => void</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onClose</td>
+                    <td>关闭后回调</td>
+                    <td>() => void</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">ModalButton</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>text</td>
+                    <td>按钮文字</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>type</td>
+                    <td>按钮类型</td>
+                    <td>'primary' | 'default' | 'danger'</td>
+                    <td>'default'</td>
+                </tr>
+                <tr>
+                    <td>style</td>
+                    <td>按钮样式</td>
+                    <td>Partial&lt;CSSStyleDeclaration&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onClick</td>
+                    <td>点击回调（支持异步）</td>
+                    <td>() => void | Promise&lt;void&gt;</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">快捷方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Modal.confirm</td>
+                    <td>确认对话框</td>
+                    <td>options: Omit&lt;ModalOptions, 'type'&gt;</td>
+                    <td>ModalInstance</td>
+                </tr>
+                <tr>
+                    <td>Modal.info</td>
+                    <td>信息对话框</td>
+                    <td>options: Omit&lt;ModalOptions, 'type'&gt;</td>
+                    <td>ModalInstance</td>
+                </tr>
+                <tr>
+                    <td>Modal.success</td>
+                    <td>成功对话框</td>
+                    <td>options: Omit&lt;ModalOptions, 'type'&gt;</td>
+                    <td>ModalInstance</td>
+                </tr>
+                <tr>
+                    <td>Modal.warning</td>
+                    <td>警告对话框</td>
+                    <td>options: Omit&lt;ModalOptions, 'type'&gt;</td>
+                    <td>ModalInstance</td>
+                </tr>
+                <tr>
+                    <td>Modal.error</td>
+                    <td>错误对话框</td>
+                    <td>options: Omit&lt;ModalOptions, 'type'&gt;</td>
+                    <td>ModalInstance</td>
+                </tr>
+                <tr>
+                    <td>Modal.config</td>
+                    <td>全局配置</td>
+                    <td>options: Partial&lt;ModalConfig&gt;</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>Modal.destroy</td>
+                    <td>销毁所有对话框</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">ModalInstance</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>close()</td>
+                    <td>关闭对话框</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>update(options)</td>
+                    <td>更新对话框配置</td>
+                    <td>options: Partial&lt;ModalOptions&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">ModalConfig</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>width</td>
+                    <td>默认宽度</td>
+                    <td>number | string</td>
+                    <td>520</td>
+                </tr>
+                <tr>
+                    <td>mask</td>
+                    <td>默认是否显示遮罩</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>maskClosable</td>
+                    <td>默认是否可点击遮罩关闭</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>okText</td>
+                    <td>默认确定按钮文字</td>
+                    <td>string</td>
+                    <td>'确定'</td>
+                </tr>
+                <tr>
+                    <td>cancelText</td>
+                    <td>默认取消按钮文字</td>
+                    <td>string</td>
+                    <td>'取消'</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

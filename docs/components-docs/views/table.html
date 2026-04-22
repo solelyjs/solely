@@ -1,0 +1,300 @@
+<div class="page-header">
+    <h1 class="page-title">Table 表格</h1>
+    <p class="page-desc">表格组件，用于展示结构化数据。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">通过 columns 和 data-source 属性传入表格配置和数据。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"},{"title":"地址","dataIndex":"address","key":"address"}]' data-source='[{"name":"张三","age":28,"address":"北京市"},{"name":"李四","age":32,"address":"上海市"},{"name":"王五","age":24,"address":"广州市"}]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> 
+  <span class="code-attr">columns</span>=<span class="code-value">'[{"title":"姓名","dataIndex":"name"},...]'</span> 
+  <span class="code-attr">data-source</span>=<span class="code-value">'[{"name":"张三","age":28},...]'</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 不同尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">不同尺寸</h3>
+        <p class="demo-block-desc">支持 small、middle、default 三种尺寸。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table size="small" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
+                <solely-table size="middle" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
+                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">size</span>=<span class="code-value">"middle"</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 带边框 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">带边框</h3>
+        <p class="demo-block-desc">设置 bordered 属性显示边框。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table bordered columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"},{"title":"地址","dataIndex":"address","key":"address"}]' data-source='[{"name":"张三","age":28,"address":"北京市"},{"name":"李四","age":32,"address":"上海市"}]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">bordered</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 斑马纹 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">斑马纹</h3>
+        <p class="demo-block-desc">设置 striped 属性显示斑马纹。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table striped columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"},{"title":"地址","dataIndex":"address","key":"address"}]' data-source='[{"name":"张三","age":28,"address":"北京市"},{"name":"李四","age":32,"address":"上海市"},{"name":"王五","age":24,"address":"广州市"},{"name":"赵六","age":35,"address":"深圳市"}]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">striped</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">加载状态</h3>
+        <p class="demo-block-desc">设置 loading 属性显示加载状态。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table loading columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">loading</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"[]"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">空状态</h3>
+        <p class="demo-block-desc">当数据为空时显示空状态。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"[]"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 列对齐方式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">列对齐方式</h3>
+        <p class="demo-block-desc">通过 align 属性设置列的对齐方式（left/center/right）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table columns='[{"title":"左对齐","dataIndex":"left","key":"left","align":"left"},{"title":"居中","dataIndex":"center","key":"center","align":"center"},{"title":"右对齐","dataIndex":"right","key":"right","align":"right"}]' data-source='[{"left":"文本","center":"文本","right":"文本"}]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> 
+  <span class="code-attr">columns</span>=<span class="code-value">'[{"title":"居中","align":"center"},...]'</span> 
+  <span class="code-attr">data-source</span>=<span class="code-value">"..."</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 可点击行 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">可点击行</h3>
+        <p class="demo-block-desc">设置 row-clickable 属性使表格行可点击，点击时触发 row-click 事件。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table row-clickable @row-click="this.handleRowClick(event)" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"},{"title":"地址","dataIndex":"address","key":"address"}]' data-source='[{"name":"张三","age":28,"address":"北京市"},{"name":"李四","age":32,"address":"上海市"},{"name":"王五","age":24,"address":"广州市"}]'></solely-table>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">点击表格行查看事件...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> 
+  <span class="code-attr">row-clickable</span> 
+  <span class="code-attr">@row-click</span>=<span class="code-value">"handleRowClick(event)"</span>
+  <span class="code-attr">columns</span>=<span class="code-value">"..."</span> 
+  <span class="code-attr">data-source</span>=<span class="code-value">"..."</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> tableEl = document.querySelector(<span class="code-value">'solely-table'</span>);
+
+tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
+  <span class="code-keyword">const</span> { row, index } = e.detail;
+  console.log(<span class="code-value">'点击了第'</span>, index + 1, <span class="code-value">'行:'</span>, row);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>columns</td>
+                    <td>表格列配置（JSON字符串）</td>
+                    <td>string</td>
+                    <td>[]</td>
+                </tr>
+                <tr>
+                    <td>dataSource</td>
+                    <td>表格数据（JSON字符串）</td>
+                    <td>string</td>
+                    <td>[]</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>表格尺寸（small/middle/default）</td>
+                    <td>string</td>
+                    <td>default</td>
+                </tr>
+                <tr>
+                    <td>bordered</td>
+                    <td>是否显示边框</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
+                    <td>是否加载中</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>striped</td>
+                    <td>是否显示斑马纹</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>rowClickable</td>
+                    <td>是否可点击行</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>rowKey</td>
+                    <td>行数据的唯一标识字段名</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>click</td>
+                    <td>点击行时触发（rowClickable 为 true 时）</td>
+                    <td>MouseEvent</td>
+                </tr>
+                <tr>
+                    <td>row-click</td>
+                    <td>点击行时触发的自定义事件</td>
+                    <td>CustomEvent&lt;{ row: Record&lt;string, unknown&gt;; index: number }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setColumns(columns)</td>
+                    <td>设置列配置</td>
+                    <td>columns: TableColumn[]</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>setDataSource(dataSource)</td>
+                    <td>设置数据源</td>
+                    <td>dataSource: Record&lt;string, unknown&gt;[]</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getDataSource()</td>
+                    <td>获取数据源</td>
+                    <td>-</td>
+                    <td>Record&lt;string, unknown&gt;[]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 表格列配置</span>
+<span class="code-keyword">interface</span> <span class="code-type">TableColumn</span> {
+  <span class="code-attr">title</span>: <span class="code-type">string</span>;           <span class="code-comment">// 列标题</span>
+  <span class="code-attr">dataIndex</span>: <span class="code-type">string</span>;       <span class="code-comment">// 列数据字段</span>
+  <span class="code-attr">key</span>: <span class="code-type">string</span>;           <span class="code-comment">// 列标识</span>
+  <span class="code-attr">width</span>?: <span class="code-type">number | string</span>; <span class="code-comment">// 列宽度</span>
+  <span class="code-attr">fixed</span>?: <span class="code-type">'left' | 'right'</span>; <span class="code-comment">// 是否固定列</span>
+  <span class="code-attr">align</span>?: <span class="code-type">'left' | 'center' | 'right'</span>; <span class="code-comment">// 对齐方式</span>
+  <span class="code-attr">slot</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 自定义渲染（使用 slot 名称）</span>
+}
+
+<span class="code-comment">// 组件属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">TableProps</span> {
+  <span class="code-attr">columns</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 表格列配置（JSON字符串）</span>
+  <span class="code-attr">dataSource</span>?: <span class="code-type">string</span>;   <span class="code-comment">// 表格数据（JSON字符串）</span>
+  <span class="code-attr">size</span>?: <span class="code-type">'small' | 'middle' | 'default'</span>; <span class="code-comment">// 表格尺寸</span>
+  <span class="code-attr">bordered</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否显示边框</span>
+  <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否加载中</span>
+  <span class="code-attr">striped</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否显示斑马纹</span>
+  <span class="code-attr">rowClickable</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否可点击行</span>
+  <span class="code-attr">rowKey</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 行数据的唯一标识字段名</span>
+}</code></pre>
+    </div>
+</div>

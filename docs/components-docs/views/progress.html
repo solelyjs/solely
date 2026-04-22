@@ -1,0 +1,299 @@
+<div class="page-header">
+    <h1 class="page-title">Progress 进度条</h1>
+    <p class="page-desc">用于展示操作进度，支持线性和圆形两种类型。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 线性进度条 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">线性进度条</h3>
+        <p class="demo-block-desc">使用 type="line" 创建线性进度条（默认）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress percent="30"></solely-progress>
+                <solely-progress percent="50"></solely-progress>
+                <solely-progress percent="100"></solely-progress>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"30"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"100"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动态进度 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">动态进度</h3>
+        <p class="demo-block-desc">通过方法动态控制进度值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress ref="progress" percent="50"></solely-progress>
+                <div style="margin-top: 10px;">
+                    <solely-button size="small" @click="this.decrease()">-</solely-button>
+                    <span style="margin: 0 10px;">{{$data.percent}}%</span>
+                    <solely-button size="small" @click="this.increase()">+</solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">id</span>=<span class="code-value">"progress"</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">id</span>=<span class="code-value">"decreaseBtn"</span><span class="code-bracket">&gt;</span>-<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">id</span>=<span class="code-value">"increaseBtn"</span><span class="code-bracket">&gt;</span>+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> progress = document.<span class="code-method">getElementById</span>(<span class="code-value">'progress'</span>);
+<span class="code-keyword">const</span> decreaseBtn = document.<span class="code-method">getElementById</span>(<span class="code-value">'decreaseBtn'</span>);
+<span class="code-keyword">const</span> increaseBtn = document.<span class="code-method">getElementById</span>(<span class="code-value">'increaseBtn'</span>);
+
+<span class="code-keyword">let</span> percent = <span class="code-value">50</span>;
+decreaseBtn.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, () => {
+    percent = <span class="code-method">Math.max</span>(<span class="code-value">0</span>, percent - <span class="code-value">10</span>);
+    progress.<span class="code-method">setAttribute</span>(<span class="code-value">'percent'</span>, percent.<span class="code-method">toString</span>());
+});
+increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, () => {
+    percent = <span class="code-method">Math.min</span>(<span class="code-value">100</span>, percent + <span class="code-value">10</span>);
+    progress.<span class="code-method">setAttribute</span>(<span class="code-value">'percent'</span>, percent.<span class="code-method">toString</span>());
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 进度条状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">进度条状态</h3>
+        <p class="demo-block-desc">使用 status 属性设置进度条状态。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress percent="50" status="normal"></solely-progress>
+                <solely-progress percent="70" status="active"></solely-progress>
+                <solely-progress percent="100" status="success"></solely-progress>
+                <solely-progress percent="40" status="exception"></solely-progress>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">status</span>=<span class="code-value">"normal"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"70"</span> <span class="code-attr">status</span>=<span class="code-value">"active"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"100"</span> <span class="code-attr">status</span>=<span class="code-value">"success"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"40"</span> <span class="code-attr">status</span>=<span class="code-value">"exception"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义线条宽度 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义线条宽度</h3>
+        <p class="demo-block-desc">使用 strokeWidth 属性设置进度条线条宽度。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress percent="50" stroke-width="4"></solely-progress>
+                <solely-progress percent="50" stroke-width="8"></solely-progress>
+                <solely-progress percent="50" stroke-width="12"></solely-progress>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">stroke-width</span>=<span class="code-value">"4"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">stroke-width</span>=<span class="code-value">"8"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">stroke-width</span>=<span class="code-value">"12"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐藏文字 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">隐藏文字</h3>
+        <p class="demo-block-desc">使用 show-info="false" 隐藏进度文字。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress percent="50" show-info="false"></solely-progress>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">show-info</span>=<span class="code-value">"false"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圆形进度条 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">圆形进度条</h3>
+        <p class="demo-block-desc">使用 type="circle" 创建圆形进度条。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress type="circle" percent="30"></solely-progress>
+                <solely-progress type="circle" percent="50"></solely-progress>
+                <solely-progress type="circle" percent="100" status="success"></solely-progress>
+                <solely-progress type="circle" percent="40" status="exception"></solely-progress>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"30"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"100"</span> <span class="code-attr">status</span>=<span class="code-value">"success"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"40"</span> <span class="code-attr">status</span>=<span class="code-value">"exception"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圆形进度条尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">圆形进度条尺寸</h3>
+        <p class="demo-block-desc">使用 width 属性设置圆形进度条的宽度。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress type="circle" percent="50" width="80"></solely-progress>
+                <solely-progress type="circle" percent="50" width="120"></solely-progress>
+                <solely-progress type="circle" percent="50" width="160"></solely-progress>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">width</span>=<span class="code-value">"80"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">width</span>=<span class="code-value">"120"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span> <span class="code-attr">width</span>=<span class="code-value">"160"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动态圆形进度 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">动态圆形进度</h3>
+        <p class="demo-block-desc">通过方法动态控制圆形进度值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-progress ref="circleProgress" type="circle" percent="75"></solely-progress>
+                <div style="margin-top: 10px;">
+                    <solely-button size="small" @click="this.decreaseCircle()">-</solely-button>
+                    <span style="margin: 0 10px;">{{$data.circlePercent}}%</span>
+                    <solely-button size="small" @click="this.increaseCircle()">+</solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">id</span>=<span class="code-value">"circleProgress"</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">id</span>=<span class="code-value">"decreaseCircleBtn"</span><span class="code-bracket">&gt;</span>-<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">id</span>=<span class="code-value">"increaseCircleBtn"</span><span class="code-bracket">&gt;</span>+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> progress = document.<span class="code-method">getElementById</span>(<span class="code-value">'circleProgress'</span>);
+<span class="code-keyword">const</span> decreaseBtn = document.<span class="code-method">getElementById</span>(<span class="code-value">'decreaseCircleBtn'</span>);
+<span class="code-keyword">const</span> increaseBtn = document.<span class="code-method">getElementById</span>(<span class="code-value">'increaseCircleBtn'</span>);
+
+<span class="code-keyword">let</span> percent = <span class="code-value">50</span>;
+decreaseBtn.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, () => {
+    percent = <span class="code-method">Math.max</span>(<span class="code-value">0</span>, percent - <span class="code-value">10</span>);
+    progress.<span class="code-method">setAttribute</span>(<span class="code-value">'percent'</span>, percent.<span class="code-method">toString</span>());
+});
+increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, () => {
+    percent = <span class="code-method">Math.min</span>(<span class="code-value">100</span>, percent + <span class="code-value">10</span>);
+    progress.<span class="code-method">setAttribute</span>(<span class="code-value">'percent'</span>, percent.<span class="code-method">toString</span>());
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>type</td>
+                    <td>进度条类型</td>
+                    <td>'line' | 'circle'</td>
+                    <td>'line'</td>
+                </tr>
+                <tr>
+                    <td>percent</td>
+                    <td>百分比（0-100）</td>
+                    <td>number</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>status</td>
+                    <td>状态</td>
+                    <td>'normal' | 'success' | 'exception' | 'active'</td>
+                    <td>'normal'</td>
+                </tr>
+                <tr>
+                    <td>showInfo</td>
+                    <td>是否显示进度数值或状态图标</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>strokeWidth</td>
+                    <td>进度条线的宽度</td>
+                    <td>number</td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td>width</td>
+                    <td>圆形进度条画布宽度（仅在 type="circle" 时有效）</td>
+                    <td>number</td>
+                    <td>120</td>
+                </tr>
+                <tr>
+                    <td>format</td>
+                    <td>内容的模板函数（仅在 type="line" 时有效）</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setPercent(percent)</td>
+                    <td>设置进度</td>
+                    <td>percent: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getPercent()</td>
+                    <td>获取进度（返回限制在 0-100 之间的值）</td>
+                    <td>-</td>
+                    <td>number</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 进度条类型</span>
+<span class="code-keyword">type</span> <span class="code-type">ProgressType</span> = <span class="code-value">'line'</span> | <span class="code-value">'circle'</span>;
+
+<span class="code-comment">// 进度条状态</span>
+<span class="code-keyword">type</span> <span class="code-type">ProgressStatus</span> = <span class="code-value">'normal'</span> | <span class="code-value">'success'</span> | <span class="code-value">'exception'</span> | <span class="code-value">'active'</span>;
+
+<span class="code-comment">// 进度条属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">ProgressProps</span> {
+  <span class="code-attr">type</span>?: <span class="code-type">ProgressType</span>;       <span class="code-comment">// 进度条类型</span>
+  <span class="code-attr">percent</span>?: <span class="code-type">number</span>;           <span class="code-comment">// 百分比</span>
+  <span class="code-attr">status</span>?: <span class="code-type">ProgressStatus</span>;   <span class="code-comment">// 状态</span>
+  <span class="code-attr">showInfo</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否显示进度数值</span>
+  <span class="code-attr">strokeWidth</span>?: <span class="code-type">number</span>;     <span class="code-comment">// 线条宽度</span>
+  <span class="code-attr">width</span>?: <span class="code-type">number</span>;           <span class="code-comment">// 圆形进度条宽度</span>
+  <span class="code-attr">format</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 格式模板</span>
+}</code></pre>
+    </div>
+</div>

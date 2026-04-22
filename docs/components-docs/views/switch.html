@@ -1,0 +1,362 @@
+<div class="page-header">
+    <h1 class="page-title">Switch 开关</h1>
+    <p class="page-desc">开关选择器，用于在两种状态之间切换。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，通过 checked 属性控制开关状态。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch></solely-switch>
+                <solely-switch checked></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种尺寸。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch size="small"></solely-switch>
+                <solely-switch size="medium"></solely-switch>
+                <solely-switch size="large"></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 颜色类型 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">颜色类型</h3>
+        <p class="demo-block-desc">支持 primary（默认）、success、warning、error 四种颜色类型。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch checked></solely-switch>
+                <solely-switch type="success" checked></solely-switch>
+                <solely-switch type="warning" checked></solely-switch>
+                <solely-switch type="error" checked></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 带文字 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">带文字</h3>
+        <p class="demo-block-desc">通过 checkedChildren 和 unCheckedChildren 属性设置开关状态的文字。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch checked-children="开" un-checked-children="关"></solely-switch>
+                <solely-switch checked-children="是" un-checked-children="否" checked></solely-switch>
+                <solely-switch checked-children="ON" un-checked-children="OFF" size="large"></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked-children</span>=<span class="code-value">"开"</span> <span class="code-attr">un-checked-children</span>=<span class="code-value">"关"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked-children</span>=<span class="code-value">"是"</span> <span class="code-attr">un-checked-children</span>=<span class="code-value">"否"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked-children</span>=<span class="code-value">"ON"</span> <span class="code-attr">un-checked-children</span>=<span class="code-value">"OFF"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 带图标 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">带图标</h3>
+        <p class="demo-block-desc">使用 Unicode 字符或 Emoji 作为开关状态的图标。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch checked-children="✓" un-checked-children="✕"></solely-switch>
+                <solely-switch checked-children="☀" un-checked-children="☾" checked></solely-switch>
+                <solely-switch checked-children="👍" un-checked-children="👎" size="large"></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked-children</span>=<span class="code-value">"✓"</span> <span class="code-attr">un-checked-children</span>=<span class="code-value">"✕"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked-children</span>=<span class="code-value">"☀"</span> <span class="code-attr">un-checked-children</span>=<span class="code-value">"☾"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked-children</span>=<span class="code-value">"👍"</span> <span class="code-attr">un-checked-children</span>=<span class="code-value">"👎"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">通过 disabled 属性禁用开关，禁用后无法交互。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch disabled></solely-switch>
+                <solely-switch disabled checked></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">disabled</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">加载状态</h3>
+        <p class="demo-block-desc">通过 loading 属性设置加载状态，加载中无法切换。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch loading></solely-switch>
+                <solely-switch loading checked></solely-switch>
+                <solely-switch loading type="success" checked></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">loading</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">loading</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">loading</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件处理 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件处理</h3>
+        <p class="demo-block-desc">监听 change 事件获取开关状态变化。点击开关或按钮查看效果。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch ref="eventSwitch" @change="this.handleSwitchChange(event)"></solely-switch>
+                <span style="margin-left: 12px; color: var(--solely-text-secondary);">当前状态: {{$data.switchStatus}}</span>
+                <solely-button size="small" type="primary" style="margin-left: 16px;" @click="this.handleToggleClick()">调用 toggle()</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">ref</span>=<span class="code-value">"mySwitch"</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>当前状态: {{status}}<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">@click</span>=<span class="code-value">"toggleSwitch()"</span><span class="code-bracket">&gt;</span>调用 toggle()<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> switchEl = document.getElementById(<span class="code-value">'my-switch'</span>);
+<span class="code-keyword">const</span> statusEl = document.getElementById(<span class="code-value">'status'</span>);
+<span class="code-keyword">const</span> toggleBtn = document.getElementById(<span class="code-value">'toggle-btn'</span>);
+
+<span class="code-comment">// 监听 change 事件（原生事件）</span>
+switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  <span class="code-keyword">const</span> checked = e.target.checked;
+  statusEl.textContent = <span class="code-value">`当前状态: ${checked ? '开启' : '关闭'}`</span>;
+});
+
+<span class="code-comment">// 通过方法触发事件</span>
+toggleBtn.addEventListener(<span class="code-value">'click'</span>, () => {
+  switchEl.toggle(); <span class="code-comment">// 会触发 change 事件</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 键盘操作 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">键盘操作</h3>
+        <p class="demo-block-desc">支持键盘操作，按 Tab 聚焦后，按 Enter 或 Space 键可切换开关状态。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch></solely-switch>
+                <span style="margin-left: 12px; color: var(--solely-text-secondary); font-size: 12px;">按 Tab 聚焦，Enter/Space 切换</span>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 支持无障碍访问 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">tabindex</span>=<span class="code-value">"0"</span> <span class="code-attr">role</span>=<span class="code-value">"switch"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件演示 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件演示</h3>
+        <p class="demo-block-desc">点击开关查看事件触发情况，事件日志会实时显示。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                <solely-switch @change="this.handleEventDemo(event)"></solely-switch>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript - 原生事件监听 --&gt;</span>
+<span class="code-keyword">const</span> switchEl = document.querySelector(<span class="code-value">'solely-switch'</span>);
+switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  <span class="code-comment">// 通过 target.checked 获取状态</span>
+  console.log(<span class="code-value">'checked:'</span>, e.target.checked);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>checked</td>
+                    <td>指定当前是否选中（支持属性和方法操作）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>开关大小</td>
+                    <td>'small' | 'medium' | 'large'</td>
+                    <td>'medium'</td>
+                </tr>
+                <tr>
+                    <td>type</td>
+                    <td>开关颜色类型</td>
+                    <td>'primary' | 'success' | 'warning' | 'error'</td>
+                    <td>'primary'</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
+                    <td>是否加载中</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>checkedChildren</td>
+                    <td>选中时的内容（文字或图标）</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>unCheckedChildren</td>
+                    <td>非选中时的内容（文字或图标）</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>开关状态变化时触发</td>
+                    <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>toggle()</td>
+                    <td>切换开关状态（触发 change 事件）</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>setChecked(checked)</td>
+                    <td>设置开关状态（触发 change 事件）</td>
+                    <td>checked: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getChecked()</td>
+                    <td>获取当前开关状态</td>
+                    <td>-</td>
+                    <td>boolean</td>
+                </tr>
+                <tr>
+                    <td>focus()</td>
+                    <td>聚焦到开关元素</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>blur()</td>
+                    <td>从开关元素移除焦点</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 开关尺寸</span>
+<span class="code-keyword">type</span> <span class="code-type">SwitchSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
+
+<span class="code-comment">// 开关颜色类型</span>
+<span class="code-keyword">type</span> <span class="code-type">SwitchType</span> = <span class="code-value">'primary'</span> | <span class="code-value">'success'</span> | <span class="code-value">'warning'</span> | <span class="code-value">'error'</span>;
+
+<span class="code-comment">// 开关属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">SwitchProps</span> {
+  <span class="code-attr">checked</span>?: <span class="code-type">boolean</span>;         <span class="code-comment">// 开关状态</span>
+  <span class="code-attr">size</span>?: <span class="code-type">SwitchSize</span>;        <span class="code-comment">// 开关尺寸</span>
+  <span class="code-attr">type</span>?: <span class="code-type">SwitchType</span>;        <span class="code-comment">// 颜色类型</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;       <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否加载中</span>
+  <span class="code-attr">checkedChildren</span>?: <span class="code-type">string</span>; <span class="code-comment">// 选中时的内容</span>
+  <span class="code-attr">unCheckedChildren</span>?: <span class="code-type">string</span>; <span class="code-comment">// 非选中时的内容</span>
+}
+
+<span class="code-comment">// 开关变化事件数据</span>
+<span class="code-keyword">interface</span> <span class="code-type">SwitchChangeEvent</span> {
+  <span class="code-attr">checked</span>: <span class="code-type">boolean</span>;         <span class="code-comment">// 当前开关状态</span>
+  <span class="code-attr">originalEvent</span>: <span class="code-type">Event</span>;     <span class="code-comment">// 原始事件</span>
+}</code></pre>
+    </div>
+</div>

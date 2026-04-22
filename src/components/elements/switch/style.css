@@ -1,0 +1,305 @@
+/**
+ * Solely Switch 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-block;
+  --switch-bg: var(--solely-gray-5);
+  --switch-bg-checked: var(--solely-primary);
+  --switch-bg-hover: var(--solely-gray-6);
+  --switch-bg-checked-hover: var(--solely-primary-hover);
+  --switch-handle-bg: var(--solely-white);
+  --switch-disabled-opacity: 0.4;
+  --switch-focus-shadow: var(--solely-primary-light);
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+/* ==================== 开关特有样式 ==================== */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  outline: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* 聚焦状态 */
+.switch:focus-visible,
+.switch.focus-visible {
+  box-shadow: 0 0 0 2px var(--switch-focus-shadow);
+  border-radius: 100px;
+}
+
+/* 尺寸变体 */
+.switch--md {
+  min-width: 44px;
+  height: 22px;
+}
+
+.switch--sm {
+  min-width: 28px;
+  height: 16px;
+}
+
+.switch--lg {
+  min-width: 60px;
+  height: 28px;
+}
+
+/* 轨道 - 组件特有 */
+.switch__track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--switch-bg);
+  border-radius: 100px;
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  overflow: hidden;
+}
+
+.switch:hover:not(.is-disabled):not(.is-loading) .switch__track {
+  background-color: var(--switch-bg-hover);
+}
+
+.switch.is-checked .switch__track {
+  background-color: var(--switch-bg-checked);
+}
+
+.switch.is-checked:hover:not(.is-disabled):not(.is-loading) .switch__track {
+  background-color: var(--switch-bg-checked-hover);
+}
+
+/* 滑块 - 组件特有 */
+.switch__handle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background-color: var(--switch-handle-bg);
+  border-radius: var(--solely-border-radius-circle);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  z-index: var(--solely-z-index-switch-handle);
+}
+
+/* 尺寸对应的滑块大小和位置 */
+.switch--md .switch__handle {
+  width: 18px;
+  height: 18px;
+}
+
+.switch--md.is-checked .switch__handle {
+  left: calc(100% - 20px);
+}
+
+.switch--sm .switch__handle {
+  width: 12px;
+  height: 12px;
+}
+
+.switch--sm.is-checked .switch__handle {
+  left: calc(100% - 14px);
+}
+
+.switch--lg .switch__handle {
+  width: 24px;
+  height: 24px;
+}
+
+.switch--lg.is-checked .switch__handle {
+  left: calc(100% - 26px);
+}
+
+/* 内部文字 - 组件特有 */
+.switch__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  font-size: 12px;
+  color: var(--solely-white);
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.switch--lg .switch__inner {
+  font-size: 14px;
+}
+
+.switch__inner-checked,
+.switch__inner-unchecked {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--solely-white);
+  white-space: nowrap;
+  font-weight: 500;
+  transition: opacity var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.switch--lg .switch__inner-checked,
+.switch--lg .switch__inner-unchecked {
+  font-size: 14px;
+}
+
+/* 文字位置 */
+.switch--md .switch__inner-checked {
+  left: 6px;
+  opacity: 0;
+}
+
+.switch--md .switch__inner-unchecked {
+  right: 6px;
+  opacity: 1;
+}
+
+.switch--sm .switch__inner-checked {
+  left: 4px;
+  font-size: 10px;
+  opacity: 0;
+}
+
+.switch--sm .switch__inner-unchecked {
+  right: 4px;
+  font-size: 10px;
+  opacity: 1;
+}
+
+.switch--lg .switch__inner-checked {
+  left: 8px;
+  opacity: 0;
+}
+
+.switch--lg .switch__inner-unchecked {
+  right: 8px;
+  opacity: 1;
+}
+
+/* 选中状态切换文字显示 */
+.switch.is-checked .switch__inner-checked {
+  opacity: 1;
+}
+
+.switch.is-checked .switch__inner-unchecked {
+  opacity: 0;
+}
+
+/* 禁用状态 - 组件特有 */
+.switch.is-disabled {
+  opacity: var(--switch-disabled-opacity);
+}
+
+.switch.is-disabled .switch__track {
+  background-color: var(--solely-gray-5) !important;
+}
+
+.switch.is-disabled.is-checked .switch__track {
+  background-color: var(--solely-gray-6) !important;
+}
+
+/* 加载状态 - 组件特有 */
+.switch__loading-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--solely-primary);
+  border-top-color: transparent;
+  border-radius: var(--solely-border-radius-circle);
+  animation: switch-spin 1s linear infinite;
+}
+
+.switch--sm .switch__loading-icon {
+  width: 8px;
+  height: 8px;
+  border-width: 1.5px;
+}
+
+.switch--lg .switch__loading-icon {
+  width: 14px;
+  height: 14px;
+  border-width: 2.5px;
+}
+
+@keyframes switch-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* 类型变体 - Primary (默认) */
+.switch--primary.is-checked .switch__track {
+  background-color: var(--solely-primary);
+}
+
+.switch--primary.is-checked:hover:not(.is-disabled):not(.is-loading) .switch__track {
+  background-color: var(--solely-primary-hover);
+}
+
+.switch--primary .switch__loading-icon {
+  border-color: var(--solely-primary);
+  border-top-color: transparent;
+}
+
+/* 类型变体 - Success */
+.switch--success.is-checked .switch__track {
+  background-color: var(--solely-success);
+}
+
+.switch--success.is-checked:hover:not(.is-disabled):not(.is-loading) .switch__track {
+  background-color: var(--solely-success-hover);
+}
+
+.switch--success .switch__loading-icon {
+  border-color: var(--solely-success);
+  border-top-color: transparent;
+}
+
+/* 类型变体 - Warning */
+.switch--warning.is-checked .switch__track {
+  background-color: var(--solely-warning);
+}
+
+.switch--warning.is-checked:hover:not(.is-disabled):not(.is-loading) .switch__track {
+  background-color: var(--solely-warning-hover);
+}
+
+.switch--warning .switch__loading-icon {
+  border-color: var(--solely-warning);
+  border-top-color: transparent;
+}
+
+/* 类型变体 - Error */
+.switch--error.is-checked .switch__track {
+  background-color: var(--solely-error);
+}
+
+.switch--error.is-checked:hover:not(.is-disabled):not(.is-loading) .switch__track {
+  background-color: var(--solely-error-hover);
+}
+
+.switch--error .switch__loading-icon {
+  border-color: var(--solely-error);
+  border-top-color: transparent;
+}

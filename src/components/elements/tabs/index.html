@@ -1,0 +1,38 @@
+<div
+    class="tabs"
+     :class="this.getTabsClasses()"
+>
+    <!-- 标签栏 -->
+    <div class="tabs__nav">
+        <For each="$data.parsedItems" item="item">
+            <div
+                class="tabs__tab"
+                 :class="this.getTabClasses(item)"
+                @click="this.handleTabClick(item)"
+            >
+                {{item.label}}
+                <If test="$data.closable && $data.parsedItems.length > 1">
+                    <span
+                        class="tabs__close"
+                        @click="this.handleClose(item, event)"
+                    >×</span>
+                </If>
+            </div>
+        </For>
+        <If test="$data.addable">
+            <span class="tabs__add" @click="this.handleAdd(event)">+</span>
+        </If>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="tabs__content">
+        <For each="$data.parsedItems" item="item">
+            <div
+                class="tabs__pane"
+                 :class="this.getPaneClasses(item)"
+            >
+                <slot :name="'tab-' + item.key"></slot>
+            </div>
+        </For>
+    </div>
+</div>

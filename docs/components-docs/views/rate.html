@@ -1,0 +1,288 @@
+<div class="page-header">
+    <h1 class="page-title">Rate 评分</h1>
+    <p class="page-desc">评分组件，用于展示或设置评分。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置初始值 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">设置初始值</h3>
+        <p class="demo-block-desc">通过 value 属性设置初始评分值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate value="3"></solely-rate>
+                <solely-rate value="4.5"></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">value</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">value</span>=<span class="code-value">"4.5"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 星星数量 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">星星数量</h3>
+        <p class="demo-block-desc">通过 count 属性设置星星总数，默认为 5。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate count="3"></solely-rate>
+                <solely-rate count="5"></solely-rate>
+                <solely-rate count="10"></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">count</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">count</span>=<span class="code-value">"5"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">count</span>=<span class="code-value">"10"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 允许半选 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">允许半选</h3>
+        <p class="demo-block-desc">设置 allow-half 属性允许选择半星。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate allow-half value="2.5"></solely-rate>
+                <solely-rate allow-half value="3.5"></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">allow-half</span> <span class="code-attr">value</span>=<span class="code-value">"2.5"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">allow-half</span> <span class="code-attr">value</span>=<span class="code-value">"3.5"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义字符 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义字符</h3>
+        <p class="demo-block-desc">通过 character 属性自定义评分图标。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate character="❤"></solely-rate>
+                <solely-rate character="✦"></solely-rate>
+                <solely-rate character="★"></solely-rate>
+                <solely-rate character="A"></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">character</span>=<span class="code-value">"❤"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">character</span>=<span class="code-value">"✦"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">character</span>=<span class="code-value">"★"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">character</span>=<span class="code-value">"A"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 允许清除 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">允许清除</h3>
+        <p class="demo-block-desc">设置 allow-clear 属性，再次点击相同评分可清除。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate allow-clear value="3"></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">allow-clear</span> <span class="code-attr">value</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">通过 disabled 属性禁用评分。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate disabled value="3"></solely-rate>
+                <solely-rate disabled value="4.5" allow-half></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">disabled</span> <span class="code-attr">value</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">disabled</span> <span class="code-attr">value</span>=<span class="code-value">"4.5"</span> <span class="code-attr">allow-half</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 只读状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">只读状态</h3>
+        <p class="demo-block-desc">通过 readonly 属性设置只读状态，用于展示评分。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-rate readonly value="4.5" allow-half></solely-rate>
+                <span style="margin-left: 8px; color: var(--solely-text-secondary);">4.5 分</span>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">readonly</span> <span class="code-attr">value</span>=<span class="code-value">"4.5"</span> <span class="code-attr">allow-half</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件处理 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件处理</h3>
+        <p class="demo-block-desc">监听 change 事件获取评分变化。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-rate value="{{$data.rateValue}}" @change="this.handleRateChange(event)"></solely-rate>
+                <span style="color: var(--solely-text-secondary);">当前评分: {{$data.rateValue}}</span>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript - 原生事件监听 --&gt;</span>
+<span class="code-keyword">const</span> rateEl = document.querySelector(<span class="code-value">'solely-rate'</span>);
+
+rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  <span class="code-keyword">const</span> value = e.target.value;
+  console.log(<span class="code-value">'评分:'</span>, value);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>value</td>
+                    <td>当前评分值</td>
+                    <td>number</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>count</td>
+                    <td>星星总数</td>
+                    <td>number</td>
+                    <td>5</td>
+                </tr>
+                <tr>
+                    <td>allowHalf</td>
+                    <td>是否允许半选</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>allowClear</td>
+                    <td>是否允许清除</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>character</td>
+                    <td>自定义字符</td>
+                    <td>string</td>
+                    <td>★</td>
+                </tr>
+                <tr>
+                    <td>readonly</td>
+                    <td>是否只读</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>评分改变时触发</td>
+                    <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setValue(value)</td>
+                    <td>设置评分值</td>
+                    <td>value: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getValue()</td>
+                    <td>获取当前评分值</td>
+                    <td>-</td>
+                    <td>number</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 组件属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">RateProps</span> {
+  <span class="code-attr">value</span>?: <span class="code-type">number</span>;       <span class="code-comment">// 当前评分值</span>
+  <span class="code-attr">count</span>?: <span class="code-type">number</span>;       <span class="code-comment">// 星星总数</span>
+  <span class="code-attr">allowHalf</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否允许半选</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">allowClear</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否允许清除</span>
+  <span class="code-attr">character</span>?: <span class="code-type">string</span>;  <span class="code-comment">// 自定义字符</span>
+  <span class="code-attr">readonly</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否只读</span>
+}</code></pre>
+    </div>
+</div>

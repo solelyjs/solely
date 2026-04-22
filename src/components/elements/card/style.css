@@ -1,0 +1,161 @@
+/**
+ * Solely Card 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: block;
+  width: 100%;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+/* ==================== 卡片基础样式 (.card) ==================== */
+.card {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border-radius: var(--solely-border-radius-md);
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  box-sizing: border-box;
+}
+
+.card--bordered {
+  border: 1px solid var(--solely-border-color);
+}
+
+.card:not(.card--bordered) {
+  box-shadow: var(--solely-shadow-sm);
+}
+
+.card--hoverable:hover {
+  box-shadow: var(--solely-shadow-md);
+  transform: translateY(-2px);
+}
+
+/* 卡片头部 */
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--solely-spacing-md) var(--solely-spacing-lg);
+  border-bottom: 1px solid var(--solely-border-color-split);
+}
+
+.card__title {
+  font-size: var(--solely-font-size-lg);
+  font-weight: 500;
+  color: var(--solely-text-primary);
+  margin: 0;
+}
+
+.card__extra {
+  color: var(--solely-text-secondary);
+  font-size: var(--solely-font-size-md);
+}
+
+/* 卡片封面 */
+.card__cover {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--solely-border-radius-md) var(--solely-border-radius-md) 0 0;
+}
+
+.card__cover img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* 卡片内容 */
+.card__body {
+  flex: 1;
+  padding: var(--solely-spacing-lg);
+}
+
+/* 卡片操作区 */
+.card__actions {
+  display: flex;
+  align-items: center;
+  padding: var(--solely-spacing-md) var(--solely-spacing-lg);
+  border-top: 1px solid var(--solely-border-color-split);
+  gap: var(--solely-spacing-md);
+}
+
+.card__action {
+  color: var(--solely-primary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  font-size: var(--solely-font-size-md);
+}
+
+.card__action:hover {
+  color: var(--solely-primary-hover);
+}
+
+/* ==================== 卡片特有样式 ==================== */
+/* 卡片尺寸变体 - 组件特有 */
+.card--sm .card__header {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+}
+
+.card--sm .card__body {
+  padding: var(--solely-spacing-md);
+}
+
+.card--sm .card__actions {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+}
+
+/* 封面图片 - 组件特有 */
+.card__cover img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* 加载状态 - 组件特有 */
+.card.is-loading .card__body {
+  min-height: 100px;
+}
+
+.card__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 100px;
+  color: var(--solely-text-tertiary);
+}
+
+/* 加载图标 - 组件特有 */
+.card__loading-icon {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--solely-border-color);
+  border-top-color: var(--solely-primary);
+  border-radius: 50%;
+  animation: card-spin 1s linear infinite;
+}
+
+@keyframes card-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

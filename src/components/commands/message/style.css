@@ -1,0 +1,183 @@
+/**
+ * Solely Message 组件样式 
+ * 适配优化后的命令式 API，基于 BEM 命名与公共 CSS 变量
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== 消息容器 ==================== */
+.message-container {
+  position: fixed;
+  top: var(--solely-spacing-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--solely-z-index-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--solely-spacing-sm);
+  pointer-events: none;
+}
+
+/* ==================== 消息项 ==================== */
+.message {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-sm);
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border-radius: var(--solely-border-radius-md);
+  box-shadow: var(--solely-shadow-md);
+  pointer-events: auto;
+  animation: message-slide-in var(--solely-transition-duration) var(--solely-transition-timing);
+  transition: opacity var(--solely-transition-duration) var(--solely-transition-timing),
+    transform var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+/* 关闭动画状态 */
+.message.is-closing {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+/* 类型 - 左侧色条 */
+.message--info {
+  border-left: 4px solid var(--solely-primary);
+}
+
+.message--success {
+  border-left: 4px solid var(--solely-success);
+}
+
+.message--warning {
+  border-left: 4px solid var(--solely-warning);
+}
+
+.message--error {
+  border-left: 4px solid var(--solely-error);
+}
+
+.message--loading {
+  border-left: 4px solid var(--solely-primary);
+}
+
+/* ==================== 图标 ==================== */
+.message__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--solely-height-sm);
+  height: var(--solely-height-sm);
+  flex-shrink: 0;
+}
+
+.message__icon--info {
+  color: var(--solely-primary);
+}
+
+.message__icon--success {
+  color: var(--solely-success);
+}
+
+.message__icon--warning {
+  color: var(--solely-warning);
+}
+
+.message__icon--error {
+  color: var(--solely-error);
+}
+
+.message__icon--loading {
+  color: var(--solely-primary);
+}
+
+/* Loading 纯 CSS 旋转圆圈 */
+.message__loading-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: message-spin 0.8s linear infinite;
+}
+
+/* ==================== 内容 ==================== */
+.message__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.message__text {
+  display: block;
+  font-weight: 500;
+}
+
+.message__description {
+  display: block;
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-text-secondary);
+  margin-top: var(--solely-spacing-xs);
+  line-height: var(--solely-line-height-sm);
+}
+
+/* ==================== 关闭按钮 ==================== */
+.message__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--solely-height-sm);
+  height: var(--solely-height-sm);
+  margin-left: var(--solely-spacing-sm);
+  padding: 0;
+  font-size: var(--solely-font-size-lg);
+  line-height: 1;
+  color: var(--solely-text-tertiary);
+  background: none;
+  border: none;
+  border-radius: var(--solely-border-radius-sm);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  flex-shrink: 0;
+}
+
+.message__close:hover {
+  color: var(--solely-text-secondary);
+  background-color: var(--solely-gray-3);
+}
+
+.message__close:active {
+  color: var(--solely-text-primary);
+}
+
+/* ==================== 动画 ==================== */
+@keyframes message-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes message-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

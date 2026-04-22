@@ -1,0 +1,238 @@
+/**
+ * Solely Drawer 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== 遮罩层样式 ==================== */
+.drawer-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--solely-mask-bg);
+  z-index: 1;
+  animation: drawer-mask-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.drawer-mask.is-closing {
+  animation: drawer-mask-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+/* ==================== 容器包装样式 ==================== */
+.drawer-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--solely-z-index-modal);
+  pointer-events: none;
+}
+
+/* ==================== 抽屉容器样式 ==================== */
+.drawer {
+  position: absolute;
+  background-color: var(--solely-component-bg);
+  box-shadow: var(--solely-shadow-lg);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+
+/* 抽屉位置 */
+.drawer--left {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  animation: drawer-left-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.drawer--right {
+  right: 0;
+  top: 0;
+  bottom: 0;
+  animation: drawer-right-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.drawer--top {
+  top: 0;
+  left: 0;
+  right: 0;
+  animation: drawer-top-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.drawer--bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  animation: drawer-bottom-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+/* 关闭动画 */
+.drawer.is-closing.drawer--left {
+  animation: drawer-left-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+.drawer.is-closing.drawer--right {
+  animation: drawer-right-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+.drawer.is-closing.drawer--top {
+  animation: drawer-top-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+.drawer.is-closing.drawer--bottom {
+  animation: drawer-bottom-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+/* ==================== 头部样式 ==================== */
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--solely-spacing-lg) var(--solely-spacing-xl);
+  border-bottom: 1px solid var(--solely-border-color-split);
+}
+
+.drawer__title {
+  margin: 0;
+  font-size: var(--solely-font-size-lg);
+  font-weight: 500;
+  color: var(--solely-text-primary);
+  line-height: var(--solely-line-height-lg);
+}
+
+.drawer__close {
+  width: var(--solely-height-sm);
+  height: var(--solely-height-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  font-size: var(--solely-font-size-lg);
+  line-height: 1;
+  border: none;
+  background: none;
+  border-radius: var(--solely-border-radius-sm);
+}
+
+.drawer__close:hover {
+  color: var(--solely-text-secondary);
+  background-color: var(--solely-gray-3);
+}
+
+.drawer__close:active {
+  color: var(--solely-text-primary);
+}
+
+/* ==================== 内容区域样式 ==================== */
+.drawer__body {
+  flex: 1;
+  padding: var(--solely-spacing-xl);
+  overflow: auto;
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  color: var(--solely-text-secondary);
+}
+
+/* ==================== 动画定义 ==================== */
+@keyframes drawer-mask-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawer-mask-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes drawer-left-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-left-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes drawer-right-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-right-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes drawer-top-in {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-top-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes drawer-bottom-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-bottom-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}

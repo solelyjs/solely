@@ -1,0 +1,240 @@
+<div class="page-header">
+    <h1 class="page-title">Radio 单选框</h1>
+    <p class="page-desc">单选框组件，用于在多个选项中进行单选。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，通过 checked 属性控制选中状态，使用相同的 name 属性来分组。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-radio name="fruit" value="apple" checked>Apple</solely-radio>
+                <solely-radio name="fruit" value="banana">Banana</solely-radio>
+                <solely-radio name="fruit" value="orange">Orange</solely-radio>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"fruit"</span> <span class="code-attr">value</span>=<span class="code-value">"apple"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>Apple<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"fruit"</span> <span class="code-attr">value</span>=<span class="code-value">"banana"</span><span class="code-bracket">&gt;</span>Banana<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"fruit"</span> <span class="code-attr">value</span>=<span class="code-value">"orange"</span><span class="code-bracket">&gt;</span>Orange<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">通过 disabled 属性禁用单选框，禁用后无法交互。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-radio name="demo1" disabled>Disabled</solely-radio>
+                <solely-radio name="demo1" disabled checked>Disabled Checked</solely-radio>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span>Disabled<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">disabled</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>Disabled Checked<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 颜色类型 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">颜色类型</h3>
+        <p class="demo-block-desc">通过 type 属性设置不同的颜色主题，可选 primary、success、warning、error。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-radio name="color1" type="primary" checked>Primary</solely-radio>
+                <solely-radio name="color2" type="success" checked>Success</solely-radio>
+                <solely-radio name="color3" type="warning" checked>Warning</solely-radio>
+                <solely-radio name="color4" type="error" checked>Error</solely-radio>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>Primary<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>Success<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>Warning<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>Error<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 块级模式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">块级模式</h3>
+        <p class="demo-block-desc">通过 block 属性使单选框占满父容器宽度，适用于表单布局场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 8px;">
+                <solely-radio name="block-demo" value="option1" block>选项一（block 模式）</solely-radio>
+                <solely-radio name="block-demo" value="option2" block>选项二（block 模式）</solely-radio>
+                <solely-radio name="block-demo" value="option3" block>选项三（block 模式）</solely-radio>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"block-demo"</span> <span class="code-attr">value</span>=<span class="code-value">"option1"</span> <span class="code-attr">block</span><span class="code-bracket">&gt;</span>选项一（block 模式）<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"block-demo"</span> <span class="code-attr">value</span>=<span class="code-value">"option2"</span> <span class="code-attr">block</span><span class="code-bracket">&gt;</span>选项二（block 模式）<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"block-demo"</span> <span class="code-attr">value</span>=<span class="code-value">"option3"</span> <span class="code-attr">block</span><span class="code-bracket">&gt;</span>选项三（block 模式）<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件处理 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件处理</h3>
+        <p class="demo-block-desc">监听 change 事件获取选中的值。点击单选框查看效果。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-radio name="food" value="pizza" checked @change="this.handleRadioChange(event)">Pizza</solely-radio>
+                <solely-radio name="food" value="burger" @change="this.handleRadioChange(event)">Burger</solely-radio>
+                <solely-radio name="food" value="sushi" @change="this.handleRadioChange(event)">Sushi</solely-radio>
+                <span style="margin-left: 12px; color: var(--solely-text-secondary);">选中: {{$data.selectedValue}}</span>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"food"</span> <span class="code-attr">value</span>=<span class="code-value">"pizza"</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange"</span><span class="code-bracket">&gt;</span>Pizza<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"food"</span> <span class="code-attr">value</span>=<span class="code-value">"burger"</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange"</span><span class="code-bracket">&gt;</span>Burger<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>选中: {{$data.selectedValue}}<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> radioEls = document.querySelectorAll(<span class="code-value">'solely-radio[name="food"]'</span>);
+
+radioEls.forEach(radio => {
+  radio.addEventListener(<span class="code-value">'change'</span>, (e) => {
+    <span class="code-keyword">const</span> target = e.target;
+    <span class="code-keyword">const</span> value = target.value;
+    <span class="code-keyword">const</span> checked = target.checked;
+    <span class="code-keyword">if</span> (checked) {
+      console.log(<span class="code-value">`选中: ${value}`</span>);
+    }
+  });
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>checked</td>
+                    <td>指定当前是否选中（支持属性和方法操作）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>单选框文本内容</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>value</td>
+                    <td>单选框的值，用于标识选项（支持属性和方法操作）</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td>单选框名称，用于分组，同组的单选框互斥</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>type</td>
+                    <td>颜色类型，可选 primary、success、warning、error</td>
+                    <td>string</td>
+                    <td>'primary'</td>
+                </tr>
+                <tr>
+                    <td>block</td>
+                    <td>是否块级元素，占满父容器宽度</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>选中状态变化时触发</td>
+                    <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setChecked(checked)</td>
+                    <td>设置选中状态</td>
+                    <td>checked: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getChecked()</td>
+                    <td>获取当前选中状态</td>
+                    <td>-</td>
+                    <td>boolean</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 单选框颜色类型</span>
+<span class="code-keyword">type</span> <span class="code-type">RadioType</span> = <span class="code-value">'primary'</span> | <span class="code-value">'success'</span> | <span class="code-value">'warning'</span> | <span class="code-value">'error'</span>;
+
+<span class="code-comment">// 单选框属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">RadioProps</span> {
+  <span class="code-attr">checked</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否选中</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">content</span>?: <span class="code-type">string</span>;   <span class="code-comment">// 文本内容</span>
+  <span class="code-attr">value</span>?: <span class="code-type">string</span>;     <span class="code-comment">// 单选框值</span>
+  <span class="code-attr">name</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 分组名称</span>
+  <span class="code-attr">type</span>?: <span class="code-type">RadioType</span>;   <span class="code-comment">// 颜色类型</span>
+  <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否块级元素</span>
+}</code></pre>
+    </div>
+</div>

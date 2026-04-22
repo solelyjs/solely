@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solely UI - 组件库文档</title>
+    <!-- 导入 Solely 主题 CSS 变量 -->
+    <link rel="stylesheet" href="/components/theme/variables.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            /* 确保根元素有高度 */
+        }
+
+        body {
+            min-height: 100vh;
+            /* 至少占满视口 */
+            display: flex;
+            flex-direction: column;
+            /* 垂直布局 */
+        }
+    </style>
+</head>
+
+<body>
+    <docs-app></docs-app>
+
+    <script type="module">
+        // 导入 Solely 运行时和组件
+        import '../../src/runtime/component/decorators';
+        import '../../src/runtime/component/base-element';
+
+        // 导入 Solely 路由
+        import '../../src/router/index';
+        import '../../src/router/router-link';
+        import '../../src/router/router-view';
+
+        // 导入 Solely 组件
+        import '../../src/components/elements/button/index';
+        import '../../src/components/elements/input/index';
+        import '../../src/components/elements/fab/index';
+        import '../../src/components/elements/switch/index';
+        import '../../src/components/elements/checkbox/index';
+        import '../../src/components/elements/radio/index';
+        import '../../src/components/elements/select/index';
+        import '../../src/components/elements/tag/index';
+        import '../../src/components/elements/badge/index';
+        import '../../src/components/elements/card/index';
+        import '../../src/components/elements/divider/index';
+        import '../../src/components/elements/empty/index';
+        import '../../src/components/elements/progress/index';
+        import '../../src/components/elements/skeleton/index';
+        import '../../src/components/elements/alert/index';
+        import '../../src/components/elements/tabs/index';
+        import '../../src/components/elements/breadcrumb/index';
+        import '../../src/components/elements/steps/index';
+        import '../../src/components/elements/backtop/index';
+        import '../../src/components/elements/pagination/index';
+        import '../../src/components/elements/coordinate-input/index';
+        import '../../src/components/elements/slider/index';
+        import '../../src/components/elements/rate/index';
+        import '../../src/components/elements/upload/index';
+        import '../../src/components/elements/timeline/index';
+        import '../../src/components/elements/table/index';
+        import '../../src/components/elements/tree/index';
+
+        // 导入 Commands 组件
+        import '../../src/components/commands/drawer/index';
+        import '../../src/components/commands/message/index';
+        import '../../src/components/commands/modal/index';
+        import '../../src/components/commands/popconfirm/index';
+        import '../../src/components/commands/tooltip/index';
+
+        // 导入应用
+        import './app';
+    </script>
+</body>
+
+</html>

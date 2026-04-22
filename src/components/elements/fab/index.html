@@ -1,0 +1,25 @@
+<button
+    ref="buttonRef"
+    class="fab"
+    :class="this.getFabClasses()"
+    :style="this.getFabStyles()"
+    :disabled="$data.disabled"
+    @click="this.handleClick(event)"
+>
+    <If test="this.hasIconSlot()">
+        <span class="fab__icon">
+            <slot name="icon"></slot>
+        </span>
+    </If>
+    <ElseIf test="$data.icon">
+        <span class="fab__icon">{{$data.icon}}</span>
+    </ElseIf>
+    <Else>
+        <!-- 默认图标：加号 -->
+        <span class="fab__icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"/>
+            </svg>
+        </span>
+    </Else>
+</button>

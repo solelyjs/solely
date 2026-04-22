@@ -1,0 +1,458 @@
+<div class="page-header">
+    <h1 class="page-title">Card 卡片</h1>
+    <p class="page-desc">通用卡片容器，支持标题、封面、操作区等多种布局。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的卡片用法，包含标题和内容区。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card title="卡片标题">
+                    <p>卡片内容区域，可以放置任意内容。</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"卡片标题"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>卡片内容区域，可以放置任意内容。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 无边框 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">无边框</h3>
+        <p class="demo-block-desc">通过 bordered 属性控制是否显示边框，默认无边框显示阴影。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card title="无边框卡片">
+                    <p>默认状态，带有阴影效果。</p>
+                </solely-card>
+                <solely-card title="带边框卡片" bordered>
+                    <p>使用 bordered 属性显示边框。</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 默认：无边框，有阴影 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"无边框卡片"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>默认状态，带有阴影效果。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 带边框 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"带边框卡片"</span> <span class="code-attr">bordered</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>使用 bordered 属性显示边框。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 宽度适配 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">宽度适配</h3>
+        <p class="demo-block-desc">卡片默认宽度为 100%，会自动适配父容器宽度。可以通过 style 或 class 自定义宽度。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <div style="width: 300px; border: 1px dashed var(--solely-border-color); padding: 16px;">
+                    <solely-card title="默认宽度">
+                        <p>卡片宽度 = 父容器宽度（300px）</p>
+                    </solely-card>
+                </div>
+                <solely-card title="自定义宽度" style="width: 200px; margin-top: 16px;">
+                    <p>通过 style 设置 200px</p>
+                </solely-card>
+                <solely-card title="自适应父元素" class="custom-width-card">
+                    <p>通过 CSS 类控制宽度</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 默认：宽度 100%，适配父容器 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"默认宽度"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>卡片宽度 = 父容器宽度<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 通过 style 设置固定宽度 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"自定义宽度"</span> <span class="code-attr">style</span>=<span class="code-value">"width: 200px;"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>通过 style 设置 200px<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 通过 CSS 类控制 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"自适应父元素"</span> <span class="code-attr">class</span>=<span class="code-value">"custom-width-card"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>通过 CSS 类控制宽度<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">/* CSS */</span>
+<span class="code-bracket">.</span><span class="code-attr">custom-width-card</span> {
+  <span class="code-attr">width</span>: <span class="code-value">400px</span>;
+  <span class="code-attr">max-width</span>: <span class="code-value">100%</span>;
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 悬停效果 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">悬停效果</h3>
+        <p class="demo-block-desc">使用 hoverable 属性开启悬停时的上浮效果。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card title="可悬停卡片" hoverable>
+                    <p>鼠标悬停时会有上浮阴影效果。</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"可悬停卡片"</span> <span class="code-attr">hoverable</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>鼠标悬停时会有上浮阴影效果。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 小尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">小尺寸</h3>
+        <p class="demo-block-desc">使用 size="small" 属性设置紧凑的卡片样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card title="默认尺寸">
+                    <p>默认尺寸的卡片内容。</p>
+                </solely-card>
+                <solely-card title="小尺寸卡片" size="small">
+                    <p>小尺寸的卡片内容，更加紧凑。</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"默认尺寸"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>默认尺寸的卡片内容。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"小尺寸卡片"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>小尺寸的卡片内容，更加紧凑。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 带封面 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">带封面</h3>
+        <p class="demo-block-desc">使用 cover 属性设置卡片封面图片。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card title="带封面的卡片" cover="https://picsum.photos/400/200?random=1">
+                    <p>卡片可以包含封面图片，适合展示图片内容。</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span>
+  <span class="code-attr">title</span>=<span class="code-value">"带封面的卡片"</span>
+  <span class="code-attr">cover</span>=<span class="code-value">"https://example.com/image.jpg"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>卡片可以包含封面图片，适合展示图片内容。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 额外操作区 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">额外操作区</h3>
+        <p class="demo-block-desc">使用 extra 属性或 extra 插槽在标题右侧添加操作按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card title="卡片标题">
+                    <span slot="extra">
+                        <solely-button type="link" size="small" @click="this.handleMoreClick()">更多</solely-button>
+                    </span>
+                    <p>点击"更多"按钮查看效果。</p>
+                </solely-card>
+                <solely-card title="卡片标题">
+                    <span slot="extra">
+                        <solely-button type="link" size="small">编辑</solely-button>
+                    </span>
+                    <p>使用 extra 插槽可以添加按钮等复杂内容。</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 带点击事件 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"卡片标题"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"extra"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"link"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">@click</span>=<span class="code-value">"handleClick()"</span><span class="code-bracket">&gt;</span>更多<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>点击"更多"按钮查看效果。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 复杂内容 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"卡片标题"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"extra"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"link"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>编辑<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>使用 extra 插槽可以添加按钮等复杂内容。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作区 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">底部操作区</h3>
+        <p class="demo-block-desc">使用 actions 属性或 actions 插槽添加底部操作按钮。actions 属性使用 JSON 数组字符串格式，点击会触发 action 事件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card title="卡片标题" actions='["编辑", "删除"]' @action="this.handleAction(event)">
+                    <p>使用 actions 属性添加操作，点击可触发事件。</p>
+                </solely-card>
+                <solely-card title="卡片标题">
+                    <p>使用 actions 插槽可以添加按钮等复杂操作。</p>
+                    <div slot="actions">
+                        <solely-button type="primary" size="small">确认</solely-button>
+                        <solely-button size="small">取消</solely-button>
+                    </div>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- actions 属性：JSON 数组格式，点击触发 action 事件 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"卡片标题"</span> <span class="code-attr">actions</span>=<span class="code-value">'["编辑", "删除"]'</span> <span class="code-attr">@action</span>=<span class="code-value">"handleAction(event)"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>使用 actions 属性添加操作，点击可触发事件。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- actions 插槽：自定义复杂操作 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"卡片标题"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>使用 actions 插槽可以添加按钮等复杂操作。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"actions"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>确认<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>取消<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">加载状态</h3>
+        <p class="demo-block-desc">使用 loading 属性显示加载状态，可通过 setLoading 方法动态控制。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card ref="loadingCard" title="动态加载示例">
+                    <p>点击按钮切换加载状态。</p>
+                </solely-card>
+                <solely-button type="primary" size="small" @click="this.toggleLoading()">切换加载状态</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 模板 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">ref</span>=<span class="code-value">"loadingCard"</span> <span class="code-attr">title</span>=<span class="code-value">"动态加载示例"</span> <span class="code-attr">:loading</span>=<span class="code-value">"$data.loading"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>点击按钮切换加载状态。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">@click</span>=<span class="code-value">"toggleLoading()"</span><span class="code-bracket">&gt;</span>切换加载状态<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 或通过方法控制 --&gt;</span>
+<span class="code-keyword">const</span> card = document.querySelector(<span class="code-value">'solely-card'</span>);
+card.setLoading(<span class="code-keyword">true</span>);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 综合示例 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">综合示例</h3>
+        <p class="demo-block-desc">组合使用多种属性创建丰富的卡片效果。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-card
+                    title="产品卡片"
+                    cover="https://picsum.photos/400/200?random=2"
+                    hoverable
+                    bordered
+                >
+                    <p style="margin: 0 0 8px; color: var(--solely-text-secondary);">这是一张产品展示卡片，包含封面、标题、内容和操作区。</p>
+                    <div slot="extra">
+                        <solely-tag size="small" type="success">新品</solely-tag>
+                    </div>
+                    <div slot="actions">
+                        <solely-button type="primary" size="small">立即购买</solely-button>
+                        <solely-button size="small">加入购物车</solely-button>
+                    </div>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span>
+  <span class="code-attr">title</span>=<span class="code-value">"产品卡片"</span>
+  <span class="code-attr">cover</span>=<span class="code-value">"https://example.com/image.jpg"</span>
+  <span class="code-attr">hoverable</span>
+  <span class="code-attr">bordered</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>这是一张产品展示卡片...<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"extra"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span><span class="code-bracket">&gt;</span>新品<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"actions"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>立即购买<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>加入购物车<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>title</td>
+                    <td>卡片标题</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>卡片尺寸</td>
+                    <td>'default' | 'small'</td>
+                    <td>'default'</td>
+                </tr>
+                <tr>
+                    <td>bordered</td>
+                    <td>是否显示边框</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
+                    <td>是否加载中</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>hoverable</td>
+                    <td>是否可悬停（悬停时有上浮效果）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>cover</td>
+                    <td>封面图片 URL</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>actions</td>
+                    <td>底部操作区内容（JSON 数组字符串，如 '["编辑", "删除"]'）</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>extra</td>
+                    <td>右上角额外操作区内容</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>卡片内容区域</td>
+                </tr>
+                <tr>
+                    <td>extra</td>
+                    <td>标题右侧的额外操作区</td>
+                </tr>
+                <tr>
+                    <td>actions</td>
+                    <td>底部操作区</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>action</td>
+                    <td>点击 actions 属性中的操作项时触发</td>
+                    <td>CustomEvent&lt;{ index: number, action: string }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setLoading(loading)</td>
+                    <td>设置加载状态</td>
+                    <td>loading: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>setTitle(title)</td>
+                    <td>设置卡片标题</td>
+                    <td>title: string</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 卡片尺寸</span>
+<span class="code-keyword">type</span> <span class="code-type">CardSize</span> = <span class="code-value">'default'</span> | <span class="code-value">'small'</span>;
+
+<span class="code-comment">// 卡片属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">CardProps</span> {
+  <span class="code-attr">title</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 卡片标题</span>
+  <span class="code-attr">size</span>?: <span class="code-type">CardSize</span>;      <span class="code-comment">// 卡片尺寸</span>
+  <span class="code-attr">bordered</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否显示边框</span>
+  <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否加载中</span>
+  <span class="code-attr">hoverable</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否可悬停</span>
+  <span class="code-attr">cover</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 封面图片 URL</span>
+  <span class="code-attr">actions</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 底部操作区内容（JSON 数组字符串）</span>
+  <span class="code-attr">extra</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 右上角额外操作区</span>
+}</code></pre>
+    </div>
+</div>

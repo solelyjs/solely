@@ -1,0 +1,79 @@
+<div
+    class="upload"
+     :class="this.getUploadClasses()"
+>
+    <!-- 拖拽上传 -->
+    <If condition="$data.drag">
+        <div
+            class="upload__drag"
+             :class="this.getDragClasses()"
+            @click="this.triggerUpload(event)"
+            @dragover="this.handleDragOver(event)"
+            @dragleave="this.handleDragLeave(event)"
+            @drop="this.handleDrop(event)"
+        >
+            <div class="upload__drag-icon">☁️</div>
+            <div class="upload__drag-text">{{$data.buttonText || '点击或拖拽文件到此区域上传'}}</div>
+            <div class="upload__drag-hint">支持单个或批量上传</div>
+        </div>
+    </If>
+
+    <!-- 普通上传按钮 -->
+    <If condition="!$data.drag">
+        <div
+            class="upload__button"
+            @click="this.triggerUpload(event)"
+        >
+            <span>+</span>
+            <span>{{$data.buttonText || '上传文件'}}</span>
+        </div>
+    </If>
+
+    <!-- 隐藏的文件输入 -->
+    <input
+        ref="fileInput"
+        type="file"
+        class="upload__input"
+        :accept="$data.accept"
+        :multiple="$data.multiple"
+        @change="this.handleFileChange(event)"
+    />
+
+    <!-- 文件列表 -->
+    <If condition="$data.showUploadList && $data.parsedFileList?.length > 0">
+        <ul class="upload__list">
+            <For each="$data.parsedFileList" item="file">
+                <li
+                    class="upload__list-item"
+                    :class="{ 'upload__list-item--error': file.status === 'error' }"
+                >
+                    <If condition="file.url && ($data.listType === 'picture' || $data.listType === 'picture-card')">
+                        <img
+                            class="upload__list-thumb"
+                            :src="file.url"
+                            :alt="file.name"
+                        />
+                    </If>
+                    <div class="upload__list-info">
+                        <div class="upload__list-name">{{file.name}}</div>
+                        <If condition="file.size">
+                            <div class="upload__list-size">{{this.formatSize(file.size)}}</div>
+                        </If>
+                        <If condition="file.status === 'uploading'">
+                            <div class="upload__progress">
+                                <div class="upload__progress-bar" :style="'width: ' + (file.percent || 0) + '%'"></div>
+                            </div>
+                        </If>
+                    </div>
+                    <span
+                        class="upload__list-status"
+                        :class="'upload__list-status--' + file.status"
+                    >
+                        {{this.getStatusText(file.status)}}
+                    </span>
+                    <span class="upload__list-remove" @click="this.handleRemove(file)">×</span>
+                </li>
+            </For>
+        </ul>
+    </If>
+</div>

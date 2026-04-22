@@ -1,0 +1,49 @@
+<div
+    class="progress"
+    :class="this.getProgressClasses()"
+>
+    <!-- 线性进度条 -->
+    <If test="$data.type === 'line'">
+        <div class="progress__outer" :style="'height: ' + ($data.strokeWidth || 8) + 'px'">
+            <div
+                class="progress__inner"
+                :class="this.getInnerClasses()"
+                :style="'width: ' + this.clampedPercent + '%'"
+            ></div>
+        </div>
+        <If test="$data.showInfo">
+            <span class="progress__text">{{this.getText()}}</span>
+        </If>
+    </If>
+
+    <!-- 圆形进度条 -->
+    <If test="$data.type === 'circle'">
+        <svg
+            class="progress__circle"
+            :width="$data.width || 120"
+            :height="$data.width || 120"
+            :viewBox="'0 0 ' + ($data.width || 120) + ' ' + ($data.width || 120)"
+        >
+            <circle
+                class="progress__circle-track"
+                :cx="($data.width || 120) / 2"
+                :cy="($data.width || 120) / 2"
+                :r="(($data.width || 120) - ($data.strokeWidth || 6)) / 2"
+                :stroke-width="$data.strokeWidth || 6"
+            />
+            <circle
+                class="progress__circle-path"
+                :class="this.getCirclePathClasses()"
+                :cx="($data.width || 120) / 2"
+                :cy="($data.width || 120) / 2"
+                :r="(($data.width || 120) - ($data.strokeWidth || 6)) / 2"
+                :stroke-width="$data.strokeWidth || 6"
+                :stroke-dasharray="this.circleCircumference"
+                :stroke-dashoffset="this.circleOffset"
+            />
+        </svg>
+        <If test="$data.showInfo">
+            <span class="progress__circle-text">{{this.getText()}}</span>
+        </If>
+    </If>
+</div>

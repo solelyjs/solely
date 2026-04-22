@@ -1,0 +1,179 @@
+<div class="page-header">
+    <h1 class="page-title">Divider 分割线</h1>
+    <p class="page-desc">用于内容的分隔，支持水平/垂直方向、虚线样式和标题文字。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的分割线用法，默认为水平分割线。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <p>这是一段文字</p>
+                <solely-divider></solely-divider>
+                <p>这是另一段文字</p>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>这是一段文字<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>这是另一段文字<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 带文字的分割线 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">带文字的分割线</h3>
+        <p class="demo-block-desc">使用 content 属性或默认插槽在分割线中间添加文字。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-divider content="中间文字"></solely-divider>
+                <solely-divider>插槽文字</solely-divider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 content 属性 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">content</span>=<span class="code-value">"中间文字"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 使用插槽 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>插槽文字<span class="code-bracket">&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文字位置 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">文字位置</h3>
+        <p class="demo-block-desc">使用 orientation 属性设置文字的位置，支持 left、right、center。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-divider content="左对齐" orientation="left"></solely-divider>
+                <solely-divider content="居中"></solely-divider>
+                <solely-divider content="右对齐" orientation="right"></solely-divider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">content</span>=<span class="code-value">"左对齐"</span> <span class="code-attr">orientation</span>=<span class="code-value">"left"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">content</span>=<span class="code-value">"居中"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">content</span>=<span class="code-value">"右对齐"</span> <span class="code-attr">orientation</span>=<span class="code-value">"right"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 虚线分割线 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">虚线分割线</h3>
+        <p class="demo-block-desc">使用 dashed 属性设置虚线样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-divider dashed></solely-divider>
+                <solely-divider dashed content="虚线文字"></solely-divider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">dashed</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">dashed</span> <span class="code-attr">content</span>=<span class="code-value">"虚线文字"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 垂直分割线 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">垂直分割线</h3>
+        <p class="demo-block-desc">使用 type="vertical" 设置垂直分割线，常用于行内元素的分隔。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <span>文字</span>
+                <solely-divider type="vertical"></solely-divider>
+                <span>链接</span>
+                <solely-divider type="vertical"></solely-divider>
+                <span>链接</span>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>文字<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">type</span>=<span class="code-value">"vertical"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>链接<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">type</span>=<span class="code-value">"vertical"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>链接<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>type</td>
+                    <td>分割线类型</td>
+                    <td>'horizontal' | 'vertical'</td>
+                    <td>'horizontal'</td>
+                </tr>
+                <tr>
+                    <td>orientation</td>
+                    <td>文字位置（仅水平分割线有效）</td>
+                    <td>'left' | 'right' | 'center'</td>
+                    <td>'center'</td>
+                </tr>
+                <tr>
+                    <td>dashed</td>
+                    <td>是否虚线</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>分割线文字内容</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>分割线文字内容，优先级高于 content 属性</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 分割线类型</span>
+<span class="code-keyword">type</span> <span class="code-type">DividerType</span> = <span class="code-value">'horizontal'</span> | <span class="code-value">'vertical'</span>;
+
+<span class="code-comment">// 文字位置</span>
+<span class="code-keyword">type</span> <span class="code-type">DividerOrientation</span> = <span class="code-value">'left'</span> | <span class="code-value">'right'</span> | <span class="code-value">'center'</span>;
+
+<span class="code-comment">// 分割线属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">DividerProps</span> {
+  <span class="code-attr">type</span>?: <span class="code-type">DividerType</span>;           <span class="code-comment">// 分割线类型</span>
+  <span class="code-attr">orientation</span>?: <span class="code-type">DividerOrientation</span>; <span class="code-comment">// 文字位置</span>
+  <span class="code-attr">dashed</span>?: <span class="code-type">boolean</span>;            <span class="code-comment">// 是否虚线</span>
+  <span class="code-attr">content</span>?: <span class="code-type">string</span>;           <span class="code-comment">// 文字内容</span>
+}</code></pre>
+    </div>
+</div>

@@ -1,0 +1,147 @@
+/* Solely Radio 组件样式 */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+:host([block]) {
+  display: flex;
+  width: 100%;
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+}
+
+.radio.is-disabled {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
+}
+
+/* 输入框 */
+.radio__input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--solely-border-color);
+  border-radius: 50%;
+  background-color: var(--solely-component-bg);
+  transition: all var(--solely-transition-duration);
+}
+
+/* Primary 颜色 */
+.radio--primary:hover:not(.is-disabled) .radio__input {
+  border-color: var(--solely-primary);
+}
+
+.radio--primary .radio__input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
+.radio--primary.is-checked .radio__input::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: var(--solely-primary);
+  border-radius: 50%;
+}
+
+.radio--primary.is-checked .radio__input {
+  border-color: var(--solely-primary);
+}
+
+/* Success 颜色 */
+.radio--success:hover:not(.is-disabled) .radio__input {
+  border-color: var(--solely-success);
+}
+
+.radio--success .radio__input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--solely-success-light);
+}
+
+.radio--success.is-checked .radio__input::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: var(--solely-success);
+  border-radius: 50%;
+}
+
+.radio--success.is-checked .radio__input {
+  border-color: var(--solely-success);
+}
+
+/* Warning 颜色 */
+.radio--warning:hover:not(.is-disabled) .radio__input {
+  border-color: var(--solely-warning);
+}
+
+.radio--warning .radio__input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--solely-warning-light);
+}
+
+.radio--warning.is-checked .radio__input::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: var(--solely-warning);
+  border-radius: 50%;
+}
+
+.radio--warning.is-checked .radio__input {
+  border-color: var(--solely-warning);
+}
+
+/* Error 颜色 */
+.radio--error:hover:not(.is-disabled) .radio__input {
+  border-color: var(--solely-error);
+}
+
+.radio--error .radio__input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--solely-error-light);
+}
+
+.radio--error.is-checked .radio__input::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: var(--solely-error);
+  border-radius: 50%;
+}
+
+.radio--error.is-checked .radio__input {
+  border-color: var(--solely-error);
+}
+
+/* 内容 */
+.radio__content {
+  user-select: none;
+}
+
+/* ==================== Block 样式 ==================== */
+.radio--block {
+  display: flex;
+  width: 100%;
+}

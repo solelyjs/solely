@@ -1,0 +1,341 @@
+<div class="page-header">
+    <h1 class="page-title">Popconfirm 气泡确认框</h1>
+    <p class="page-desc">点击元素，弹出气泡确认框，用于轻量级确认操作。</p>
+</div>
+
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">基本的确认框使用方式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showBasicConfirm(event)">删除项目</solely-button>
+                <div ref="popconfirmLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">import</span> { <span class="code-type">Popconfirm</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'确认删除'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'您确定要删除此项吗？'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认删除'</span>);
+    },
+    <span class="code-attr">onCancel</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户取消删除'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义内容</h3>
+        <p class="demo-block-desc">可以自定义确认框的内容和按钮文字。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showCustomConfirm(event)">自定义确认框</solely-button>
+                <solely-button type="error" @click="this.showDangerConfirm(event)">危险操作确认</solely-button>
+                <solely-button type="primary" @click="this.showNoCancelConfirm(event)">无取消按钮</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'确认操作'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'此操作不可逆，请谨慎操作'</span>,
+    <span class="code-attr">okText</span>: <span class="code-value">'我确定'</span>,
+    <span class="code-attr">cancelText</span>: <span class="code-value">'再想想'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认操作'</span>);
+    }
+});
+
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'危险操作'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'此操作具有风险，是否继续？'</span>,
+    <span class="code-attr">okText</span>: <span class="code-value">'继续'</span>,
+    <span class="code-attr">cancelText</span>: <span class="code-value">'取消'</span>,
+    <span class="code-attr">okType</span>: <span class="code-value">'danger'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认危险操作'</span>);
+    }
+});
+
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'仅确认操作'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'这个确认框没有取消按钮'</span>,
+    <span class="code-attr">showCancel</span>: <span class="code-value">false</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认操作'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">不同位置</h3>
+        <p class="demo-block-desc">确认框可以显示在不同位置。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showTopConfirm(event)">上方确认</solely-button>
+                <solely-button type="primary" @click="this.showBottomConfirm(event)">下方确认</solely-button>
+                <solely-button type="primary" @click="this.showLeftConfirm(event)">左侧确认</solely-button>
+                <solely-button type="primary" @click="this.showRightConfirm(event)">右侧确认</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'上方确认'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'上方确认'</span>);
+    }
+});
+
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'下方确认'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'bottom'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'下方确认'</span>);
+    }
+});
+
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'左侧确认'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'left'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'左侧确认'</span>);
+    }
+});
+
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'右侧确认'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'右侧确认'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">绑定到元素</h3>
+        <p class="demo-block-desc">使用 <code>bind()</code> 方法将确认框绑定到元素，点击显示，点击外部关闭。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" ref="bindBtn" @click="this.bindConfirm()">绑定确认框</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> instance = <span class="code-type">Popconfirm</span>.<span class="code-attr">bind</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'绑定确认框'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'点击按钮显示，点击外部关闭'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认'</span>);
+    },
+    <span class="code-attr">onCancel</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户取消'</span>);
+    }
+});
+
+instance.<span class="code-attr">destroy</span>();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="api-block">
+        <h3 class="api-block-title">API</h3>
+
+        <h4 class="api-block-subtitle">Popconfirm.show(target, options)</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>target</td>
+                    <td>触发元素</td>
+                    <td>HTMLElement</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>确认框标题</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>确认框描述</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>placement</td>
+                    <td>气泡框位置</td>
+                    <td>'top' | 'bottom' | 'left' | 'right' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' |
+                        'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom'</td>
+                    <td>'top'</td>
+                </tr>
+                <tr>
+                    <td>okText</td>
+                    <td>确定按钮文字</td>
+                    <td>string</td>
+                    <td>'确定'</td>
+                </tr>
+                <tr>
+                    <td>okType</td>
+                    <td>确定按钮类型</td>
+                    <td>'primary' | 'danger' | 'default'</td>
+                    <td>'primary'</td>
+                </tr>
+                <tr>
+                    <td>cancelText</td>
+                    <td>取消按钮文字</td>
+                    <td>string</td>
+                    <td>'取消'</td>
+                </tr>
+                <tr>
+                    <td>showCancel</td>
+                    <td>是否显示取消按钮</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>className</td>
+                    <td>自定义类名</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>style</td>
+                    <td>自定义样式</td>
+                    <td>Partial&lt;CSSStyleDeclaration&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onConfirm</td>
+                    <td>确认回调函数</td>
+                    <td>() => void</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onCancel</td>
+                    <td>取消回调函数</td>
+                    <td>() => void</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">Popconfirm.bind(target, options)</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>target</td>
+                    <td>绑定元素</td>
+                    <td>HTMLElement</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>options</td>
+                    <td>配置选项（同 show 方法）</td>
+                    <td>PopconfirmOptions</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">PopconfirmInstance</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>destroy()</td>
+                    <td>销毁确认框</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">Popconfirm.config(options)</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>okText</td>
+                    <td>默认确认按钮文字</td>
+                    <td>string</td>
+                    <td>'确定'</td>
+                </tr>
+                <tr>
+                    <td>cancelText</td>
+                    <td>默认取消按钮文字</td>
+                    <td>string</td>
+                    <td>'取消'</td>
+                </tr>
+                <tr>
+                    <td>okType</td>
+                    <td>默认确认按钮类型</td>
+                    <td>'primary' | 'danger' | 'default'</td>
+                    <td>'primary'</td>
+                </tr>
+                <tr>
+                    <td>showCancel</td>
+                    <td>默认是否显示取消按钮</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>placement</td>
+                    <td>默认气泡框位置</td>
+                    <td>'top' | 'bottom' | 'left' | 'right'</td>
+                    <td>'top'</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">Popconfirm.destroy()</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>destroy()</td>
+                    <td>关闭最顶层的确认框</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

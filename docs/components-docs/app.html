@@ -1,0 +1,93 @@
+<div class="docs-app">
+    <!-- 头部 -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">S</div>
+            <span>Solely UI</span>
+        </div>
+        <nav class="nav-links">
+            <router-link to="/" class="nav-item">首页</router-link>
+            <router-link to="/intro" class="nav-item">组件</router-link>
+            <a href="https://github.com/solelyjs/solely" target="_blank" class="nav-item">GitHub</a>
+            <button class="theme-toggle" @click="this.toggleTheme()" title="切换主题">
+                <span class="theme-icon">{{this.$data.isDark ? '☀' : '☾'}}</span>
+            </button>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <!-- 左侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-group">
+                <div class="sidebar-title">开发指南</div>
+                <router-link to="/intro" class="sidebar-item">介绍</router-link>
+                <router-link to="/quickstart" class="sidebar-item">快速上手</router-link>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-title">基础组件</div>
+                <router-link to="/button" class="sidebar-item">Button 按钮</router-link>
+                <router-link to="/card" class="sidebar-item">Card 卡片</router-link>
+                <router-link to="/tag" class="sidebar-item">Tag 标签</router-link>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-title">表单组件</div>
+                <router-link to="/input" class="sidebar-item">Input 输入框</router-link>
+                <router-link to="/coordinate-input" class="sidebar-item">CoordinateInput 坐标输入</router-link>
+                <router-link to="/switch" class="sidebar-item">Switch 开关</router-link>
+                <router-link to="/checkbox" class="sidebar-item">Checkbox 复选框</router-link>
+                <router-link to="/radio" class="sidebar-item">Radio 单选框</router-link>
+                <router-link to="/select" class="sidebar-item">Select 选择器</router-link>
+                <router-link to="/slider" class="sidebar-item">Slider 滑块</router-link>
+                <router-link to="/rate" class="sidebar-item">Rate 评分</router-link>
+                <router-link to="/upload" class="sidebar-item">Upload 上传</router-link>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-title">数据展示</div>
+                <router-link to="/table" class="sidebar-item">Table 表格</router-link>
+                <router-link to="/tree" class="sidebar-item">Tree 树形控件</router-link>
+                <router-link to="/pagination" class="sidebar-item">Pagination 分页</router-link>
+                <router-link to="/progress" class="sidebar-item">Progress 进度条</router-link>
+                <router-link to="/skeleton" class="sidebar-item">Skeleton 骨架屏</router-link>
+                <router-link to="/timeline" class="sidebar-item">Timeline 时间轴</router-link>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-title">导航组件</div>
+                <router-link to="/tabs" class="sidebar-item">Tabs 标签页</router-link>
+                <router-link to="/steps" class="sidebar-item">Steps 步骤条</router-link>
+                <router-link to="/breadcrumb" class="sidebar-item">Breadcrumb 面包屑</router-link>
+                <router-link to="/backtop" class="sidebar-item">BackTop 回到顶部</router-link>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-title">反馈组件</div>
+                <router-link to="/alert" class="sidebar-item">Alert 警告提示</router-link>
+                <router-link to="/badge" class="sidebar-item">Badge 徽标数</router-link>
+                <router-link to="/empty" class="sidebar-item">Empty 空状态</router-link>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-title">命令式组件</div>
+                <router-link to="/drawer" class="sidebar-item">Drawer 抽屉</router-link>
+                <router-link to="/message" class="sidebar-item">Message 全局提示</router-link>
+                <router-link to="/modal" class="sidebar-item">Modal 对话框</router-link>
+                <router-link to="/popconfirm" class="sidebar-item">Popconfirm 气泡确认框</router-link>
+                <router-link to="/tooltip" class="sidebar-item">Tooltip 文字提示</router-link>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-title">其他组件</div>
+                <router-link to="/divider" class="sidebar-item">Divider 分割线</router-link>
+                <router-link to="/fab" class="sidebar-item">FAB 悬浮按钮</router-link>
+            </div>
+        </aside>
+
+        <!-- 内容区域 -->
+        <main class="content">
+            <router-view></router-view>
+        </main>
+    </div>
+</div>

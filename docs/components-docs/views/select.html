@@ -1,0 +1,277 @@
+<div class="page-header">
+    <h1 class="page-title">Select 选择器</h1>
+    <p class="page-desc">下拉选择器组件，用于从多个选项中选择一项。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，通过 options 属性传入选项列表（JSON 字符串格式）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-select options='[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"},{"label":"选项3","value":"3"}]'></solely-select>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">options</span>=<span class="code-value">'[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"}]'</span><span class="code-bracket">&gt;</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 不同尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">不同尺寸</h3>
+        <p class="demo-block-desc">通过 size 属性设置选择器尺寸，可选 small、medium（默认）、large。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-select size="small" options='[{"label":"Small","value":"s"}]'></solely-select>
+                <solely-select size="medium" options='[{"label":"Medium","value":"m"}]'></solely-select>
+                <solely-select size="large" options='[{"label":"Large","value":"l"}]'></solely-select>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span> <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 可清除 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">可清除</h3>
+        <p class="demo-block-desc">通过 clearable 属性设置是否显示清除按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-select clearable value="1" options='[{"label":"可清除选项","value":"1"}]'></solely-select>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">clearable</span> <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">通过 disabled 属性禁用选择器。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-select disabled options='[{"label":"禁用选项","value":"1"}]'></solely-select>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">disabled</span> <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件处理 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件处理</h3>
+        <p class="demo-block-desc">监听 change 事件获取选中的值，监听 clear 事件处理清除操作。通过 event.target.value 获取当前选中的值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-select clearable options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"},{"label":"Orange","value":"orange"}]' @change="this.handleSelectChange(event)" @clear="this.handleClear()"></solely-select>
+                <span style="margin-left: 12px; color: var(--solely-text-secondary);">选中: {{$data.selectedLabel || '无'}}</span>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> 
+  <span class="code-attr">options</span>=<span class="code-value">'[...]'</span> 
+  <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span>
+  <span class="code-attr">@clear</span>=<span class="code-value">"handleClear()"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> select = document.querySelector(<span class="code-value">'solely-select'</span>);
+
+select.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  <span class="code-comment">// 通过 event.target.value 获取选中的值</span>
+  <span class="code-keyword">const</span> value = e.target.value;
+  console.log(<span class="code-value">`选中值: ${value}`</span>);
+});
+
+select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
+  console.log(<span class="code-value">'已清除'</span>);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 块级显示 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">块级显示</h3>
+        <p class="demo-block-desc">添加 block 属性可以让选择器宽度占满父容器。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch;">
+                <solely-select block options='[{"label":"块级显示选项","value":"1"},{"label":"选项2","value":"2"}]'></solely-select>
+                <solely-select block size="large" options='[{"label":"大尺寸块级选择器","value":"1"},{"label":"选项2","value":"2"}]'></solely-select>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 块级显示，宽度占满父容器 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> 
+  <span class="code-attr">block</span>
+  <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> 
+  <span class="code-attr">block</span>
+  <span class="code-attr">size</span>=<span class="code-value">"large"</span>
+  <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>value</td>
+                    <td>选中的值（支持属性和方法操作）</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>placeholder</td>
+                    <td>占位符文本</td>
+                    <td>string</td>
+                    <td>'请选择'</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>尺寸，可选 small、medium、large</td>
+                    <td>string</td>
+                    <td>'medium'</td>
+                </tr>
+                <tr>
+                    <td>clearable</td>
+                    <td>是否显示清除按钮</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>options</td>
+                    <td>选项列表（JSON 字符串格式）</td>
+                    <td>string</td>
+                    <td>'[]'</td>
+                </tr>
+                <tr>
+                    <td>multiple</td>
+                    <td>是否多选（预留）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>block</td>
+                    <td>是否块级显示，设置为 true 时宽度占满父容器</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>选中值变化时触发，通过 event.target.value 获取值</td>
+                    <td>Event</td>
+                </tr>
+                <tr>
+                    <td>clear</td>
+                    <td>点击清除按钮时触发</td>
+                    <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setValue(value)</td>
+                    <td>设置选中的值</td>
+                    <td>value: string</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getValue()</td>
+                    <td>获取选中的值</td>
+                    <td>-</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>setOptions(options)</td>
+                    <td>设置选项列表</td>
+                    <td>options: SelectOption[]</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 选择器尺寸类型</span>
+<span class="code-keyword">type</span> <span class="code-type">SelectSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
+
+<span class="code-comment">// 选项数据</span>
+<span class="code-keyword">interface</span> <span class="code-type">SelectOption</span> {
+  <span class="code-attr">label</span>: <span class="code-type">string</span>;      <span class="code-comment">// 选项标签</span>
+  <span class="code-attr">value</span>: <span class="code-type">string</span>;      <span class="code-comment">// 选项值</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否禁用</span>
+}
+
+<span class="code-comment">// 选择器属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">SelectProps</span> {
+  <span class="code-attr">value</span>?: <span class="code-type">string</span>;        <span class="code-comment">// 选中的值</span>
+  <span class="code-attr">placeholder</span>?: <span class="code-type">string</span>;  <span class="code-comment">// 占位符</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">size</span>?: <span class="code-type">SelectSize</span>;   <span class="code-comment">// 尺寸</span>
+  <span class="code-attr">clearable</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否可清除</span>
+  <span class="code-attr">options</span>?: <span class="code-type">string</span>;    <span class="code-comment">// 选项列表（JSON 字符串）</span>
+  <span class="code-attr">multiple</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否多选</span>
+  <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否块级显示</span>
+}</code></pre>
+    </div>
+</div>

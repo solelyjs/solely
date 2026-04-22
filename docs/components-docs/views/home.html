@@ -1,0 +1,137 @@
+<div class="home-hero">
+    <div class="home-hero-content">
+        <h1>Solely UI</h1>
+        <p class="home-hero-subtitle">轻量级 TypeScript Web Components 组件库</p>
+        <p class="home-hero-desc">提供 34+ 个高质量组件，支持命令式调用，框架无关，开箱即用</p>
+        <div class="home-buttons">
+            <a href="#/intro" class="btn btn-primary">开始使用</a>
+            <a href="https://github.com/solelyjs/solely" class="btn btn-default" target="_blank">
+                <span>⭐ GitHub</span>
+            </a>
+        </div>
+        <div class="home-badges">
+            <span class="home-badge">⚡ 高性能</span>
+            <span class="home-badge">📦 轻量级</span>
+            <span class="home-badge">🔒 TypeScript</span>
+            <span class="home-badge">🎨 可定制</span>
+        </div>
+    </div>
+</div>
+
+<div class="home-section">
+    <h2 class="home-section-title">✨ 核心特性</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>高性能</h3>
+            <p>基于 Web Components 标准，原生支持，无需额外运行时，体积小巧，性能卓越</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔧</div>
+            <h3>TypeScript</h3>
+            <p>使用 TypeScript 开发，提供完整的类型定义和优秀的开发体验</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>主题定制</h3>
+            <p>支持 CSS 变量，轻松定制主题风格，内置暗黑模式，满足各种设计需求</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🚀</div>
+            <h3>命令式组件</h3>
+            <p>Message、Modal、Drawer 等组件支持命令式调用，使用更灵活</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">♿</div>
+            <h3>无障碍</h3>
+            <p>遵循 WAI-ARIA 规范，支持键盘导航和屏幕阅读器</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📱</div>
+            <h3>响应式</h3>
+            <p>组件支持响应式设计，适配各种屏幕尺寸和设备</p>
+        </div>
+    </div>
+</div>
+
+<div class="home-section">
+    <h2 class="home-section-title">🚀 快速体验</h2>
+    <div class="home-demo">
+        <div class="home-demo-code">
+            <div class="code-block">
+                <pre><span class="code-comment">// 安装</span>
+npm install solely
+
+<span class="code-comment">// 引入组件</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
+
+<span class="code-comment">// 使用组件</span>
+&lt;<span class="code-type">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span>&gt;Primary&lt;/<span class="code-type">solely-button</span>&gt;</pre>
+            </div>
+        </div>
+        <div class="home-demo-preview">
+            <div class="home-demo-box">
+                <solely-button type="primary" @click="this.showMessage()">显示消息</solely-button>
+                <solely-button type="secondary" @click="this.showModal()">显示对话框</solely-button>
+                <solely-button @click="this.showDrawer()">显示抽屉</solely-button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="home-section">
+    <h2 class="home-section-title">📦 组件概览</h2>
+    <div class="components-overview">
+        <div class="overview-card">
+            <div class="overview-icon">🧩</div>
+            <h4>基础组件</h4>
+            <p>Button、Card、Tag</p>
+            <router-link to="/button" class="overview-link">查看全部 →</router-link>
+        </div>
+        <div class="overview-card">
+            <div class="overview-icon">📝</div>
+            <h4>表单组件</h4>
+            <p>Input、CoordinateInput、Switch、Checkbox、Radio、Select、Rate、Slider、Upload</p>
+            <router-link to="/input" class="overview-link">查看全部 →</router-link>
+        </div>
+        <div class="overview-card">
+            <div class="overview-icon">📊</div>
+            <h4>数据展示</h4>
+            <p>Table、Tree、Pagination、Progress、Skeleton、Timeline</p>
+            <router-link to="/table" class="overview-link">查看全部 →</router-link>
+        </div>
+        <div class="overview-card">
+            <div class="overview-icon">🧭</div>
+            <h4>导航组件</h4>
+            <p>Tabs、Steps、Breadcrumb、BackTop</p>
+            <router-link to="/tabs" class="overview-link">查看全部 →</router-link>
+        </div>
+        <div class="overview-card">
+            <div class="overview-icon">💬</div>
+            <h4>命令式组件</h4>
+            <p>Message、Modal、Drawer、Tooltip、Popconfirm</p>
+            <router-link to="/message" class="overview-link">查看全部 →</router-link>
+        </div>
+        <div class="overview-card">
+            <div class="overview-icon">⚡</div>
+            <h4>反馈组件</h4>
+            <p>Alert、Badge、Empty</p>
+            <router-link to="/alert" class="overview-link">查看全部 →</router-link>
+        </div>
+        <div class="overview-card">
+            <div class="overview-icon">🔧</div>
+            <h4>其他组件</h4>
+            <p>Divider、FAB</p>
+            <router-link to="/divider" class="overview-link">查看全部 →</router-link>
+        </div>
+    </div>
+</div>
+
+<div class="home-section home-cta">
+    <h2 class="home-section-title">开始使用 Solely UI</h2>
+    <p class="home-cta-desc">简洁、高效、易用的 Web Components 组件库</p>
+    <div class="home-buttons">
+        <router-link to="/intro" class="btn btn-primary">查看文档</router-link>
+        <router-link to="/quickstart" class="btn btn-secondary">快速上手</router-link>
+    </div>
+</div>

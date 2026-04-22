@@ -1,0 +1,224 @@
+<div class="intro-hero">
+    <h1>Solely UI</h1>
+    <p class="intro-subtitle">轻量级 TypeScript Web Components 组件库</p>
+    <div class="intro-badges">
+        <span class="badge">🚀 高性能</span>
+        <span class="badge">📦 轻量级</span>
+        <span class="badge">🔒 TypeScript</span>
+        <span class="badge">🎨 可定制</span>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">📖 介绍</h2>
+    <p class="section-desc">
+        Solely UI 是一个基于 TypeScript 的轻量级 Web Components 组件库，提供了丰富的 UI 组件和命令式组件，
+        帮助开发者快速构建现代化的 Web 应用。所有组件都基于 Web Components 标准构建，可以在任何框架中使用。
+    </p>
+    
+    <div class="alert alert-info">
+        <span class="alert-icon">💡</span>
+        <div class="alert-content">
+            <strong>框架无关</strong>
+            <p>基于原生 Web Components 标准，可以在 React、Vue、Angular 等任何框架中使用，甚至可以与 jQuery 等库共存。</p>
+        </div>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">✨ 特性</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>高性能</h3>
+            <p>基于原生 Web Components，无需额外运行时，体积小巧，性能卓越。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔧</div>
+            <h3>TypeScript</h3>
+            <p>使用 TypeScript 开发，提供完整的类型定义和优秀的开发体验。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>主题定制</h3>
+            <p>支持 CSS 变量，轻松定制主题风格，满足各种设计需求。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">♿</div>
+            <h3>无障碍</h3>
+            <p>遵循 WAI-ARIA 规范，支持键盘导航和屏幕阅读器。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📱</div>
+            <h3>响应式</h3>
+            <p>组件支持响应式设计，适配各种屏幕尺寸和设备。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🌙</div>
+            <h3>暗黑模式</h3>
+            <p>内置暗黑模式支持，一键切换，保护用户视力。</p>
+        </div>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">📦 安装</h2>
+    <p class="section-desc">UI 组件库随着 Solely 框架一起分发，只需安装 Solely 即可获得全套组件。</p>
+
+    <div class="install-section">
+        <div class="install-tabs">
+            <button class="install-tab" :class="{ active: $data.activeTab === 'npm' }" @click="this.switchTab('npm')">npm</button>
+            <button class="install-tab" :class="{ active: $data.activeTab === 'yarn' }" @click="this.switchTab('yarn')">yarn</button>
+            <button class="install-tab" :class="{ active: $data.activeTab === 'pnpm' }" @click="this.switchTab('pnpm')">pnpm</button>
+        </div>
+        <div class="install-code-block">
+            <pre><code><span class="code-content">{{this.getInstallCode()}}</span></code></pre>
+        </div>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">🚀 快速开始</h2>
+    <p class="section-desc">在项目中引入 Solely UI 组件。</p>
+    
+    <div class="demo-block">
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary">Primary Button</solely-button>
+                <solely-button type="secondary">Secondary</solely-button>
+                <solely-button>Default</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 引入主题 CSS（必需）</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
+
+<span class="code-comment">// 引入单个组件</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
+
+<span class="code-comment">// 或者引入所有组件</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components'</span>;
+
+<span class="code-comment">// 在 HTML 中使用</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span><span class="code-content">Primary Button</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">placeholder</span>=<span class="code-value">"请输入内容"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">🏗️ 组件概览</h2>
+    <p class="section-desc">Solely UI 提供了丰富的组件，涵盖各种使用场景。</p>
+    
+    <div class="components-overview">
+        <div class="overview-card">
+            <h4>基础组件</h4>
+            <p>Button、Card、Tag</p>
+        </div>
+        <div class="overview-card">
+            <h4>表单组件</h4>
+            <p>Input、CoordinateInput、Switch、Checkbox、Radio、Select、Rate、Slider、Upload</p>
+        </div>
+        <div class="overview-card">
+            <h4>数据展示</h4>
+            <p>Table、Tree、Pagination、Progress、Skeleton、Timeline</p>
+        </div>
+        <div class="overview-card">
+            <h4>导航组件</h4>
+            <p>Tabs、Steps、Breadcrumb、BackTop</p>
+        </div>
+        <div class="overview-card">
+            <h4>命令式组件</h4>
+            <p>Message、Modal、Drawer、Tooltip、Popconfirm</p>
+        </div>
+        <div class="overview-card">
+            <h4>反馈组件</h4>
+            <p>Alert、Badge、Empty</p>
+        </div>
+        <div class="overview-card">
+            <h4>其他组件</h4>
+            <p>Divider、FAB</p>
+        </div>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">⚡ 命令式组件</h2>
+    <p class="section-desc">
+        Solely UI 提供了一系列命令式组件，可以通过 JavaScript 直接调用，无需在模板中声明。
+        这些组件非常适合用于全局提示、确认对话框等场景。
+    </p>
+    
+    <div class="demo-block">
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showMessage()">显示消息</solely-button>
+                <solely-button type="primary" @click="this.showModal()">显示对话框</solely-button>
+                <solely-button type="primary" @click="this.showDrawer()">显示抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">import</span> { <span class="code-type">Message</span>, <span class="code-type">Modal</span>, <span class="code-type">Drawer</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+
+<span class="code-comment">// Message 全局提示</span>
+<span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'操作成功！'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">error</span>(<span class="code-value">'操作失败！'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">loading</span>(<span class="code-value">'加载中...'</span>);
+
+<span class="code-comment">// Modal 对话框</span>
+<span class="code-type">Modal</span>.<span class="code-attr">confirm</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'确认删除'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'确定要删除此项吗？'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认'</span>);
+    }
+});
+
+<span class="code-comment">// Drawer 抽屉</span>
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'抽屉标题'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'抽屉内容'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">🎨 主题定制</h2>
+    <p class="section-desc">
+        Solely UI 使用 CSS 变量定义主题，你可以轻松自定义主题颜色、字体、间距等。
+    </p>
+    
+    <div class="demo-block">
+        <div class="demo-box">
+            <div class="demo-code">
+                <pre><code><span class="code-comment">/* 自定义主题变量 */</span>
+<span class="code-bracket">:</span><span class="code-attr">root</span> {
+  <span class="code-attr">--solely-primary</span>: <span class="code-value">#1890ff</span>;
+  <span class="code-attr">--solely-success</span>: <span class="code-value">#52c41a</span>;
+  <span class="code-attr">--solely-warning</span>: <span class="code-value">#faad14</span>;
+  <span class="code-attr">--solely-error</span>: <span class="code-value">#f5222d</span>;
+  <span class="code-attr">--solely-font-size-md</span>: <span class="code-value">14px</span>;
+  <span class="code-attr">--solely-border-radius-md</span>: <span class="code-value">6px</span>;
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="intro-section">
+    <h2 class="section-title">🤝 参与贡献</h2>
+    <p class="section-desc">
+        Solely UI 是一个开源项目，欢迎提交 Issue 和 PR。
+        如果你有任何问题或建议，请在 GitHub 上联系我们。
+    </p>
+    <div class="intro-actions">
+        <a href="https://github.com/solelyjs/solely" target="_blank" class="btn btn-primary">
+            <span>⭐ Star on GitHub</span>
+        </a>
+        <router-link to="/quickstart" class="btn btn-secondary">
+            <span>开始上手 →</span>
+        </router-link>
+    </div>
+</div>

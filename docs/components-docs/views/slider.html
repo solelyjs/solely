@@ -1,0 +1,282 @@
+<div class="page-header">
+    <h1 class="page-title">Slider 滑块</h1>
+    <p class="page-desc">滑动输入条，用于在范围内选择数值。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，通过 value 属性设置初始值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-slider value="30"></solely-slider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">value</span>=<span class="code-value">"30"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 范围与步长 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">范围与步长</h3>
+        <p class="demo-block-desc">通过 min、max 设置范围，step 设置步长。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-slider min="0" max="100" step="10" value="50"></solely-slider>
+                <solely-slider min="-50" max="50" step="5" value="0"></solely-slider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">min</span>=<span class="code-value">"0"</span> <span class="code-attr">max</span>=<span class="code-value">"100"</span> <span class="code-attr">step</span>=<span class="code-value">"10"</span> <span class="code-attr">value</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">min</span>=<span class="code-value">"-50"</span> <span class="code-attr">max</span>=<span class="code-value">"50"</span> <span class="code-attr">step</span>=<span class="code-value">"5"</span> <span class="code-attr">value</span>=<span class="code-value">"0"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">通过 disabled 属性禁用滑块。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-slider value="30" disabled></solely-slider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">value</span>=<span class="code-value">"30"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 垂直模式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">垂直模式</h3>
+        <p class="demo-block-desc">设置 vertical 属性可使滑块垂直显示。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="height: 200px; display: flex; gap: 40px; align-items: center; justify-content: center;">
+                <solely-slider vertical value="30"></solely-slider>
+                <solely-slider vertical value="50"></solely-slider>
+                <solely-slider vertical value="70" disabled></solely-slider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">vertical</span> <span class="code-attr">value</span>=<span class="code-value">"30"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 刻度标记 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">刻度标记</h3>
+        <p class="demo-block-desc">设置 marks 属性显示刻度标记，marks-data 传入 JSON 格式的标记数据。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-slider marks marks-data='{"0":"0","25":"25","50":"50","75":"75","100":"100"}' value="50"></solely-slider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">marks</span> <span class="code-attr">marksData</span>=<span class="code-value">'{"0":"0","25":"25","50":"50","75":"75","100":"100"}'</span> <span class="code-attr">value</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Block 属性 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">Block 属性</h3>
+        <p class="demo-block-desc">设置 block 属性可使滑块宽度撑满父容器。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px;">
+                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px;">
+                    <solely-slider block value="40"></solely-slider>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">block</span> <span class="code-attr">value</span>=<span class="code-value">"40"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件处理 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件处理</h3>
+        <p class="demo-block-desc">监听 change 事件获取滑块值变化，input 事件用于实时更新。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-slider value="50" @input="this.handleRangeInput(event)" @change="this.handleSliderChange(event)"></solely-slider>
+                <span style="color: var(--solely-text-secondary);">当前值: {{$data.rangeValue}}</span>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">@input</span>=<span class="code-value">"handleInput(event)"</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript - 原生事件监听 --&gt;</span>
+<span class="code-keyword">const</span> sliderEl = document.querySelector(<span class="code-value">'solely-slider'</span>);
+
+<span class="code-comment">// input 事件 - 实时更新</span>
+sliderEl.addEventListener(<span class="code-value">'input'</span>, (e) => {
+  <span class="code-keyword">const</span> value = e.target.value;
+  console.log(<span class="code-value">'实时值:'</span>, value);
+});
+
+<span class="code-comment">// change 事件 - 值改变时触发</span>
+sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  <span class="code-keyword">const</span> value = e.target.value;
+  console.log(<span class="code-value">'最终值:'</span>, value);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>value</td>
+                    <td>当前值</td>
+                    <td>number</td>
+                    <td>min</td>
+                </tr>
+                <tr>
+                    <td>min</td>
+                    <td>最小值</td>
+                    <td>number</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>max</td>
+                    <td>最大值</td>
+                    <td>number</td>
+                    <td>100</td>
+                </tr>
+                <tr>
+                    <td>step</td>
+                    <td>步长</td>
+                    <td>number</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>tooltipVisible</td>
+                    <td>是否显示 Tooltip</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>marks</td>
+                    <td>是否显示刻度标记</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>marksData</td>
+                    <td>刻度标记数据（JSON字符串）</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>vertical</td>
+                    <td>是否垂直模式</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>block</td>
+                    <td>是否撑满父容器宽度</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>值改变时触发</td>
+                    <td>Event</td>
+                </tr>
+                <tr>
+                    <td>input</td>
+                    <td>拖动时实时触发</td>
+                    <td>InputEvent</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setValue(value)</td>
+                    <td>设置滑块值</td>
+                    <td>value: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getValue()</td>
+                    <td>获取当前值</td>
+                    <td>-</td>
+                    <td>number</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 组件属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">SliderProps</span> {
+  <span class="code-attr">value</span>?: <span class="code-type">number</span>;           <span class="code-comment">// 当前值</span>
+  <span class="code-attr">min</span>?: <span class="code-type">number</span>;            <span class="code-comment">// 最小值</span>
+  <span class="code-attr">max</span>?: <span class="code-type">number</span>;            <span class="code-comment">// 最大值</span>
+  <span class="code-attr">step</span>?: <span class="code-type">number</span>;           <span class="code-comment">// 步长</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">tooltipVisible</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否显示 Tooltip</span>
+  <span class="code-attr">marks</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否显示刻度标记</span>
+  <span class="code-attr">marks-data</span>?: <span class="code-type">string</span>;     <span class="code-comment">// 刻度标记数据（JSON字符串）</span>
+  <span class="code-attr">vertical</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否垂直模式</span>
+  <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否撑满父容器宽度</span>
+}</code></pre>
+    </div>
+</div>

@@ -1,0 +1,399 @@
+<div class="page-header">
+    <h1 class="page-title">Steps 步骤条</h1>
+    <p class="page-desc">引导用户按照流程完成任务的分步导航条。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，通过 current 属性设置当前步骤，items 属性设置步骤数据。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="0" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">current</span>=<span class="code-value">"0"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 带描述 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">带描述</h3>
+        <p class="demo-block-desc">通过 description 属性为每个步骤添加描述信息。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="1" items='[{"title":"填写信息","description":"请填写基本信息"},{"title":"验证身份","description":"进行身份验证"},{"title":"完成","description":"注册成功"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[
+  {"title":"填写信息","description":"请填写基本信息"},
+  {"title":"验证身份","description":"进行身份验证"},
+  {"title":"完成","description":"注册成功"}
+]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 垂直方向 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">垂直方向</h3>
+        <p class="demo-block-desc">设置 direction="vertical" 使用垂直方向的步骤条。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="height: 300px;">
+                <solely-steps direction="vertical" current="1" items='[{"title":"第一步","description":"这是第一步"},{"title":"第二步","description":"这是第二步"},{"title":"第三步","description":"这是第三步"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">direction</span>=<span class="code-value">"vertical"</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 小尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">小尺寸</h3>
+        <p class="demo-block-desc">设置 size="small" 使用小尺寸步骤条。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps size="small" current="1" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">size</span>=<span class="code-value">"small"</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 大尺寸 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">大尺寸</h3>
+        <p class="demo-block-desc">设置 size="large" 使用大尺寸步骤条。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps size="large" current="1" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">size</span>=<span class="code-value">"large"</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 点状步骤条 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">点状步骤条</h3>
+        <p class="demo-block-desc">设置 progress-dot 属性使用点状步骤条，适合简洁展示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps progress-dot current="1" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">progress-dot</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义图标 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义图标</h3>
+        <p class="demo-block-desc">通过 icon 属性为步骤自定义图标。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="1" items='[{"title":"登录","icon":"👤"},{"title":"支付","icon":"💳"},{"title":"完成","icon":"✓"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[
+  {"title":"登录","icon":"👤"},
+  {"title":"支付","icon":"💳"},
+  {"title":"完成","icon":"✓"}
+]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义颜色 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义颜色</h3>
+        <p class="demo-block-desc">通过 color 属性为步骤自定义颜色，支持预设颜色（blue、green、red、orange、gray）或自定义十六进制颜色。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="1" items='[{"title":"蓝色","color":"blue"},{"title":"绿色","color":"green"},{"title":"橙色","color":"orange"},{"title":"红色","color":"red"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[
+  {"title":"蓝色","color":"blue"},
+  {"title":"绿色","color":"green"},
+  {"title":"橙色","color":"orange"},
+  {"title":"红色","color":"red"}
+]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 支持自定义颜色值 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">current</span>=<span class="code-value">"0"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[
+  {"title":"自定义","color":"#722ed1"}
+]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错误状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">错误状态</h3>
+        <p class="demo-block-desc">在步骤数据中设置 status="error" 显示错误状态。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="2" items='[{"title":"已完成","status":"finish"},{"title":"出错啦","status":"error"},{"title":"等待中","status":"wait"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">current</span>=<span class="code-value">"2"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[
+  {"title":"已完成","status":"finish"},
+  {"title":"出错啦","status":"error"},
+  {"title":"等待中","status":"wait"}
+]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">设置 disabled: true 禁用特定步骤的点击。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="0" items='[{"title":"当前步骤"},{"title":"已禁用","disabled":true},{"title":"未解锁","disabled":true}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">current</span>=<span class="code-value">"0"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[
+  {"title":"当前步骤"},
+  {"title":"已禁用","disabled":true},
+  {"title":"未解锁","disabled":true}
+]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 步骤切换 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">步骤切换</h3>
+        <p class="demo-block-desc">使用 next() 和 prev() 方法控制步骤切换。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px;">
+                <solely-steps ref="stepsDemo" current="1" items='[{"title":"填写信息"},{"title":"验证身份"},{"title":"确认支付"},{"title":"完成"}]' @change="this.handleStepChange(event)"></solely-steps>
+                <div style="display: flex; gap: 8px;">
+                    <solely-button size="small" @click="this.handlePrev()" :disabled="$data.currentStep === 0">上一步</solely-button>
+                    <solely-button size="small" type="primary" @click="this.handleNext()" :disabled="$data.currentStep === 3">下一步</solely-button>
+                </div>
+                <div>当前步骤: {{$data.currentStep + 1}} / 4</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">ref</span>=<span class="code-value">"mySteps"</span> <span class="code-attr">current</span>=<span class="code-value">"0"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">@click</span>=<span class="code-value">"prev()"</span><span class="code-bracket">&gt;</span>上一步<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">@click</span>=<span class="code-value">"next()"</span><span class="code-bracket">&gt;</span>下一步<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> steps = document.querySelector(<span class="code-value">'solely-steps'</span>);
+
+steps.next();
+steps.prev();
+steps.setCurrent(2);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件演示 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件演示</h3>
+        <p class="demo-block-desc">点击步骤查看事件触发情况。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px;">
+                <solely-steps current="0" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]' @change="this.handleChange(event)"></solely-steps>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">current</span>=<span class="code-value">"0"</span>
+  <span class="code-attr">items</span>=<span class="code-value">"..."</span>
+  <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> steps = document.querySelector(<span class="code-value">'solely-steps'</span>);
+steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  console.log(<span class="code-value">'当前步骤:'</span>, e.target.current);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>current</td>
+                    <td>当前步骤，从 0 开始</td>
+                    <td>number</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>direction</td>
+                    <td>步骤条方向，可选值为 horizontal、vertical</td>
+                    <td>string</td>
+                    <td>horizontal</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>尺寸，可选值为 default、small、large</td>
+                    <td>string</td>
+                    <td>default</td>
+                </tr>
+                <tr>
+                    <td>items</td>
+                    <td>步骤数据（JSON字符串）</td>
+                    <td>string</td>
+                    <td>[]</td>
+                </tr>
+                <tr>
+                    <td>progressDot</td>
+                    <td>是否使用点状步骤条</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>点击步骤时触发</td>
+                    <td>CustomEvent&lt;{ index: number; item: StepItem }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setCurrent(current)</td>
+                    <td>设置当前步骤</td>
+                    <td>current: number</td>
+                </tr>
+                <tr>
+                    <td>getCurrent()</td>
+                    <td>获取当前步骤</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>next()</td>
+                    <td>下一步</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>prev()</td>
+                    <td>上一步</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>setItems(items)</td>
+                    <td>设置步骤项</td>
+                    <td>items: StepItem[]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 步骤项类型</span>
+<span class="code-keyword">interface</span> <span class="code-type">StepItem</span> {
+  <span class="code-attr">title</span>: <span class="code-type">string</span>;
+  <span class="code-attr">description</span>?: <span class="code-type">string</span>;
+  <span class="code-attr">icon</span>?: <span class="code-type">string</span>;
+  <span class="code-attr">status</span>?: <span class="code-type">StepStatus</span>;
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;
+  <span class="code-attr">color</span>?: <span class="code-type">string</span>;
+}
+
+<span class="code-comment">// 步骤状态</span>
+<span class="code-keyword">type</span> <span class="code-type">StepStatus</span> = <span class="code-value">'wait'</span> | <span class="code-value">'process'</span> | <span class="code-value">'finish'</span> | <span class="code-value">'error'</span>;
+
+<span class="code-comment">// 步骤条方向</span>
+<span class="code-keyword">type</span> <span class="code-type">StepsDirection</span> = <span class="code-value">'horizontal'</span> | <span class="code-value">'vertical'</span>;
+
+<span class="code-comment">// 步骤条尺寸</span>
+<span class="code-keyword">type</span> <span class="code-type">StepsSize</span> = <span class="code-value">'default'</span> | <span class="code-value">'small'</span> | <span class="code-value">'large'</span>;</code></pre>
+    </div>
+</div>

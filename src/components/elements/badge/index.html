@@ -1,0 +1,34 @@
+<span class="badge" :class="this.getBadgeClasses()">
+    <slot></slot>
+    
+    <!-- 数字徽标 -->
+    <If test="$data.count > 0 && !$data.dot && !$data.status">
+        <span
+            class="badge__count"
+            :style="$data.color ? { backgroundColor: $data.color } : {}"
+        >
+            {{$data.count > $data.overflowCount ? $data.overflowCount + '+' : $data.count}}
+        </span>
+    </If>
+    
+    <!-- 小红点 -->
+    <If test="$data.dot && !$data.status">
+        <span
+            class="badge__dot"
+            :style="$data.color ? { backgroundColor: $data.color } : {}"
+        ></span>
+    </If>
+    
+    <!-- 状态点 -->
+    <If test="$data.status">
+        <span class="badge__status">
+            <span
+                class="badge__status-dot"
+                :class="this.getStatusDotClasses()"
+            ></span>
+            <If test="$data.text">
+                <span class="badge__status-text">{{$data.text}}</span>
+            </If>
+        </span>
+    </If>
+</span>

@@ -1,0 +1,110 @@
+/* Solely Progress 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.progress {
+  width: 100%;
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+}
+
+/* 线性进度条 */
+.progress--line {
+  display: flex;
+  align-items: center;
+}
+
+.progress__outer {
+  flex: 1;
+  background-color: var(--solely-fill-color);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress__inner {
+  position: relative;
+  height: 100%;
+  background-color: var(--solely-primary);
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+
+.progress__inner--success {
+  background-color: var(--solely-success);
+}
+
+.progress__inner--exception {
+  background-color: var(--solely-error);
+}
+
+.progress__inner--active {
+  background-color: var(--solely-primary);
+  animation: progress-active 2s linear infinite;
+}
+
+@keyframes progress-active {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
+.progress__text {
+  margin-left: var(--solely-spacing-sm);
+  min-width: 40px;
+  text-align: right;
+  color: var(--solely-text-secondary);
+  font-size: var(--solely-font-size-sm);
+}
+
+/* 圆形进度条 */
+.progress--circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.progress__circle {
+  transform: rotate(-90deg);
+}
+
+.progress__circle-track {
+  fill: none;
+  stroke: var(--solely-fill-color);
+}
+
+.progress__circle-path {
+  fill: none;
+  stroke: var(--solely-primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.progress__circle-path--success {
+  stroke: var(--solely-success);
+}
+
+.progress__circle-path--exception {
+  stroke: var(--solely-error);
+}
+
+.progress__circle-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: var(--solely-text-primary);
+}

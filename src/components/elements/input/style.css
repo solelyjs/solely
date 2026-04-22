@@ -1,0 +1,277 @@
+/**
+ * Solely Input 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-block;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+/* ==================== 表单控件基础样式 (.form-control) ==================== */
+.form-control {
+  display: inline-flex;
+  align-items: center;
+  height: var(--solely-height-md);
+  padding: 0 var(--solely-spacing-md);
+  position: relative;
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  background-color: var(--solely-component-bg);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  box-sizing: border-box;
+}
+
+.form-control:hover:not(.is-disabled) {
+  border-color: var(--solely-primary-hover);
+}
+
+/* 表单控件尺寸 */
+.form-control--sm {
+  height: var(--solely-height-sm);
+  padding: 0 var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+.form-control--lg {
+  height: var(--solely-height-lg);
+  padding: 0 var(--solely-spacing-lg);
+  font-size: var(--solely-font-size-lg);
+}
+
+/* 表单控件子元素 */
+.form-control__input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: var(--solely-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.form-control__input::placeholder {
+  color: var(--solely-text-tertiary);
+}
+
+.form-control__prefix,
+.form-control__suffix {
+  display: inline-flex;
+  align-items: center;
+  color: var(--solely-text-tertiary);
+  flex-shrink: 0;
+}
+
+.form-control__prefix {
+  margin-right: var(--solely-spacing-xs);
+}
+
+.form-control__suffix {
+  margin-left: var(--solely-spacing-xs);
+}
+
+/* 文本域 */
+.form-control--textarea {
+  height: auto;
+  min-height: var(--solely-height-xl);
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  align-items: flex-start;
+}
+
+.form-control__textarea {
+  resize: vertical;
+  min-height: var(--solely-height-lg);
+  padding: var(--solely-spacing-xs) 0;
+}
+
+/* ==================== 状态类 ==================== */
+.is-disabled {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
+}
+
+.is-readonly {
+  cursor: default;
+}
+
+.is-focused {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
+.is-error {
+  border-color: var(--solely-error);
+}
+
+.is-error.is-focused {
+  box-shadow: 0 0 0 2px var(--solely-error-light);
+}
+
+.is-warning {
+  border-color: var(--solely-warning);
+}
+
+.is-warning.is-focused {
+  box-shadow: 0 0 0 2px var(--solely-warning-light);
+}
+
+.is-success {
+  border-color: var(--solely-success);
+}
+
+.is-success.is-focused {
+  box-shadow: 0 0 0 2px var(--solely-success-light);
+}
+
+/* ==================== 输入框特有样式 ==================== */
+/* 清除按钮 - 组件特有尺寸 */
+.form-control__clear {
+  width: 20px;
+  height: 20px;
+  margin-left: var(--solely-spacing-xs);
+  font-size: 16px;
+}
+
+/* 密码切换按钮 - 组件特有 */
+.form-control__password-toggle {
+  width: 20px;
+  height: 20px;
+  margin-left: var(--solely-spacing-xs);
+  font-size: 14px;
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.form-control__password-toggle:hover {
+  color: var(--solely-text-secondary);
+}
+
+/* 复制按钮 - 组件特有 */
+.form-control__copy {
+  width: 20px;
+  height: 20px;
+  margin-left: var(--solely-spacing-xs);
+  font-size: 12px;
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.form-control__copy:hover {
+  color: var(--solely-text-secondary);
+}
+
+/* 字数统计 - 组件特有 */
+.form-control__count {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: var(--solely-spacing-xs);
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-text-tertiary);
+  gap: 2px;
+}
+
+.form-control__count-current {
+  color: var(--solely-text-secondary);
+}
+
+.form-control__count-separator,
+.form-control__count-max {
+  color: var(--solely-text-tertiary);
+}
+
+/* 状态消息 - 组件特有 */
+.form-control__message {
+  margin-top: var(--solely-spacing-xs);
+  font-size: var(--solely-font-size-sm);
+  line-height: var(--solely-line-height-md);
+}
+
+.form-control__message--error {
+  color: var(--solely-error);
+}
+
+.form-control__message--warning {
+  color: var(--solely-warning);
+}
+
+.form-control__message--success {
+  color: var(--solely-success);
+}
+
+.form-control__message--default {
+  color: var(--solely-text-tertiary);
+}
+
+/* ==================== Block 样式 ==================== */
+.form-control--block {
+  display: flex;
+  width: 100%;
+}
+
+/* ==================== 下拉建议列表 ==================== */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  padding: var(--solely-spacing-xs) 0;
+  background-color: var(--solely-component-bg);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  box-shadow: var(--solely-shadow-md);
+  z-index: var(--solely-z-index-dropdown);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown__item {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  cursor: pointer;
+  transition: background-color var(--solely-transition-duration);
+}
+
+.dropdown__item:hover {
+  background-color: var(--solely-gray-3);
+}
+
+/* ==================== 关闭按钮 ==================== */
+.close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+  flex-shrink: 0;
+}

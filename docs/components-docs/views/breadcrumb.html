@@ -1,0 +1,208 @@
+<div class="page-header">
+    <h1 class="page-title">Breadcrumb 面包屑</h1>
+    <p class="page-desc">显示当前页面在系统层级结构中的位置，并能向上返回。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的面包屑，使用 items 属性设置路由栈。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-breadcrumb ref="breadcrumb1"></solely-breadcrumb>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-breadcrumb</span> <span class="code-attr">id</span>=<span class="code-value">"breadcrumb"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-breadcrumb</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> breadcrumb = document.<span class="code-method">getElementById</span>(<span class="code-value">'breadcrumb'</span>);
+<span class="code-keyword">const</span> items = [
+    { <span class="code-attr">title</span>: <span class="code-value">'首页'</span>, <span class="code-attr">href</span>: <span class="code-value">'/'</span> },
+    { <span class="code-attr">title</span>: <span class="code-value">'组件'</span>, <span class="code-attr">href</span>: <span class="code-value">'/components'</span> },
+    { <span class="code-attr">title</span>: <span class="code-value">'面包屑'</span> }
+];
+breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'items'</span>, JSON.<span class="code-method">stringify</span>(items));</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义分隔符 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义分隔符</h3>
+        <p class="demo-block-desc">使用 separator 属性自定义分隔符。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-breadcrumb ref="breadcrumb2" separator=">"></solely-breadcrumb>
+                <solely-breadcrumb ref="breadcrumb3" separator="|"></solely-breadcrumb>
+                <solely-breadcrumb ref="breadcrumb4" separator="→"></solely-breadcrumb>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 使用箭头分隔符</span>
+breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'separator'</span>, <span class="code-value">'>'</span>);
+
+<span class="code-comment">// 使用竖线分隔符</span>
+breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'separator'</span>, <span class="code-value">'|'</span>);
+
+<span class="code-comment">// 使用箭头符号</span>
+breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'separator'</span>, <span class="code-value">'→'</span>);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 点击事件 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">点击事件</h3>
+        <p class="demo-block-desc">为面包屑项添加点击事件处理。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-breadcrumb ref="breadcrumb5"></solely-breadcrumb>
+                <div
+                    style="margin-top: 16px; padding: 8px; background: var(--solely-bg-color); border-radius: var(--solely-border-radius-base);">
+                    <small>点击面包屑项查看事件</small>
+                    <div id="breadcrumb-log" style="margin-top: 8px; color: var(--solely-primary);">{{$data.title}}
+                    </div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// HTML</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-breadcrumb</span> <span class="code-attr">id</span>=<span class="code-value">"breadcrumb"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-breadcrumb</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> breadcrumb = document.<span class="code-method">getElementById</span>(<span class="code-value">'breadcrumb'</span>);
+<span class="code-keyword">const</span> items = [
+    { 
+        <span class="code-attr">title</span>: <span class="code-value">'首页'</span>, 
+        <span class="code-attr">onClick</span>: () => <span class="code-method">console</span>.<span class="code-method">log</span>(<span class="code-value">'点击了首页'</span>)
+    },
+    { 
+        <span class="code-attr">title</span>: <span class="code-value">'组件'</span>, 
+        <span class="code-attr">onClick</span>: () => <span class="code-method">console</span>.<span class="code-method">log</span>(<span class="code-value">'点击了组件'</span>)
+    },
+    { <span class="code-attr">title</span>: <span class="code-value">'面包屑'</span> }
+];
+breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'items'</span>, JSON.<span class="code-method">stringify</span>(items));
+
+<span class="code-comment">// 监听点击事件</span>
+breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, () => {
+    <span class="code-keyword">const</span> item = breadcrumb.<span class="code-attr">clickedItem</span>;
+    <span class="code-method">console</span>.<span class="code-method">log</span>(<span class="code-value">'点击了:'</span>, item?.title);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用 href -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">使用链接</h3>
+        <p class="demo-block-desc">为面包屑项添加 href 属性，使其成为可点击的链接。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-breadcrumb ref="breadcrumb6"></solely-breadcrumb>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> items = [
+    { <span class="code-attr">title</span>: <span class="code-value">'首页'</span>, <span class="code-attr">href</span>: <span class="code-value">'/'</span> },
+    { <span class="code-attr">title</span>: <span class="code-value">'产品中心'</span>, <span class="code-attr">href</span>: <span class="code-value">'/products'</span> },
+    { <span class="code-attr">title</span>: <span class="code-value">'详情'</span> }
+];
+breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'items'</span>, JSON.<span class="code-method">stringify</span>(items));</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>items</td>
+                    <td>面包屑项列表（JSON 字符串）</td>
+                    <td>string</td>
+                    <td>'[]'</td>
+                </tr>
+                <tr>
+                    <td>separator</td>
+                    <td>分隔符</td>
+                    <td>string</td>
+                    <td>'/'</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>click</td>
+                    <td>点击面包屑项时触发（无 href 时）</td>
+                    <td>通过 breadcrumb.clickedItem 获取</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>items</td>
+                    <td>获取/设置面包屑项</td>
+                    <td>BreadcrumbItem[]</td>
+                </tr>
+                <tr>
+                    <td>clickedItem</td>
+                    <td>获取最后点击的面包屑项</td>
+                    <td>BreadcrumbItem | null</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 面包屑项</span>
+<span class="code-keyword">interface</span> <span class="code-type">BreadcrumbItem</span> {
+  <span class="code-attr">title</span>: <span class="code-type">string</span>;           <span class="code-comment">// 显示标题（必填）</span>
+  <span class="code-attr">href</span>?: <span class="code-type">string</span>;          <span class="code-comment">// 跳转链接（可选）</span>
+  <span class="code-attr">onClick</span>?: () => <span class="code-type">void</span>;  <span class="code-comment">// 点击回调（可选）</span>
+}
+
+<span class="code-comment">// 面包屑属性</span>
+<span class="code-keyword">interface</span> <span class="code-type">BreadcrumbProps</span> {
+  <span class="code-attr">items</span>: <span class="code-type">string</span>;         <span class="code-comment">// JSON 字符串格式的 BreadcrumbItem[]</span>
+  <span class="code-attr">separator</span>: <span class="code-type">string</span>;     <span class="code-comment">// 分隔符，默认 '/'</span>
+}</code></pre>
+    </div>
+</div>

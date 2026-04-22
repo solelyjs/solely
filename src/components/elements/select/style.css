@@ -1,0 +1,187 @@
+/**
+ * Solely Select 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-block;
+  position: relative;
+}
+
+:host([block]) {
+  display: block;
+  width: 100%;
+}
+
+/* ==================== 选择器特有样式 ==================== */
+/* 选择器基础 */
+.select {
+  cursor: pointer;
+}
+
+/* 选择器容器 - 模拟 form-control 样式 */
+.select__selector {
+  display: flex;
+  align-items: center;
+  height: var(--solely-height-md);
+  padding: 0 var(--solely-spacing-md);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  box-sizing: border-box;
+}
+
+.select__selector:hover:not(.is-disabled) {
+  border-color: var(--solely-primary-hover);
+}
+
+/* 尺寸变体 */
+.select--sm .select__selector {
+  height: var(--solely-height-sm);
+  padding: 0 var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+.select--lg .select__selector {
+  height: var(--solely-height-lg);
+  padding: 0 var(--solely-spacing-lg);
+  font-size: var(--solely-font-size-lg);
+}
+
+/* 选择器值显示 */
+.select__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select__placeholder {
+  color: var(--solely-text-tertiary);
+}
+
+/* 下拉箭头 */
+.select__arrow {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--solely-text-tertiary);
+  transition: transform var(--solely-transition-duration);
+  flex-shrink: 0;
+}
+
+.select.is-open .select__arrow {
+  transform: rotate(180deg);
+}
+
+/* 禁用状态 */
+.select.is-disabled {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
+}
+
+/* 聚焦状态 */
+.select.is-focused .select__selector {
+  border-color: var(--solely-primary);
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
+/* 清除按钮 - 组件特有 */
+.select__clear {
+  margin-left: var(--solely-spacing-xs);
+  font-size: 14px;
+  color: var(--solely-text-tertiary);
+  cursor: pointer;
+  transition: color var(--solely-transition-duration);
+}
+
+.select__clear:hover {
+  color: var(--solely-text-secondary);
+}
+
+/* 下拉菜单定位 - 组件特有 */
+.select__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  max-height: 256px;
+  overflow-y: auto;
+  background-color: var(--solely-component-bg);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  box-shadow: var(--solely-shadow-md);
+  z-index: var(--solely-z-index-dropdown);
+  animation: dropdown-in 0.2s ease-out;
+}
+
+.select__dropdown--closing {
+  animation: dropdown-out 0.2s ease-in forwards;
+}
+
+/* 下拉选项 */
+.select__option {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  color: var(--solely-text-primary);
+}
+
+.select__option:hover:not(.select__option--disabled) {
+  background-color: var(--solely-primary-light);
+}
+
+.select__option--selected {
+  background-color: var(--solely-primary-light);
+  color: var(--solely-primary);
+  font-weight: 500;
+}
+
+.select__option--disabled {
+  cursor: not-allowed;
+  color: var(--solely-text-tertiary);
+  opacity: var(--solely-disabled-opacity);
+}
+
+/* 空状态 */
+.select__empty {
+  padding: var(--solely-spacing-md);
+  text-align: center;
+  color: var(--solely-text-tertiary);
+  font-size: var(--solely-font-size-sm);
+}
+
+/* 动画 */
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdown-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}

@@ -1,0 +1,279 @@
+/* Solely Pagination 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+}
+
+/* 分页项 */
+.pagination__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--solely-height-md);
+  height: var(--solely-height-md);
+  padding: 0 var(--solely-spacing-sm);
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  user-select: none;
+}
+
+.pagination__item:hover:not(.pagination__item--disabled):not(.pagination__item--active) {
+  color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.pagination__item--active {
+  color: var(--solely-white);
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+.pagination__item--disabled {
+  cursor: not-allowed;
+  color: var(--solely-text-tertiary);
+  background-color: var(--solely-gray-2);
+}
+
+/* 上一页/下一页 */
+.pagination__prev,
+.pagination__next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--solely-height-md);
+  height: var(--solely-height-md);
+  padding: 0 var(--solely-spacing-sm);
+  color: var(--solely-text-secondary);
+  background-color: var(--solely-component-bg);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  user-select: none;
+}
+
+.pagination__prev:hover:not(.pagination__item--disabled),
+.pagination__next:hover:not(.pagination__item--disabled) {
+  color: var(--solely-primary);
+  border-color: var(--solely-primary);
+}
+
+/* 省略号 */
+.pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--solely-height-md);
+  height: var(--solely-height-md);
+  color: var(--solely-text-tertiary);
+  user-select: none;
+}
+
+/* 快速跳转 */
+.pagination__jumper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  margin-left: var(--solely-spacing-md);
+  color: var(--solely-text-secondary);
+}
+
+
+
+/* 隐藏原生 number input 按钮 */
+.pagination__jumper input::-webkit-inner-spin-button,
+.pagination__jumper input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.pagination__jumper input[type="number"] {
+  appearance: none;
+  -moz-appearance: textfield;
+}
+
+/* 自定义 number input 容器 */
+.pagination__jumper-input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pagination__jumper-input-wrapper input {
+  width: 50px;
+  height: var(--solely-height-md);
+  padding: 0 20px 0 var(--solely-spacing-sm);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  text-align: center;
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  transition: all var(--solely-transition-duration);
+}
+
+.pagination__jumper-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--solely-primary);
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
+/* 自定义上下按钮 */
+.pagination__jumper-controls {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  height: var(--solely-height-sm);
+  width: 16px;
+}
+
+.pagination__jumper-up,
+.pagination__jumper-down {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: var(--solely-text-secondary);
+  background-color: var(--solely-component-bg);
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+}
+
+.pagination__jumper-up:hover,
+.pagination__jumper-down:hover {
+  color: var(--solely-primary);
+  background-color: var(--solely-gray-2);
+}
+
+.pagination__jumper-up {
+  border-radius: 2px 2px 0 0;
+}
+
+.pagination__jumper-down {
+  border-radius: 0 0 2px 2px;
+}
+
+/* 每页条数选择器 */
+.pagination__size-changer {
+  margin-left: var(--solely-spacing-md);
+}
+
+.pagination__size-changer select {
+  height: var(--solely-height-md);
+  padding: 0 var(--solely-spacing-md) 0 var(--solely-spacing-sm);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+}
+
+.pagination__size-changer select:focus {
+  outline: none;
+  border-color: var(--solely-primary);
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
+.pagination__size-changer option {
+  color: var(--solely-text-primary);
+  background-color: var(--solely-component-bg);
+}
+
+/* 总数 */
+.pagination__total {
+  margin-right: var(--solely-spacing-md);
+  color: var(--solely-text-secondary);
+}
+
+/* 简单模式 */
+.pagination--simple .pagination__item,
+.pagination--simple .pagination__prev,
+.pagination--simple .pagination__next {
+  border: none;
+  background: transparent;
+}
+
+.pagination--simple .pagination__item--active {
+  color: var(--solely-primary);
+  background: transparent;
+}
+
+/* 中尺寸（默认） */
+.pagination--md .pagination__item,
+.pagination--md .pagination__prev,
+.pagination--md .pagination__next,
+.pagination--md .pagination__ellipsis {
+  min-width: var(--solely-height-md);
+  height: var(--solely-height-md);
+  font-size: var(--solely-font-size-md);
+}
+
+.pagination--md .pagination__jumper input,
+.pagination--md .pagination__size-changer select {
+  height: var(--solely-height-md);
+  font-size: var(--solely-font-size-md);
+}
+
+/* 大尺寸 */
+.pagination--lg .pagination__item,
+.pagination--lg .pagination__prev,
+.pagination--lg .pagination__next,
+.pagination--lg .pagination__ellipsis {
+  min-width: var(--solely-height-lg);
+  height: var(--solely-height-lg);
+  font-size: var(--solely-font-size-lg);
+}
+
+.pagination--lg .pagination__jumper input,
+.pagination--lg .pagination__size-changer select {
+  height: var(--solely-height-lg);
+  font-size: var(--solely-font-size-lg);
+}
+
+/* 小尺寸 */
+.pagination--sm .pagination__item,
+.pagination--sm .pagination__prev,
+.pagination--sm .pagination__next,
+.pagination--sm .pagination__ellipsis {
+  min-width: var(--solely-height-sm);
+  height: var(--solely-height-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+.pagination--sm .pagination__jumper input,
+.pagination--sm .pagination__size-changer select {
+  height: var(--solely-height-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+/* 禁用状态 */
+.pagination.is-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}

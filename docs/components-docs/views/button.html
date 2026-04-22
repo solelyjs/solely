@@ -1,0 +1,490 @@
+<h1 class="page-title">Button 按钮</h1>
+<p class="page-desc">按钮用于开始一个即时操作，支持多种类型、尺寸、图标、链接、加载状态等。</p>
+
+<div class="component-section" id="button">
+    <div class="demo-block">
+        <h3 class="demo-block-title">按钮类型</h3>
+        <p class="demo-block-desc">支持主按钮、次按钮、默认按钮、虚线按钮、文本按钮、链接按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary">Primary</solely-button>
+                <solely-button type="secondary">Secondary</solely-button>
+                <solely-button>Default</solely-button>
+                <solely-button type="dashed">Dashed</solely-button>
+                <solely-button type="text">Text</solely-button>
+                <solely-button type="link">Link</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span><span class="code-content">Primary</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"secondary"</span><span class="code-bracket">&gt;</span><span class="code-content">Secondary</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span><span class="code-content">Default</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"dashed"</span><span class="code-bracket">&gt;</span><span class="code-content">Dashed</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"text"</span><span class="code-bracket">&gt;</span><span class="code-content">Text</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"link"</span><span class="code-bracket">&gt;</span><span class="code-content">Link</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">语义化按钮</h3>
+        <p class="demo-block-desc">使用成功、警告、错误按钮来表达不同的语义。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="success">Success</solely-button>
+                <solely-button type="warning">Warning</solely-button>
+                <solely-button type="error">Error</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span><span class="code-bracket">&gt;</span><span class="code-content">Success</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span><span class="code-bracket">&gt;</span><span class="code-content">Warning</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span><span class="code-bracket">&gt;</span><span class="code-content">Error</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">按钮尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种尺寸。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" size="small">Small</solely-button>
+                <solely-button type="primary">Medium</solely-button>
+                <solely-button type="primary" size="large">Large</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span><span class="code-content">Small</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span><span class="code-content">Medium</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;</span><span class="code-content">Large</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">按钮形状</h3>
+        <p class="demo-block-desc">支持默认、圆角、圆形、胶囊四种形状。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary">Default</solely-button>
+                <solely-button type="primary" shape="round">Round</solely-button>
+                <solely-button type="primary" shape="circle">C</solely-button>
+                <solely-button type="primary" shape="pill">Pill Button</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span><span class="code-content">Default</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">shape</span>=<span class="code-value">"round"</span><span class="code-bracket">&gt;</span><span class="code-content">Round</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">shape</span>=<span class="code-value">"circle"</span><span class="code-bracket">&gt;</span><span class="code-content">C</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">shape</span>=<span class="code-value">"pill"</span><span class="code-bracket">&gt;</span><span class="code-content">Pill Button</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">图标按钮</h3>
+        <p class="demo-block-desc">可以在按钮中添加图标，支持左侧、右侧图标和仅图标按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" icon="🔍">Search</solely-button>
+                <solely-button type="primary" icon-right="→">Next</solely-button>
+                <solely-button type="primary" icon="✓" icon-only></solely-button>
+                <solely-button type="secondary" icon="⚙" icon-only></solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">icon</span>=<span class="code-value">"🔍"</span><span class="code-bracket">&gt;</span><span class="code-content">Search</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">icon-right</span>=<span class="code-value">"→"</span><span class="code-bracket">&gt;</span><span class="code-content">Next</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">icon</span>=<span class="code-value">"✓"</span> <span class="code-attr">icon-only</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"secondary"</span> <span class="code-attr">icon</span>=<span class="code-value">"⚙"</span> <span class="code-attr">icon-only</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义图标（SVG / 图片）</h3>
+        <p class="demo-block-desc">使用插槽可以传入 SVG、图片或任意 HTML 内容作为图标，优先级高于 icon 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary">
+                    <svg slot="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    SVG 图标
+                </solely-button>
+                <solely-button type="secondary">
+                    <img slot="icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231890ff' stroke-width='2'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E" width="16" height="16">
+                    图片图标
+                </solely-button>
+                <solely-button type="primary">
+                    右侧图标
+                    <svg slot="icon-right" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"></path>
+                        <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </solely-button>
+                <solely-button type="primary" icon-only>
+                    <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20"></path>
+                        <path d="M2 12h20"></path>
+                    </svg>
+                </solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- SVG 图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">svg</span> <span class="code-attr">slot</span>=<span class="code-value">"icon"</span> <span class="code-attr">width</span>=<span class="code-value">"16"</span> <span class="code-attr">height</span>=<span class="code-value">"16"</span> <span class="code-attr">viewBox</span>=<span class="code-value">"0 0 24 24"</span><span class="code-bracket">&gt;</span>...<span class="code-bracket">&lt;/</span><span class="code-tag">svg</span><span class="code-bracket">&gt;</span>
+  <span class="code-content">SVG 图标</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 图片图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"secondary"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">img</span> <span class="code-attr">slot</span>=<span class="code-value">"icon"</span> <span class="code-attr">src</span>=<span class="code-value">"icon.png"</span> <span class="code-attr">width</span>=<span class="code-value">"16"</span><span class="code-bracket">&gt;</span>
+  <span class="code-content">图片图标</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 右侧图标插槽 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span>
+  <span class="code-content">右侧图标</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">svg</span> <span class="code-attr">slot</span>=<span class="code-value">"icon-right"</span> <span class="code-attr">width</span>=<span class="code-value">"16"</span> <span class="code-attr">height</span>=<span class="code-value">"16"</span><span class="code-bracket">&gt;</span>...<span class="code-bracket">&lt;/</span><span class="code-tag">svg</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">加载状态</h3>
+        <p class="demo-block-desc">添加 loading 属性即可让按钮处于加载状态，支持自定义加载图标。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" loading>Loading</solely-button>
+                <solely-button type="primary" loading icon-only></solely-button>
+                <solely-button type="primary" loading loading-icon="⏳">自定义图标</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span><span class="code-bracket">&gt;</span><span class="code-content">Loading</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span> <span class="code-attr">icon-only</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span> <span class="code-attr">loading-icon</span>=<span class="code-value">"⏳"</span><span class="code-bracket">&gt;</span><span class="code-content">自定义图标</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">添加 disabled 属性即可禁用按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" disabled>Primary</solely-button>
+                <solely-button type="secondary" disabled>Secondary</solely-button>
+                <solely-button disabled>Default</solely-button>
+                <solely-button type="link" disabled>Link</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span><span class="code-content">Primary</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"secondary"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span><span class="code-content">Secondary</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span><span class="code-content">Default</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"link"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span><span class="code-content">Link</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">幽灵按钮</h3>
+        <p class="demo-block-desc">幽灵按钮将按钮的内容反色，背景变为透明，常用于深色背景上。</p>
+        <div class="demo-box" style="background: #1890ff; padding: 20px;">
+            <div class="demo-preview">
+                <solely-button type="primary" ghost>Primary</solely-button>
+                <solely-button type="secondary" ghost>Secondary</solely-button>
+                <solely-button ghost>Default</solely-button>
+                <solely-button type="dashed" ghost>Dashed</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">ghost</span><span class="code-bracket">&gt;</span><span class="code-content">Primary</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"secondary"</span> <span class="code-attr">ghost</span><span class="code-bracket">&gt;</span><span class="code-content">Secondary</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">ghost</span><span class="code-bracket">&gt;</span><span class="code-content">Default</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"dashed"</span> <span class="code-attr">ghost</span><span class="code-bracket">&gt;</span><span class="code-content">Dashed</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">危险按钮</h3>
+        <p class="demo-block-desc">危险按钮用于警示性操作，如删除等。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" danger>Primary</solely-button>
+                <solely-button danger>Default</solely-button>
+                <solely-button type="text" danger>Text</solely-button>
+                <solely-button type="link" danger>Link</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">danger</span><span class="code-bracket">&gt;</span><span class="code-content">Primary</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">danger</span><span class="code-bracket">&gt;</span><span class="code-content">Default</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"text"</span> <span class="code-attr">danger</span><span class="code-bracket">&gt;</span><span class="code-content">Text</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"link"</span> <span class="code-attr">danger</span><span class="code-bracket">&gt;</span><span class="code-content">Link</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">块级按钮</h3>
+        <p class="demo-block-desc">添加 block 属性可以让按钮宽度适应容器。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--column">
+                <solely-button type="primary" block>Primary Block</solely-button>
+                <solely-button block>Default Block</solely-button>
+                <solely-button type="dashed" block>Dashed Block</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">block</span><span class="code-bracket">&gt;</span><span class="code-content">Primary Block</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">block</span><span class="code-bracket">&gt;</span><span class="code-content">Default Block</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"dashed"</span> <span class="code-attr">block</span><span class="code-bracket">&gt;</span><span class="code-content">Dashed Block</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">链接按钮</h3>
+        <p class="demo-block-desc">设置 href 属性可以让按钮渲染为链接，支持 target 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="link" href="https://github.com/solelyjs/solely" target="_blank">外部链接</solely-button>
+                <solely-button type="primary" href="#/intro">内部链接</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"link"</span> <span class="code-attr">href</span>=<span class="code-value">"https://github.com/solelyjs/solely"</span> <span class="code-attr">target</span>=<span class="code-value">"_blank"</span><span class="code-bracket">&gt;</span><span class="code-content">外部链接</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">href</span>=<span class="code-value">"#/intro"</span><span class="code-bracket">&gt;</span><span class="code-content">内部链接</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">点击事件</h3>
+        <p class="demo-block-desc">监听 click 事件来响应按钮点击，禁用或加载状态下不会触发。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.handleButtonClick(event)">点击我</solely-button>
+                <solely-button type="secondary" @click="this.handleButtonClick(event)">点击我</solely-button>
+                <solely-button disabled @click="this.handleButtonClick(event)">禁用按钮（无响应）</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 监听 click 事件 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">@click</span>=<span class="code-value">"handleClick(event)"</span><span class="code-bracket">&gt;</span><span class="code-content">点击我</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 处理函数</span>
+<span class="code-keyword">function</span> <span class="code-attr">handleClick</span>(<span class="code-attr">event</span>: <span class="code-type">MouseEvent</span>) {
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'按钮被点击了'</span>, <span class="code-attr">event</span>);
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- API 文档 -->
+    <div class="api-section">
+        <h3 class="api-section-title">API</h3>
+
+        <div class="api-block">
+            <h4 class="api-block-title">属性</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>属性</th>
+                        <th>说明</th>
+                        <th>类型</th>
+                        <th>默认值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>type</td>
+                        <td>按钮类型</td>
+                        <td>'primary' | 'secondary' | 'default' | 'dashed' | 'text' | 'link' | 'success' | 'warning' | 'error'</td>
+                        <td>'default'</td>
+                    </tr>
+                    <tr>
+                        <td>size</td>
+                        <td>按钮尺寸</td>
+                        <td>'small' | 'medium' | 'large'</td>
+                        <td>'medium'</td>
+                    </tr>
+                    <tr>
+                        <td>shape</td>
+                        <td>按钮形状</td>
+                        <td>'default' | 'round' | 'circle' | 'pill'</td>
+                        <td>'default'</td>
+                    </tr>
+                    <tr>
+                        <td>disabled</td>
+                        <td>是否禁用</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>loading</td>
+                        <td>是否加载中</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>ghost</td>
+                        <td>幽灵按钮</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>danger</td>
+                        <td>危险按钮</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>block</td>
+                        <td>块级按钮</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>icon</td>
+                        <td>左侧图标</td>
+                        <td>string</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>icon-right</td>
+                        <td>右侧图标</td>
+                        <td>string</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>icon-only</td>
+                        <td>是否仅显示图标</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>loading-icon</td>
+                        <td>自定义加载图标</td>
+                        <td>string</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>href</td>
+                        <td>链接地址，设置后渲染为 a 标签</td>
+                        <td>string</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>target</td>
+                        <td>链接打开方式</td>
+                        <td>string</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">事件</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>事件名</th>
+                        <th>说明</th>
+                        <th>回调参数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>click</td>
+                        <td>点击按钮时触发（禁用或加载状态下不触发）</td>
+                        <td>MouseEvent</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">方法</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>方法名</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>focus()</td>
+                        <td>使按钮获得焦点</td>
+                    </tr>
+                    <tr>
+                        <td>blur()</td>
+                        <td>使按钮失去焦点</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">插槽</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>插槽名</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>default</td>
+                        <td>按钮内容</td>
+                    </tr>
+                    <tr>
+                        <td>icon</td>
+                        <td>左侧图标（优先级高于 icon 属性）</td>
+                    </tr>
+                    <tr>
+                        <td>icon-right</td>
+                        <td>右侧图标（优先级高于 icon-right 属性）</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">类型定义</h4>
+            <pre><code><span class="code-comment">// 按钮类型</span>
+<span class="code-keyword">type</span> <span class="code-type">ButtonType</span> = 
+  | <span class="code-value">'primary'</span>
+  | <span class="code-value">'secondary'</span>
+  | <span class="code-value">'default'</span>
+  | <span class="code-value">'dashed'</span>
+  | <span class="code-value">'text'</span>
+  | <span class="code-value">'link'</span>
+  | <span class="code-value">'success'</span>
+  | <span class="code-value">'warning'</span>
+  | <span class="code-value">'error'</span>;
+
+<span class="code-comment">// 按钮尺寸</span>
+<span class="code-keyword">type</span> <span class="code-type">ButtonSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
+
+<span class="code-comment">// 按钮形状</span>
+<span class="code-keyword">type</span> <span class="code-type">ButtonShape</span> = <span class="code-value">'default'</span> | <span class="code-value">'round'</span> | <span class="code-value">'circle'</span> | <span class="code-value">'pill'</span>;
+
+<span class="code-comment">// 按钮属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">ButtonProps</span> {
+  <span class="code-attr">type</span>?: <span class="code-type">ButtonType</span>;      <span class="code-comment">// 按钮类型</span>
+  <span class="code-attr">size</span>?: <span class="code-type">ButtonSize</span>;      <span class="code-comment">// 按钮尺寸</span>
+  <span class="code-attr">shape</span>?: <span class="code-type">ButtonShape</span>;    <span class="code-comment">// 按钮形状</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;      <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;       <span class="code-comment">// 是否加载中</span>
+  <span class="code-attr">ghost</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 幽灵按钮</span>
+  <span class="code-attr">danger</span>?: <span class="code-type">boolean</span>;       <span class="code-comment">// 危险按钮</span>
+  <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 块级按钮</span>
+  <span class="code-attr">icon</span>?: <span class="code-type">string</span>;          <span class="code-comment">// 左侧图标</span>
+  <span class="code-attr">iconRight</span>?: <span class="code-type">string</span>;     <span class="code-comment">// 右侧图标</span>
+  <span class="code-attr">iconOnly</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 仅图标</span>
+  <span class="code-attr">loadingIcon</span>?: <span class="code-type">string</span>;   <span class="code-comment">// 加载图标</span>
+  <span class="code-attr">href</span>?: <span class="code-type">string</span>;          <span class="code-comment">// 链接地址</span>
+  <span class="code-attr">target</span>?: <span class="code-type">string</span>;        <span class="code-comment">// 链接打开方式</span>
+}</code></pre>
+        </div>
+    </div>
+</div>

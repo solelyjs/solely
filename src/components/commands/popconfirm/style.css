@@ -1,0 +1,192 @@
+/**
+ * Solely Popconfirm 组件样式 (重构版)
+ * 基于 BEM 命名规范
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== 遮罩层样式 ==================== */
+.popconfirm-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+  z-index: var(--solely-z-index-popover);
+}
+
+/* ==================== 确认框容器 ==================== */
+.popconfirm {
+  position: absolute;
+  background-color: var(--solely-component-bg);
+  border-radius: var(--solely-border-radius-md);
+  box-shadow: var(--solely-shadow-lg);
+  padding: var(--solely-spacing-lg);
+  min-width: 200px;
+  max-width: 300px;
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  z-index: var(--solely-z-index-popover);
+  animation: popconfirm-fade-in var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.popconfirm.is-closing {
+  animation: popconfirm-fade-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+}
+
+/* ==================== 箭头样式 ==================== */
+.popconfirm__arrow {
+  position: absolute;
+  width: var(--solely-popconfirm-arrow-size, 8px);
+  height: var(--solely-popconfirm-arrow-size, 8px);
+  background-color: var(--solely-component-bg);
+  transform: rotate(45deg);
+}
+
+/* 上方位置箭头 */
+.popconfirm--top .popconfirm__arrow,
+.popconfirm--topLeft .popconfirm__arrow,
+.popconfirm--topRight .popconfirm__arrow {
+  bottom: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
+  border-bottom: 1px solid var(--solely-border-color-split);
+  border-right: 1px solid var(--solely-border-color-split);
+}
+
+/* 下方位置箭头 */
+.popconfirm--bottom .popconfirm__arrow,
+.popconfirm--bottomLeft .popconfirm__arrow,
+.popconfirm--bottomRight .popconfirm__arrow {
+  top: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
+  border-top: 1px solid var(--solely-border-color-split);
+  border-left: 1px solid var(--solely-border-color-split);
+}
+
+/* 左侧位置箭头 */
+.popconfirm--left .popconfirm__arrow,
+.popconfirm--leftTop .popconfirm__arrow,
+.popconfirm--leftBottom .popconfirm__arrow {
+  right: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
+  border-top: 1px solid var(--solely-border-color-split);
+  border-right: 1px solid var(--solely-border-color-split);
+}
+
+/* 右侧位置箭头 */
+.popconfirm--right .popconfirm__arrow,
+.popconfirm--rightTop .popconfirm__arrow,
+.popconfirm--rightBottom .popconfirm__arrow {
+  left: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
+  border-bottom: 1px solid var(--solely-border-color-split);
+  border-left: 1px solid var(--solely-border-color-split);
+}
+
+/* ==================== 内容区域 ==================== */
+.popconfirm__content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--solely-spacing-sm);
+  margin-bottom: var(--solely-spacing-md);
+}
+
+.popconfirm__icon {
+  color: var(--solely-warning);
+  font-size: var(--solely-font-size-lg);
+  flex-shrink: 0;
+}
+
+.popconfirm__text {
+  flex: 1;
+}
+
+.popconfirm__title {
+  font-weight: 500;
+  color: var(--solely-text-primary);
+  line-height: var(--solely-line-height-md);
+}
+
+.popconfirm__description {
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-text-secondary);
+  margin-top: var(--solely-spacing-xs);
+  line-height: var(--solely-line-height-sm);
+}
+
+/* ==================== 按钮组 ==================== */
+.popconfirm__buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--solely-spacing-sm);
+}
+
+.popconfirm__btn {
+  padding: var(--solely-spacing-xs) var(--solely-spacing-md);
+  border-radius: var(--solely-border-radius-sm);
+  font-size: var(--solely-font-size-sm);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+  border: 1px solid transparent;
+  font-family: var(--solely-font-family);
+  line-height: var(--solely-line-height-sm);
+}
+
+/* 取消按钮 */
+.popconfirm__btn--cancel {
+  background-color: var(--solely-component-bg);
+  border-color: var(--solely-border-color);
+  color: var(--solely-text-primary);
+}
+
+.popconfirm__btn--cancel:hover {
+  border-color: var(--solely-primary);
+  color: var(--solely-primary);
+}
+
+/* 确认按钮 */
+.popconfirm__btn--ok {
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+  color: var(--solely-white);
+}
+
+.popconfirm__btn--ok:hover {
+  background-color: var(--solely-primary-hover);
+  border-color: var(--solely-primary-hover);
+}
+
+/* 危险按钮 */
+.popconfirm__btn--danger {
+  background-color: var(--solely-error);
+  border-color: var(--solely-error);
+}
+
+.popconfirm__btn--danger:hover {
+  background-color: var(--solely-error-hover);
+  border-color: var(--solely-error-hover);
+}
+
+/* ==================== 动画定义 ==================== */
+@keyframes popconfirm-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes popconfirm-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}

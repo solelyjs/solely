@@ -1,0 +1,14 @@
+<div class="rate"  :class="this.getRateClasses()">
+    <For each="$data.starCount" item="i">
+        <span
+            class="rate__star"
+             :class="this.getStarClasses(i)"
+            :data-char="$data.character || '★'"
+            @click="this.handleClick(i)"
+            @mouseenter="this.handleMouseEnter(i)"
+            @mouseleave="this.handleMouseLeave(i)"
+        >
+            {{$data.character || '★'}}
+        </span>
+    </For>
+</div>

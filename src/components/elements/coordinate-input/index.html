@@ -1,0 +1,167 @@
+<div :class="this.getContainerClasses()">
+    <If condition="$data.type === 'latitude' || $data.type === 'both'">
+        <div class="coordinate-group">
+            <If condition="$data.type === 'both'">
+                <span class="coordinate-group__label">纬度</span>
+            </If>
+            <div class="dms-input" :class="this.getDmsInputClasses('latitude')">
+                <div class="dms-input__fields">
+                    <input
+                        class="dms-input__field dms-input__field--degrees"
+                        type="number"
+                        min="0"
+                        max="90"
+                        placeholder="0"
+                        :value="this.getDmsDisplayValue('latitude', 'degrees')"
+                        :disabled="$data.disabled"
+                        :readonly="$data.readonly"
+                        @input="this.handleDmsInput('latitude', 'degrees', event)"
+                        @change="this.handleDmsChange('latitude', 'degrees', event)"
+                        @focus="this.handleFocus('latitude', event)"
+                        @blur="this.handleBlur('latitude', event)"
+                        ref="latitudeDegreesInput"
+                    />
+                    <span class="dms-input__unit">°</span>
+                    <input
+                        class="dms-input__field"
+                        type="number"
+                        min="0"
+                        max="59"
+                        placeholder="00"
+                        :value="this.getDmsDisplayValue('latitude', 'minutes')"
+                        :disabled="$data.disabled"
+                        :readonly="$data.readonly"
+                        @input="this.handleDmsInput('latitude', 'minutes', event)"
+                        @change="this.handleDmsChange('latitude', 'minutes', event)"
+                        @focus="this.handleFocus('latitude', event)"
+                        @blur="this.handleBlur('latitude', event)"
+                        ref="latitudeMinutesInput"
+                    />
+                    <span class="dms-input__unit">′</span>
+                    <input
+                        class="dms-input__field dms-input__field--seconds"
+                        type="text"
+                        inputmode="decimal"
+                        :placeholder="this.getSecondsPlaceholder()"
+                        :disabled="$data.disabled"
+                        :readonly="$data.readonly"
+                        @blur="this.handleSecondsBlur('latitude', event)"
+                        @change="this.handleSecondsChange('latitude', event)"
+                        @keydown="this.handleSecondsKeyDown('latitude', event)"
+                        ref="latitudeSecondsInput"
+                    />
+                    <span class="dms-input__unit">″</span>
+                </div>
+                <If test="$data.showDirection">
+                    <div
+                        :class="this.getDirectionClasses('latitude')"
+                        :disabled="$data.disabled"
+                        @click="this.toggleDirection('latitude')"
+                        ref="latitudeDirectionInput"
+                    >
+                        <span class="dms-input__direction-value">{{this.getDmsDisplayValue('latitude', 'direction')}}</span>
+                        <span class="dms-input__direction-arrow">▼</span>
+                        <If test="$data.latitudeDirectionOpen">
+                            <div class="dms-input__direction-dropdown" @click="this.handleDropdownClick(event)">
+                                <div
+                                    :class="this.getDirectionOptionClasses('latitude', 'N')"
+                                    @click="this.selectDirection('latitude', 'N')"
+                                >N</div>
+                                <div
+                                    :class="this.getDirectionOptionClasses('latitude', 'S')"
+                                    @click="this.selectDirection('latitude', 'S')"
+                                >S</div>
+                            </div>
+                        </If>
+                    </div>
+                </If>
+            </div>
+            <If condition="$data.showDecimal">
+                <span class="coordinate-decimal">{{this.getDecimalDisplayValue('latitude')}}</span>
+            </If>
+        </div>
+    </If>
+
+    <If condition="$data.type === 'longitude' || $data.type === 'both'">
+        <div class="coordinate-group">
+            <If condition="$data.type === 'both'">
+                <span class="coordinate-group__label">经度</span>
+            </If>
+            <div class="dms-input" :class="this.getDmsInputClasses('longitude')">
+                <div class="dms-input__fields">
+                    <input
+                        class="dms-input__field dms-input__field--degrees"
+                        type="number"
+                        min="0"
+                        max="180"
+                        placeholder="0"
+                        :value="this.getDmsDisplayValue('longitude', 'degrees')"
+                        :disabled="$data.disabled"
+                        :readonly="$data.readonly"
+                        @input="this.handleDmsInput('longitude', 'degrees', event)"
+                        @change="this.handleDmsChange('longitude', 'degrees', event)"
+                        @focus="this.handleFocus('longitude', event)"
+                        @blur="this.handleBlur('longitude', event)"
+                        ref="longitudeDegreesInput"
+                    />
+                    <span class="dms-input__unit">°</span>
+                    <input
+                        class="dms-input__field"
+                        type="number"
+                        min="0"
+                        max="59"
+                        placeholder="00"
+                        :value="this.getDmsDisplayValue('longitude', 'minutes')"
+                        :disabled="$data.disabled"
+                        :readonly="$data.readonly"
+                        @input="this.handleDmsInput('longitude', 'minutes', event)"
+                        @change="this.handleDmsChange('longitude', 'minutes', event)"
+                        @focus="this.handleFocus('longitude', event)"
+                        @blur="this.handleBlur('longitude', event)"
+                        ref="longitudeMinutesInput"
+                    />
+                    <span class="dms-input__unit">′</span>
+                    <input
+                        class="dms-input__field dms-input__field--seconds"
+                        type="text"
+                        inputmode="decimal"
+                        :placeholder="this.getSecondsPlaceholder()"
+                        :disabled="$data.disabled"
+                        :readonly="$data.readonly"
+                        @blur="this.handleSecondsBlur('longitude', event)"
+                        @change="this.handleSecondsChange('longitude', event)"
+                        @keydown="this.handleSecondsKeyDown('longitude', event)"
+                        ref="longitudeSecondsInput"
+                    />
+                    <span class="dms-input__unit">″</span>
+                </div>
+                <If test="$data.showDirection">
+                    <div
+                        :class="this.getDirectionClasses('longitude')"
+                        :disabled="$data.disabled"
+                        @click="this.toggleDirection('longitude')"
+                        ref="longitudeDirectionInput"
+                    >
+                        <span class="dms-input__direction-value">{{this.getDmsDisplayValue('longitude', 'direction')}}</span>
+                        <span class="dms-input__direction-arrow">▼</span>
+                        <If test="$data.longitudeDirectionOpen">
+                            <div class="dms-input__direction-dropdown" @click="this.handleDropdownClick(event)">
+                                <div
+                                    :class="this.getDirectionOptionClasses('longitude', 'E')"
+                                    @click="this.selectDirection('longitude', 'E')"
+                                >E</div>
+                                <div
+                                    :class="this.getDirectionOptionClasses('longitude', 'W')"
+                                    @click="this.selectDirection('longitude', 'W')"
+                                >W</div>
+                            </div>
+                        </If>
+                    </div>
+                </If>
+            </div>
+            <If condition="$data.showDecimal">
+                <span class="coordinate-decimal">{{this.getDecimalDisplayValue('longitude')}}</span>
+            </If>
+        </div>
+    </If>
+</div>

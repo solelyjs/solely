@@ -1,0 +1,24 @@
+<div class="slider" :class="this.getSliderClasses()">
+    <div class="slider__rail" ref="rail" @mousedown="this.handleMouseDown(event)"
+        @touchstart="this.handleTouchStart(event)">
+        <div class="slider__track" :style="this.getTrackStyle()"></div>
+        <div class="slider__handle" :class="this.getHandleClasses()" :style="this.getHandleStyle()">
+            <If test="$data.tooltipVisible !== false">
+                <span class="slider__tooltip">{{$data.value}}</span>
+            </If>
+        </div>
+
+        <!-- 刻度标记 -->
+        <If test="$data.marks">
+            <div class="slider__marks">
+                <For each="this.getParsedMarks()" item="mark">
+                    <span class="slider__mark" :style="this.getMarkStyle(mark.value)">
+                        <span class="slider__mark-dot"
+                            :class="{ 'slider__mark-dot--active': (mark.value <= ($data.value ?? ($data.min ?? 0))) }"></span>
+                        <span class="slider__mark-label">{{mark.label}}</span>
+                    </span>
+                </For>
+            </div>
+        </If>
+    </div>
+</div>

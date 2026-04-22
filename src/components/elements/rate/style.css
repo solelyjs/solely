@@ -1,0 +1,74 @@
+/* Solely Rate 组件样式 */
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: inline-block;
+}
+
+.rate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  font-family: var(--solely-font-family);
+}
+
+.rate__star {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--solely-gray-4);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  user-select: none;
+}
+
+.rate__star:hover {
+  transform: scale(1.1);
+}
+
+.rate__star--full {
+  color: var(--solely-warning);
+}
+
+.rate__star--half {
+  position: relative;
+}
+
+.rate__star--half::before {
+  content: attr(data-char);
+  position: absolute;
+  left: 0;
+  width: 50%;
+  overflow: hidden;
+  color: var(--solely-warning);
+}
+
+.rate__star--zero {
+  color: var(--solely-gray-5);
+}
+
+/* 禁用状态 */
+.rate.is-disabled .rate__star {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
+}
+
+.rate.is-disabled .rate__star:hover {
+  transform: none;
+}
+
+/* 只读状态 */
+.rate.is-readonly .rate__star {
+  cursor: default;
+}
+
+.rate.is-readonly .rate__star:hover {
+  transform: none;
+}

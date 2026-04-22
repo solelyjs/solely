@@ -1,0 +1,177 @@
+<div class="page-header">
+    <h1 class="page-title">快速上手</h1>
+    <p class="page-desc">了解如何在项目中使用 Solely UI。</p>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">安装</h3>
+    <p class="demo-block-desc">UI 组件库随着 Solely 框架一起分发，只需安装 Solely 即可获得全套组件。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment"># npm</span>
+npm install solely
+
+<span class="code-comment"># yarn</span>
+yarn add solely
+
+<span class="code-comment"># pnpm</span>
+pnpm add solely</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">引入组件</h3>
+    <p class="demo-block-desc">你可以按需引入单个组件，也可以引入所有组件。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">// 按需引入单个组件（推荐）</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/input'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/card'</span>;
+
+<span class="code-comment">// 或者引入所有组件</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components'</span>;</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">引入样式</h3>
+    <p class="demo-block-desc">组件库需要单独引入 CSS 主题文件，支持亮色/暗色模式。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">// 引入主题 CSS 变量（必需）</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
+
+<span class="code-comment">// 按需引入组件样式</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/button/style.css'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/input/style.css'</span>;</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">使用组件</h3>
+    <p class="demo-block-desc">在 HTML 中直接使用组件标签。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">&lt;!-- 基础按钮 --&gt;</span>
+&lt;<span class="code-type">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span>&gt;Primary Button&lt;/<span class="code-type">solely-button</span>&gt;
+
+<span class="code-comment">&lt;!-- 输入框 --&gt;</span>
+&lt;<span class="code-type">solely-input</span> <span class="code-attr">placeholder</span>=<span class="code-value">"请输入内容"</span>&gt;&lt;/<span class="code-type">solely-input</span>&gt;
+
+<span class="code-comment">&lt;!-- 带图标的按钮 --&gt;</span>
+&lt;<span class="code-type">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">icon</span>=<span class="code-value">"search"</span>&gt;
+    搜索
+&lt;/<span class="code-type">solely-button</span>&gt;</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">命令式组件</h3>
+    <p class="demo-block-desc">Solely UI 提供了一系列命令式组件，可以通过 JavaScript 直接调用。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-keyword">import</span> { <span class="code-type">Message</span>, <span class="code-type">Modal</span>, <span class="code-type">Drawer</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+
+<span class="code-comment">// Message 全局提示</span>
+<span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'操作成功！'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">error</span>(<span class="code-value">'操作失败！'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">warning</span>(<span class="code-value">'警告信息'</span>);
+<span class="code-type">Message</span>.<span class="code-attr">info</span>(<span class="code-value">'提示信息'</span>);
+
+<span class="code-comment">// Modal 对话框</span>
+<span class="code-type">Modal</span>.<span class="code-attr">confirm</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'确认删除'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'确定要删除此项吗？'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'用户确认'</span>);
+    }
+});
+
+<span class="code-comment">// Drawer 抽屉</span>
+<span class="code-keyword">const</span> drawer = <span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'抽屉标题'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'抽屉内容'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>
+});
+
+<span class="code-comment">// 关闭抽屉</span>
+drawer.<span class="code-attr">close</span>();</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">TypeScript 支持</h3>
+    <p class="demo-block-desc">Solely UI 提供完整的 TypeScript 类型定义。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-keyword">import</span> { <span class="code-type">Message</span>, <span class="code-type">Modal</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+<span class="code-keyword">import type</span> { <span class="code-type">MessageOptions</span>, <span class="code-type">ModalOptions</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+
+<span class="code-comment">// 使用类型定义</span>
+<span class="code-keyword">const</span> messageOptions: <span class="code-type">MessageOptions</span> = {
+    <span class="code-attr">content</span>: <span class="code-value">'提示信息'</span>,
+    <span class="code-attr">duration</span>: <span class="code-value">3000</span>
+};
+
+<span class="code-keyword">const</span> modalOptions: <span class="code-type">ModalOptions</span> = {
+    <span class="code-attr">title</span>: <span class="code-value">'标题'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'内容'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'确定'</span>);
+    }
+};
+
+<span class="code-type">Message</span>.<span class="code-attr">open</span>(messageOptions);
+<span class="code-type">Modal</span>.<span class="code-attr">open</span>(modalOptions);</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">主题定制</h3>
+    <p class="demo-block-desc">通过 CSS 变量自定义主题。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">/* 自定义主题变量 */</span>
+<span class="code-bracket">:root</span> {
+  <span class="code-attr">--solely-primary</span>: <span class="code-value">#1890ff</span>;
+  <span class="code-attr">--solely-success</span>: <span class="code-value">#52c41a</span>;
+  <span class="code-attr">--solely-warning</span>: <span class="code-value">#faad14</span>;
+  <span class="code-attr">--solely-error</span>: <span class="code-value">#f5222d</span>;
+  <span class="code-attr">--solely-font-size-md</span>: <span class="code-value">14px</span>;
+  <span class="code-attr">--solely-border-radius-md</span>: <span class="code-value">6px</span>;
+}
+
+<span class="code-comment">/* 暗黑模式 */</span>
+<span class="code-bracket">[data-theme="dark"]</span> {
+  <span class="code-attr">--solely-bg-color</span>: <span class="code-value">#141414</span>;
+  <span class="code-attr">--solely-component-bg</span>: <span class="code-value">#1f1f1f</span>;
+}</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">主题样式</h3>
+    <p class="demo-block-desc">引入全部组件时，主题 CSS 变量会自动加载；按需引入时需要单独导入主题样式。</p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">// 引入全部组件（主题 CSS 已包含）</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components'</span>;
+
+<span class="code-comment">// 按需引入时需要先导入主题 CSS</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
+
+<span class="code-comment">// 使用主题切换功能</span>
+<span class="code-keyword">import</span> { <span class="code-type">setTheme</span>, <span class="code-type">toggleTheme</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/theme'</span>;
+<span class="code-type">toggleTheme</span>(); <span class="code-comment">// 切换明暗主题</span></pre>
+        </div>
+    </div>
+</div>

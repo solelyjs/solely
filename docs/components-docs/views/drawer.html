@@ -1,0 +1,371 @@
+<div class="page-header">
+    <h1 class="page-title">Drawer 抽屉</h1>
+    <p class="page-desc">抽屉组件，从屏幕边缘滑出的浮层面板。</p>
+</div>
+
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">点击按钮打开抽屉。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openDrawer()">打开抽屉</solely-button>
+                <div ref="drawerLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">import</span> { <span class="code-type">Drawer</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
+
+<span class="code-keyword">const</span> drawer = <span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'抽屉标题'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'抽屉内容'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">onClose</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'抽屉已关闭'</span>);
+    }
+});
+
+drawer.<span class="code-attr">close</span>();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">不同位置</h3>
+        <p class="demo-block-desc">抽屉可以从四个方向打开。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openLeftDrawer()">左侧抽屉</solely-button>
+                <solely-button type="primary" @click="this.openRightDrawer()">右侧抽屉</solely-button>
+                <solely-button type="primary" @click="this.openTopDrawer()">顶部抽屉</solely-button>
+                <solely-button type="primary" @click="this.openBottomDrawer()">底部抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 左侧抽屉</span>
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">placement</span>: <span class="code-value">'left'</span>,
+    <span class="code-attr">title</span>: <span class="code-value">'左侧抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'内容...'</span>,
+    <span class="code-attr">width</span>: <span class="code-value">250</span>
+});
+
+<span class="code-comment">// 右侧抽屉</span>
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">title</span>: <span class="code-value">'右侧抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'内容...'</span>,
+    <span class="code-attr">width</span>: <span class="code-value">300</span>
+});
+
+<span class="code-comment">// 顶部抽屉</span>
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
+    <span class="code-attr">title</span>: <span class="code-value">'顶部抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'内容...'</span>,
+    <span class="code-attr">height</span>: <span class="code-value">200</span>
+});
+
+<span class="code-comment">// 底部抽屉</span>
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">placement</span>: <span class="code-value">'bottom'</span>,
+    <span class="code-attr">title</span>: <span class="code-value">'底部抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'内容...'</span>,
+    <span class="code-attr">height</span>: <span class="code-value">300</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">无遮罩层</h3>
+        <p class="demo-block-desc">设置 <code>mask: false</code> 可不显示遮罩层。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openNoMaskDrawer()">无遮罩抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'无遮罩抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'没有遮罩层的抽屉'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">mask</span>: <span class="code-value">false</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">不可关闭</h3>
+        <p class="demo-block-desc">设置 <code>closable: false</code> 隐藏关闭按钮，<code>maskClosable: false</code> 禁止点击遮罩关闭。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openNoClosableDrawer()">不可关闭抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'不可关闭抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'没有关闭按钮的抽屉'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">closable</span>: <span class="code-value">false</span>,
+    <span class="code-attr">maskClosable</span>: <span class="code-value">false</span>,
+    <span class="code-attr">onClose</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'抽屉已关闭'</span>);
+    }
+});
+
+<span class="code-comment">// 3秒后自动关闭</span>
+<span class="code-type">setTimeout</span>(() => {
+    <span class="code-type">Drawer</span>.<span class="code-attr">destroy</span>();
+}, <span class="code-value">3000</span>);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义样式</h3>
+        <p class="demo-block-desc">通过 <code>bodyStyle</code> 自定义抽屉内容区域的样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.openCustomDrawer()">自定义抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'自定义抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'自定义内容和样式的抽屉'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">width</span>: <span class="code-value">400</span>,
+    <span class="code-attr">maskClosable</span>: <span class="code-value">false</span>,
+    <span class="code-attr">bodyStyle</span>: { <span class="code-attr">padding</span>: <span class="code-value">'24px'</span>, <span class="code-attr">backgroundColor</span>: <span class="code-value">'#f5f5f5'</span> },
+    <span class="code-attr">onClose</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'抽屉已关闭'</span>);
+    }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">更新抽屉</h3>
+        <p class="demo-block-desc">使用 <code>update()</code> 方法更新抽屉的标题、内容、宽度/高度等属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.updateDrawer()">更新抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> drawer = <span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'可更新的抽屉'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'这是初始内容'</span>,
+    <span class="code-attr">width</span>: <span class="code-value">300</span>
+});
+
+<span class="code-comment">// 更新标题和内容</span>
+drawer.<span class="code-attr">update</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'已更新'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'内容已更新'</span>
+});
+
+<span class="code-comment">// 更新宽度</span>
+drawer.<span class="code-attr">update</span>({ <span class="code-attr">width</span>: <span class="code-value">500</span> });
+
+<span class="code-comment">// 更新样式</span>
+drawer.<span class="code-attr">update</span>({
+    <span class="code-attr">className</span>: <span class="code-value">'my-custom-class'</span>,
+    <span class="code-attr">bodyStyle</span>: { <span class="code-attr">backgroundColor</span>: <span class="code-value">'#f0f0f0'</span> }
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">全局配置</h3>
+        <p class="demo-block-desc">使用 <code>config()</code> 方法配置全局默认设置。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.configDrawer()">更新全局配置</solely-button>
+                <solely-button type="primary" @click="this.destroyAllDrawers()">销毁所有抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Drawer</span>.<span class="code-attr">config</span>({
+    <span class="code-attr">width</span>: <span class="code-value">500</span>,
+    <span class="code-attr">maskClosable</span>: <span class="code-value">false</span>
+});
+
+<span class="code-type">Drawer</span>.<span class="code-attr">destroy</span>();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="api-block">
+        <h3 class="api-block-title">API</h3>
+        
+        <h4 class="api-block-subtitle">Drawer.open(options)</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>title</td>
+                    <td>抽屉标题</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>抽屉内容</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>placement</td>
+                    <td>抽屉位置</td>
+                    <td>'left' | 'right' | 'top' | 'bottom'</td>
+                    <td>'right'</td>
+                </tr>
+                <tr>
+                    <td>width</td>
+                    <td>抽屉宽度（placement 为 left/right 时有效）</td>
+                    <td>number | string</td>
+                    <td>378</td>
+                </tr>
+                <tr>
+                    <td>height</td>
+                    <td>抽屉高度（placement 为 top/bottom 时有效）</td>
+                    <td>number | string</td>
+                    <td>378</td>
+                </tr>
+                <tr>
+                    <td>mask</td>
+                    <td>是否显示遮罩</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>maskClosable</td>
+                    <td>点击遮罩层是否关闭</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>closable</td>
+                    <td>是否显示关闭按钮</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>className</td>
+                    <td>自定义类名</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>style</td>
+                    <td>自定义样式</td>
+                    <td>Partial&lt;CSSStyleDeclaration&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>bodyStyle</td>
+                    <td>抽屉内容的样式</td>
+                    <td>Partial&lt;CSSStyleDeclaration&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>onClose</td>
+                    <td>关闭后回调</td>
+                    <td>() => void</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">DrawerInstance</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>close()</td>
+                    <td>关闭抽屉</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>update(options)</td>
+                    <td>更新抽屉配置</td>
+                    <td>options: Partial&lt;DrawerOptions&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">Drawer.config(options)</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>参数</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>width</td>
+                    <td>默认宽度</td>
+                    <td>number | string</td>
+                    <td>378</td>
+                </tr>
+                <tr>
+                    <td>height</td>
+                    <td>默认高度</td>
+                    <td>number | string</td>
+                    <td>378</td>
+                </tr>
+                <tr>
+                    <td>mask</td>
+                    <td>默认是否显示遮罩</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>maskClosable</td>
+                    <td>默认点击遮罩是否关闭</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>closable</td>
+                    <td>默认是否显示关闭按钮</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">其他方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Drawer.destroy()</td>
+                    <td>销毁所有抽屉</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

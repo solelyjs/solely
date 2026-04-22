@@ -1,0 +1,346 @@
+<h1 class="page-title">FAB 悬浮按钮</h1>
+<p class="page-desc">悬浮在页面固定位置的按钮，常用于页面级别的全局操作。</p>
+
+<div class="component-section" id="fab">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">默认显示在右下角，点击可触发操作。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <div class="fab-placeholder">
+                    页面内容区域
+                </div>
+                <solely-fab absolute type="primary"></solely-fab>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">按钮类型</h3>
+        <p class="demo-block-desc">支持多种颜色类型，适应不同场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab absolute position="top-left" type="primary" size="small"></solely-fab>
+                <solely-fab absolute position="top-right" type="secondary" size="small"></solely-fab>
+                <solely-fab absolute position="bottom-left" type="success" size="small"></solely-fab>
+                <solely-fab absolute position="bottom-right" type="warning" size="small"></solely-fab>
+                <solely-fab absolute position="center" type="error" size="small"></solely-fab>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"secondary"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"default"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">按钮尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种尺寸。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab absolute position="top-left" offset-x="24" offset-y="24" type="primary" size="small"></solely-fab>
+                <solely-fab absolute position="top-left" offset-x="80" offset-y="20" type="primary" size="medium"></solely-fab>
+                <solely-fab absolute position="top-left" offset-x="152" offset-y="12" type="primary" size="large"></solely-fab>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">按钮形状</h3>
+        <p class="demo-block-desc">支持圆形、方形、圆角三种形状。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab absolute position="top-left" offset-x="24" offset-y="24" type="primary" shape="circle" size="small"></solely-fab>
+                <solely-fab absolute position="top-left" offset-x="80" offset-y="24" type="primary" shape="square" size="small"></solely-fab>
+                <solely-fab absolute position="top-left" offset-x="136" offset-y="24" type="primary" shape="rounded" size="small"></solely-fab>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">shape</span>=<span class="code-value">"circle"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">shape</span>=<span class="code-value">"square"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">shape</span>=<span class="code-value">"rounded"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">悬浮位置</h3>
+        <p class="demo-block-desc">支持 9 种固定位置，包括四个角落、四条边的中点和中心。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab absolute type="primary" position="top-left" size="small"></solely-fab>
+                <solely-fab absolute type="primary" position="top-center" size="small"></solely-fab>
+                <solely-fab absolute type="secondary" position="top-right" size="small"></solely-fab>
+                <solely-fab absolute type="success" position="left-center" size="small"></solely-fab>
+                <solely-fab absolute type="warning" position="center" size="small"></solely-fab>
+                <solely-fab absolute type="error" position="right-center" size="small"></solely-fab>
+                <solely-fab absolute type="success" position="bottom-left" size="small"></solely-fab>
+                <solely-fab absolute type="primary" position="bottom-center" size="small"></solely-fab>
+                <solely-fab absolute type="warning" position="bottom-right" size="small"></solely-fab>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 四个角落 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"top-left"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"top-right"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"bottom-left"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"bottom-right"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 四条边中点 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"top-center"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"bottom-center"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"left-center"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"right-center"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 正中心 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">position</span>=<span class="code-value">"center"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义图标</h3>
+        <p class="demo-block-desc">通过 icon 属性或插槽自定义图标。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab absolute position="top-left" offset-x="24" offset-y="24" type="primary" icon="✎" size="small"></solely-fab>
+                <solely-fab absolute position="top-left" offset-x="80" offset-y="24" type="secondary" icon="✕" size="small"></solely-fab>
+                <solely-fab absolute position="top-left" offset-x="136" offset-y="24" type="success" size="small">
+                    <svg slot="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                </solely-fab>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 icon 属性 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">icon</span>=<span class="code-value">"✎"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 使用插槽 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">svg</span> <span class="code-attr">slot</span>=<span class="code-value">"icon"</span> <span class="code-attr">width</span>=<span class="code-value">"20"</span> <span class="code-attr">height</span>=<span class="code-value">"20"</span><span class="code-bracket">&gt;</span>...<span class="code-bracket">&lt;/</span><span class="code-tag">svg</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">点击事件</h3>
+        <p class="demo-block-desc">监听 click 事件来响应按钮点击，禁用状态下不会触发。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab ref="clickFab" absolute position="bottom-right" type="primary" icon="👆" @click="this.handleFabClick(event)"></solely-fab>
+                <solely-button type="primary" size="small" @click="this.handleTestClick()">测试点击</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 监听 click 事件 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">@click</span>=<span class="code-value">"handleClick(event)"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 处理函数</span>
+<span class="code-keyword">function</span> <span class="code-attr">handleClick</span>(<span class="code-attr">event</span>: <span class="code-type">MouseEvent</span>) {
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'FAB 被点击了'</span>, <span class="code-attr">event</span>);
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">点击隐藏</h3>
+        <p class="demo-block-desc">使用 hide-on-click 属性，点击后自动隐藏按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab ref="hideFab" absolute position="center" type="success" icon="✓" hide-on-click></solely-fab>
+                <solely-button type="primary" size="small" @click="this.showHideFab()">显示按钮</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 点击后自动隐藏 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">hide-on-click</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 通过方法重新显示</span>
+<span class="code-attr">fab</span>.<span class="code-attr">show</span>();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">使用 disabled 属性禁用按钮，禁用状态下无法点击且不会触发事件。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab">
+                <solely-fab ref="disabledFab" absolute position="center" type="primary" icon="🚫" @click="this.handleDisabledFabClick(event)"></solely-fab>
+                <solely-button type="primary" size="small" @click="this.toggleDisabled()">{{$data.disabledFab ? '启用' : '禁用'}}</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 禁用状态 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 动态切换禁用状态（通过方法设置） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">ref</span>=<span class="code-value">"fab"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 通过 setAttribute 设置</span>
+<span class="code-attr">fab</span>.<span class="code-attr">setAttribute</span>(<span class="code-value">'disabled'</span>, <span class="code-value">'true'</span>);
+
+<span class="code-comment">// 或通过 $data 设置</span>
+<span class="code-attr">fab</span>.<span class="code-attr">$data</span>.<span class="code-attr">disabled</span> = <span class="code-value">true</span>;</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- API 文档 -->
+    <div class="api-section">
+        <h3 class="api-section-title">API</h3>
+
+        <div class="api-block">
+            <h4 class="api-block-title">属性</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>属性</th>
+                        <th>说明</th>
+                        <th>类型</th>
+                        <th>默认值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>type</td>
+                        <td>按钮类型</td>
+                        <td>'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default'</td>
+                        <td>'primary'</td>
+                    </tr>
+                    <tr>
+                        <td>size</td>
+                        <td>按钮尺寸</td>
+                        <td>'small' | 'medium' | 'large'</td>
+                        <td>'medium'</td>
+                    </tr>
+                    <tr>
+                        <td>shape</td>
+                        <td>按钮形状</td>
+                        <td>'circle' | 'square' | 'rounded'</td>
+                        <td>'circle'</td>
+                    </tr>
+                    <tr>
+                        <td>position</td>
+                        <td>悬浮位置</td>
+                        <td>'top-left' | 'top-center' | 'top-right' | 'left-center' | 'center' | 'right-center' | 'bottom-left' | 'bottom-center' | 'bottom-right'</td>
+                        <td>'bottom-right'</td>
+                    </tr>
+                    <tr>
+                        <td>offsetX</td>
+                        <td>水平偏移量（像素）</td>
+                        <td>number</td>
+                        <td>24</td>
+                    </tr>
+                    <tr>
+                        <td>offsetY</td>
+                        <td>垂直偏移量（像素）</td>
+                        <td>number</td>
+                        <td>24</td>
+                    </tr>
+                    <tr>
+                        <td>icon</td>
+                        <td>图标内容</td>
+                        <td>string</td>
+                        <td>'+'</td>
+                    </tr>
+                    <tr>
+                        <td>absolute</td>
+                        <td>是否使用绝对定位（用于演示）</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">事件</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>事件名</th>
+                        <th>说明</th>
+                        <th>回调参数</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>click</td>
+                        <td>点击按钮时触发（禁用状态下不触发）</td>
+                        <td>MouseEvent</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">插槽</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>插槽名</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>icon</td>
+                        <td>自定义图标内容</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">类型定义</h4>
+            <pre><code><span class="code-comment">// FAB 按钮类型</span>
+<span class="code-keyword">type</span> <span class="code-type">FabType</span> = 
+  | <span class="code-value">'primary'</span>
+  | <span class="code-value">'secondary'</span>
+  | <span class="code-value">'success'</span>
+  | <span class="code-value">'warning'</span>
+  | <span class="code-value">'error'</span>
+  | <span class="code-value">'default'</span>;
+
+<span class="code-comment">// FAB 按钮尺寸</span>
+<span class="code-keyword">type</span> <span class="code-type">FabSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
+
+<span class="code-comment">// FAB 按钮形状</span>
+<span class="code-keyword">type</span> <span class="code-type">FabShape</span> = <span class="code-value">'circle'</span> | <span class="code-value">'square'</span> | <span class="code-value">'rounded'</span>;
+
+<span class="code-comment">// FAB 位置</span>
+<span class="code-keyword">type</span> <span class="code-type">FabPosition</span> =
+  | <span class="code-value">'top-left'</span>
+  | <span class="code-value">'top-center'</span>
+  | <span class="code-value">'top-right'</span>
+  | <span class="code-value">'left-center'</span>
+  | <span class="code-value">'center'</span>
+  | <span class="code-value">'right-center'</span>
+  | <span class="code-value">'bottom-left'</span>
+  | <span class="code-value">'bottom-center'</span>
+  | <span class="code-value">'bottom-right'</span>;
+
+<span class="code-comment">// FAB 属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">FabProps</span> {
+  <span class="code-attr">type</span>?: <span class="code-type">FabType</span>;        <span class="code-comment">// 按钮类型</span>
+  <span class="code-attr">size</span>?: <span class="code-type">FabSize</span>;        <span class="code-comment">// 按钮尺寸</span>
+  <span class="code-attr">shape</span>?: <span class="code-type">FabShape</span>;      <span class="code-comment">// 按钮形状</span>
+  <span class="code-attr">position</span>?: <span class="code-type">FabPosition</span>; <span class="code-comment">// 悬浮位置</span>
+  <span class="code-attr">offsetX</span>?: <span class="code-type">number</span>;      <span class="code-comment">// 水平偏移量</span>
+  <span class="code-attr">offsetY</span>?: <span class="code-type">number</span>;      <span class="code-comment">// 垂直偏移量</span>
+  <span class="code-attr">icon</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 图标内容</span>
+  <span class="code-attr">absolute</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否绝对定位</span>
+}</code></pre>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+<div
+    class="switch"
+    :class="this.getSwitchClasses()"
+    @click="this.handleClick()"
+    tabindex="0"
+    @keydown="this.handleKeyDown(event)"
+    role="switch"
+    :aria-checked="$data.checked ? 'true' : 'false'"
+    :aria-disabled="$data.disabled ? 'true' : 'false'"
+>
+    <div class="switch__track">
+        <div class="switch__inner">
+            <If test="$data.checkedChildren">
+                <span class="switch__inner-checked">{{$data.checkedChildren}}</span>
+            </If>
+            <If test="$data.unCheckedChildren">
+                <span class="switch__inner-unchecked">{{$data.unCheckedChildren}}</span>
+            </If>
+        </div>
+        <div class="switch__handle">
+            <If test="$data.loading">
+                <span class="switch__loading-icon"></span>
+            </If>
+        </div>
+    </div>
+</div>

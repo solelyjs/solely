@@ -1,0 +1,400 @@
+<div class="page-header">
+    <h1 class="page-title">Upload 上传</h1>
+    <p class="page-desc">文件上传组件，支持点击上传和拖拽上传。</p>
+</div>
+
+<div class="demo-section">
+    <!-- 基础用法 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">最简单的用法，点击上传文件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义按钮文字 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义按钮文字</h3>
+        <p class="demo-block-desc">通过 button-text 属性自定义上传按钮文字。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload button-text="上传图片"></solely-upload>
+                <solely-upload button-text="选择文件"></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">button-text</span>=<span class="code-value">"上传图片"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">button-text</span>=<span class="code-value">"选择文件"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 多文件上传 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">多文件上传</h3>
+        <p class="demo-block-desc">设置 multiple 属性支持多文件上传。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload multiple button-text="上传多个文件"></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">multiple</span> <span class="code-attr">button-text</span>=<span class="code-value">"上传多个文件"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 限制文件类型 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">限制文件类型</h3>
+        <p class="demo-block-desc">通过 accept 属性限制可上传的文件类型。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload accept="image/*" button-text="只能上传图片"></solely-upload>
+                <solely-upload accept=".pdf,.doc,.docx" button-text="只能上传文档"></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">accept</span>=<span class="code-value">"image/*"</span> <span class="code-attr">button-text</span>=<span class="code-value">"只能上传图片"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">accept</span>=<span class="code-value">".pdf,.doc,.docx"</span> <span class="code-attr">button-text</span>=<span class="code-value">"只能上传文档"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拖拽上传 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">拖拽上传</h3>
+        <p class="demo-block-desc">设置 drag 属性开启拖拽上传模式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload drag></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">drag</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">通过 disabled 属性禁用上传功能。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload disabled></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 限制数量 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">限制数量</h3>
+        <p class="demo-block-desc">通过 max-count 属性限制最多上传文件数量。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload multiple max-count="3" button-text="最多上传3个文件"></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">multiple</span> <span class="code-attr">max-count</span>=<span class="code-value">"3"</span> <span class="code-attr">button-text</span>=<span class="code-value">"最多上传3个文件"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 限制大小 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">限制大小</h3>
+        <p class="demo-block-desc">通过 max-size 属性限制单个文件大小（字节）。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload max-size="1048576" button-text="单个文件不超过1MB"></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 1MB = 1024 * 1024 = 1048576 字节 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">max-size</span>=<span class="code-value">"1048576"</span> <span class="code-attr">button-text</span>=<span class="code-value">"单个文件不超过1MB"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 不同列表类型 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">不同列表类型</h3>
+        <p class="demo-block-desc">通过 list-type 属性设置上传列表的样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload list-type="text" button-text="文本列表"></solely-upload>
+                <solely-upload list-type="picture" button-text="图片列表"></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">list-type</span>=<span class="code-value">"text"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">list-type</span>=<span class="code-value">"picture"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Block 属性 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">Block 属性</h3>
+        <p class="demo-block-desc">设置 block 属性可使上传按钮宽度撑满父容器。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px;">
+                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px;">
+                    <solely-upload block button-text="Block 上传按钮"></solely-upload>
+                </div>
+                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px;">
+                    <solely-upload block drag></solely-upload>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">block</span> <span class="code-attr">button-text</span>=<span class="code-value">"Block 上传按钮"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">block</span> <span class="code-attr">drag</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件处理 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">事件处理</h3>
+        <p class="demo-block-desc">监听 change、success、error、remove 事件处理上传逻辑。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-upload 
+                    multiple
+                    @change="this.handleUploadChange(event)"
+                    @success="this.handleUploadSuccess(event)"
+                    @error="this.handleUploadError(event)"
+                    @remove="this.handleUploadRemove(event)"
+                ></solely-upload>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> 
+  <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span>
+  <span class="code-attr">@success</span>=<span class="code-value">"handleSuccess(event)"</span>
+  <span class="code-attr">@error</span>=<span class="code-value">"handleError(event)"</span>
+  <span class="code-attr">@remove</span>=<span class="code-value">"handleRemove(event)"</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> uploadEl = document.querySelector(<span class="code-value">'solely-upload'</span>);
+
+<span class="code-comment">// change 事件 - 文件列表变化时触发</span>
+uploadEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
+  <span class="code-keyword">const</span> fileList = e.target.fileList;
+  console.log(<span class="code-value">'文件列表:'</span>, fileList);
+});
+
+<span class="code-comment">// success 事件 - 上传成功时触发</span>
+uploadEl.addEventListener(<span class="code-value">'success'</span>, (e) => {
+  console.log(<span class="code-value">'上传成功:'</span>, e.detail.file);
+});
+
+<span class="code-comment">// error 事件 - 上传失败时触发</span>
+uploadEl.addEventListener(<span class="code-value">'error'</span>, (e) => {
+  console.log(<span class="code-value">'上传失败:'</span>, e.detail.message);
+});
+
+<span class="code-comment">// remove 事件 - 移除文件时触发</span>
+uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
+  console.log(<span class="code-value">'移除文件:'</span>, e.detail.file);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API 文档 -->
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性名</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>action</td>
+                    <td>上传地址</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>accept</td>
+                    <td>接受上传的文件类型</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>multiple</td>
+                    <td>是否支持多选</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>fileList</td>
+                    <td>上传文件列表（JSON字符串）</td>
+                    <td>string</td>
+                    <td>[]</td>
+                </tr>
+                <tr>
+                    <td>listType</td>
+                    <td>上传列表的内建样式（text/picture/picture-card）</td>
+                    <td>string</td>
+                    <td>text</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>showUploadList</td>
+                    <td>是否显示上传列表</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>buttonText</td>
+                    <td>上传按钮文字</td>
+                    <td>string</td>
+                    <td>上传文件</td>
+                </tr>
+                <tr>
+                    <td>drag</td>
+                    <td>是否支持拖拽上传</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>maxCount</td>
+                    <td>最大文件数量</td>
+                    <td>number</td>
+                    <td>Infinity</td>
+                </tr>
+                <tr>
+                    <td>maxSize</td>
+                    <td>文件大小限制（字节）</td>
+                    <td>number</td>
+                    <td>Infinity</td>
+                </tr>
+                <tr>
+                    <td>block</td>
+                    <td>是否撑满父容器宽度</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">事件</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>change</td>
+                    <td>文件列表变化时触发</td>
+                    <td>Event</td>
+                </tr>
+                <tr>
+                    <td>success</td>
+                    <td>上传成功时触发</td>
+                    <td>CustomEvent&lt;{ file: UploadFile; fileList: UploadFile[] }&gt;</td>
+                </tr>
+                <tr>
+                    <td>error</td>
+                    <td>上传失败时触发</td>
+                    <td>CustomEvent&lt;{ file: UploadFile; message: string }&gt;</td>
+                </tr>
+                <tr>
+                    <td>remove</td>
+                    <td>移除文件时触发</td>
+                    <td>CustomEvent&lt;{ file: UploadFile; fileList: UploadFile[] }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>getFileList()</td>
+                    <td>获取文件列表</td>
+                    <td>-</td>
+                    <td>UploadFile[]</td>
+                </tr>
+                <tr>
+                    <td>clear()</td>
+                    <td>清空文件列表</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 上传文件类型</span>
+<span class="code-keyword">interface</span> <span class="code-type">UploadFile</span> {
+  <span class="code-attr">uid</span>: <span class="code-type">string</span>;           <span class="code-comment">// 文件唯一标识</span>
+  <span class="code-attr">name</span>: <span class="code-type">string</span>;          <span class="code-comment">// 文件名</span>
+  <span class="code-attr">size</span>?: <span class="code-type">number</span>;         <span class="code-comment">// 文件大小</span>
+  <span class="code-attr">type</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 文件类型</span>
+  <span class="code-attr">status</span>?: <span class="code-type">'uploading' | 'done' | 'error' | 'removed'</span>;
+  <span class="code-attr">percent</span>?: <span class="code-type">number</span>;      <span class="code-comment">// 上传进度</span>
+  <span class="code-attr">url</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 文件URL</span>
+  <span class="code-attr">error</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 错误信息</span>
+}
+
+<span class="code-comment">// 组件属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">UploadProps</span> {
+  <span class="code-attr">action</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 上传地址</span>
+  <span class="code-attr">accept</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 接受上传的文件类型</span>
+  <span class="code-attr">multiple</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否支持多选</span>
+  <span class="code-attr">fileList</span>?: <span class="code-type">string</span>;   <span class="code-comment">// 上传文件列表（JSON字符串）</span>
+  <span class="code-attr">listType</span>?: <span class="code-type">'text' | 'picture' | 'picture-card'</span>;
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">showUploadList</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否显示上传列表</span>
+  <span class="code-attr">buttonText</span>?: <span class="code-type">string</span>;  <span class="code-comment">// 上传按钮文字</span>
+  <span class="code-attr">drag</span>?: <span class="code-type">boolean</span>;       <span class="code-comment">// 是否支持拖拽上传</span>
+  <span class="code-attr">maxCount</span>?: <span class="code-type">number</span>;   <span class="code-comment">// 最大文件数量</span>
+  <span class="code-attr">maxSize</span>?: <span class="code-type">number</span>;    <span class="code-comment">// 文件大小限制（字节）</span>
+  <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;      <span class="code-comment">// 是否撑满父容器宽度</span>
+}</code></pre>
+    </div>
+</div>
