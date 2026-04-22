@@ -99,7 +99,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
                 console.warn(`[Solely] 标签名称 "${tagName}" 已经被注册，跳过重复定义。`);
             }
             // 即使已注册，仍需挂载 manifest 供框架内部获取元数据
-            (OriginalClass as any)[MANIFEST_SYMBOL] = manifest;
+            (OriginalClass as typeof OriginalClass)[MANIFEST_SYMBOL] = manifest;
             return OriginalClass;
         }
 
@@ -188,7 +188,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
 
         // 定义新类并挂载 manifest
         class CE extends OriginalClass {}
-        (CE as any)[MANIFEST_SYMBOL] = manifest;
+        (CE as typeof OriginalClass)[MANIFEST_SYMBOL] = manifest;
 
         // 注册自定义元素（仅浏览器环境）
         if (isBrowser) {
