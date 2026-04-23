@@ -149,13 +149,14 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
             <div class="demo-preview">
                 <solely-button type="error" ref="deleteBtn" @click="this.showElementDeleteConfirm(event)">删除按钮</solely-button>
                 <solely-button type="primary" ref="actionBtn" @click="this.showElementActionConfirm(event)">操作按钮</solely-button>
+                <solely-button type="warning" @click="this.showElementCustomConfirm(event)">自定义 DOM</solely-button>
                 <div ref="elementPopconfirmLog" class="event-log">等待交互...</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 在 Element 组件点击事件中触发 Popconfirm</span>
 <span class="code-keyword">const</span> handleDelete = (event) => {
     <span class="code-keyword">const</span> target = event.<span class="code-attr">target</span>;
-    
+
     <span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
         <span class="code-attr">title</span>: <span class="code-value">'确认删除'</span>,
         <span class="code-attr">description</span>: <span class="code-value">'此操作不可恢复'</span>,
@@ -172,6 +173,20 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
 <span class="code-type">Popconfirm</span>.<span class="code-attr">bind</span>(btn, {
     <span class="code-attr">title</span>: <span class="code-value">'确认操作'</span>,
     <span class="code-attr">onConfirm</span>: () => {}
+});
+
+<span class="code-comment">// 使用 HTMLElement 作为标题和描述</span>
+<span class="code-keyword">const</span> customTitle = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+customTitle.<span class="code-attr">innerHTML</span> = <span class="code-value">'&lt;span style="color: var(--solely-error);"&gt;⚠️ 警告&lt;/span&gt;'</span>;
+
+<span class="code-keyword">const</span> customDesc = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`此操作将 &lt;strong&gt;永久删除&lt;/strong&gt; 数据，请确认`</span>;
+
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(btn, {
+    <span class="code-attr">title</span>: customTitle,
+    <span class="code-attr">description</span>: customDesc,
+    <span class="code-attr">okType</span>: <span class="code-value">'danger'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>
 });</code></pre>
             </div>
         </div>
@@ -200,13 +215,13 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
                 <tr>
                     <td>title</td>
                     <td>确认框标题</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>
                     <td>description</td>
                     <td>确认框描述</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>
@@ -219,7 +234,7 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
                 <tr>
                     <td>okText</td>
                     <td>确定按钮文字</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>'确定'</td>
                 </tr>
                 <tr>
@@ -231,7 +246,7 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
                 <tr>
                     <td>cancelText</td>
                     <td>取消按钮文字</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>'取消'</td>
                 </tr>
                 <tr>
@@ -325,13 +340,13 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
                 <tr>
                     <td>okText</td>
                     <td>默认确认按钮文字</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>'确定'</td>
                 </tr>
                 <tr>
                     <td>cancelText</td>
                     <td>默认取消按钮文字</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>'取消'</td>
                 </tr>
                 <tr>

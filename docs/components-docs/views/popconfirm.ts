@@ -203,4 +203,32 @@ export class DocsPopconfirm extends BaseElement<DocsData> {
         });
         this.addElementLog('Element：显示操作确认框');
     }
+
+    showElementCustomConfirm(event: Event): void {
+        const target = event.target as HTMLElement;
+
+        // 使用 HTMLElement 作为标题和描述
+        const customTitle = document.createElement('div');
+        customTitle.style.cssText = 'display: flex; align-items: center; gap: 8px; font-weight: 500;';
+        customTitle.innerHTML =
+            '<span style="font-size: 18px;">⚠️</span> <span style="color: var(--solely-error);">警告</span>';
+
+        const customDesc = document.createElement('div');
+        customDesc.innerHTML =
+            '此操作将 <strong style="color: var(--solely-error);">永久删除</strong> 所有数据，且无法恢复，请确认！';
+
+        Popconfirm.show(target, {
+            title: customTitle,
+            description: customDesc,
+            okType: 'danger',
+            placement: 'top',
+            onConfirm: () => {
+                this.addElementLog('Element：自定义 DOM 操作已确认');
+            },
+            onCancel: () => {
+                this.addElementLog('Element：自定义 DOM 操作已取消');
+            },
+        });
+        this.addElementLog('Element：显示自定义 DOM 内容的确认框');
+    }
 }

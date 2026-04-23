@@ -252,6 +252,27 @@ export class DocsTooltip extends BaseElement<DocsData> {
         }
     }
 
+    showElementContentTooltip(): void {
+        const btn = this.$refs.elementShowBtn as HTMLElement;
+        if (btn) {
+            // 使用 HTMLElement 作为 Tooltip 内容
+            const customContent = document.createElement('div');
+            customContent.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">✅</span>
+                    <span>操作成功完成</span>
+                </div>
+            `;
+
+            Tooltip.show(btn, {
+                content: customContent,
+                placement: 'top',
+                duration: 3000,
+            });
+            this.addElementLog('Element：显示自定义 DOM 内容的提示');
+        }
+    }
+
     hideAllElementTooltips(): void {
         if (this.elementTooltipInstance) {
             this.elementTooltipInstance.hide();

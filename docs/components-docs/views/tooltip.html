@@ -164,6 +164,7 @@ tooltip.<span class="code-attr">destroy</span>();
             <div class="demo-preview">
                 <solely-button type="primary" ref="elementTooltipBtn" @click="this.bindElementTooltip()">绑定到 Element</solely-button>
                 <solely-button type="default" ref="elementShowBtn" @click="this.showElementTooltip()">显示临时提示</solely-button>
+                <solely-button type="success" @click="this.showElementContentTooltip()">DOM 内容提示</solely-button>
                 <solely-button type="error" @click="this.hideAllElementTooltips()">隐藏所有</solely-button>
                 <div ref="elementTooltipLog" class="event-log">等待交互...</div>
             </div>
@@ -182,6 +183,20 @@ tooltip.<span class="code-attr">destroy</span>();
     <span class="code-attr">content</span>: <span class="code-value">'临时提示'</span>,
     <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
     <span class="code-attr">duration</span>: <span class="code-value">2000</span>
+});
+
+<span class="code-comment">// 使用 HTMLElement 作为内容</span>
+<span class="code-keyword">const</span> customContent = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+customContent.<span class="code-attr">innerHTML</span> = <span class="code-value">`
+    &lt;div style="display: flex; align-items: center; gap: 8px;"&gt;
+        &lt;span style="color: var(--solely-success);"&gt;✓&lt;/span&gt;
+        &lt;span&gt;操作成功&lt;/span&gt;
+    &lt;/div&gt;
+`</span>;
+
+<span class="code-type">Tooltip</span>.<span class="code-attr">show</span>(btn, {
+    <span class="code-attr">content</span>: customContent,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>
 });</code></pre>
             </div>
         </div>
@@ -210,7 +225,7 @@ tooltip.<span class="code-attr">destroy</span>();
             <tr>
                 <td>content</td>
                 <td>提示内容</td>
-                <td>string</td>
+                <td>string | HTMLElement</td>
                 <td>-</td>
             </tr>
             <tr>
