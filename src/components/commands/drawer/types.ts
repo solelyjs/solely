@@ -6,9 +6,9 @@ export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
 
 export interface DrawerOptions {
     /** 标题 */
-    title?: string;
+    title?: string | HTMLElement;
     /** 内容 */
-    content?: string;
+    content?: string | HTMLElement;
     /** 抽屉方向 */
     placement?: DrawerPlacement;
     /** 宽度（placement为left或right时有效） */

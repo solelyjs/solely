@@ -149,15 +149,29 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
 
     const title = createElement('div', {
         className: 'popconfirm__title',
-        textContent: options.title,
     });
+
+    // 支持字符串和 DOM 元素作为标题
+    if (typeof options.title === 'string') {
+        title.textContent = options.title;
+    } else if (options.title instanceof HTMLElement) {
+        title.appendChild(options.title.cloneNode(true));
+    }
+
     textWrapper.appendChild(title);
 
     if (options.description) {
         const description = createElement('div', {
             className: 'popconfirm__description',
-            textContent: options.description,
         });
+
+        // 支持字符串和 DOM 元素作为描述
+        if (typeof options.description === 'string') {
+            description.textContent = options.description;
+        } else if (options.description instanceof HTMLElement) {
+            description.appendChild(options.description.cloneNode(true));
+        }
+
         textWrapper.appendChild(description);
     }
 
@@ -178,18 +192,34 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
     if (showCancel) {
         const cancelBtn = createElement('button', {
             className: 'popconfirm__btn popconfirm__btn--cancel',
-            textContent: options.cancelText ?? globalConfig.cancelText,
             attrs: { type: 'button' },
         });
+
+        // 支持字符串和 DOM 元素作为取消按钮文字
+        const cancelText = options.cancelText ?? globalConfig.cancelText;
+        if (typeof cancelText === 'string') {
+            cancelBtn.textContent = cancelText;
+        } else if (cancelText instanceof HTMLElement) {
+            cancelBtn.appendChild(cancelText.cloneNode(true));
+        }
+
         cancelBtn.onclick = handleCancel;
         buttons.appendChild(cancelBtn);
     }
 
     const okBtn = createElement('button', {
         className: `popconfirm__btn popconfirm__btn--ok${okType === 'danger' ? ' popconfirm__btn--danger' : ''}`,
-        textContent: options.okText ?? globalConfig.okText,
         attrs: { type: 'button' },
     });
+
+    // 支持字符串和 DOM 元素作为确认按钮文字
+    const okText = options.okText ?? globalConfig.okText;
+    if (typeof okText === 'string') {
+        okBtn.textContent = okText;
+    } else if (okText instanceof HTMLElement) {
+        okBtn.appendChild(okText.cloneNode(true));
+    }
+
     okBtn.onclick = handleConfirm;
     buttons.appendChild(okBtn);
 

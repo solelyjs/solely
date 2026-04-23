@@ -5,6 +5,7 @@ import template from './tooltip.html?raw';
 
 interface DocsData {
     tooltipLog: string[];
+    elementTooltipLog: string[];
 }
 
 @CustomElement({
@@ -20,6 +21,7 @@ export class DocsTooltip extends BaseElement<DocsData> {
     constructor() {
         super({
             tooltipLog: [],
+            elementTooltipLog: [],
         });
     }
 
@@ -209,5 +211,52 @@ export class DocsTooltip extends BaseElement<DocsData> {
         this.clearDemoTooltip();
         Tooltip.hide();
         this.addLog('所有提示已隐藏');
+    }
+
+    private addElementLog(message: string): void {
+        this.$data.elementTooltipLog = [...this.$data.elementTooltipLog.slice(-4), message];
+        this.refresh();
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private elementTooltipInstance: any = null;
+
+    bindElementTooltip(): void {
+        if (this.elementTooltipInstance) {
+            this.elementTooltipInstance.destroy();
+            this.elementTooltipInstance = null;
+            this.addElementLog('Element：Tooltip 已解绑');
+            return;
+        }
+
+        const btn = this.$refs.elementTooltipBtn as HTMLElement;
+        if (btn) {
+            this.elementTooltipInstance = Tooltip.bind(btn, {
+                content: 'Element 组件悬停提示',
+                placement: 'top',
+                trigger: 'hover',
+            });
+            this.addElementLog('Element：Tooltip 已绑定到 Button');
+        }
+    }
+
+    showElementTooltip(): void {
+        const btn = this.$refs.elementShowBtn as HTMLElement;
+        if (btn) {
+            Tooltip.show(btn, {
+                content: 'Element 临时提示（2秒后消失）',
+                placement: 'top',
+                duration: 2000,
+            });
+            this.addElementLog('Element：临时提示已显示');
+        }
+    }
+
+    hideAllElementTooltips(): void {
+        if (this.elementTooltipInstance) {
+            this.elementTooltipInstance.hide();
+        }
+        Tooltip.hide();
+        this.addElementLog('Element：所有提示已隐藏');
     }
 }

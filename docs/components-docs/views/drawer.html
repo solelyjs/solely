@@ -194,6 +194,65 @@ drawer.<span class="code-attr">update</span>({
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">与 Element 组件结合</h3>
+        <p class="demo-block-desc">在 Solely Element 组件中通过事件绑定触发 Drawer，支持使用 <code>ref</code> 引用组件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" ref="drawerTriggerBtn" @click="this.openElementDrawer()">Element 触发</solely-button>
+                <solely-button type="default" @click="this.openDrawerWithElementContent()">Element 作为内容</solely-button>
+                <solely-button type="primary" @click="this.openCustomDomDrawer()">自定义 DOM 内容</solely-button>
+                <div ref="elementDrawerLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 通过 ref 获取 Element 组件触发 Drawer</span>
+<span class="code-keyword">const</span> btn = <span class="code-keyword">this</span>.<span class="code-attr">refs</span>.<span class="code-attr">drawerTriggerBtn</span>;
+
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'Element 触发'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'通过 Solely Button 组件触发的抽屉'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">onClose</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'抽屉关闭'</span>);
+    }
+});
+
+<span class="code-comment">// 使用 DOM 元素作为内容</span>
+<span class="code-keyword">const</span> content = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+content.<span class="code-attr">innerHTML</span> = <span class="code-value">'&lt;solely-tag type="primary"&gt;标签&lt;/solely-tag&gt;'</span>;
+
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'自定义内容'</span>,
+    <span class="code-attr">content</span>: content,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>
+});
+
+<span class="code-comment">// 完全自定义 DOM 内容</span>
+<span class="code-keyword">const</span> customContent = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+customContent.<span class="code-attr">innerHTML</span> = <span class="code-value">`
+    &lt;div style="padding: 16px;"&gt;
+        &lt;h3 style="margin: 0 0 16px 0;"&gt;用户详情&lt;/h3&gt;
+        &lt;div style="display: flex; gap: 12px; margin-bottom: 16px;"&gt;
+            &lt;div style="width: 64px; height: 64px; background: var(--solely-primary); border-radius: 50%;"&gt;&lt;/div&gt;
+            &lt;div&gt;
+                &lt;div style="font-weight: 500;"&gt;张三&lt;/div&gt;
+                &lt;div style="color: var(--solely-text-secondary);"&gt;zhangsan@example.com&lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;solely-button type="primary" block&gt;编辑资料&lt;/solely-button&gt;
+    &lt;/div&gt;
+`</span>;
+
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'自定义标题'</span>,
+    <span class="code-attr">content</span>: customContent,
+    <span class="code-attr">placement</span>: <span class="code-value">'right'</span>,
+    <span class="code-attr">width</span>: <span class="code-value">400</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
     <div class="api-block">
         <h3 class="api-block-title">API</h3>
         
@@ -211,13 +270,13 @@ drawer.<span class="code-attr">update</span>({
                 <tr>
                     <td>title</td>
                     <td>抽屉标题</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>
                     <td>content</td>
                     <td>抽屉内容</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>

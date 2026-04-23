@@ -142,6 +142,41 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">与 Element 组件结合</h3>
+        <p class="demo-block-desc">在 Solely Element 组件中使用 Popconfirm，支持通过 <code>event.target</code> 获取触发元素。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="error" ref="deleteBtn" @click="this.showElementDeleteConfirm(event)">删除按钮</solely-button>
+                <solely-button type="primary" ref="actionBtn" @click="this.showElementActionConfirm(event)">操作按钮</solely-button>
+                <div ref="elementPopconfirmLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 在 Element 组件点击事件中触发 Popconfirm</span>
+<span class="code-keyword">const</span> handleDelete = (event) => {
+    <span class="code-keyword">const</span> target = event.<span class="code-attr">target</span>;
+    
+    <span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+        <span class="code-attr">title</span>: <span class="code-value">'确认删除'</span>,
+        <span class="code-attr">description</span>: <span class="code-value">'此操作不可恢复'</span>,
+        <span class="code-attr">okType</span>: <span class="code-value">'danger'</span>,
+        <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
+        <span class="code-attr">onConfirm</span>: () => {
+            <span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'删除成功'</span>);
+        }
+    });
+};
+
+<span class="code-comment">// 使用 bind 绑定到 Element 组件</span>
+<span class="code-keyword">const</span> btn = <span class="code-keyword">this</span>.<span class="code-attr">refs</span>.<span class="code-attr">actionBtn</span>;
+<span class="code-type">Popconfirm</span>.<span class="code-attr">bind</span>(btn, {
+    <span class="code-attr">title</span>: <span class="code-value">'确认操作'</span>,
+    <span class="code-attr">onConfirm</span>: () => {}
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
     <div class="api-block">
         <h3 class="api-block-title">API</h3>
 

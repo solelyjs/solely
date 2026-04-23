@@ -5,6 +5,7 @@ import template from './drawer.html?raw';
 
 interface DocsData {
     drawerLog: string[];
+    elementDrawerLog: string[];
 }
 
 @CustomElement({
@@ -15,6 +16,7 @@ export class DocsDrawer extends BaseElement<DocsData> {
     constructor() {
         super({
             drawerLog: [],
+            elementDrawerLog: [],
         });
     }
 
@@ -158,5 +160,89 @@ export class DocsDrawer extends BaseElement<DocsData> {
     destroyAllDrawers(): void {
         Drawer.destroy();
         this.addLog('已销毁所有抽屉');
+    }
+
+    private addElementLog(message: string): void {
+        this.$data.elementDrawerLog = [...this.$data.elementDrawerLog.slice(-4), message];
+        this.refresh();
+    }
+
+    openElementDrawer(): void {
+        const btn = this.$refs.drawerTriggerBtn as HTMLElement;
+        console.log('通过 Element 组件触发:', btn);
+
+        Drawer.open({
+            title: 'Element 触发',
+            content: '通过 Solely Button 组件触发的抽屉',
+            placement: 'right',
+            onClose: () => {
+                this.addElementLog('Element 触发：抽屉已关闭');
+            },
+        });
+        this.addElementLog('通过 Element Button 打开抽屉');
+    }
+
+    openDrawerWithElementContent(): void {
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <p>可以在 Drawer 内容中使用 Solely 组件：</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <solely-tag type="primary">标签1</solely-tag>
+                    <solely-tag type="success">标签2</solely-tag>
+                    <solely-tag type="warning">标签3</solely-tag>
+                </div>
+                <div style="padding: 12px; background: var(--solely-bg-color-secondary); border-radius: 4px;">
+                    <code>content</code> 参数支持传入 HTMLElement
+                </div>
+                <solely-button type="primary" block>确定</solely-button>
+            </div>
+        `;
+
+        Drawer.open({
+            title: 'Element 作为内容',
+            content: content,
+            placement: 'right',
+            width: 400,
+            onClose: () => {
+                this.addElementLog('自定义内容：抽屉已关闭');
+            },
+        });
+        this.addElementLog('打开带自定义 Element 内容的抽屉');
+    }
+
+    openCustomDomDrawer(): void {
+        // 完全自定义 DOM 内容
+        const customContent = document.createElement('div');
+        customContent.innerHTML = `
+            <div style="padding: 16px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 18px;">用户详情</h3>
+                <div style="display: flex; gap: 16px; margin-bottom: 20px; align-items: center;">
+                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--solely-primary), var(--solely-success)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 500;">张</div>
+                    <div>
+                        <div style="font-weight: 500; font-size: 16px; margin-bottom: 4px;">张三</div>
+                        <div style="color: var(--solely-text-secondary); font-size: 13px;">zhangsan@example.com</div>
+                        <div style="margin-top: 8px;">
+                            <span style="display: inline-block; padding: 2px 8px; background: var(--solely-success-bg); color: var(--solely-success); border-radius: 4px; font-size: 12px;">已认证</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <solely-button type="primary" style="flex: 1;">编辑资料</solely-button>
+                    <solely-button type="default" style="flex: 1;">关闭</solely-button>
+                </div>
+            </div>
+        `;
+
+        Drawer.open({
+            title: '自定义 DOM 内容',
+            content: customContent,
+            placement: 'right',
+            width: 400,
+            onClose: () => {
+                this.addElementLog('自定义 DOM：抽屉已关闭');
+            },
+        });
+        this.addElementLog('打开完全自定义 DOM 内容的抽屉');
     }
 }

@@ -6,7 +6,7 @@ export type ModalType = 'info' | 'success' | 'warning' | 'error' | 'confirm';
 
 export interface ModalButton {
     /** 按钮文字 */
-    text: string;
+    text: string | HTMLElement;
     /** 按钮类型 */
     type?: 'primary' | 'default' | 'danger';
     /** 按钮样式 */
@@ -17,9 +17,9 @@ export interface ModalButton {
 
 export interface ModalOptions {
     /** 标题 */
-    title?: string;
+    title?: string | HTMLElement;
     /** 内容 */
-    content?: string;
+    content?: string | HTMLElement;
     /** 类型 */
     type?: ModalType;
     /** 宽度 */
@@ -30,10 +30,12 @@ export interface ModalOptions {
     maskClosable?: boolean;
     /** 是否显示关闭按钮 */
     closable?: boolean;
+    /** 是否显示图标，默认 true */
+    showIcon?: boolean;
     /** 确定按钮文字 */
-    okText?: string;
+    okText?: string | HTMLElement;
     /** 取消按钮文字 */
-    cancelText?: string;
+    cancelText?: string | HTMLElement;
     /** 确定按钮类型 */
     okType?: 'primary' | 'default' | 'danger';
     /** 是否显示取消按钮 */
@@ -67,7 +69,7 @@ export interface ModalConfig {
     /** 默认是否可点击遮罩关闭 */
     maskClosable: boolean;
     /** 默认确定按钮文字 */
-    okText: string;
+    okText: string | HTMLElement;
     /** 默认取消按钮文字 */
-    cancelText: string;
+    cancelText: string | HTMLElement;
 }

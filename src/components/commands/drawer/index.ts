@@ -169,8 +169,15 @@ function open(options: DrawerOptions): DrawerInstance {
         if (options.title) {
             const title = createElement('h3', {
                 className: 'drawer__title',
-                textContent: options.title,
             });
+
+            // 支持字符串和 DOM 元素作为标题
+            if (typeof options.title === 'string') {
+                title.textContent = options.title;
+            } else if (options.title instanceof HTMLElement) {
+                title.appendChild(options.title.cloneNode(true));
+            }
+
             header.appendChild(title);
         }
 
@@ -195,8 +202,14 @@ function open(options: DrawerOptions): DrawerInstance {
     const body = createElement('div', {
         className: 'drawer__body',
         styles: options.bodyStyle as Partial<CSSStyleDeclaration>,
-        textContent: options.content || '',
     });
+
+    // 支持字符串和 DOM 元素作为内容
+    if (typeof options.content === 'string') {
+        body.textContent = options.content || '';
+    } else if (options.content instanceof HTMLElement) {
+        body.appendChild(options.content.cloneNode(true));
+    }
 
     drawer.appendChild(body);
     wrap.appendChild(drawer);
@@ -226,14 +239,29 @@ function open(options: DrawerOptions): DrawerInstance {
             if (newOptions.title !== undefined) {
                 const titleEl = wrap.querySelector('.drawer__title') as HTMLElement;
                 if (titleEl) {
-                    titleEl.textContent = newOptions.title;
+                    // 清空现有内容
+                    titleEl.innerHTML = '';
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newOptions.title === 'string') {
+                        titleEl.textContent = newOptions.title;
+                    } else if (newOptions.title instanceof HTMLElement) {
+                        titleEl.appendChild(newOptions.title.cloneNode(true));
+                    }
                 } else if (newOptions.title) {
                     // 如果之前没有标题，需要创建 header
                     const header = createElement('div', { className: 'drawer__header' });
                     const title = createElement('h3', {
                         className: 'drawer__title',
-                        textContent: newOptions.title,
                     });
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newOptions.title === 'string') {
+                        title.textContent = newOptions.title;
+                    } else if (newOptions.title instanceof HTMLElement) {
+                        title.appendChild(newOptions.title.cloneNode(true));
+                    }
+
                     header.appendChild(title);
                     const drawer = wrap.querySelector('.drawer') as HTMLElement;
                     drawer?.insertBefore(header, drawer.firstChild);
@@ -243,7 +271,17 @@ function open(options: DrawerOptions): DrawerInstance {
             // 更新内容
             if (newOptions.content !== undefined) {
                 const bodyEl = wrap.querySelector('.drawer__body') as HTMLElement;
-                if (bodyEl) bodyEl.textContent = newOptions.content;
+                if (bodyEl) {
+                    // 清空现有内容
+                    bodyEl.innerHTML = '';
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newOptions.content === 'string') {
+                        bodyEl.textContent = newOptions.content;
+                    } else if (newOptions.content instanceof HTMLElement) {
+                        bodyEl.appendChild(newOptions.content.cloneNode(true));
+                    }
+                }
             }
 
             // 更新宽度/高度

@@ -5,6 +5,7 @@ import template from './popconfirm.html?raw';
 
 interface DocsData {
     popconfirmLog: string[];
+    elementPopconfirmLog: string[];
 }
 
 @CustomElement({
@@ -18,6 +19,7 @@ export class DocsPopconfirm extends BaseElement<DocsData> {
     constructor() {
         super({
             popconfirmLog: [],
+            elementPopconfirmLog: [],
         });
     }
 
@@ -162,5 +164,43 @@ export class DocsPopconfirm extends BaseElement<DocsData> {
 
     bindConfirm(): void {
         // 这个方法现在不需要了，绑定在 connectedCallback 中完成
+    }
+
+    private addElementLog(message: string): void {
+        this.$data.elementPopconfirmLog = [...this.$data.elementPopconfirmLog.slice(-4), message];
+        this.refresh();
+    }
+
+    showElementDeleteConfirm(event: Event): void {
+        const target = event.target as HTMLElement;
+        Popconfirm.show(target, {
+            title: '确认删除',
+            description: '此操作不可恢复，确定要删除吗？',
+            okType: 'danger',
+            placement: 'top',
+            onConfirm: () => {
+                this.addElementLog('Element：删除操作已确认');
+            },
+            onCancel: () => {
+                this.addElementLog('Element：删除操作已取消');
+            },
+        });
+        this.addElementLog('Element：显示删除确认框');
+    }
+
+    showElementActionConfirm(event: Event): void {
+        const target = event.target as HTMLElement;
+        Popconfirm.show(target, {
+            title: '确认操作',
+            description: '是否执行此操作？',
+            placement: 'top',
+            onConfirm: () => {
+                this.addElementLog('Element：操作已确认');
+            },
+            onCancel: () => {
+                this.addElementLog('Element：操作已取消');
+            },
+        });
+        this.addElementLog('Element：显示操作确认框');
     }
 }

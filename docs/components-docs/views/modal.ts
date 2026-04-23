@@ -5,6 +5,7 @@ import template from './modal.html?raw';
 
 interface DocsData {
     modalLog: string[];
+    elementModalLog: string[];
 }
 
 @CustomElement({
@@ -15,6 +16,7 @@ export class DocsModal extends BaseElement<DocsData> {
     constructor() {
         super({
             modalLog: [],
+            elementModalLog: [],
         });
     }
 
@@ -227,5 +229,93 @@ export class DocsModal extends BaseElement<DocsData> {
     destroyAll(): void {
         Modal.destroy();
         this.addLog('已销毁所有对话框');
+    }
+
+    private addElementLog(message: string): void {
+        this.$data.elementModalLog = [...this.$data.elementModalLog.slice(-4), message];
+        this.refresh();
+    }
+
+    openElementModal(): void {
+        const btn = this.$refs.modalTriggerBtn as HTMLElement;
+        console.log('通过 Element 组件触发:', btn);
+
+        Modal.open({
+            title: 'Element 触发',
+            content: '通过 Solely Button 组件触发的对话框',
+            onOk: () => {
+                this.addElementLog('Element 触发：用户点击了确定');
+            },
+            onCancel: () => {
+                this.addElementLog('Element 触发：用户点击了取消');
+            },
+        });
+        this.addElementLog('通过 Element Button 打开对话框');
+    }
+
+    openModalWithElementContent(): void {
+        const content = document.createElement('div');
+        content.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <p>可以在 Modal 内容中使用 Solely 组件：</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span style="color: var(--solely-primary);">★</span>
+                    <span>支持自定义 HTML 内容</span>
+                </div>
+                <div style="padding: 12px; background: var(--solely-bg-color-secondary); border-radius: 4px;">
+                    <code>content</code> 参数支持传入 HTMLElement
+                </div>
+            </div>
+        `;
+
+        Modal.open({
+            title: 'Element 作为内容',
+            content: content,
+            width: 480,
+            onOk: () => {
+                this.addElementLog('自定义内容：用户点击了确定');
+            },
+        });
+        this.addElementLog('打开带自定义 Element 内容的对话框');
+    }
+
+    openCustomDomModal(): void {
+        // 完全自定义内容，无默认图标
+        const customContent = document.createElement('div');
+        customContent.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 32px;">✅</span>
+                    <div>
+                        <div style="font-size: 16px; font-weight: 500; margin-bottom: 4px;">操作成功</div>
+                        <div style="color: var(--solely-text-secondary); font-size: 14px;">您的数据已成功保存到服务器</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--solely-bg-color-secondary); border-radius: 4px; font-size: 12px;">
+                        <span style="width: 6px; height: 6px; background: var(--solely-success); border-radius: 50%;"></span>
+                        已同步
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--solely-bg-color-secondary); border-radius: 4px; font-size: 12px;">
+                        <span style="width: 6px; height: 6px; background: var(--solely-primary); border-radius: 50%;"></span>
+                        已备份
+                    </span>
+                </div>
+            </div>
+        `;
+
+        // 使用 showIcon: false 去掉默认图标
+        Modal.open({
+            title: '自定义 DOM 内容（无默认图标）',
+            content: customContent,
+            width: 480,
+            showIcon: false, // 去掉默认图标
+            showCancel: false,
+            okText: '知道了',
+            onOk: () => {
+                this.addElementLog('自定义 DOM：用户点击了确定');
+            },
+        });
+        this.addElementLog('打开无默认图标的自定义 DOM 对话框');
     }
 }

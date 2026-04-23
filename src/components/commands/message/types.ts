@@ -2,7 +2,7 @@ export type MessageType = 'info' | 'success' | 'warning' | 'error' | 'loading';
 
 export interface MessageOptions {
     /** 消息内容 */
-    content: string;
+    content?: string | HTMLElement;
     /** 消息类型，默认 'info' */
     type?: MessageType;
     /** 自动关闭延时（毫秒），设为 0 则不自动关闭，默认 3000 */
@@ -14,7 +14,7 @@ export interface MessageOptions {
     /** 自定义图标（字符串或 DOM 元素） */
     icon?: string | HTMLElement;
     /** 辅助描述文本 */
-    description?: string;
+    description?: string | HTMLElement;
     /** 自定义类名 */
     className?: string;
     /** 自定义样式 */
@@ -27,7 +27,7 @@ export interface MessageInstance {
     /** 手动关闭当前消息 */
     close: () => void;
     /** 更新消息内容或描述 */
-    update: (content: string | Partial<Pick<MessageOptions, 'content' | 'description'>>) => void;
+    update: (content: string | HTMLElement | Partial<Pick<MessageOptions, 'content' | 'description'>>) => void;
 }
 
 export interface MessageConfig {

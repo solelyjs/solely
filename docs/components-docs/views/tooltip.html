@@ -141,23 +141,53 @@ tooltip.<span class="code-attr">destroy</span>();
 </div>
 
 <div class="demo-block">
-    <h3 class="demo-block-title">临时提示</h3>
-    <p class="demo-block-desc">使用 <code>show()</code> 方法显示临时提示，自动消失。</p>
-    <div class="demo-box">
-        <div class="demo-preview">
-            <solely-button type="primary" ref="onceBtn" @click="this.showOnceTooltip()">显示临时提示</solely-button>
-        </div>
-        <div class="demo-code">
-            <pre><code><span class="code-type">Tooltip</span>.<span class="code-attr">show</span>(element, {
+        <h3 class="demo-block-title">临时提示</h3>
+        <p class="demo-block-desc">使用 <code>show()</code> 方法显示临时提示，自动消失。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" ref="onceBtn" @click="this.showOnceTooltip()">显示临时提示</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-type">Tooltip</span>.<span class="code-attr">show</span>(element, {
     <span class="code-attr">content</span>: <span class="code-value">'自动消失的提示（3秒后）'</span>,
     <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
     <span class="code-attr">duration</span>: <span class="code-value">3000</span>
 });</code></pre>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="api-block">
+    <div class="demo-block">
+        <h3 class="demo-block-title">与 Element 组件结合</h3>
+        <p class="demo-block-desc">在 Solely Element 组件中使用 Tooltip，支持通过 <code>ref</code> 绑定到 Element 组件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" ref="elementTooltipBtn" @click="this.bindElementTooltip()">绑定到 Element</solely-button>
+                <solely-button type="default" ref="elementShowBtn" @click="this.showElementTooltip()">显示临时提示</solely-button>
+                <solely-button type="error" @click="this.hideAllElementTooltips()">隐藏所有</solely-button>
+                <div ref="elementTooltipLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 使用 ref 获取 Element 组件并绑定 Tooltip</span>
+<span class="code-keyword">const</span> btn = <span class="code-keyword">this</span>.<span class="code-attr">refs</span>.<span class="code-attr">elementTooltipBtn</span>;
+
+<span class="code-keyword">const</span> tooltip = <span class="code-type">Tooltip</span>.<span class="code-attr">bind</span>(btn, {
+    <span class="code-attr">content</span>: <span class="code-value">'Element 组件提示'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
+    <span class="code-attr">trigger</span>: <span class="code-value">'hover'</span>
+});
+
+<span class="code-comment">// 对 Element 组件显示临时提示</span>
+<span class="code-type">Tooltip</span>.<span class="code-attr">show</span>(btn, {
+    <span class="code-attr">content</span>: <span class="code-value">'临时提示'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
+    <span class="code-attr">duration</span>: <span class="code-value">2000</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="api-block">
     <h3 class="api-block-title">API</h3>
 
     <h4 class="api-block-subtitle">Tooltip.bind(target, options)</h4>

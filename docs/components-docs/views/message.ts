@@ -5,8 +5,11 @@ import template from './message.html?raw';
 
 interface DocsData {
     messageLog: string[];
+    elementMessageLog: string[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     loadingInstance?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    elementLoadingInstance?: any;
 }
 
 @CustomElement({
@@ -17,6 +20,7 @@ export class DocsMessage extends BaseElement<DocsData> {
     constructor() {
         super({
             messageLog: [],
+            elementMessageLog: [],
         });
     }
 
@@ -129,5 +133,80 @@ export class DocsMessage extends BaseElement<DocsData> {
         });
         Message.info('全局配置已更新：持续5秒，最多3条，距顶部50px');
         this.addLog('全局配置已更新');
+    }
+
+    private addElementLog(message: string): void {
+        this.$data.elementMessageLog = [...this.$data.elementMessageLog.slice(-4), message];
+        this.refresh();
+    }
+
+    showElementSuccess(): void {
+        this.$data.elementLoadingInstance = Message.loading('保存中...');
+        this.addElementLog('Element：开始保存操作');
+
+        setTimeout(() => {
+            if (this.$data.elementLoadingInstance) {
+                this.$data.elementLoadingInstance.close();
+                this.$data.elementLoadingInstance = undefined;
+            }
+            Message.success('保存成功');
+            this.addElementLog('Element：保存成功');
+        }, 1500);
+    }
+
+    showElementError(): void {
+        Message.error('请检查表单填写是否正确');
+        this.addElementLog('Element：表单验证失败');
+    }
+
+    showElementLoading(): void {
+        if (this.$data.elementLoadingInstance) {
+            this.$data.elementLoadingInstance.close();
+            this.$data.elementLoadingInstance = undefined;
+            this.addElementLog('Element：关闭加载提示');
+        } else {
+            this.$data.elementLoadingInstance = Message.loading('正在处理...');
+            this.addElementLog('Element：显示加载提示');
+        }
+    }
+
+    showElementContent(): void {
+        // 创建包含 Solely 组件的 HTMLElement
+        const content = document.createElement('div');
+        content.style.display = 'flex';
+        content.style.alignItems = 'center';
+        content.style.gap = '8px';
+        content.innerHTML = `
+            <solely-tag type="success">成功</solely-tag>
+            <span>操作已完成，数据已保存</span>
+        `;
+
+        Message.open({
+            content: content,
+            type: 'success',
+            duration: 3000,
+        });
+        this.addElementLog('Element：显示包含 Tag 组件的消息');
+    }
+
+    showCustomDomMessage(): void {
+        // 完全自定义 DOM 内容，去掉默认图标
+        const customContent = document.createElement('div');
+        customContent.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🎉</span>
+                <div>
+                    <div style="font-weight: 500; margin-bottom: 2px;">恭喜你！</div>
+                    <div style="color: var(--solely-text-secondary); font-size: 13px;">任务已完成，获得 100 积分</div>
+                </div>
+            </div>
+        `;
+
+        Message.open({
+            content: customContent,
+            showIcon: false, // 去掉默认图标
+            duration: 4000,
+        });
+        this.addElementLog('Element：显示无默认图标的自定义 DOM 消息');
     }
 }

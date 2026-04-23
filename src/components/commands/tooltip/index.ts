@@ -153,8 +153,17 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
 
     const contentEl = createElement('div', {
         className: 'tooltip__content',
-        textContent: options.content || '',
     });
+
+    // 支持字符串和 DOM 元素作为内容
+    if (options.content) {
+        if (typeof options.content === 'string') {
+            contentEl.textContent = options.content;
+        } else if (options.content instanceof HTMLElement) {
+            contentEl.appendChild(options.content.cloneNode(true));
+        }
+    }
+
     tooltip.appendChild(contentEl);
 
     // 创建箭头

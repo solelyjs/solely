@@ -149,6 +149,69 @@ instance.<span class="code-attr">update</span>({
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">与 Element 组件结合</h3>
+        <p class="demo-block-desc">在 Solely Element 组件中通过事件绑定触发 Message，常用于操作反馈场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" @click="this.showElementSuccess()">Element 成功</solely-button>
+                <solely-button type="error" @click="this.showElementError()">Element 错误</solely-button>
+                <solely-button type="default" @click="this.showElementLoading()">Element 加载</solely-button>
+                <solely-button type="primary" @click="this.showElementContent()">Element 内容</solely-button>
+                <solely-button type="default" @click="this.showCustomDomMessage()">自定义 DOM 无图标</solely-button>
+                <div ref="elementMessageLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 在 Element 组件事件中触发 Message</span>
+<span class="code-keyword">const</span> handleSave = () => {
+    <span class="code-keyword">const</span> loading = <span class="code-type">Message</span>.<span class="code-attr">loading</span>(<span class="code-value">'保存中...'</span>);
+
+    <span class="code-comment">// 模拟异步操作</span>
+    <span class="code-type">setTimeout</span>(() => {
+        loading.<span class="code-attr">close</span>();
+        <span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'保存成功'</span>);
+    }, <span class="code-value">1500</span>);
+};
+
+<span class="code-comment">// 表单验证失败</span>
+<span class="code-keyword">const</span> handleSubmit = () => {
+    <span class="code-keyword">if</span> (!<span class="code-attr">isValid</span>) {
+        <span class="code-type">Message</span>.<span class="code-attr">error</span>(<span class="code-value">'请检查表单填写是否正确'</span>);
+        <span class="code-keyword">return</span>;
+    }
+    <span class="code-comment">// 提交逻辑</span>
+};
+
+<span class="code-comment">// 使用 HTMLElement 作为内容（可包含 Solely 组件）</span>
+<span class="code-keyword">const</span> content = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+content.<span class="code-attr">innerHTML</span> = <span class="code-value">'&lt;solely-tag type="success"&gt;成功&lt;/solely-tag&gt; 操作已完成'</span>;
+
+<span class="code-type">Message</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">content</span>: content,
+    <span class="code-attr">type</span>: <span class="code-value">'success'</span>
+});
+
+<span class="code-comment">// 完全自定义 DOM 内容，去掉默认图标</span>
+<span class="code-keyword">const</span> customContent = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+customContent.<span class="code-attr">innerHTML</span> = <span class="code-value">`
+    &lt;div style="display: flex; align-items: center; gap: 12px;"&gt;
+        &lt;span style="font-size: 24px;"&gt;🎉&lt;/span&gt;
+        &lt;div&gt;
+            &lt;div style="font-weight: 500;"&gt;恭喜你！&lt;/div&gt;
+            &lt;div style="color: var(--solely-text-secondary);"&gt;任务已完成&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+`</span>;
+
+<span class="code-type">Message</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">content</span>: customContent,
+    <span class="code-attr">showIcon</span>: <span class="code-value">false</span>,  <span class="code-comment">// 去掉默认图标</span>
+    <span class="code-attr">duration</span>: <span class="code-value">3000</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
     <div class="api-block">
         <h3 class="api-block-title">API</h3>
         
@@ -228,13 +291,13 @@ instance.<span class="code-attr">update</span>({
                 <tr>
                     <td>content</td>
                     <td>消息内容</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>
                     <td>description</td>
                     <td>消息描述</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>

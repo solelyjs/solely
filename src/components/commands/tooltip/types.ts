@@ -19,7 +19,7 @@ export type TooltipTrigger = 'hover' | 'click' | 'focus' | 'manual';
 
 export interface TooltipOptions {
     /** 提示内容 */
-    content?: string;
+    content?: string | HTMLElement;
     /** 气泡框位置 */
     placement?: TooltipPlacement;
     /** 触发方式 */

@@ -239,6 +239,60 @@
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">与 Element 组件结合</h3>
+        <p class="demo-block-desc">在 Solely Element 组件中通过事件绑定触发 Modal，支持使用 <code>ref</code> 引用组件。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" ref="modalTriggerBtn" @click="this.openElementModal()">Element 触发</solely-button>
+                <solely-button type="default" @click="this.openModalWithElementContent()">Element 作为内容</solely-button>
+                <solely-button type="primary" @click="this.openCustomDomModal()">自定义 DOM 无图标</solely-button>
+                <div ref="elementModalLog" class="event-log">等待交互...</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 通过 ref 获取 Element 组件触发 Modal</span>
+<span class="code-keyword">const</span> btn = <span class="code-keyword">this</span>.<span class="code-attr">refs</span>.<span class="code-attr">modalTriggerBtn</span>;
+
+<span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'Element 触发'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'通过 Solely Button 组件触发的对话框'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'确定'</span>);
+    }
+});
+
+<span class="code-comment">// 使用 DOM 元素作为内容</span>
+<span class="code-keyword">const</span> content = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+content.<span class="code-attr">innerHTML</span> = <span class="code-value">'&lt;solely-tag type="success"&gt;成功&lt;/solely-tag&gt;'</span>;
+
+<span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'自定义内容'</span>,
+    <span class="code-attr">content</span>: content,
+    <span class="code-attr">onOk</span>: () => {}
+});
+
+<span class="code-comment">// 完全自定义内容（无默认图标）</span>
+<span class="code-keyword">const</span> customContent = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+customContent.<span class="code-attr">innerHTML</span> = <span class="code-value">`
+    &lt;div style="display: flex; align-items: center; gap: 12px;"&gt;
+        &lt;span style="font-size: 32px;"&gt;✅&lt;/span&gt;
+        &lt;div&gt;
+            &lt;div style="font-weight: 500;"&gt;操作成功&lt;/div&gt;
+            &lt;div style="color: var(--solely-text-secondary);"&gt;数据已保存&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+`</span>;
+
+<span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'自定义标题'</span>,
+    <span class="code-attr">content</span>: customContent,
+    <span class="code-attr">showIcon</span>: <span class="code-value">false</span>,  <span class="code-comment">// 去掉默认图标</span>
+    <span class="code-attr">onOk</span>: () => {}
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
     <div class="api-block">
         <h3 class="api-block-title">API</h3>
         
@@ -256,13 +310,13 @@
                 <tr>
                     <td>title</td>
                     <td>对话框标题</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>
                     <td>content</td>
                     <td>对话框内容</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>
@@ -296,9 +350,15 @@
                     <td>true</td>
                 </tr>
                 <tr>
+                    <td>showIcon</td>
+                    <td>是否显示图标</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
                     <td>okText</td>
                     <td>确定按钮文字</td>
-                    <td>string</td>
+                    <td>string | HTMLElement</td>
                     <td>'确定'</td>
                 </tr>
                 <tr>

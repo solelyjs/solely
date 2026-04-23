@@ -127,15 +127,29 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
 
     const textEl = createElement('span', {
         className: 'message__text',
-        textContent: options.content,
     });
+
+    // 支持字符串和 DOM 元素作为内容
+    if (typeof options.content === 'string') {
+        textEl.textContent = options.content;
+    } else if (options.content instanceof HTMLElement) {
+        textEl.appendChild(options.content.cloneNode(true));
+    }
+
     content.appendChild(textEl);
 
     if (options.description) {
         const descEl = createElement('span', {
             className: 'message__description',
-            textContent: options.description,
         });
+
+        // 支持字符串和 DOM 元素作为描述
+        if (typeof options.description === 'string') {
+            descEl.textContent = options.description;
+        } else if (options.description instanceof HTMLElement) {
+            descEl.appendChild(options.description.cloneNode(true));
+        }
+
         content.appendChild(descEl);
     }
 
@@ -220,28 +234,63 @@ function open(options: MessageOptions): MessageInstance {
 
     return {
         close: () => closeMessage(id),
-        update: (newContent: string | Partial<Pick<MessageOptions, 'content' | 'description'>>) => {
-            if (typeof newContent === 'string') {
+        update: (newContent: string | HTMLElement | Partial<Pick<MessageOptions, 'content' | 'description'>>) => {
+            if (typeof newContent === 'string' || newContent instanceof HTMLElement) {
                 const textEl = element.querySelector('.message__text') as HTMLElement;
-                if (textEl) textEl.textContent = newContent;
+                if (textEl) {
+                    // 清空现有内容
+                    textEl.innerHTML = '';
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newContent === 'string') {
+                        textEl.textContent = newContent;
+                    } else if (newContent instanceof HTMLElement) {
+                        textEl.appendChild(newContent.cloneNode(true));
+                    }
+                }
                 return;
             }
             if (newContent.content !== undefined) {
                 const textEl = element.querySelector('.message__text') as HTMLElement;
-                if (textEl) textEl.textContent = newContent.content;
+                if (textEl) {
+                    // 清空现有内容
+                    textEl.innerHTML = '';
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newContent.content === 'string') {
+                        textEl.textContent = newContent.content;
+                    } else if (newContent.content instanceof HTMLElement) {
+                        textEl.appendChild(newContent.content.cloneNode(true));
+                    }
+                }
             }
             if (newContent.description !== undefined) {
                 let descEl = element.querySelector('.message__description') as HTMLElement;
                 if (!descEl && newContent.description) {
                     descEl = createElement('span', {
                         className: 'message__description',
-                        textContent: newContent.description,
                     });
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newContent.description === 'string') {
+                        descEl.textContent = newContent.description;
+                    } else if (newContent.description instanceof HTMLElement) {
+                        descEl.appendChild(newContent.description.cloneNode(true));
+                    }
+
                     const contentWrapper = element.querySelector('.message__content');
                     contentWrapper?.appendChild(descEl);
                 } else if (descEl) {
                     if (newContent.description) {
-                        descEl.textContent = newContent.description;
+                        // 清空现有内容
+                        descEl.innerHTML = '';
+
+                        // 支持字符串和 DOM 元素
+                        if (typeof newContent.description === 'string') {
+                            descEl.textContent = newContent.description;
+                        } else if (newContent.description instanceof HTMLElement) {
+                            descEl.appendChild(newContent.description.cloneNode(true));
+                        }
                     } else {
                         descEl.remove();
                     }
@@ -251,13 +300,16 @@ function open(options: MessageOptions): MessageInstance {
     };
 }
 
-function info(content: string, options?: number | Partial<Omit<MessageOptions, 'content' | 'type'>>): MessageInstance {
+function info(
+    content: string | HTMLElement,
+    options?: number | Partial<Omit<MessageOptions, 'content' | 'type'>>,
+): MessageInstance {
     const opts = typeof options === 'number' ? { duration: options } : options;
     return open({ content, type: 'info', ...opts });
 }
 
 function success(
-    content: string,
+    content: string | HTMLElement,
     options?: number | Partial<Omit<MessageOptions, 'content' | 'type'>>,
 ): MessageInstance {
     const opts = typeof options === 'number' ? { duration: options } : options;
@@ -265,20 +317,23 @@ function success(
 }
 
 function warning(
-    content: string,
+    content: string | HTMLElement,
     options?: number | Partial<Omit<MessageOptions, 'content' | 'type'>>,
 ): MessageInstance {
     const opts = typeof options === 'number' ? { duration: options } : options;
     return open({ content, type: 'warning', ...opts });
 }
 
-function error(content: string, options?: number | Partial<Omit<MessageOptions, 'content' | 'type'>>): MessageInstance {
+function error(
+    content: string | HTMLElement,
+    options?: number | Partial<Omit<MessageOptions, 'content' | 'type'>>,
+): MessageInstance {
     const opts = typeof options === 'number' ? { duration: options } : options;
     return open({ content, type: 'error', ...opts });
 }
 
 function loading(
-    content: string,
+    content: string | HTMLElement,
     options?: number | Partial<Omit<MessageOptions, 'content' | 'type'>>,
 ): MessageInstance {
     if (options === undefined) {

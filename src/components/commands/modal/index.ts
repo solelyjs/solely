@@ -147,12 +147,22 @@ async function closeTopModal(): Promise<void> {
     await closeModalById(topModal.id);
 }
 
-function createButton(text: string, type: string, onClick: () => void | Promise<void>): HTMLButtonElement {
+function createButton(
+    text: string | HTMLElement,
+    type: string,
+    onClick: () => void | Promise<void>,
+): HTMLButtonElement {
     const button = createElement('button', {
         className: `modal__btn modal__btn--${type === 'default' ? 'default' : type}`,
-        textContent: text,
         attrs: { type: 'button' },
     }) as HTMLButtonElement;
+
+    // 支持字符串和 DOM 元素作为按钮文字
+    if (typeof text === 'string') {
+        button.textContent = text;
+    } else if (text instanceof HTMLElement) {
+        button.appendChild(text.cloneNode(true));
+    }
 
     button.onclick = () => safeAsyncCallback(onClick);
 
@@ -205,8 +215,15 @@ function open(options: ModalOptions): ModalInstance {
 
     const title = createElement('h3', {
         className: 'modal__title',
-        textContent: options.title || '',
     });
+
+    // 支持字符串和 DOM 元素作为标题
+    if (typeof options.title === 'string') {
+        title.textContent = options.title || '';
+    } else if (options.title instanceof HTMLElement) {
+        title.appendChild(options.title.cloneNode(true));
+    }
+
     header.appendChild(title);
 
     if (options.closable !== false) {
@@ -230,15 +247,25 @@ function open(options: ModalOptions): ModalInstance {
 
     const contentWrapper = createElement('div', { className: 'modal__content-wrapper' });
 
-    const icon = createElement('span', {
-        className: `modal__icon modal__icon--${type}`,
-        textContent: ICON_MAP[type],
-    });
-    contentWrapper.appendChild(icon);
+    // 根据 showIcon 决定是否显示图标，默认为 true
+    const showIcon = options.showIcon !== false;
+    if (showIcon) {
+        const icon = createElement('span', {
+            className: `modal__icon modal__icon--${type}`,
+            textContent: ICON_MAP[type],
+        });
+        contentWrapper.appendChild(icon);
+    }
 
-    const content = createElement('div', {
-        textContent: options.content || '',
-    });
+    const content = createElement('div');
+
+    // 支持字符串和 DOM 元素作为内容
+    if (typeof options.content === 'string') {
+        content.textContent = options.content || '';
+    } else if (options.content instanceof HTMLElement) {
+        content.appendChild(options.content.cloneNode(true));
+    }
+
     contentWrapper.appendChild(content);
 
     body.appendChild(contentWrapper);
@@ -304,13 +331,33 @@ function open(options: ModalOptions): ModalInstance {
             // 更新标题
             if (newOptions.title !== undefined) {
                 const titleEl = wrap.querySelector('.modal__title') as HTMLElement;
-                if (titleEl) titleEl.textContent = newOptions.title;
+                if (titleEl) {
+                    // 清空现有内容
+                    titleEl.innerHTML = '';
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newOptions.title === 'string') {
+                        titleEl.textContent = newOptions.title;
+                    } else if (newOptions.title instanceof HTMLElement) {
+                        titleEl.appendChild(newOptions.title.cloneNode(true));
+                    }
+                }
             }
 
             // 更新内容
             if (newOptions.content !== undefined) {
                 const contentEl = wrap.querySelector('.modal__content') as HTMLElement;
-                if (contentEl) contentEl.textContent = newOptions.content;
+                if (contentEl) {
+                    // 清空现有内容
+                    contentEl.innerHTML = '';
+
+                    // 支持字符串和 DOM 元素
+                    if (typeof newOptions.content === 'string') {
+                        contentEl.textContent = newOptions.content;
+                    } else if (newOptions.content instanceof HTMLElement) {
+                        contentEl.appendChild(newOptions.content.cloneNode(true));
+                    }
+                }
             }
 
             // 更新宽度
