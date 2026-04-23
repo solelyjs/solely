@@ -7,6 +7,25 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-04-23
+
+### Added
+
+- **feat(components)**: 新增组件库结构与 CSS 变量
+    - 新增主题 CSS 变量文件，支持组件主题定制
+    - 更新 package.json 配置，支持组件导入/导出路径
+    - 增强 CustomElement 装饰器，优化错误处理与短横线命名转换
+
+- **feat(components)**: 增加 UI 组件
+    - 基础组件：Button、Tag、Badge、Card、Alert、Divider、Empty、Skeleton、Progress
+    - 表单组件：Input、Select、Radio、Checkbox、Switch、Slider、Rate、CoordinateInput、Upload
+    - 数据展示组件：Table、Tree、Pagination、Timeline、Tabs、Steps、Breadcrumb
+    - 反馈组件：Tooltip、Popconfirm、Modal、Message、Drawer、Backtop、Fab
+
+### Fixed
+
+- **fix(decorators)**: 修正类型断言以确保正确挂载 manifest
+
 ## [0.3.1] - 2025-04-19
 
 ### Fixed
@@ -187,7 +206,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/solelyjs/solely/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/solelyjs/solely/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/solelyjs/solely/compare/v0.2.9...v0.3.0
 [0.2.9]: https://github.com/solelyjs/solely/compare/v0.2.8...v0.2.9
