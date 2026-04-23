@@ -196,6 +196,14 @@ class BaseElement<
             if (protoDesc?.get || protoDesc?.set) {
                 continue;
             } else {
+                // 在覆盖前，先取出实例上可能存在的自有数据属性值
+                const instanceDesc = Object.getOwnPropertyDescriptor(this, desc.name);
+                if (instanceDesc && 'value' in instanceDesc) {
+                    // 预先赋的值直接同步到 $data
+                    (this.$data as DataRecord)[desc.name] = instanceDesc.value;
+                    delete this[desc.name as keyof this];
+                }
+
                 // 无用户自定义：生成标准 getter/setter
                 Object.defineProperty(this, desc.name, {
                     get: () => (this.$data as DataRecord)[desc.name],
