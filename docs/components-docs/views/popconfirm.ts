@@ -231,4 +231,23 @@ export class DocsPopconfirm extends BaseElement<DocsData> {
         });
         this.addElementLog('Element：显示自定义 DOM 内容的确认框');
     }
+
+    showElementNoIconConfirm(event: Event): void {
+        const target = event.target as HTMLElement;
+
+        // 使用 showIcon: false 去掉默认图标
+        Popconfirm.show(target, {
+            title: '确认提交',
+            description: '确定要提交当前表单吗？',
+            showIcon: false, // 去掉默认图标
+            placement: 'top',
+            onConfirm: () => {
+                this.addElementLog('Element：无图标操作已确认');
+            },
+            onCancel: () => {
+                this.addElementLog('Element：无图标操作已取消');
+            },
+        });
+        this.addElementLog('Element：显示无图标的确认框');
+    }
 }

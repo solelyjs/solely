@@ -31,6 +31,8 @@ export interface PopconfirmOptions {
     cancelText?: string | HTMLElement;
     /** 是否显示取消按钮 */
     showCancel?: boolean;
+    /** 是否显示图标，默认 true */
+    showIcon?: boolean;
     /** 确认回调 */
     onConfirm?: () => void;
     /** 取消回调 */

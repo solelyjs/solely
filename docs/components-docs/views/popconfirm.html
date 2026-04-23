@@ -150,6 +150,7 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
                 <solely-button type="error" ref="deleteBtn" @click="this.showElementDeleteConfirm(event)">删除按钮</solely-button>
                 <solely-button type="primary" ref="actionBtn" @click="this.showElementActionConfirm(event)">操作按钮</solely-button>
                 <solely-button type="warning" @click="this.showElementCustomConfirm(event)">自定义 DOM</solely-button>
+                <solely-button type="default" @click="this.showElementNoIconConfirm(event)">无图标</solely-button>
                 <div ref="elementPopconfirmLog" class="event-log">等待交互...</div>
             </div>
             <div class="demo-code">
@@ -186,6 +187,14 @@ customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`
     <span class="code-attr">title</span>: customTitle,
     <span class="code-attr">description</span>: customDesc,
     <span class="code-attr">okType</span>: <span class="code-value">'danger'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>
+});
+
+<span class="code-comment">// 去掉默认图标，完全自定义内容</span>
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(btn, {
+    <span class="code-attr">title</span>: <span class="code-value">'确认操作'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'是否继续？'</span>,
+    <span class="code-attr">showIcon</span>: <span class="code-value">false</span>,  <span class="code-comment">// 去掉默认图标</span>
     <span class="code-attr">placement</span>: <span class="code-value">'top'</span>
 });</code></pre>
             </div>
@@ -252,6 +261,12 @@ customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`
                 <tr>
                     <td>showCancel</td>
                     <td>是否显示取消按钮</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>showIcon</td>
+                    <td>是否显示图标</td>
                     <td>boolean</td>
                     <td>true</td>
                 </tr>

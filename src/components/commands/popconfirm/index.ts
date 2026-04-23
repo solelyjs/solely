@@ -139,11 +139,15 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
 
     const content = createElement('div', { className: 'popconfirm__content' });
 
-    const icon = createElement('span', {
-        className: 'popconfirm__icon',
-        textContent: '⚠',
-    });
-    content.appendChild(icon);
+    // 根据 showIcon 决定是否显示图标，默认为 true
+    const showIcon = options.showIcon !== false;
+    if (showIcon) {
+        const icon = createElement('span', {
+            className: 'popconfirm__icon',
+            textContent: '⚠',
+        });
+        content.appendChild(icon);
+    }
 
     const textWrapper = createElement('div', { className: 'popconfirm__text' });
 
