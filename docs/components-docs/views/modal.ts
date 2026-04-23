@@ -238,7 +238,7 @@ export class DocsModal extends BaseElement<DocsData> {
 
     openElementModal(): void {
         const btn = this.$refs.modalTriggerBtn as HTMLElement;
-        console.log('通过 Element 组件触发:', btn);
+        console.info('通过 Element 组件触发:', btn);
 
         Modal.open({
             title: 'Element 触发',
