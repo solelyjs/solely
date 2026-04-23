@@ -31,6 +31,7 @@ class SolelySelect extends BaseElement<
         closing: boolean;
         selectedLabel: string;
         parsedOptions: SelectOption[];
+        dropdownPlacement: 'top' | 'bottom';
     }
 > {
     clickOutsideHandler?: (event: MouseEvent) => void;
@@ -72,7 +73,27 @@ class SolelySelect extends BaseElement<
     getDropdownClasses(): Record<string, boolean> {
         return {
             'select__dropdown--closing': !!this.$data.closing,
+            'select__dropdown--top': this.$data.dropdownPlacement === 'top',
+            'select__dropdown--bottom': this.$data.dropdownPlacement === 'bottom',
         };
+    }
+
+    /**
+     * 计算下拉框位置
+     * 根据视口空间自动决定向上或向下展开
+     */
+    calculateDropdownPlacement(): void {
+        const rect = this.getBoundingClientRect();
+        const dropdownHeight = 256; // max-height
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
+        // 如果下方空间不足且上方空间充足，则向上展开
+        if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+            this.$data.dropdownPlacement = 'top';
+        } else {
+            this.$data.dropdownPlacement = 'bottom';
+        }
     }
 
     /**
@@ -129,8 +150,14 @@ class SolelySelect extends BaseElement<
     handleClick(): void {
         if (this.$data.disabled) return;
 
-        this.$data.isOpen = !this.$data.isOpen;
-        this.$data.focused = this.$data.isOpen;
+        const willOpen = !this.$data.isOpen;
+        this.$data.isOpen = willOpen;
+        this.$data.focused = willOpen;
+
+        // 打开时计算下拉框位置
+        if (willOpen) {
+            this.calculateDropdownPlacement();
+        }
     }
 
     /**

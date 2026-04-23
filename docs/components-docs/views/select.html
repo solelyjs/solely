@@ -1,6 +1,6 @@
 <div class="page-header">
     <h1 class="page-title">Select 选择器</h1>
-    <p class="page-desc">下拉选择器组件，用于从多个选项中选择一项。</p>
+    <p class="page-desc">下拉选择器组件，用于从多个选项中选择一项。支持自动调整下拉框位置，当下方空间不足时会自动向上展开。</p>
 </div>
 
 <div class="demo-section">
@@ -116,6 +116,27 @@ select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> 
   <span class="code-attr">block</span>
   <span class="code-attr">size</span>=<span class="code-value">"large"</span>
+  <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自动调整位置 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自动调整位置</h3>
+        <p class="demo-block-desc">下拉框会根据视口空间自动决定向上或向下展开。当选择器位于页面底部且下方空间不足时，下拉框会自动向上展开。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 8px;">
+                <solely-select options='[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"},{"label":"选项3","value":"3"},{"label":"选项4","value":"4"},{"label":"选项5","value":"5"}]'></solely-select>
+                <div style="padding: 8px; background: var(--solely-bg-color-secondary); border-radius: 4px; font-size: 12px; color: var(--solely-text-secondary);">
+                    💡 提示：将选择器滚动到页面底部，观察下拉框自动向上展开
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 自动调整位置 - 无需额外配置 --&gt;</span>
+<span class="code-comment">&lt;!-- 当下方空间不足时，下拉框会自动向上展开 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> 
   <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
             </div>

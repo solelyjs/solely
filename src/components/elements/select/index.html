@@ -14,7 +14,7 @@
 
     <!-- 下拉菜单 -->
     <If test="$data.isOpen">
-        <div class="select__dropdown" :class="this.getDropdownClasses()">
+        <div class="select__dropdown select__dropdown--bottom" :class="this.getDropdownClasses()">
             <If test="$data.parsedOptions.length === 0">
                 <div class="select__empty">暂无数据</div>
             </If>

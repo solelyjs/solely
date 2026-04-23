@@ -113,10 +113,8 @@
 /* 下拉菜单定位 - 组件特有 */
 .select__dropdown {
   position: absolute;
-  top: 100%;
   left: 0;
   right: 0;
-  margin-top: 4px;
   max-height: 256px;
   overflow-y: auto;
   background-color: var(--solely-component-bg);
@@ -124,11 +122,28 @@
   border-radius: var(--solely-border-radius-md);
   box-shadow: var(--solely-shadow-md);
   z-index: var(--solely-z-index-dropdown);
-  animation: dropdown-in 0.2s ease-out;
 }
 
-.select__dropdown--closing {
-  animation: dropdown-out 0.2s ease-in forwards;
+/* 向下展开（默认） */
+.select__dropdown--bottom {
+  top: 100%;
+  margin-top: 4px;
+  animation: dropdown-in-bottom 0.2s ease-out;
+}
+
+.select__dropdown--bottom.select__dropdown--closing {
+  animation: dropdown-out-bottom 0.2s ease-in forwards;
+}
+
+/* 向上展开 */
+.select__dropdown--top {
+  bottom: 100%;
+  margin-bottom: 4px;
+  animation: dropdown-in-top 0.2s ease-out;
+}
+
+.select__dropdown--top.select__dropdown--closing {
+  animation: dropdown-out-top 0.2s ease-in forwards;
 }
 
 /* 下拉选项 */
@@ -163,8 +178,8 @@
   font-size: var(--solely-font-size-sm);
 }
 
-/* 动画 */
-@keyframes dropdown-in {
+/* 动画 - 向下展开 */
+@keyframes dropdown-in-bottom {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -175,7 +190,7 @@
   }
 }
 
-@keyframes dropdown-out {
+@keyframes dropdown-out-bottom {
   from {
     opacity: 1;
     transform: translateY(0);
@@ -183,5 +198,28 @@
   to {
     opacity: 0;
     transform: translateY(-10px);
+  }
+}
+
+/* 动画 - 向上展开 */
+@keyframes dropdown-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdown-out-top {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }
