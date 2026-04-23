@@ -100,7 +100,9 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
         window.addEventListener(
             'scroll',
             throttle(() => {
-                this.resizeHandler!();
+                if (this.resizeHandler) {
+                    this.resizeHandler();
+                }
             }, 16),
             { passive: true },
         );

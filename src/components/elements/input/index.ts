@@ -7,7 +7,6 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { InputProps, InputRefs } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
-import { debounce } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-input',

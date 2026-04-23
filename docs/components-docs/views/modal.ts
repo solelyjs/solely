@@ -292,12 +292,18 @@ export class DocsModal extends BaseElement<DocsData> {
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--solely-bg-color-secondary); border-radius: 4px; font-size: 12px;">
-                        <span style="width: 6px; height: 6px; background: var(--solely-success); border-radius: 50%;"></span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px;
+                    padding: 4px 8px; background: var(--solely-bg-color-secondary);
+                    border-radius: 4px; font-size: 12px;">
+                        <span style="width: 6px; height: 6px;
+                        background: var(--solely-success); border-radius: 50%;"></span>
                         已同步
                     </span>
-                    <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--solely-bg-color-secondary); border-radius: 4px; font-size: 12px;">
-                        <span style="width: 6px; height: 6px; background: var(--solely-primary); border-radius: 50%;"></span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px;
+                    padding: 4px 8px; background: var(--solely-bg-color-secondary);
+                    border-radius: 4px; font-size: 12px;">
+                        <span style="width: 6px; height: 6px;
+                        background: var(--solely-primary); border-radius: 50%;"></span>
                         已备份
                     </span>
                 </div>

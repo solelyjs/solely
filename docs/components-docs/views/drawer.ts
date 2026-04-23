@@ -169,6 +169,7 @@ export class DocsDrawer extends BaseElement<DocsData> {
 
     openElementDrawer(): void {
         const btn = this.$refs.drawerTriggerBtn as HTMLElement;
+        // eslint-disable-next-line no-console
         console.info('通过 Element 组件触发:', btn);
 
         Drawer.open({
@@ -218,12 +219,17 @@ export class DocsDrawer extends BaseElement<DocsData> {
             <div style="padding: 16px;">
                 <h3 style="margin: 0 0 16px 0; font-size: 18px;">用户详情</h3>
                 <div style="display: flex; gap: 16px; margin-bottom: 20px; align-items: center;">
-                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--solely-primary), var(--solely-success)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 500;">张</div>
+                    <div style="width: 64px; height: 64px; background: linear-gradient(
+                        135deg, var(--solely-primary), var(--solely-success)
+                    ); border-radius: 50%; display: flex; align-items: center;
+                    justify-content: center; color: white; font-size: 24px; font-weight: 500;">张</div>
                     <div>
                         <div style="font-weight: 500; font-size: 16px; margin-bottom: 4px;">张三</div>
                         <div style="color: var(--solely-text-secondary); font-size: 13px;">zhangsan@example.com</div>
                         <div style="margin-top: 8px;">
-                            <span style="display: inline-block; padding: 2px 8px; background: var(--solely-success-bg); color: var(--solely-success); border-radius: 4px; font-size: 12px;">已认证</span>
+                            <span style="display: inline-block; padding: 2px 8px;
+                            background: var(--solely-success-bg); color: var(--solely-success);
+                            border-radius: 4px; font-size: 12px;">已认证</span>
                         </div>
                     </div>
                 </div>
