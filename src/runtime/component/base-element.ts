@@ -471,6 +471,31 @@ class BaseElement<
         );
     }
 
+    /* -------------------- 开发模式警告 -------------------- */
+    /**
+     * 在开发模式下输出警告信息
+     * @param condition - 是否输出警告的条件
+     * @param message - 警告信息
+     */
+    protected warn(condition: boolean, message: string): void {
+        if (IS_DEV && condition) {
+            const tagName = this.tagName.toLowerCase();
+            console.warn(`[${tagName}] ${message}`);
+        }
+    }
+
+    /**
+     * 在开发模式下输出错误信息
+     * @param condition - 是否输出错误的条件
+     * @param message - 错误信息
+     */
+    protected error(condition: boolean, message: string): void {
+        if (IS_DEV && condition) {
+            const tagName = this.tagName.toLowerCase();
+            console.error(`[${tagName}] ${message}`);
+        }
+    }
+
     /* -------------------- 钩子 -------------------- */
     public onInit(): void | Promise<void> {}
 

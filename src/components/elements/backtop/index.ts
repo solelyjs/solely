@@ -7,6 +7,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { BackTopProps } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { throttle } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-backtop',
@@ -22,6 +23,8 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
     scrollHandler?: () => void;
     resizeHandler?: () => void;
     container: HTMLElement | null = null;
+    private mountTimeout?: number;
+    private initialized = false;
 
     /**
      * 更新显示状态
@@ -50,38 +53,67 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
     }
 
     mounted(): void {
-        setTimeout(() => {
-            this.container = this.getContainer();
-
-            if (!this.container) {
-                console.warn('BackTop: 未找到可滚动的父容器');
-                return;
-            }
-
-            // 监听容器滚动
-            this.scrollHandler = () => {
-                this.handleScroll();
-            };
-            this.container.addEventListener('scroll', this.scrollHandler);
-
-            // 监听窗口变化（用于更新位置）
-            this.resizeHandler = () => {
-                requestAnimationFrame(() => {
-                    this.updatePosition();
-                });
-            };
-            window.addEventListener('resize', this.resizeHandler);
-
-            // 监听窗口滚动（用于更新位置）
-            window.addEventListener('scroll', this.resizeHandler, { passive: true });
-
-            // 初始检查
-            this.handleScroll();
-            this.updatePosition();
-        }, 100);
+        this.mountTimeout = setTimeout(() => {
+            this.initializeContainer();
+        }, 100) as unknown as number;
     }
 
     unmounted(): void {
+        // 清除定时器
+        if (this.mountTimeout) {
+            clearTimeout(this.mountTimeout);
+            this.mountTimeout = undefined;
+        }
+        // 清理事件监听器
+        this.cleanupEventListeners();
+    }
+
+    /**
+     * 初始化容器
+     */
+    private initializeContainer(): void {
+        if (this.initialized) return;
+        this.initialized = true;
+
+        this.container = this.getContainer();
+
+        if (!this.container) {
+            this.warn(true, '未找到可滚动的父容器');
+            return;
+        }
+
+        // 监听容器滚动（节流优化，16ms 约等于 60fps）
+        this.scrollHandler = throttle(() => {
+            this.handleScroll();
+        }, 16);
+        this.container.addEventListener('scroll', this.scrollHandler);
+
+        // 监听窗口变化（用于更新位置）
+        this.resizeHandler = () => {
+            requestAnimationFrame(() => {
+                this.updatePosition();
+            });
+        };
+        window.addEventListener('resize', this.resizeHandler);
+
+        // 监听窗口滚动（用于更新位置，节流优化）
+        window.addEventListener(
+            'scroll',
+            throttle(() => {
+                this.resizeHandler!();
+            }, 16),
+            { passive: true },
+        );
+
+        // 初始检查
+        this.handleScroll();
+        this.updatePosition();
+    }
+
+    /**
+     * 清理事件监听器
+     */
+    private cleanupEventListeners(): void {
         if (this.scrollHandler && this.container) {
             this.container.removeEventListener('scroll', this.scrollHandler);
         }

@@ -73,6 +73,9 @@ class SolelyCard extends BaseElement<CardProps, CardRefs> {
      */
     handleActionClick(index: number, _event: Event): void {
         const items = this.getActionItems();
+        if (index < 0 || index >= items.length) {
+            return;
+        }
         const action = items[index];
         this.emit('action', {
             index,

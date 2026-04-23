@@ -7,6 +7,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { PaginationProps } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { safeJsonParse } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-pagination',
@@ -122,11 +123,7 @@ class SolelyPagination extends BaseElement<
      * 解析每页条数选项
      */
     parsePageSizeOptions(): void {
-        try {
-            this.$data.parsedPageSizeOptions = JSON.parse(this.$data.pageSizeOptions || '[10, 20, 50, 100]');
-        } catch {
-            this.$data.parsedPageSizeOptions = [10, 20, 50, 100];
-        }
+        this.$data.parsedPageSizeOptions = safeJsonParse(this.$data.pageSizeOptions, [10, 20, 50, 100]);
     }
 
     /**

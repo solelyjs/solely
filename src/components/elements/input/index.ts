@@ -7,6 +7,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { InputProps, InputRefs } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { debounce } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-input',
@@ -44,6 +45,10 @@ import template from './index.html?raw';
 class SolelyInput extends BaseElement<InputProps, InputRefs> {
     /** 过滤后的搜索建议 */
     private _filteredSuggestions: string[] = [];
+    /** 缓存输入框 DOM 引用 */
+    private inputElement?: HTMLInputElement | HTMLTextAreaElement | null;
+    /** 搜索防抖定时器 */
+    private searchDebounceTimer?: number;
 
     /**
      * 获取过滤后的搜索建议（供模板使用）
@@ -60,6 +65,14 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
         if (this.$data.autofocus) {
             this.focus();
         }
+    }
+
+    protected afterMount(): void {
+        // 缓存输入框 DOM 引用
+        this.inputElement = this.shadowRoot?.querySelector('input, textarea') as
+            | HTMLInputElement
+            | HTMLTextAreaElement
+            | null;
     }
 
     /**
@@ -102,6 +115,7 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 格式化输入值
      */
     formatValue(value: string): string {
+        if (!value) return '';
         switch (this.$data.format) {
             case 'phone':
                 // 手机号：138 1234 5678（3-4-4格式）
@@ -121,6 +135,7 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 反格式化（去除空格）
      */
     unformatValue(value: string): string {
+        if (!value) return '';
         return value.replace(/\s/g, '');
     }
 
@@ -242,9 +257,25 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
     }
 
     /**
-     * 更新搜索建议
+     * 更新搜索建议（带防抖）
      */
     updateSuggestions(value: string): void {
+        // 清除之前的定时器
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+
+        // 防抖 300ms
+        this.searchDebounceTimer = setTimeout(() => {
+            this._updateSuggestionsImpl(value);
+            this.searchDebounceTimer = undefined;
+        }, 300) as unknown as number;
+    }
+
+    /**
+     * 实际更新搜索建议的实现
+     */
+    private _updateSuggestionsImpl(value: string): void {
         if (!value || !this.$data.suggestions) {
             this._filteredSuggestions = [];
             this.refresh();
@@ -277,11 +308,7 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 聚焦输入框
      */
     public focus(): void {
-        const input = this.shadowRoot?.querySelector('input, textarea') as
-            | HTMLInputElement
-            | HTMLTextAreaElement
-            | null;
-        input?.focus();
+        this.inputElement?.focus();
         this.$data.focused = true;
     }
 
@@ -289,11 +316,7 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 失焦输入框
      */
     public blur(): void {
-        const input = this.shadowRoot?.querySelector('input, textarea') as
-            | HTMLInputElement
-            | HTMLTextAreaElement
-            | null;
-        input?.blur();
+        this.inputElement?.blur();
         this.$data.focused = false;
     }
 
@@ -329,11 +352,7 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 选择文本
      */
     public select(): void {
-        const input = this.shadowRoot?.querySelector('input, textarea') as
-            | HTMLInputElement
-            | HTMLTextAreaElement
-            | null;
-        input?.select();
+        this.inputElement?.select();
     }
 }
 
