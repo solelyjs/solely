@@ -364,6 +364,9 @@ class BaseElement<
         /* ---------- attribute → state ---------- */
 
         if (manifest.attributeMap && isObject(this.$data)) {
+            // 安装响应式属性访问器（如果用户没有自定义 getter/setter）
+            this.#installReactiveProps();
+
             // 遍历预设好的属性映射
             for (const [attrName, desc] of manifest.attributeMap) {
                 const propName = desc.name; // 对应的驼峰或原始变量名
@@ -381,9 +384,6 @@ class BaseElement<
                     }
                 }
             }
-
-            // 安装响应式属性访问器（如果用户没有自定义 getter/setter）
-            this.#installReactiveProps();
         }
 
         // 自动升级所有自有数据属性（不需要手动声明 upgradeProps）

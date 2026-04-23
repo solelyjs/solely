@@ -191,6 +191,7 @@ class SolelySlider extends BaseElement<
      */
     handleTouchStart(event: TouchEvent): void {
         if (this.$data.disabled) return;
+        if (event.touches.length === 0) return;
 
         event.preventDefault();
         this.$data.isDragging = true;
@@ -203,7 +204,7 @@ class SolelySlider extends BaseElement<
         this.updateValueFromRect(event.touches[0]);
 
         const handleTouchMove = (e: TouchEvent) => {
-            if (this.$data.isDragging) {
+            if (this.$data.isDragging && e.touches.length > 0) {
                 this.updateValueFromRect(e.touches[0]);
             }
         };

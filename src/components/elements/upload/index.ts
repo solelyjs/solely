@@ -7,6 +7,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { UploadProps, UploadFile } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { safeJsonParse } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-upload',
@@ -66,11 +67,7 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
      * 解析文件列表
      */
     parseFileList(): void {
-        try {
-            this.$data.parsedFileList = JSON.parse(this.$data.fileList || '[]');
-        } catch {
-            this.$data.parsedFileList = [];
-        }
+        this.$data.parsedFileList = safeJsonParse(this.$data.fileList, []);
     }
 
     /**

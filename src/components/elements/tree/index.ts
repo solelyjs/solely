@@ -7,6 +7,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { TreeProps, TreeNode } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { safeJsonParse } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-tree',
@@ -113,11 +114,7 @@ class SolelyTree extends BaseElement<
      * 解析树形数据
      */
     parseTreeData(): void {
-        try {
-            this.treeData = JSON.parse(this.$data.treeData || '[]');
-        } catch {
-            this.treeData = [];
-        }
+        this.treeData = safeJsonParse(this.$data.treeData, []);
         this.flattenTree();
     }
 

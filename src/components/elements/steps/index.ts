@@ -2,6 +2,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { StepsProps, StepItem, StepStatus } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { safeJsonParse } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-steps',
@@ -89,15 +90,17 @@ class SolelySteps extends BaseElement<StepsProps & { parsedItems: StepItem[] }> 
     }
 
     parseItems(): void {
-        try {
-            this.$data.parsedItems = JSON.parse(this.$data.items || '[]');
-        } catch {
-            this.$data.parsedItems = [];
-        }
+        this.$data.parsedItems = safeJsonParse(this.$data.items, []);
     }
 
     getStepStatus(index: number): StepStatus {
         const current = this.$data.current || 0;
+
+        // 边界检查
+        if (!Array.isArray(this.$data.parsedItems) || index < 0 || index >= this.$data.parsedItems.length) {
+            return 'wait';
+        }
+
         const item = this.$data.parsedItems[index];
 
         if (item?.status) {

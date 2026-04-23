@@ -7,6 +7,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { TableProps, TableColumn } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { safeJsonParse } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-table',
@@ -88,17 +89,8 @@ class SolelyTable extends BaseElement<
      * 解析数据
      */
     parseData(): void {
-        try {
-            this.$data.parsedColumns = JSON.parse(this.$data.columns || '[]');
-        } catch {
-            this.$data.parsedColumns = [];
-        }
-
-        try {
-            this.$data.parsedDataSource = JSON.parse(this.$data.dataSource || '[]');
-        } catch {
-            this.$data.parsedDataSource = [];
-        }
+        this.$data.parsedColumns = safeJsonParse(this.$data.columns, []);
+        this.$data.parsedDataSource = safeJsonParse(this.$data.dataSource, []);
     }
 
     /**

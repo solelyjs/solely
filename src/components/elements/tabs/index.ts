@@ -7,6 +7,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { TabsProps, TabItem } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { safeJsonParse } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-tabs',
@@ -83,8 +84,11 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
         this.parseItems();
 
         // 如果没有设置 activeKey，默认选中第一个
-        if (!this.$data.activeKey && this.$data.parsedItems.length > 0) {
-            this.$data.activeKey = this.$data.parsedItems[0].key;
+        if (!this.$data.activeKey && Array.isArray(this.$data.parsedItems) && this.$data.parsedItems.length > 0) {
+            const firstItem = this.$data.parsedItems[0];
+            if (firstItem && firstItem.key) {
+                this.$data.activeKey = firstItem.key;
+            }
         }
     }
 
@@ -92,11 +96,7 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
      * 解析标签项
      */
     parseItems(): void {
-        try {
-            this.$data.parsedItems = JSON.parse(this.$data.items || '[]');
-        } catch {
-            this.$data.parsedItems = [];
-        }
+        this.$data.parsedItems = safeJsonParse(this.$data.items, []);
     }
 
     /**
@@ -128,9 +128,16 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
             this.$data.parsedItems.splice(index, 1);
 
             // 如果关闭的是当前激活的标签，切换到相邻标签
-            if (this.$data.activeKey === item.key && this.$data.parsedItems.length > 0) {
+            if (
+                this.$data.activeKey === item.key &&
+                Array.isArray(this.$data.parsedItems) &&
+                this.$data.parsedItems.length > 0
+            ) {
                 const newIndex = Math.min(index, this.$data.parsedItems.length - 1);
-                this.$data.activeKey = this.$data.parsedItems[newIndex].key;
+                const nextItem = this.$data.parsedItems[newIndex];
+                if (nextItem && nextItem.key) {
+                    this.$data.activeKey = nextItem.key;
+                }
             }
 
             // 更新 items 属性

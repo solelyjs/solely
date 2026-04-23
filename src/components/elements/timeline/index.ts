@@ -2,6 +2,7 @@ import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { TimelineProps, TimelineItem } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
+import { safeJsonParse } from '../utils/helpers';
 
 @CustomElement({
     tagName: 'solely-timeline',
@@ -122,15 +123,11 @@ class SolelyTimeline extends BaseElement<TimelineProps & { parsedItems: Timeline
     }
 
     parseItems(): void {
-        try {
-            let items = JSON.parse(this.$data.items || '[]');
-            if (this.$data.reverse) {
-                items = items.reverse();
-            }
-            this.$data.parsedItems = items;
-        } catch {
-            this.$data.parsedItems = [];
+        let items = safeJsonParse(this.$data.items, []);
+        if (this.$data.reverse) {
+            items = items.reverse();
         }
+        this.$data.parsedItems = items;
     }
 
     public setItems(items: TimelineItem[]): void {
