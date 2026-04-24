@@ -64,7 +64,7 @@ class SolelySteps extends BaseElement<
             'step--process': status === 'process',
             'step--finish': status === 'finish',
             'step--error': status === 'error',
-            'step--disabled': !!(item as any).disabled,
+            'step--disabled': !!(item as { disabled?: boolean }).disabled,
         };
     }
 
