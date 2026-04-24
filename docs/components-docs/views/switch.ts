@@ -9,6 +9,9 @@ import template from './switch.html?raw';
 interface SwitchDocData {
     switchStatus: string;
     eventLogs: string[];
+    modelSwitch1: boolean;
+    modelSwitch2: boolean;
+    modelSwitch3: boolean;
 }
 
 @CustomElement({
@@ -20,6 +23,9 @@ export class DocsSwitch extends BaseElement<SwitchDocData> {
         super({
             switchStatus: '关闭',
             eventLogs: [],
+            modelSwitch1: false,
+            modelSwitch2: true,
+            modelSwitch3: true,
         });
     }
 
@@ -62,6 +68,16 @@ export class DocsSwitch extends BaseElement<SwitchDocData> {
         if (this.$refs.eventLog) {
             this.$refs.eventLog.textContent = logs.join('\n');
         }
+    }
+
+    /**
+     * 全部切换
+     */
+    toggleAllSwitches(): void {
+        const allOn = this.$data.modelSwitch1 && this.$data.modelSwitch2 && this.$data.modelSwitch3;
+        this.$data.modelSwitch1 = !allOn;
+        this.$data.modelSwitch2 = !allOn;
+        this.$data.modelSwitch3 = !allOn;
     }
 }
 

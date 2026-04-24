@@ -28,6 +28,16 @@ export interface PropDescriptor {
 }
 
 /**
+ * Model 配置：定义 s-model 双向绑定的属性名和事件名
+ */
+export interface ModelConfig {
+    /** 要绑定的属性名，默认为 'value' */
+    prop?: string;
+    /** 监听的事件名，默认为 'change' */
+    event?: string;
+}
+
+/**
  * Manifest：组件声明配置
  * -------------------------------------------------------
  * 用于描述组件模板、样式、属性监听和 Shadow DOM 行为。
@@ -45,6 +55,8 @@ export interface Manifest {
     className?: string;
     /** 注册的自定义元素标签名 */
     tagName: string;
+    /** s-model 双向绑定配置 */
+    model?: ModelConfig;
 }
 
 /** 框架内部使用的运行时版本 */

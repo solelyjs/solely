@@ -23,6 +23,7 @@ import template from './index.html?raw';
         { name: 'block', type: 'boolean', default: false },
         { name: 'name', type: 'string', default: '' },
     ],
+    model: { prop: 'checked', event: 'change' },
 })
 class SolelyCheckbox extends BaseElement<CheckboxProps, CheckboxRefs> {
     /**

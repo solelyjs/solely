@@ -137,7 +137,7 @@
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-checkbox</span> <span class="code-attr">ref</span>=<span class="code-value">"myCheckbox"</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>当前状态: {{status}}<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>当前状态: &#123;&#123;status&#125;&#125;<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">@click</span>=<span class="code-value">"toggleCheckbox"</span><span class="code-bracket">&gt;</span>调用 toggle()<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
 
 <span class="code-comment">&lt;!-- JavaScript --&gt;</span>
@@ -171,6 +171,30 @@ toggleBtn.addEventListener(<span class="code-value">'click'</span>, () => {
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- 半选状态点击后变为选中 --&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-checkbox</span> <span class="code-attr">indeterminate</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 双向绑定 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">双向绑定</h3>
+        <p class="demo-block-desc">使用 s-model 指令实现双向数据绑定，绑定的是 checked 属性。配合 change 事件使用。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-checkbox s-model="$data.modelChecked1">绑定到数据: {{$data.modelChecked1 ? '选中' : '未选中'}}</solely-checkbox>
+                <solely-checkbox s-model="$data.modelChecked2" type="success">Success 类型</solely-checkbox>
+                <solely-checkbox s-model="$data.modelChecked3" disabled>禁用状态</solely-checkbox>
+                <solely-button size="small" type="primary" @click="this.toggleAll()">全选/全不选</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 s-model 实现双向绑定（绑定 checked 属性） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-checkbox</span> <span class="code-attr">s-model</span>=<span class="code-value">"isChecked"</span><span class="code-bracket">&gt;</span>
+  绑定到数据: &#123;&#123;isChecked ? '选中' : '未选中'&#125;&#125;
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-comment">// s-model 会自动绑定 checked 属性和监听 change 事件</span>
+<span class="code-comment">// solely-checkbox 的 model 配置: { prop: 'checked', event: 'change' }</span></code></pre>
             </div>
         </div>
     </div>

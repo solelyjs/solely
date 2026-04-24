@@ -2,9 +2,15 @@
     class="form-control"
     :class="this.getWrapperClasses()"
 >
-    <If test="$data.prefix">
-        <span class="form-control__prefix">{{$data.prefix}}</span>
+    <!-- prefix 插槽 -->
+    <If test="this.hasPrefixSlot()">
+        <span class="form-control__prefix">
+            <slot name="prefix"></slot>
+        </span>
     </If>
+    <ElseIf test="$data.prefix">
+        <span class="form-control__prefix">{{$data.prefix}}</span>
+    </ElseIf>
 
     <If test="$data.type === 'textarea'">
         <textarea
@@ -58,6 +64,11 @@
             class="form-control__copy"
             @click="this.handleCopy(event)"
         >📋</span>
+    </ElseIf>
+    <ElseIf test="this.hasSuffixSlot()">
+        <span class="form-control__suffix">
+            <slot name="suffix"></slot>
+        </span>
     </ElseIf>
     <ElseIf test="$data.suffix">
         <span class="form-control__suffix">{{$data.suffix}}</span>

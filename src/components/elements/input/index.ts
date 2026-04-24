@@ -66,6 +66,20 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
         }
     }
 
+    /**
+     * 检查是否有 prefix 插槽
+     */
+    hasPrefixSlot(): boolean {
+        return this.querySelector('[slot="prefix"]') !== null;
+    }
+
+    /**
+     * 检查是否有 suffix 插槽
+     */
+    hasSuffixSlot(): boolean {
+        return this.querySelector('[slot="suffix"]') !== null;
+    }
+
     protected afterMount(): void {
         // 缓存输入框 DOM 引用
         this.inputElement = this.shadowRoot?.querySelector('input, textarea') as

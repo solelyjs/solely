@@ -1,29 +1,57 @@
 <div class="steps" :class="this.getStepsClasses()">
-    <For each="$data.parsedItems" item="item" index="index">
-        <div class="step" :class="this.getStepClasses(item, index)" @click="this.handleStepClick(item, index)">
-            <div class="step__tail"></div>
-            <div class="step__wrapper">
-                <div class="step__icon-wrapper" :class="this.getIconClasses(item)"
-                    :style="item.icon ? this.getIconStyle(item) : ''">
-                    <div class="step__icon">
-                        <If test="!$data.progressDot">
-                            <If
-                                test="item.icon || this.getStepStatus(index) === 'finish' || this.getStepStatus(index) === 'error'">
-                                <span class="step__icon-substitution">{{this.getStepIcon(item, index)}}</span>
+    <!-- 使用 items 属性时的渲染 -->
+    <If test="!$data.useSlot">
+        <For each="$data.parsedItems" item="item" index="index">
+            <div class="step" :class="this.getStepClasses(item, index)" @click="this.handleStepClick(item, index)">
+                <div class="step__tail"></div>
+                <div class="step__wrapper">
+                    <div class="step__icon-wrapper" :class="this.getIconClasses(item)"
+                        :style="item.icon ? this.getIconStyle(item) : ''">
+                        <div class="step__icon">
+                            <If test="!$data.progressDot">
+                                <If
+                                    test="item.icon || this.getStepStatus(index) === 'finish' || this.getStepStatus(index) === 'error'">
+                                    <span class="step__icon-substitution">{{this.getStepIcon(item, index)}}</span>
+                                </If>
+                                <Else>
+                                    <span class="step__icon-text">{{index + 1}}</span>
+                                </Else>
                             </If>
-                            <Else>
-                                <span class="step__icon-text">{{index + 1}}</span>
-                            </Else>
+                        </div>
+                    </div>
+                    <div class="step__content">
+                        <div class="step__title">{{item.title}}</div>
+                        <If test="item.description">
+                            <div class="step__description">{{item.description}}</div>
                         </If>
                     </div>
                 </div>
-                <div class="step__content">
-                    <div class="step__title">{{item.title}}</div>
-                    <If test="item.description">
-                        <div class="step__description">{{item.description}}</div>
-                    </If>
+            </div>
+        </For>
+    </If>
+
+    <!-- 使用插槽时的渲染 -->
+    <If test="$data.useSlot">
+        <For each="$data.slotItems" item="slotItem" index="index">
+            <div class="step" :class="this.getSlotStepClasses(slotItem, index)" @click="this.handleSlotStepClick(slotItem, index)">
+                <div class="step__tail"></div>
+                <div class="step__wrapper">
+                    <div class="step__icon-wrapper">
+                        <div class="step__icon">
+                            <If test="!$data.progressDot">
+                                <!-- 使用插槽元素的 innerHTML 作为图标内容 -->
+                                <span class="step__icon-substitution" :innerHTML="slotItem.iconHtml"></span>
+                            </If>
+                        </div>
+                    </div>
+                    <div class="step__content">
+                        <div class="step__title">{{slotItem.title}}</div>
+                        <If test="slotItem.description">
+                            <div class="step__description">{{slotItem.description}}</div>
+                        </If>
+                    </div>
                 </div>
             </div>
-        </div>
-    </For>
+        </For>
+    </If>
 </div>

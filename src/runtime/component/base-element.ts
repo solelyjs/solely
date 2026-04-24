@@ -376,11 +376,15 @@ class BaseElement<
                     const value = this.#convertAttrValue(raw, desc.default, desc.type);
                     (this.$data as DataRecord)[propName] = value;
                 } else if ('default' in desc) {
-                    // 如果 HTML 没写，使用默认值
-                    (this.$data as DataRecord)[propName] = desc.default;
-                    // 对于布尔类型，如果默认值是 true，同步设置到 HTML 属性
-                    if (desc.type === 'boolean' && desc.default === true) {
-                        this.setAttribute(attrName, '');
+                    // 只有在 property 没有被设置过（比如通过 s-model）的情况下才使用默认值
+                    // 检查 $data 中是否已经有值（非 undefined），有则保留，无则使用默认值
+                    const currentValue = (this.$data as DataRecord)[propName];
+                    if (currentValue === undefined) {
+                        (this.$data as DataRecord)[propName] = desc.default;
+                        // 对于布尔类型，如果默认值是 true，同步设置到 HTML 属性
+                        if (desc.type === 'boolean' && desc.default === true) {
+                            this.setAttribute(attrName, '');
+                        }
                     }
                 }
             }

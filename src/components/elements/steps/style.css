@@ -473,3 +473,27 @@
   width: var(--step-dot-size);
   height: var(--step-dot-size);
 }
+
+/* ===== 插槽样式 ===== */
+.steps__slot-content {
+  display: flex;
+  flex-direction: row;
+}
+
+.steps--vertical .steps__slot-content {
+  flex-direction: column;
+}
+
+.steps__slot-content ::slotted([data-step]),
+.steps__slot-content > [data-step] {
+  display: flex;
+  flex: 1;
+  position: relative;
+  cursor: pointer;
+}
+
+.steps__slot-content ::slotted([data-step][disabled]),
+.steps__slot-content > [data-step][disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

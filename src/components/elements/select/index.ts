@@ -1,10 +1,10 @@
 /**
  * Solely Select 组件
- * 下拉选择器组件
+ * 下拉选择器组件，支持 options 属性和插槽两种方式
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { SelectProps, SelectOption } from './types';
+import type { SelectProps, SelectOption as SelectOptionType } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
 
@@ -30,17 +30,20 @@ class SolelySelect extends BaseElement<
         isOpen: boolean;
         closing: boolean;
         selectedLabel: string;
-        parsedOptions: SelectOption[];
+        parsedOptions: SelectOptionType[];
         dropdownPlacement: 'top' | 'bottom';
+        useSlot: boolean; // 是否使用插槽
+        slotOptions: Array<{ value: string; label: string; disabled: boolean; element: Element }>;
     }
 > {
     clickOutsideHandler?: (event: MouseEvent) => void;
+    slotObserver?: MutationObserver;
 
     /**
      * 暴露 value 属性，使外部可通过 event.target.value 访问
      */
     get value(): string {
-        return this.$data.value;
+        return this.$data.value || '';
     }
 
     set value(newValue: string) {
@@ -64,6 +67,7 @@ class SolelySelect extends BaseElement<
         classes['is-disabled'] = !!this.$data.disabled;
         classes['is-focused'] = !!this.$data.focused;
         classes['is-open'] = !!this.$data.isOpen;
+        classes['use-slot'] = this.$data.useSlot;
         return classes;
     }
 
@@ -75,6 +79,16 @@ class SolelySelect extends BaseElement<
             'select__dropdown--closing': !!this.$data.closing,
             'select__dropdown--top': this.$data.dropdownPlacement === 'top',
             'select__dropdown--bottom': this.$data.dropdownPlacement === 'bottom',
+        };
+    }
+
+    /**
+     * 获取 option class 对象
+     */
+    getOptionClasses(option: SelectOptionType | { value: string; disabled?: boolean }): Record<string, boolean> {
+        return {
+            'select__option--selected': option.value === this.$data.value,
+            'select__option--disabled': !!option.disabled,
         };
     }
 
@@ -97,35 +111,112 @@ class SolelySelect extends BaseElement<
     }
 
     /**
-     * 获取 option class 对象
+     * 从插槽收集选项
      */
-    getOptionClasses(option: SelectOption): Record<string, boolean> {
-        return {
-            'select__option--selected': option.value === this.$data.value,
-            'select__option--disabled': !!option.disabled,
-        };
+    collectSlotOptions(): void {
+        // 获取直接子元素（排除 shadow root 的内部元素）
+        const children = Array.from(this.children).filter(el => el.hasAttribute('data-value'));
+
+        if (children.length === 0) {
+            this.$data.useSlot = false;
+            return;
+        }
+
+        this.$data.useSlot = true;
+        this.$data.slotOptions = children.map(el => {
+            const optionEl = el as HTMLElement;
+            return {
+                value: optionEl.getAttribute('data-value') || '',
+                label: optionEl.getAttribute('data-label') || optionEl.textContent?.trim() || '',
+                disabled: optionEl.hasAttribute('disabled'),
+                element: el,
+            };
+        });
+
+        // 更新选中的标签
+        this.updateSelectedLabelFromSlot();
+    }
+
+    /**
+     * 从插槽更新选中的标签
+     */
+    updateSelectedLabelFromSlot(): void {
+        if (!this.$data.slotOptions.length) return;
+        const selectedOption = this.$data.slotOptions.find(opt => opt.value === this.$data.value);
+        this.$data.selectedLabel = selectedOption?.label || '';
     }
 
     mounted(): void {
         this.parseOptions();
-        this.updateSelectedLabel();
+
+        // 监听插槽变化
+        this.setupSlotObserver();
 
         // 点击外部关闭下拉菜单
         this.clickOutsideHandler = (event: MouseEvent) => {
-            // 使用 composedPath 检查点击是否在组件内部
             const path = event.composedPath();
             const isInside = path.some(el => el === this);
             if (!isInside) {
                 this.closeDropdown();
             }
         };
-        // 在 document 上监听，因为 Shadow DOM 事件会冒泡出来
         document.addEventListener('click', this.clickOutsideHandler);
+    }
+
+    /**
+     * 设置插槽观察器
+     */
+    setupSlotObserver(): void {
+        // 延迟收集插槽选项，确保子元素已渲染
+        setTimeout(() => {
+            this.collectSlotOptions();
+        }, 0);
+
+        // 监听子元素变化
+        this.slotObserver = new MutationObserver(() => {
+            this.collectSlotOptions();
+        });
+
+        this.slotObserver.observe(this, {
+            childList: true,
+            subtree: false,
+            attributes: true,
+            attributeFilter: ['data-value', 'data-label', 'disabled'],
+        });
     }
 
     unmounted(): void {
         if (this.clickOutsideHandler) {
             document.removeEventListener('click', this.clickOutsideHandler);
+        }
+        if (this.slotObserver) {
+            this.slotObserver.disconnect();
+        }
+    }
+
+    /**
+     * 数据更新后同步显示标签
+     * 当 s-model 等外部方式修改 value 时，需要更新 selectedLabel
+     */
+    updated(): void {
+        const currentLabel = this.$data.selectedLabel;
+        const expectedLabel = this.getCurrentLabel();
+
+        if (currentLabel !== expectedLabel) {
+            this.$data.selectedLabel = expectedLabel;
+        }
+    }
+
+    /**
+     * 获取当前选中值对应的标签
+     */
+    private getCurrentLabel(): string {
+        if (this.$data.useSlot) {
+            const slotOption = this.$data.slotOptions.find(opt => opt.value === this.$data.value);
+            return slotOption?.label || '';
+        } else {
+            const option = this.$data.parsedOptions.find((opt: SelectOptionType) => opt.value === this.$data.value);
+            return option?.label || '';
         }
     }
 
@@ -134,13 +225,17 @@ class SolelySelect extends BaseElement<
      */
     parseOptions(): void {
         this.$data.parsedOptions = Array.isArray(this.$data.options) ? this.$data.options : [];
+        if (!this.$data.useSlot) {
+            this.updateSelectedLabel();
+        }
     }
 
     /**
      * 更新选中的标签
      */
     updateSelectedLabel(): void {
-        const option = this.$data.parsedOptions.find((opt: SelectOption) => opt.value === this.$data.value);
+        if (!this.$data.parsedOptions.length) return;
+        const option = this.$data.parsedOptions.find((opt: SelectOptionType) => opt.value === this.$data.value);
         this.$data.selectedLabel = option?.label || '';
     }
 
@@ -161,13 +256,41 @@ class SolelySelect extends BaseElement<
     }
 
     /**
-     * 选择选项
+     * 选择选项（来自 options 属性）
      */
-    handleSelect(option: SelectOption, _event: Event): void {
+    handleSelect(option: SelectOptionType, _event: Event): void {
         if (option.disabled) return;
 
         this.$data.value = option.value;
         this.updateSelectedLabel();
+        this.closeDropdown();
+
+        // 派发原生 change 事件
+        this.dispatchEvent(
+            new Event('change', {
+                bubbles: true,
+                composed: true,
+            }),
+        );
+    }
+
+    /**
+     * 处理插槽选项点击
+     */
+    handleSlotClick(event: Event): void {
+        const target = event.target as HTMLElement;
+        const optionEl = target.closest('[data-value]') as HTMLElement;
+
+        if (!optionEl) return;
+
+        const value = optionEl.getAttribute('data-value') || '';
+        const label = optionEl.getAttribute('data-label') || optionEl.textContent?.trim() || '';
+        const disabled = optionEl.hasAttribute('disabled');
+
+        if (disabled) return;
+
+        this.$data.value = value;
+        this.$data.selectedLabel = label;
         this.closeDropdown();
 
         // 派发原生 change 事件
@@ -222,7 +345,12 @@ class SolelySelect extends BaseElement<
      */
     public setValue(value: string, silent = false): void {
         this.$data.value = value;
-        this.updateSelectedLabel();
+
+        if (this.$data.useSlot) {
+            this.updateSelectedLabelFromSlot();
+        } else {
+            this.updateSelectedLabel();
+        }
 
         // 非静默模式下派发 change 事件
         if (!silent) {
@@ -239,16 +367,16 @@ class SolelySelect extends BaseElement<
      * 获取值
      */
     public getValue(): string {
-        return this.$data.value;
+        return this.$data.value || '';
     }
 
     /**
      * 设置选项
      */
-    public setOptions(options: SelectOption[]): void {
+    public setOptions(options: SelectOptionType[]): void {
         this.$data.options = options;
+        this.$data.useSlot = false;
         this.parseOptions();
-        this.updateSelectedLabel();
     }
 }
 

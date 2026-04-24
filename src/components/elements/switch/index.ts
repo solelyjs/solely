@@ -17,6 +17,7 @@ import template from './index.html?raw';
         { name: 'checkedChildren', type: 'string', default: '' },
         { name: 'unCheckedChildren', type: 'string', default: '' },
     ],
+    model: { prop: 'checked', event: 'change' },
 })
 class SolelySwitch extends BaseElement<SwitchProps, SwitchRefs> {
     /**
@@ -70,29 +71,35 @@ class SolelySwitch extends BaseElement<SwitchProps, SwitchRefs> {
 
     /**
      * 切换开关状态
+     * 用户交互时调用，会检查 disabled/loading 并派发事件
      */
     toggle(): void {
-        const newChecked = !this.$data.checked;
-        this.setChecked(newChecked);
-    }
-
-    /**
-     * 设置开关状态
-     * @param checked - 新的开关状态
-     */
-    setChecked(checked: boolean): void {
         if (this.$data.disabled || this.$data.loading) {
             return;
         }
+        const newChecked = !this.$data.checked;
+        this.setChecked(newChecked);
+        this.dispatchChangeEvent();
+    }
 
-        this.$data.checked = checked;
-
+    /**
+     * 派发 change 事件
+     */
+    private dispatchChangeEvent(): void {
         this.dispatchEvent(
             new Event('change', {
                 bubbles: true,
                 composed: true,
             }),
         );
+    }
+
+    /**
+     * 设置开关状态（仅更新数据，不派发事件）
+     * @param checked - 新的开关状态
+     */
+    setChecked(checked: boolean): void {
+        this.$data.checked = checked;
     }
 
     /**

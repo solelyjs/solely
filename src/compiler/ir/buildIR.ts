@@ -14,6 +14,26 @@ import {
 // ==================== 全局常量与环境 ====================
 const INTERPOLATION_RE = /\{\{[\s\S]*?\}\}/; // 移除 /g，使用 .test() 时无需重置 lastIndex，且更安全
 
+// ==================== s-model 组件配置 ====================
+/** 组件 s-model 配置：定义双向绑定的属性名和事件名 */
+interface ComponentModelConfig {
+    /** 要绑定的属性名 */
+    prop: string;
+    /** 监听的事件名 */
+    event: string;
+}
+
+/**
+ * 自定义组件 s-model 配置表
+ * 键为标签名（小写），值为配置对象
+ * 未配置的组件默认使用 { prop: 'value', event: 'change' }
+ */
+const COMPONENT_MODEL_MAP: Record<string, ComponentModelConfig> = {
+    'solely-checkbox': { prop: 'checked', event: 'change' },
+    'solely-switch': { prop: 'checked', event: 'change' },
+    'solely-radio': { prop: 'checked', event: 'change' },
+};
+
 // ==================== 全局函数编译器 ====================
 class GlobalFunctionCompiler {
     private compilers = new Map<string, FunctionCompiler>();
@@ -229,17 +249,20 @@ export function transformModel(node: ASTNode) {
     }
 
     // ------------------------------------------------
-    // 4. 组件（未来拓展）
-    // my-component s-model="x"
-    // 转换成：
-    //   :modelValue="x"
-    //   @update:modelValue="x = $event"
+    // 4. 自定义组件（如 <solely-input>, <solely-checkbox> 等）
+    // 根据组件的 model 配置绑定对应属性和事件
+    // 默认：:value + @change
     // ------------------------------------------------
-    // 如果未来要支持组件 s-model，把逻辑写在这里
+    const modelConfig = COMPONENT_MODEL_MAP[tag];
+    const propName = modelConfig?.prop ?? 'value';
+    const eventName = modelConfig?.event ?? 'change';
 
-    // 默认行为（非组件）
-    add(':value', model);
-    add('@input', `${model} = $event`, 'model');
+    add(`:${propName}`, model);
+    // 根据 propName 生成取值表达式
+    // value/checked 是常见场景，直接从解构变量获取
+    // 其他属性动态从 event.target 获取，支持任意自定义 prop
+    const valueExpr = propName === 'checked' ? 'checked' : propName === 'value' ? 'value' : `event.target.${propName}`;
+    add(`@${eventName}`, `${model} = ${valueExpr}`, 'model');
 }
 
 // ==================== 属性处理 ====================

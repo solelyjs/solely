@@ -1,6 +1,6 @@
 <div class="page-header">
     <h1 class="page-title">Select 选择器</h1>
-    <p class="page-desc">下拉选择器组件，用于从多个选项中选择一项。支持自动调整下拉框位置，当下方空间不足时会自动向上展开。</p>
+    <p class="page-desc">下拉选择器组件，用于从多个选项中选择一项。支持自动调整下拉框位置、图标选项等功能。</p>
 </div>
 
 <div class="demo-section">
@@ -10,7 +10,8 @@
         <p class="demo-block-desc">最简单的用法，通过 options 属性传入选项列表（JSON 字符串格式）。</p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-select options='[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"},{"label":"选项3","value":"3"}]'></solely-select>
+                <solely-select
+                    options='[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"},{"label":"选项3","value":"3"}]'></solely-select>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">options</span>=<span class="code-value">'[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"}]'</span><span class="code-bracket">&gt;</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
@@ -64,14 +65,40 @@
         </div>
     </div>
 
+    <!-- 禁用选项 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用选项</h3>
+        <p class="demo-block-desc">可以在选项中设置 disabled 属性来禁用单个选项。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-select
+                    options='[{"label":"可用选项","value":"1"},{"label":"禁用选项","value":"2","disabled":true},{"label":"其他选项","value":"3"}]'></solely-select>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> <span class="code-attr">options</span>=<span class="code-value">'[{
+  "label": "可用选项",
+  "value": "1"
+}, {
+  "label": "禁用选项",
+  "value": "2",
+  "disabled": true
+}, ...]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件处理 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件处理</h3>
         <p class="demo-block-desc">监听 change 事件获取选中的值，监听 clear 事件处理清除操作。通过 event.target.value 获取当前选中的值。</p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-select clearable options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"},{"label":"Orange","value":"orange"}]' @change="this.handleSelectChange(event)" @clear="this.handleClear()"></solely-select>
-                <span style="margin-left: 12px; color: var(--solely-text-secondary);">选中: {{$data.selectedLabel || '无'}}</span>
+                <solely-select clearable
+                    options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"},{"label":"Orange","value":"orange"}]'
+                    @change="this.handleSelectChange(event)" @clear="this.handleClear()"></solely-select>
+                <span style="margin-left: 12px; color: var(--solely-text-secondary);">选中: {{$data.selectedLabel ||
+                    '无'}}</span>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
@@ -103,8 +130,10 @@ select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
         <p class="demo-block-desc">添加 block 属性可以让选择器宽度占满父容器。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; align-items: stretch;">
-                <solely-select block options='[{"label":"块级显示选项","value":"1"},{"label":"选项2","value":"2"}]'></solely-select>
-                <solely-select block size="large" options='[{"label":"大尺寸块级选择器","value":"1"},{"label":"选项2","value":"2"}]'></solely-select>
+                <solely-select block
+                    options='[{"label":"块级显示选项","value":"1"},{"label":"选项2","value":"2"}]'></solely-select>
+                <solely-select block size="large"
+                    options='[{"label":"大尺寸块级选择器","value":"1"},{"label":"选项2","value":"2"}]'></solely-select>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- 块级显示，宽度占满父容器 --&gt;</span>
@@ -126,11 +155,13 @@ select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
     <div class="demo-block">
         <h3 class="demo-block-title">自动调整位置</h3>
         <p class="demo-block-desc">下拉框会根据视口空间自动决定向上或向下展开。当选择器位于页面底部且下方空间不足时，下拉框会自动向上展开。</p>
-        <div class="demo-box">
-            <div class="demo-preview" style="flex-direction: column; gap: 8px;">
-                <solely-select options='[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"},{"label":"选项3","value":"3"},{"label":"选项4","value":"4"},{"label":"选项5","value":"5"}]'></solely-select>
-                <div style="padding: 8px; background: var(--solely-bg-color-secondary); border-radius: 4px; font-size: 12px; color: var(--solely-text-secondary);">
-                    💡 提示：将选择器滚动到页面底部，观察下拉框自动向上展开
+        <div class="demo-box" style="overflow: visible;">
+            <div class="demo-preview" style="flex-direction: column; gap: 8px; padding-top: 200px;">
+                <solely-select
+                    options='[{"label":"选项1","value":"1"},{"label":"选项2","value":"2"},{"label":"选项3","value":"3"},{"label":"选项4","value":"4"},{"label":"选项5","value":"5"}]'></solely-select>
+                <div
+                    style="padding: 8px; background: var(--solely-bg-color-secondary); border-radius: 4px; font-size: 12px; color: var(--solely-text-secondary);">
+                    💡 提示：点击选择器，观察下拉框向上展开（上方预留了足够空间）
                 </div>
             </div>
             <div class="demo-code">
@@ -139,6 +170,130 @@ select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> 
   <span class="code-attr">options</span>=<span class="code-value">'[...]'</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用插槽自定义选项 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">使用插槽自定义选项</h3>
+        <p class="demo-block-desc">通过插槽可以完全自定义选项内容，支持任意 HTML 结构、图标、图片等。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: flex-start;">
+                <div style="width: 240px;">
+                    <solely-select style="width: 100%;">
+                        <div data-value="user" data-label="用户" style="display: flex; align-items: center; padding: 8px 12px; cursor: pointer;">
+                            <span style="margin-right: 8px; font-size: 16px;">👤</span>
+                            <span>用户</span>
+                        </div>
+                        <div data-value="settings" data-label="设置" style="display: flex; align-items: center; padding: 8px 12px; cursor: pointer;">
+                            <span style="margin-right: 8px; font-size: 16px;">⚙️</span>
+                            <span>设置</span>
+                        </div>
+                        <div data-value="message" data-label="消息" disabled style="display: flex; align-items: center; padding: 8px 12px; cursor: not-allowed; opacity: 0.5;">
+                            <span style="margin-right: 8px; font-size: 16px;">✉️</span>
+                            <span>消息（禁用）</span>
+                        </div>
+                    </solely-select>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用插槽方式 - 在 Select 内直接放置选项 --&gt;</span>
+&lt;<span class="code-tag">solely-select</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"user"</span> <span class="code-attr">data-label</span>=<span class="code-value">"用户"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;👤&lt;/<span class="code-tag">span</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;用户&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"settings"</span> <span class="code-attr">data-label</span>=<span class="code-value">"设置"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;⚙️&lt;/<span class="code-tag">span</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;设置&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"message"</span> <span class="code-attr">disabled</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;✉️&lt;/<span class="code-tag">span</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;消息（禁用）&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+&lt;/<span class="code-tag">solely-select</span>&gt;</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 插槽选项 - 复杂自定义 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">插槽选项 - 复杂自定义</h3>
+        <p class="demo-block-desc">插槽支持任意复杂的 HTML 结构，包括图片、多行文本、徽章等。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: flex-start;">
+                <div style="width: 280px;">
+                    <solely-select style="width: 100%;">
+                        <div data-value="admin" data-label="管理员" style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">A</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">管理员</div>
+                                <div style="font-size: 12px; color: #999;">拥有所有权限</div>
+                            </div>
+                            <span style="background: #1890ff; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">Admin</span>
+                        </div>
+                        <div data-value="editor" data-label="编辑" style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #f093fb, #f5576c); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">E</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">编辑</div>
+                                <div style="font-size: 12px; color: #999;">可以编辑内容</div>
+                            </div>
+                            <span style="background: #52c41a; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">Editor</span>
+                        </div>
+                        <div data-value="viewer" data-label="访客" style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #4facfe, #00f2fe); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">V</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">访客</div>
+                                <div style="font-size: 12px; color: #999;">仅查看权限</div>
+                            </div>
+                            <span style="background: #999; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">Viewer</span>
+                        </div>
+                    </solely-select>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 复杂自定义选项示例 --&gt;</span>
+&lt;<span class="code-tag">solely-select</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"admin"</span>&gt;
+    &lt;<span class="code-tag">img</span> <span class="code-attr">src</span>=<span class="code-value">"avatar.png"</span>&gt;
+    &lt;<span class="code-tag">div</span>&gt;
+      &lt;<span class="code-tag">div</span>&gt;管理员&lt;/<span class="code-tag">div</span>&gt;
+      &lt;<span class="code-tag">div</span>&gt;拥有所有权限&lt;/<span class="code-tag">div</span>&gt;
+    &lt;/<span class="code-tag">div</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;Admin&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+&lt;/<span class="code-tag">solely-select</span>&gt;</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 双向绑定 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">双向绑定</h3>
+        <p class="demo-block-desc">使用 s-model 指令实现双向数据绑定，绑定的是 value 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: flex-start;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <solely-select s-model="$data.modelSelect1" options='[{"label":"北京","value":"beijing"},{"label":"上海","value":"shanghai"},{"label":"广州","value":"guangzhou"},{"label":"深圳","value":"shenzhen"}]' style="width: 200px;"></solely-select>
+                    <span>选中值: {{$data.modelSelect1 || '无'}}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <solely-select s-model="$data.modelSelect2" clearable options='[{"label":"选项 A","value":"a"},{"label":"选项 B","value":"b"},{"label":"选项 C","value":"c"}]' style="width: 200px;"></solely-select>
+                    <span>可清除，选中值: {{$data.modelSelect2 || '无'}}</span>
+                </div>
+                <solely-button size="small" type="primary" @click="this.setSelectValues()">设置预设值</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 s-model 实现双向绑定（绑定 value 属性） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-select</span> 
+  <span class="code-attr">s-model</span>=<span class="code-value">"selectedCity"</span>
+  <span class="code-attr">options</span>=<span class="code-value">'[{"label":"北京","value":"beijing"}, ...]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-select</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-comment">// s-model 会自动绑定 value 属性和监听 change 事件</span>
+<span class="code-comment">// 未配置 model 的组件默认使用: { prop: 'value', event: 'change' }</span></code></pre>
             </div>
         </div>
     </div>
@@ -276,11 +431,19 @@ select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
         <pre><code><span class="code-comment">// 选择器尺寸类型</span>
 <span class="code-keyword">type</span> <span class="code-type">SelectSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
 
+<span class="code-comment">// 图标类型 - 安全的使用方式</span>
+<span class="code-keyword">type</span> <span class="code-type">SelectIcon</span> = 
+  | <span class="code-type">string</span>                                          <span class="code-comment">// CSS 类名（如字体图标 'icon-user'）</span>
+  | <span class="code-type">HTMLElement</span>                                     <span class="code-comment">// DOM 元素（推荐用于 SVG、图片等）</span>
+  | (<span class="code-attr">option</span>: <span class="code-type">SelectOption</span>) => <span class="code-type">string</span> | <span class="code-type">HTMLElement</span>;  <span class="code-comment">// 函数返回图标</span>
+
 <span class="code-comment">// 选项数据</span>
 <span class="code-keyword">interface</span> <span class="code-type">SelectOption</span> {
-  <span class="code-attr">label</span>: <span class="code-type">string</span>;      <span class="code-comment">// 选项标签</span>
-  <span class="code-attr">value</span>: <span class="code-type">string</span>;      <span class="code-comment">// 选项值</span>
-  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">label</span>: <span class="code-type">string</span>;                    <span class="code-comment">// 选项标签</span>
+  <span class="code-attr">value</span>: <span class="code-type">string</span>;                    <span class="code-comment">// 选项值</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;               <span class="code-comment">// 是否禁用</span>
+  <span class="code-attr">icon</span>?: <span class="code-type">SelectIcon</span>;               <span class="code-comment">// 选项图标（string 仅作为 CSS 类名）</span>
+  <span class="code-attr">render</span>?: (<span class="code-attr">option</span>: <span class="code-type">SelectOption</span>) => <span class="code-type">string</span> | <span class="code-type">HTMLElement</span>;  <span class="code-comment">// 完全自定义渲染</span>
 }
 
 <span class="code-comment">// 选择器属性接口</span>
@@ -290,9 +453,103 @@ select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
   <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否禁用</span>
   <span class="code-attr">size</span>?: <span class="code-type">SelectSize</span>;   <span class="code-comment">// 尺寸</span>
   <span class="code-attr">clearable</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否可清除</span>
-  <span class="code-attr">options</span>?: <span class="code-type">string</span>;    <span class="code-comment">// 选项列表（JSON 字符串）</span>
+  <span class="code-attr">options</span>?: <span class="code-type">SelectOption[]</span>; <span class="code-comment">// 选项列表</span>
   <span class="code-attr">multiple</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否多选</span>
   <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否块级显示</span>
 }</code></pre>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>setValue(value)</td>
+                    <td>设置选中的值</td>
+                    <td>value: string</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getValue()</td>
+                    <td>获取选中的值</td>
+                    <td>-</td>
+                    <td>string</td>
+                </tr>
+                <tr>
+                    <td>setOptions(options)</td>
+                    <td>设置选项列表</td>
+                    <td>options: SelectOption[]</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getOptions()</td>
+                    <td>获取选项列表</td>
+                    <td>-</td>
+                    <td>SelectOption[]</td>
+                </tr>
+                <tr>
+                    <td>open()</td>
+                    <td>打开下拉菜单</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>close()</td>
+                    <td>关闭下拉菜单</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>clear()</td>
+                    <td>清空选中的值</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <pre><code><span class="code-comment">// 选择器尺寸类型</span>
+<span class="code-keyword">type</span> <span class="code-type">SelectSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
+
+<span class="code-comment">// 选项数据</span>
+<span class="code-keyword">interface</span> <span class="code-type">SelectOption</span> {
+  <span class="code-attr">label</span>: <span class="code-type">string</span>;                    <span class="code-comment">// 选项标签</span>
+  <span class="code-attr">value</span>: <span class="code-type">string</span>;                    <span class="code-comment">// 选项值</span>
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;               <span class="code-comment">// 是否禁用</span>
+}</code></pre>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽使用说明</h4>
+        <p>当需要在选项中使用复杂的 HTML 结构（如图标、图片、多行文本等）时，可以使用插槽方式：</p>
+        <pre><code><span class="code-comment">&lt;!-- 插槽方式：在 Select 内直接放置选项元素 --&gt;</span>
+&lt;<span class="code-tag">solely-select</span>&gt;
+  <span class="code-comment">&lt;!-- 每个选项需要 data-value 属性 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"value1"</span> <span class="code-attr">data-label</span>=<span class="code-value">"显示文本"</span>&gt;
+    <span class="code-comment">&lt;!-- 任意自定义内容 --&gt;</span>
+    &lt;<span class="code-tag">img</span> <span class="code-attr">src</span>=<span class="code-value">"icon.png"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;选项文本&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+  
+  <span class="code-comment">&lt;!-- 禁用选项添加 disabled 属性 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"value2"</span> <span class="code-attr">disabled</span>&gt;...&lt;/<span class="code-tag">div</span>&gt;
+&lt;/<span class="code-tag">solely-select</span>&gt;</code></pre>
+        <p><strong>插槽选项属性：</strong></p>
+        <ul style="margin: 12px 0; padding-left: 20px; color: var(--solely-text-secondary);">
+            <li><code>data-value</code>（必需）：选项的值</li>
+            <li><code>data-label</code>（可选）：选中后显示的标签，默认使用元素文本内容</li>
+            <li><code>disabled</code>（可选）：禁用该选项</li>
+        </ul>
     </div>
 </div>

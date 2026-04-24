@@ -170,6 +170,76 @@
   opacity: var(--solely-disabled-opacity);
 }
 
+/* 选项图标 */
+.select__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select__option-icon {
+  flex-shrink: 0;
+}
+
+.select__option-icon--img {
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.select__option-icon--class {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.select__option-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 插槽选项样式 */
+.select__slot-options {
+  display: flex;
+  flex-direction: column;
+}
+
+.select__slot-options ::slotted([data-value]),
+.select__slot-options > [data-value] {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  color: var(--solely-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select__slot-options ::slotted([data-value]:hover:not([disabled])),
+.select__slot-options > [data-value]:hover:not([disabled]) {
+  background-color: var(--solely-primary-light);
+}
+
+.select__slot-options ::slotted([data-value][data-selected]),
+.select__slot-options > [data-value][data-selected] {
+  background-color: var(--solely-primary-light);
+  color: var(--solely-primary);
+  font-weight: 500;
+}
+
+.select__slot-options ::slotted([data-value][disabled]),
+.select__slot-options > [data-value][disabled] {
+  cursor: not-allowed;
+  color: var(--solely-text-tertiary);
+  opacity: var(--solely-disabled-opacity);
+}
+
 /* 空状态 */
 .select__empty {
   padding: var(--solely-spacing-md);

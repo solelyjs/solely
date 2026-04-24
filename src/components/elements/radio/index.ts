@@ -22,6 +22,7 @@ import template from './index.html?raw';
         { name: 'name', type: 'string', default: '' },
         { name: 'block', type: 'boolean', default: false },
     ],
+    model: { prop: 'checked', event: 'change' },
 })
 class SolelyRadio extends BaseElement<RadioProps> {
     /**

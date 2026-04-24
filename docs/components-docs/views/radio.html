@@ -109,6 +109,39 @@ radioEls.forEach(radio => {
             </div>
         </div>
     </div>
+
+    <!-- 双向绑定 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">双向绑定</h3>
+        <p class="demo-block-desc">使用 s-model 指令实现双向数据绑定，绑定的是 checked 属性。适用于需要程序化控制选中状态的场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <solely-radio s-model="$data.modelRadio1" type="primary">选项 A</solely-radio>
+                    <span style="color: var(--solely-text-secondary);">当前状态: {{$data.modelRadio1 ? '已选中' : '未选中'}}</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <solely-button size="small" type="primary" @click="this.setRadio1(true)">选中</solely-button>
+                    <solely-button size="small" @click="this.setRadio1(false)">取消</solely-button>
+                    <solely-button size="small" type="success" @click="this.toggleRadio1()">切换</solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 s-model 实现双向绑定（绑定 checked 属性） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">s-model</span>=<span class="code-value">"isSelected"</span><span class="code-bracket">&gt;</span>
+  选项 A
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-comment">// s-model 会自动绑定 checked 属性和监听 change 事件</span>
+<span class="code-comment">// solely-radio 的 model 配置: { prop: 'checked', event: 'change' }</span>
+
+<span class="code-comment">// 可以通过代码控制选中状态</span>
+<span class="code-keyword">this</span>.isSelected = <span class="code-value">true</span>;   <span class="code-comment">// 选中</span>
+<span class="code-keyword">this</span>.isSelected = <span class="code-value">false</span>;  <span class="code-comment">// 取消选中</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- API 文档 -->

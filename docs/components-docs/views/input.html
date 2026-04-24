@@ -106,6 +106,39 @@
     </div>
 
     <div class="demo-block">
+        <h3 class="demo-block-title">Prefix/Suffix 插槽</h3>
+        <p class="demo-block-desc">使用 prefix 和 suffix 插槽可以自定义更复杂的前缀和后缀内容。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-input placeholder="使用插槽前缀">
+                    <span slot="prefix" style="color: var(--solely-primary); font-weight: bold;">$</span>
+                </solely-input>
+                <solely-input placeholder="使用插槽后缀">
+                    <span slot="suffix" style="color: var(--solely-success);">✓</span>
+                </solely-input>
+                <solely-input placeholder="同时使用前后缀插槽">
+                    <span slot="prefix">📧</span>
+                    <span slot="suffix" style="color: var(--solely-text-tertiary);">.com</span>
+                </solely-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">placeholder</span>=<span class="code-value">"使用插槽前缀"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"prefix"</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-primary); font-weight: bold;"</span><span class="code-bracket">&gt;</span>$<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">placeholder</span>=<span class="code-value">"使用插槽后缀"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"suffix"</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-success);"</span><span class="code-bracket">&gt;</span>✓<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">placeholder</span>=<span class="code-value">"同时使用前后缀插槽"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"prefix"</span><span class="code-bracket">&gt;</span>📧<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"suffix"</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-text-tertiary);"</span><span class="code-bracket">&gt;</span>.com<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
         <h3 class="demo-block-title">输入框类型</h3>
         <p class="demo-block-desc">支持多种原生输入类型。</p>
         <div class="demo-box">
@@ -337,6 +370,45 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">双向绑定</h3>
+        <p class="demo-block-desc">使用 s-model 指令实现双向数据绑定，绑定的是 value 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                <solely-input s-model="$data.modelInput1" placeholder="输入内容"></solely-input>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px;">
+                    <div style="color: var(--solely-text-secondary); margin-bottom: 8px;">绑定值：</div>
+                    <div style="font-family: monospace;">{{$data.modelInput1 || '（空）'}}</div>
+                </div>
+                <solely-input s-model="$data.modelInput2" type="password" showpassword placeholder="密码输入"></solely-input>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px;">
+                    <div style="color: var(--solely-text-secondary); margin-bottom: 8px;">密码值：</div>
+                    <div style="font-family: monospace;">{{$data.modelInput2 || '（空）'}}</div>
+                </div>
+                <solely-input s-model="$data.modelInput3" type="textarea" rows="3" placeholder="文本域"></solely-input>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px;">
+                    <div style="color: var(--solely-text-secondary); margin-bottom: 8px;">文本域值：</div>
+                    <div style="font-family: monospace; white-space: pre-wrap;">{{$data.modelInput3 || '（空）'}}</div>
+                </div>
+                <solely-button size="small" type="primary" @click="this.clearInputs()">清空所有</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 s-model 实现双向绑定（绑定 value 属性） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">s-model</span>=<span class="code-value">"textValue"</span> <span class="code-attr">placeholder</span>=<span class="code-value">"输入内容"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 密码输入框 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">type</span>=<span class="code-value">"password"</span> <span class="code-attr">s-model</span>=<span class="code-value">"passwordValue"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 文本域 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">type</span>=<span class="code-value">"textarea"</span> <span class="code-attr">s-model</span>=<span class="code-value">"textareaValue"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-comment">// s-model 会自动绑定 value 属性和监听 change 事件</span>
+<span class="code-comment">// 未配置 model 的组件默认使用: { prop: 'value', event: 'change' }</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- API 文档 -->
     <div class="api-section">
         <h3 class="api-section-title">API</h3>
@@ -551,6 +623,28 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                         <td>copy-error</td>
                         <td>复制失败时触发（自定义事件）</td>
                         <td>CustomEvent&lt;{ error: Error }&gt;</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">插槽</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>插槽名</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>prefix</td>
+                        <td>输入框前缀内容（优先级高于 prefix 属性）</td>
+                    </tr>
+                    <tr>
+                        <td>suffix</td>
+                        <td>输入框后缀内容（优先级高于 suffix 属性，但低于 clearable、showpassword、copyable）</td>
                     </tr>
                 </tbody>
             </table>

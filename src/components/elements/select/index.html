@@ -14,15 +14,25 @@
 
     <!-- 下拉菜单 -->
     <If test="$data.isOpen">
-        <div class="select__dropdown select__dropdown--bottom" :class="this.getDropdownClasses()">
-            <If test="$data.parsedOptions.length === 0">
-                <div class="select__empty">暂无数据</div>
+        <div class="select__dropdown" :class="this.getDropdownClasses()">
+            <!-- 使用 options 属性时的渲染 -->
+            <If test="!$data.useSlot">
+                <If test="$data.parsedOptions.length === 0">
+                    <div class="select__empty">暂无数据</div>
+                </If>
+                <For each="$data.parsedOptions" item="option">
+                    <div class="select__option" :class="this.getOptionClasses(option)" @click="this.handleSelect(option, event)">
+                        <span class="select__option-label">{{option.label}}</span>
+                    </div>
+                </For>
             </If>
-            <For each="$data.parsedOptions" item="option">
-                <div class="select__option" :class="this.getOptionClasses(option)" @click="this.handleSelect(option, event)">
-                    {{option.label}}
+
+            <!-- 使用插槽时的渲染 -->
+            <If test="$data.useSlot">
+                <div class="select__slot-options" @click="this.handleSlotClick(event)">
+                    <slot></slot>
                 </div>
-            </For>
+            </If>
         </div>
     </If>
 </div>

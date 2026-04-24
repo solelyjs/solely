@@ -8,6 +8,9 @@ import template from './input.html?raw';
 
 interface DocsData {
     eventLogs: string[];
+    modelInput1: string;
+    modelInput2: string;
+    modelInput3: string;
 }
 
 @CustomElement({
@@ -18,6 +21,9 @@ export class DocsInput extends BaseElement<DocsData> {
     constructor() {
         super({
             eventLogs: [],
+            modelInput1: 'Hello Solely!',
+            modelInput2: '',
+            modelInput3: '多行文本示例\n第二行内容',
         });
     }
 
@@ -114,6 +120,15 @@ export class DocsInput extends BaseElement<DocsData> {
      */
     handleCopyErrorEvent(_event: CustomEvent<{ error: Error }>): void {
         this.addEventLog('copy-error: 复制失败');
+    }
+
+    /**
+     * 清空所有输入
+     */
+    clearInputs(): void {
+        this.$data.modelInput1 = '';
+        this.$data.modelInput2 = '';
+        this.$data.modelInput3 = '';
     }
 }
 

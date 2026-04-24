@@ -9,6 +9,9 @@ import template from './checkbox.html?raw';
 interface CheckboxDocData {
     checkedStatus: string;
     indeterminateStatus: string;
+    modelChecked1: boolean;
+    modelChecked2: boolean;
+    modelChecked3: boolean;
 }
 
 @CustomElement({
@@ -20,6 +23,9 @@ export class DocsCheckbox extends BaseElement<CheckboxDocData> {
         super({
             checkedStatus: '未选中',
             indeterminateStatus: '半选',
+            modelChecked1: false,
+            modelChecked2: true,
+            modelChecked3: false,
         });
     }
 
@@ -49,6 +55,16 @@ export class DocsCheckbox extends BaseElement<CheckboxDocData> {
         if (typeof checkboxEl?.toggle === 'function') {
             checkboxEl.toggle();
         }
+    }
+
+    /**
+     * 全选/全不选切换
+     */
+    toggleAll(): void {
+        const allChecked = this.$data.modelChecked1 && this.$data.modelChecked2 && this.$data.modelChecked3;
+        this.$data.modelChecked1 = !allChecked;
+        this.$data.modelChecked2 = !allChecked;
+        this.$data.modelChecked3 = !allChecked;
     }
 }
 

@@ -263,6 +263,62 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
             </div>
         </div>
     </div>
+
+    <!-- 使用插槽 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">使用插槽</h3>
+        <p class="demo-block-desc">通过插槽自定义每个步骤的内容，支持自定义图标和布局。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="1">
+                    <div data-step="1" data-title="填写信息" data-description="请填写基本信息">
+                        <span style="color: var(--solely-primary);">✓</span>
+                    </div>
+                    <div data-step="2" data-title="验证身份" data-description="进行身份验证">
+                        <span style="color: var(--solely-warning);">⏳</span>
+                    </div>
+                    <div data-step="3" data-title="完成" data-description="注册成功">
+                        <span style="color: var(--solely-success);">🎉</span>
+                    </div>
+                </solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"1"</span> <span class="code-attr">data-title</span>=<span class="code-value">"填写信息"</span> <span class="code-attr">data-description</span>=<span class="code-value">"请填写基本信息"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-primary);"</span><span class="code-bracket">&gt;</span>✓<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"2"</span> <span class="code-attr">data-title</span>=<span class="code-value">"验证身份"</span> <span class="code-attr">data-description</span>=<span class="code-value">"进行身份验证"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-warning);"</span><span class="code-bracket">&gt;</span>⏳<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"3"</span> <span class="code-attr">data-title</span>=<span class="code-value">"完成"</span> <span class="code-attr">data-description</span>=<span class="code-value">"注册成功"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-success);"</span><span class="code-bracket">&gt;</span>🎉<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 插槽禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">插槽禁用状态</h3>
+        <p class="demo-block-desc">在插槽元素上添加 disabled 属性可禁用该步骤。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps current="0">
+                    <div data-step="1" data-title="当前步骤">1</div>
+                    <div data-step="2" data-title="已禁用" disabled>🔒</div>
+                    <div data-step="3" data-title="未解锁" disabled>🔒</div>
+                </solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">current</span>=<span class="code-value">"0"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"1"</span> <span class="code-attr">data-title</span>=<span class="code-value">"当前步骤"</span><span class="code-bracket">&gt;</span>1<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"2"</span> <span class="code-attr">data-title</span>=<span class="code-value">"已禁用"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span>🔒<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"3"</span> <span class="code-attr">data-title</span>=<span class="code-value">"未解锁"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span>🔒<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- API 文档 -->
@@ -395,5 +451,30 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
 
 <span class="code-comment">// 步骤条尺寸</span>
 <span class="code-keyword">type</span> <span class="code-type">StepsSize</span> = <span class="code-value">'default'</span> | <span class="code-value">'small'</span> | <span class="code-value">'large'</span>;</code></pre>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                    <th>插槽元素属性</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>default</td>
+                    <td>自定义步骤内容（当使用插槽时，items 属性将被忽略）</td>
+                    <td>
+                        <code>data-step</code>: 步骤序号（从1开始）<br>
+                        <code>data-title</code>: 步骤标题<br>
+                        <code>data-description</code>: 步骤描述<br>
+                        <code>disabled</code>: 禁用该步骤
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>

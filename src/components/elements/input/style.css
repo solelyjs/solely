@@ -275,3 +275,26 @@
   transition: color var(--solely-transition-duration);
   flex-shrink: 0;
 }
+
+/* ==================== Prefix / Suffix 插槽样式 ==================== */
+.form-control__prefix,
+.form-control__suffix {
+  display: inline-flex;
+  align-items: center;
+  color: var(--solely-text-tertiary);
+  flex-shrink: 0;
+}
+
+.form-control__prefix {
+  margin-right: var(--solely-spacing-xs);
+}
+
+.form-control__suffix {
+  margin-left: var(--solely-spacing-xs);
+}
+
+.form-control__prefix ::slotted(*),
+.form-control__suffix ::slotted(*) {
+  display: inline-flex;
+  align-items: center;
+}

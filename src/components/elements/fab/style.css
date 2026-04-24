@@ -246,3 +246,10 @@
   width: 200%;
   height: 200%;
 }
+
+/* Icon 插槽样式 */
+.fab__icon ::slotted(*) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
