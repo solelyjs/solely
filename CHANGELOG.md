@@ -7,6 +7,25 @@
 
 ## [Unreleased]
 
+### Added
+
+- **feat(compiler)**: 组件声明式配置支持 s-model 双向绑定
+    - 新增 `@ComponentModel` 装饰器，支持组件自定义 model 配置
+    - Checkbox、Radio、Switch 组件添加 model 配置
+    - 编译器支持根据组件类型生成对应的双向绑定代码
+
+### Fixed
+
+- **fix(steps)**: 修复插槽模式下内容显示不正确的问题
+    - 插槽元素现在正确渲染为步骤条结构
+    - 支持在插槽元素中自定义图标内容
+    - 修复 Shadow DOM 中访问 Light DOM 元素的权限问题
+
+- **fix(switch)**: 修复双向绑定初始化问题
+    - 修复 s-model 初始值被默认值覆盖的问题
+    - 修复禁用状态下无法显示初始值的问题
+    - 优化 setChecked 方法架构，分离数据操作和事件派发
+
 ## [0.4.1] - 2025-04-23
 
 ### Added
