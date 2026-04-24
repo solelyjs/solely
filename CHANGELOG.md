@@ -7,6 +7,38 @@
 
 ## [Unreleased]
 
+## [0.4.1] - 2025-04-23
+
+### Added
+
+- **feat(components)**: 命令式组件支持 HTMLElement 内容
+    - Modal、Drawer、Message、Popconfirm、Tooltip 支持传入 HTMLElement 作为内容
+    - 支持在弹出组件中渲染自定义 DOM 结构
+
+- **feat(select)**: 下拉框自动调整位置
+    - 根据视口空间自动决定向上或向下展开
+    - 当选择器位于页面底部时自动向上展开下拉框
+
+- **feat(modal)**: 添加 `showIcon` 属性控制是否显示默认图标
+- **feat(popconfirm)**: 添加 `showIcon` 属性控制是否显示默认图标
+
+### Changed
+
+- **refactor(docs)**: 重构文档布局
+    - 使用 CSS Grid 布局替代 Flexbox
+    - 优化文档站点整体布局结构，避免页面级滚动条
+    - 代码框样式优化，恢复 macOS 风格窗口按钮和 Dracula 主题高亮
+
+- **refactor(components)**: 优化代码结构和样式格式
+    - 统一组件代码风格
+    - 修复 lint 警告
+
+### Fixed
+
+- **fix(card)**: 添加动作点击索引边界检查
+- **fix(components)**: 修复触摸事件处理和 JSON 解析安全问题
+- **fix(component)**: 修复数据属性同步到 $data 的问题
+
 ## [0.4.0] - 2025-04-23
 
 ### Added
@@ -206,7 +238,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/solelyjs/solely/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/solelyjs/solely/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/solelyjs/solely/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/solelyjs/solely/compare/v0.2.9...v0.3.0
