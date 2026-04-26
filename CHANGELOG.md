@@ -7,24 +7,36 @@
 
 ## [Unreleased]
 
+## [0.4.3] - 2025-04-26
+
+### Changed
+
+- **refactor(components)**: 优化样式变量和组件交互逻辑
+    - **BackTop**: 改进返回顶部组件，支持相对容器定位和祖先滚动监听
+    - **CSS 变量**: 统一使用 CSS 变量管理阴影和 z-index，统一组件样式规范
+    - 更新组件文档样式和示例
+
+## [0.4.2] - 2025-04-24
+
 ### Added
 
-- **feat(compiler)**: 组件声明式配置支持 s-model 双向绑定
-    - 新增 `@ComponentModel` 装饰器，支持组件自定义 model 配置
-    - Checkbox、Radio、Switch 组件添加 model 配置
-    - 编译器支持根据组件类型生成对应的双向绑定代码
+- **feat(components)**: 实现表单组件的双向绑定功能
+    - 为 Checkbox、Radio、Switch、Input 和 Select 组件添加 s-model 双向绑定支持
+    - 通过 model 配置指定属性和事件
+
+### Changed
+
+- **refactor(steps)**: 为步骤条组件添加插槽支持
+    - 允许通过插槽自定义步骤内容
+    - 支持动态更新和禁用状态
+    - 为表单组件添加插槽样式
+
+- **refactor(components/steps)**: 使用类型断言替代 any 类型
 
 ### Fixed
 
-- **fix(steps)**: 修复插槽模式下内容显示不正确的问题
-    - 插槽元素现在正确渲染为步骤条结构
-    - 支持在插槽元素中自定义图标内容
-    - 修复 Shadow DOM 中访问 Light DOM 元素的权限问题
-
-- **fix(switch)**: 修复双向绑定初始化问题
-    - 修复 s-model 初始值被默认值覆盖的问题
-    - 修复禁用状态下无法显示初始值的问题
-    - 优化 setChecked 方法架构，分离数据操作和事件派发
+- **fix(base-element)**: 修复属性默认值覆盖问题
+    - 修复当通过 s-model 等方式设置属性后，默认值不应覆盖已设置值的问题
 
 ## [0.4.1] - 2025-04-23
 
@@ -257,7 +269,9 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/solelyjs/solely/compare/v0.4.2...v0.4.3
+[0.4.2]: https://github.com/solelyjs/solely/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/solelyjs/solely/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/solelyjs/solely/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/solelyjs/solely/compare/v0.3.0...v0.3.1
