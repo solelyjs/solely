@@ -19,6 +19,7 @@
   bottom: 0;
   background-color: var(--solely-mask-bg);
   z-index: 1;
+  pointer-events: auto;
   animation: drawer-mask-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 

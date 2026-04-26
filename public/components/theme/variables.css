@@ -160,8 +160,18 @@
     --solely-z-index-table-fixed: 2;
     --solely-z-index-table-header: 3;
     --solely-z-index-switch-handle: 2;
-    --solely-z-index-timeline-dot: 1;
+    --solely-z-index-timeline-dot: 2;
+    --solely-z-index-timeline-tail: 1;
+    --solely-z-index-steps-icon: 1;
+    --solely-z-index-steps-tail: 0;
     --solely-z-index-slider-handle: 1;
+
+    /* ==================== 阴影 ==================== */
+    --solely-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --solely-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --solely-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --solely-shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --solely-shadow-primary: 0 0 0 4px rgba(24, 144, 255, 0.2);
 
     /* ==================== 遮罩层 ==================== */
     --solely-mask-bg: rgba(0, 0, 0, 0.45);

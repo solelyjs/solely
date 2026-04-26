@@ -1,6 +1,3 @@
-/* Solely BackTop 组件样式 */
-
-/* ==================== 基础重置 ==================== */
 *,
 *::before,
 *::after {
@@ -9,9 +6,7 @@
 
 :host {
   display: block;
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
+  position: fixed;          /* right / bottom 由 JS 动态计算 */
   z-index: var(--solely-z-index-fixed);
   opacity: 0;
   visibility: hidden;
@@ -37,7 +32,7 @@
   color: var(--solely-primary);
   background-color: var(--solely-component-bg);
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--solely-shadow-md);
   cursor: pointer;
   transition: transform var(--solely-transition-duration),
               background-color var(--solely-transition-duration),
@@ -52,8 +47,8 @@
 .backtop:hover {
   background-color: var(--solely-primary);
   color: var(--solely-white);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transform: translateY(0);
+  box-shadow: var(--solely-shadow-lg);
+  transform: translateY(-2px);
 }
 
 .backtop__icon {

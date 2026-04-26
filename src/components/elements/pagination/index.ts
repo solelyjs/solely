@@ -211,7 +211,7 @@ class SolelyPagination extends BaseElement<
         this.$data.current = 1;
         this.calculateVisiblePages();
 
-        // 派发原生 showSizeChange 事件
+        // 派发 showSizeChange 事件
         this.dispatchEvent(
             new CustomEvent('showSizeChange', {
                 bubbles: true,

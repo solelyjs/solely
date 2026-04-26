@@ -28,7 +28,7 @@ export interface TreeNode {
 }
 
 export interface TreeProps {
-    /** 树形数据（JSON字符串） */
+    /** 树形数据（JSON字符串，如 '[{"key":"1","title":"Node 1"}]'） */
     treeData?: string;
     /** 是否显示连接线 */
     showLine?: boolean;

@@ -91,7 +91,7 @@
   left: 2px;
   background-color: var(--switch-handle-bg);
   border-radius: var(--solely-border-radius-circle);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--solely-shadow-sm);
   transition: all var(--solely-transition-duration) var(--solely-transition-timing);
   z-index: var(--solely-z-index-switch-handle);
 }

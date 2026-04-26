@@ -1,8 +1,7 @@
 /**
  * Solely BackTop 组件
- * 回到顶部组件，用于页面长距离滚动后返回顶部
+ * 回到顶部，相对滚动容器定位，自动处理祖先滚动
  */
-
 import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { BackTopProps } from './types';
 import styles from './style.css?inline';
@@ -20,15 +19,17 @@ import { throttle } from '../utils/helpers';
     ],
 })
 class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
-    scrollHandler?: () => void;
-    resizeHandler?: () => void;
+    // 事件处理引用（可选，方便清空时设为 undefined）
+    private onScrollThrottled?: () => void;
+    private onResizeThrottled?: () => void;
+    private scrollAncestors: HTMLElement[] = [];
+
     container: HTMLElement | null = null;
     private mountTimeout?: number;
     private initialized = false;
+    private animating = false;
+    private isDocumentContainer = false;
 
-    /**
-     * 更新显示状态
-     */
     updateVisibleClass(): void {
         if (this.$data.visible) {
             this.classList.add('backtop--visible');
@@ -37,9 +38,7 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
         }
     }
 
-    /**
-     * 获取滚动容器
-     */
+    /** 向上查找第一个纵向可滚动容器（不包括祖先） */
     getContainer(): HTMLElement | null {
         let parent = this.parentElement;
         while (parent) {
@@ -52,140 +51,189 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
         return null;
     }
 
+    /** 查找所有可滚动的祖先元素（用于监听） */
+    getScrollAncestors(startFrom: HTMLElement): HTMLElement[] {
+        const ancestors: HTMLElement[] = [];
+        let parent = startFrom.parentElement;
+        while (parent) {
+            const style = window.getComputedStyle(parent);
+            if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                ancestors.push(parent);
+            }
+            parent = parent.parentElement;
+        }
+        return ancestors;
+    }
+
     mounted(): void {
+        this.$data.visible = false;
         this.mountTimeout = setTimeout(() => {
             this.initializeContainer();
         }, 100) as unknown as number;
     }
 
     unmounted(): void {
-        // 清除定时器
+        this.initialized = false;
+        this.animating = false;
         if (this.mountTimeout) {
             clearTimeout(this.mountTimeout);
             this.mountTimeout = undefined;
         }
-        // 清理事件监听器
         this.cleanupEventListeners();
     }
 
-    /**
-     * 初始化容器
-     */
     private initializeContainer(): void {
         if (this.initialized) return;
         this.initialized = true;
 
         this.container = this.getContainer();
-
         if (!this.container) {
-            this.warn(true, '未找到可滚动的父容器');
-            return;
+            this.container = document.documentElement;
+            this.isDocumentContainer = true;
+        } else {
+            this.isDocumentContainer = false;
         }
 
-        // 监听容器滚动（节流优化，16ms 约等于 60fps）
-        this.scrollHandler = throttle(() => {
+        // 获取所有可滚动祖先（用于监听滚动导致的位移）
+        if (!this.isDocumentContainer) {
+            this.scrollAncestors = this.getScrollAncestors(this.container);
+        } else {
+            this.scrollAncestors = [];
+        }
+
+        // 统一的滚动处理：处理显隐 + 位置更新（非文档容器时）
+        this.onScrollThrottled = throttle(() => {
             this.handleScroll();
+            if (!this.isDocumentContainer) {
+                this.schedulePositionUpdate();
+            }
         }, 16);
-        this.container.addEventListener('scroll', this.scrollHandler);
 
-        // 监听窗口变化（用于更新位置）
-        this.resizeHandler = () => {
-            requestAnimationFrame(() => {
-                this.updatePosition();
-            });
-        };
-        window.addEventListener('resize', this.resizeHandler);
-
-        // 监听窗口滚动（用于更新位置，节流优化）
-        window.addEventListener(
-            'scroll',
-            throttle(() => {
-                if (this.resizeHandler) {
-                    this.resizeHandler();
+        // 绑定滚动事件
+        if (this.isDocumentContainer) {
+            window.addEventListener('scroll', this.onScrollThrottled, { passive: true });
+        } else {
+            // 容器自身滚动
+            this.container.addEventListener('scroll', this.onScrollThrottled);
+            // 窗口滚动也可能影响容器位置
+            window.addEventListener('scroll', this.onScrollThrottled, { passive: true });
+            // 所有可滚动祖先的滚动都会导致容器位移
+            const handler = this.onScrollThrottled;
+            this.scrollAncestors.forEach(ancestor => {
+                if (handler) {
+                    ancestor.addEventListener('scroll', handler, { passive: true });
                 }
-            }, 16),
-            { passive: true },
-        );
+            });
+        }
 
-        // 初始检查
+        // 窗口大小变化
+        this.onResizeThrottled = throttle(() => {
+            if (!this.isDocumentContainer) {
+                this.schedulePositionUpdate();
+            }
+        }, 16);
+        window.addEventListener('resize', this.onResizeThrottled);
+
+        // 初始执行
         this.handleScroll();
         this.updatePosition();
     }
 
-    /**
-     * 清理事件监听器
-     */
     private cleanupEventListeners(): void {
-        if (this.scrollHandler && this.container) {
-            this.container.removeEventListener('scroll', this.scrollHandler);
+        if (this.onScrollThrottled) {
+            if (this.isDocumentContainer) {
+                window.removeEventListener('scroll', this.onScrollThrottled);
+            } else {
+                if (this.container) {
+                    this.container.removeEventListener('scroll', this.onScrollThrottled);
+                }
+                window.removeEventListener('scroll', this.onScrollThrottled);
+                const handler = this.onScrollThrottled;
+                this.scrollAncestors.forEach(ancestor => {
+                    if (handler) {
+                        ancestor.removeEventListener('scroll', handler);
+                    }
+                });
+            }
+            this.onScrollThrottled = undefined;
         }
-        if (this.resizeHandler) {
-            window.removeEventListener('resize', this.resizeHandler);
-            window.removeEventListener('scroll', this.resizeHandler);
+        if (this.onResizeThrottled) {
+            window.removeEventListener('resize', this.onResizeThrottled);
+            this.onResizeThrottled = undefined;
         }
     }
 
-    /**
-     * 更新按钮位置
-     */
+    private schedulePositionUpdate(): void {
+        requestAnimationFrame(() => this.updatePosition());
+    }
+
+    /** 根据容器在视口中的位置更新 fixed 坐标 */
     updatePosition(): void {
         if (!this.container) return;
 
+        if (this.isDocumentContainer) {
+            this.style.right = '';
+            this.style.bottom = '';
+            return;
+        }
+
         const rect = this.container.getBoundingClientRect();
-
-        // 计算按钮位置：容器右下角，距离右边缘20px，距离下边缘20px
-        const right = window.innerWidth - rect.right + 20;
-        const bottom = window.innerHeight - rect.bottom + 20;
-
-        // 设置按钮位置
+        const offset = 20;
         this.style.position = 'fixed';
-        this.style.right = `${right}px`;
-        this.style.bottom = `${bottom}px`;
+        this.style.right = `${window.innerWidth - rect.right + offset}px`;
+        this.style.bottom = `${window.innerHeight - rect.bottom + offset}px`;
     }
 
-    /**
-     * 滚动事件处理
-     */
     handleScroll(): void {
         if (!this.container) return;
-
-        const scrollTop = this.container.scrollTop;
+        const scrollTop = this.getScrollTop();
         const newVisible = scrollTop >= this.$data.visibilityHeight;
-
         if (this.$data.visible !== newVisible) {
             this.$data.visible = newVisible;
             this.updateVisibleClass();
         }
     }
 
-    /**
-     * 点击回到顶部
-     */
+    private getScrollTop(): number {
+        if (this.isDocumentContainer) {
+            return window.scrollY || document.documentElement.scrollTop;
+        }
+        return this.container?.scrollTop ?? 0;
+    }
+
+    private setScrollTop(value: number): void {
+        if (this.isDocumentContainer) {
+            window.scrollTo({ top: value, behavior: 'instant' as ScrollBehavior });
+            document.documentElement.scrollTop = value;
+        } else if (this.container) {
+            this.container.scrollTop = value;
+        }
+    }
+
     handleClick(): void {
-        if (!this.container) return;
+        if (this.animating || !this.container) return;
+        this.animating = true;
 
         const duration = this.$data.duration || 450;
         const startTime = Date.now();
-        const startTop = this.container.scrollTop;
+        const startTop = this.getScrollTop();
 
         const scroll = () => {
+            if (!this.animating) return;
             const elapsed = Date.now() - startTime;
             const progress = Math.min(elapsed / duration, 1);
-
-            // easeInOutCubic
             const easeProgress =
                 progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
             const currentTop = startTop * (1 - easeProgress);
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.container!.scrollTop = currentTop;
+            this.setScrollTop(currentTop);
 
             if (progress < 1) {
                 requestAnimationFrame(scroll);
             } else {
-                // 派发原生 click 事件
+                this.animating = false;
                 this.dispatchEvent(
-                    new Event('click', {
+                    new CustomEvent('backtop-finish', {
                         bubbles: true,
                         composed: true,
                     }),

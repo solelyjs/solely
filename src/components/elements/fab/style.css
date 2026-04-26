@@ -18,8 +18,8 @@
   justify-content: center;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--solely-shadow-lg);
+  transition: all var(--solely-transition-duration) var(--solely-transition-timing);
   z-index: var(--solely-z-index-fixed);
   outline: none;
   padding: 0;
@@ -31,7 +31,7 @@
 }
 
 .fab:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--solely-shadow-xl);
   transform: var(--fab-position-transform, none) scale(1.05);
 }
 
@@ -40,9 +40,9 @@
 }
 
 .fab:disabled {
-  opacity: 0.6;
+  opacity: var(--solely-disabled-opacity);
   cursor: not-allowed;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--solely-shadow-sm);
 }
 
 .fab:disabled:hover {
