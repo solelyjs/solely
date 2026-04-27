@@ -68,7 +68,7 @@ const containers: Map<string, HTMLElement> = new Map();
 function getContainer(placement: MessagePlacement = globalConfig.placement): HTMLElement {
     const containerKey = placement;
     if (containers.has(containerKey)) {
-        return containers.get(containerKey)!;
+        return containers.get(containerKey) as HTMLElement;
     }
 
     const container = createElement('div', {
