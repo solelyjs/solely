@@ -3,6 +3,20 @@
     <p class="page-desc">全局展示操作反馈信息，支持多种消息类型和自定义配置。</p>
 </div>
 
+<style>
+.placement-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+.placement-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+</style>
+
 <div class="demo-section">
     <div class="demo-block">
         <h3 class="demo-block-title">基础用法</h3>
@@ -130,8 +144,48 @@ instance.<span class="code-attr">update</span>({
     </div>
 
     <div class="demo-block">
+        <h3 class="demo-block-title">消息位置</h3>
+        <p class="demo-block-desc">通过 <code>placement</code> 属性可以设置消息显示的位置，支持 8 个不同方位，覆盖屏幕的各个角落和边缘。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <div class="placement-grid">
+                    <div class="placement-row">
+                        <solely-button size="small" type="default" @click="this.showMessageAt('topLeft')">左上</solely-button>
+                        <solely-button size="small" type="primary" @click="this.showMessageAt('top')">顶部居中</solely-button>
+                        <solely-button size="small" type="default" @click="this.showMessageAt('topRight')">右上</solely-button>
+                    </div>
+                    <div class="placement-row">
+                        <solely-button size="small" type="warning" @click="this.showMessageAt('left')">左侧居中</solely-button>
+                        <solely-button size="small" type="warning" @click="this.showMessageAt('right')">右侧居中</solely-button>
+                    </div>
+                    <div class="placement-row">
+                        <solely-button size="small" type="default" @click="this.showMessageAt('bottomLeft')">左下</solely-button>
+                        <solely-button size="small" type="success" @click="this.showMessageAt('bottom')">底部居中</solely-button>
+                        <solely-button size="small" type="default" @click="this.showMessageAt('bottomRight')">右下</solely-button>
+                    </div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 顶部位置（3个）- 消息向下排列</span>
+<span class="code-type">Message</span>.<span class="code-attr">info</span>(<span class="code-value">'顶部居中'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'top'</span> });
+<span class="code-type">Message</span>.<span class="code-attr">info</span>(<span class="code-value">'左上角'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'topLeft'</span> });
+<span class="code-type">Message</span>.<span class="code-attr">info</span>(<span class="code-value">'右上角'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'topRight'</span> });
+
+<span class="code-comment">// 底部位置（3个）- 消息向上排列</span>
+<span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'底部居中'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'bottom'</span> });
+<span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'左下角'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'bottomLeft'</span> });
+<span class="code-type">Message</span>.<span class="code-attr">success</span>(<span class="code-value">'右下角'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'bottomRight'</span> });
+
+<span class="code-comment">// 侧边位置（2个）- 消息向右/左排列</span>
+<span class="code-type">Message</span>.<span class="code-attr">warning</span>(<span class="code-value">'左侧居中'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'left'</span> });
+<span class="code-type">Message</span>.<span class="code-attr">error</span>(<span class="code-value">'右侧居中'</span>, { <span class="code-attr">placement</span>: <span class="code-value">'right'</span> });</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
         <h3 class="demo-block-title">全局配置</h3>
-        <p class="demo-block-desc">使用 <code>config()</code> 方法配置全局默认设置。</p>
+        <p class="demo-block-desc">使用 <code>config()</code> 方法配置全局默认设置，包括位置偏移量。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary" @click="this.configMessage()">更新全局配置</solely-button>
@@ -141,7 +195,11 @@ instance.<span class="code-attr">update</span>({
                 <pre><code><span class="code-type">Message</span>.<span class="code-attr">config</span>({
     <span class="code-attr">duration</span>: <span class="code-value">5000</span>,
     <span class="code-attr">maxCount</span>: <span class="code-value">3</span>,
-    <span class="code-attr">top</span>: <span class="code-value">50</span>
+    <span class="code-attr">top</span>: <span class="code-value">50</span>,
+    <span class="code-attr">bottom</span>: <span class="code-value">50</span>,
+    <span class="code-attr">left</span>: <span class="code-value">50</span>,
+    <span class="code-attr">right</span>: <span class="code-value">50</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>
 });
 
 <span class="code-type">Message</span>.<span class="code-attr">destroy</span>();</code></pre>
@@ -348,6 +406,12 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>() => void</td>
                     <td>-</td>
                 </tr>
+                <tr>
+                    <td>placement</td>
+                    <td>消息显示位置</td>
+                    <td>'top' | 'topLeft' | 'topRight' | 'bottom' | 'bottomLeft' | 'bottomRight' | 'left' | 'right'</td>
+                    <td>'top'</td>
+                </tr>
             </tbody>
         </table>
 
@@ -408,6 +472,30 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>距离顶部的距离</td>
                     <td>number</td>
                     <td>24</td>
+                </tr>
+                <tr>
+                    <td>bottom</td>
+                    <td>距离底部的距离</td>
+                    <td>number</td>
+                    <td>24</td>
+                </tr>
+                <tr>
+                    <td>left</td>
+                    <td>距离左侧的距离</td>
+                    <td>number</td>
+                    <td>24</td>
+                </tr>
+                <tr>
+                    <td>right</td>
+                    <td>距离右侧的距离</td>
+                    <td>number</td>
+                    <td>24</td>
+                </tr>
+                <tr>
+                    <td>placement</td>
+                    <td>默认消息位置</td>
+                    <td>'top' | 'topLeft' | 'topRight' | 'bottom' | 'bottomLeft' | 'bottomRight' | 'left' | 'right'</td>
+                    <td>'top'</td>
                 </tr>
             </tbody>
         </table>

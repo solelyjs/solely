@@ -1,4 +1,13 @@
 export type MessageType = 'info' | 'success' | 'warning' | 'error' | 'loading';
+export type MessagePlacement =
+    | 'top'
+    | 'topLeft'
+    | 'topRight'
+    | 'bottom'
+    | 'bottomLeft'
+    | 'bottomRight'
+    | 'left'
+    | 'right';
 
 export interface MessageOptions {
     /** 消息内容 */
@@ -21,6 +30,8 @@ export interface MessageOptions {
     style?: Partial<CSSStyleDeclaration>;
     /** 关闭时的回调 */
     onClose?: () => void;
+    /** 消息位置，默认 'top' */
+    placement?: MessagePlacement;
 }
 
 export interface MessageInstance {
@@ -39,4 +50,12 @@ export interface MessageConfig {
     gap: number;
     /** 距离顶部的偏移量 */
     top: number;
+    /** 距离底部的偏移量 */
+    bottom: number;
+    /** 距离左侧的偏移量 */
+    left: number;
+    /** 距离右侧的偏移量 */
+    right: number;
+    /** 默认位置 */
+    placement: MessagePlacement;
 }

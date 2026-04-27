@@ -1,4 +1,4 @@
-import type { MessageOptions, MessageInstance, MessageConfig, MessageType } from './types';
+import type { MessageOptions, MessageInstance, MessageConfig, MessageType, MessagePlacement } from './types';
 import { generateId, injectStyle, createElement, addClosingAnimation, ANIMATION_DURATION } from '../utils'; // 路径按实际调整
 import styles from './style.css?inline';
 
@@ -9,9 +9,12 @@ const globalConfig: MessageConfig = {
     maxCount: 5,
     gap: 8,
     top: 24,
+    bottom: 24,
+    left: 24,
+    right: 24,
+    placement: 'top',
 };
 
-let messageContainer: HTMLElement | null = null;
 let themeObserver: MutationObserver | null = null;
 let containerCleanupTimer: number | undefined;
 const closingIds = new Set<number>();
@@ -21,6 +24,7 @@ interface MessageInfo {
     element: HTMLElement;
     timer?: number;
     onClose?: () => void;
+    placement: MessagePlacement;
 }
 
 const messageList: MessageInfo[] = [];
@@ -59,19 +63,87 @@ function observeTheme(container: HTMLElement): void {
     });
 }
 
-function getContainer(): HTMLElement {
-    if (!messageContainer) {
-        messageContainer = createElement('div', {
-            className: 'message-container',
-            styles: { top: `${globalConfig.top}px` },
-        });
-        const theme = document.documentElement.getAttribute('data-theme');
-        if (theme) messageContainer.setAttribute('data-theme', theme);
-        document.body.appendChild(messageContainer);
-        ensureStylesInjected();
-        observeTheme(messageContainer);
+const containers: Map<string, HTMLElement> = new Map();
+
+function getContainer(placement: MessagePlacement = globalConfig.placement): HTMLElement {
+    const containerKey = placement;
+    if (containers.has(containerKey)) {
+        return containers.get(containerKey)!;
     }
-    return messageContainer;
+
+    const container = createElement('div', {
+        className: 'message-container',
+    });
+
+    // 根据位置设置样式
+    const styles: Partial<CSSStyleDeclaration> = {
+        position: 'fixed',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: `${globalConfig.gap}px`,
+        pointerEvents: 'none',
+        zIndex: 'var(--solely-z-index-toast)',
+    };
+
+    switch (placement) {
+        // 顶部位置
+        case 'top':
+            styles.top = `${globalConfig.top}px`;
+            styles.left = '50%';
+            styles.transform = 'translateX(-50%)';
+            break;
+        case 'topLeft':
+            styles.top = `${globalConfig.top}px`;
+            styles.left = `${globalConfig.left}px`;
+            styles.alignItems = 'flex-start';
+            break;
+        case 'topRight':
+            styles.top = `${globalConfig.top}px`;
+            styles.right = `${globalConfig.right}px`;
+            styles.alignItems = 'flex-end';
+            break;
+        // 底部位置
+        case 'bottom':
+            styles.bottom = `${globalConfig.bottom}px`;
+            styles.left = '50%';
+            styles.transform = 'translateX(-50%)';
+            break;
+        case 'bottomLeft':
+            styles.bottom = `${globalConfig.bottom}px`;
+            styles.left = `${globalConfig.left}px`;
+            styles.alignItems = 'flex-start';
+            break;
+        case 'bottomRight':
+            styles.bottom = `${globalConfig.bottom}px`;
+            styles.right = `${globalConfig.right}px`;
+            styles.alignItems = 'flex-end';
+            break;
+        // 左侧居中
+        case 'left':
+            styles.top = '50%';
+            styles.left = `${globalConfig.left}px`;
+            styles.transform = 'translateY(-50%)';
+            styles.alignItems = 'flex-start';
+            break;
+        // 右侧居中
+        case 'right':
+            styles.top = '50%';
+            styles.right = `${globalConfig.right}px`;
+            styles.transform = 'translateY(-50%)';
+            styles.alignItems = 'flex-end';
+            break;
+    }
+
+    Object.assign(container.style, styles);
+
+    const theme = document.documentElement.getAttribute('data-theme');
+    if (theme) container.setAttribute('data-theme', theme);
+    document.body.appendChild(container);
+    ensureStylesInjected();
+    observeTheme(container);
+
+    containers.set(containerKey, container);
+    return container;
 }
 
 function scheduleContainerCleanup(): void {
@@ -79,13 +151,17 @@ function scheduleContainerCleanup(): void {
         clearTimeout(containerCleanupTimer);
     }
     containerCleanupTimer = window.setTimeout(() => {
-        if (messageList.length === 0 && messageContainer) {
-            if (themeObserver) {
+        if (messageList.length === 0) {
+            containers.forEach((container, placement) => {
+                if (container.childElementCount === 0) {
+                    container.remove();
+                    containers.delete(placement);
+                }
+            });
+            if (containers.size === 0 && themeObserver) {
                 themeObserver.disconnect();
                 themeObserver = null;
             }
-            messageContainer.remove();
-            messageContainer = null;
         }
         containerCleanupTimer = undefined;
     }, 300);
@@ -208,10 +284,16 @@ async function closeMessage(id: number): Promise<void> {
 // ---------- 公开 API ----------
 function open(options: MessageOptions): MessageInstance {
     const id = generateId();
-    const container = getContainer();
+    const placement = options.placement || globalConfig.placement;
+    const container = getContainer(placement);
 
-    if (messageList.length >= globalConfig.maxCount) {
-        closeMessage(messageList[0].id);
+    // 只检查对应位置的消息数量
+    const messagesAtPlacement = messageList.filter(m => m.placement === placement);
+    if (messagesAtPlacement.length >= globalConfig.maxCount) {
+        const oldestMessage = messagesAtPlacement[0];
+        if (oldestMessage) {
+            closeMessage(oldestMessage.id);
+        }
     }
 
     const element = createMessageElement(options, id);
@@ -221,6 +303,7 @@ function open(options: MessageOptions): MessageInstance {
         id,
         element,
         onClose: options.onClose,
+        placement,
     };
 
     const duration = options.duration ?? globalConfig.duration;
@@ -353,9 +436,37 @@ function loading(
 
 function config(options: Partial<MessageConfig>): void {
     Object.assign(globalConfig, options);
-    if (options.top !== undefined && messageContainer) {
-        messageContainer.style.top = `${options.top}px`;
-    }
+
+    // 更新现有容器的样式
+    containers.forEach((container, placement) => {
+        // 顶部位置
+        if (options.top !== undefined) {
+            if (['top', 'topLeft', 'topRight'].includes(placement)) {
+                container.style.top = `${options.top}px`;
+            }
+        }
+        // 底部位置
+        if (options.bottom !== undefined) {
+            if (['bottom', 'bottomLeft', 'bottomRight'].includes(placement)) {
+                container.style.bottom = `${options.bottom}px`;
+            }
+        }
+        // 左侧位置
+        if (options.left !== undefined) {
+            if (['topLeft', 'bottomLeft', 'left'].includes(placement)) {
+                container.style.left = `${options.left}px`;
+            }
+        }
+        // 右侧位置
+        if (options.right !== undefined) {
+            if (['topRight', 'bottomRight', 'right'].includes(placement)) {
+                container.style.right = `${options.right}px`;
+            }
+        }
+        if (options.gap !== undefined) {
+            container.style.gap = `${options.gap}px`;
+        }
+    });
 }
 
 async function destroy(): Promise<void> {

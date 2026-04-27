@@ -1,6 +1,7 @@
 import { CustomElement } from '../../../src/runtime/component/decorators';
 import BaseElement from '../../../src/runtime/component/base-element';
 import { Message } from '../../../src/components/commands/message';
+import type { MessagePlacement } from '../../../src/components/commands/message/types';
 import template from './message.html?raw';
 
 interface DocsData {
@@ -125,13 +126,35 @@ export class DocsMessage extends BaseElement<DocsData> {
         this.addLog('已销毁所有消息');
     }
 
+    showMessageAt(placement: string): void {
+        const placementMap: Record<string, string> = {
+            top: '顶部居中',
+            topLeft: '左上角',
+            topRight: '右上角',
+            bottom: '底部居中',
+            bottomLeft: '左下角',
+            bottomRight: '右下角',
+            left: '左侧居中',
+            right: '右侧居中',
+        };
+        Message.success(`${placementMap[placement]}消息`, {
+            placement: placement as MessagePlacement,
+            description: `位置: ${placement}`,
+        });
+        this.addLog(`显示${placementMap[placement]}消息`);
+    }
+
     configMessage(): void {
         Message.config({
             duration: 5000,
             maxCount: 3,
             top: 50,
+            bottom: 50,
+            left: 50,
+            right: 50,
+            placement: 'top',
         });
-        Message.info('全局配置已更新：持续5秒，最多3条，距顶部50px');
+        Message.info('全局配置已更新：持续5秒，最多3条，偏移量50px');
         this.addLog('全局配置已更新');
     }
 

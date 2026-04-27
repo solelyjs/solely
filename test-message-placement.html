@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message 组件定位测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn-top { background: #3498db; color: white; }
+        .btn-bottom { background: #9b59b6; color: white; }
+        .btn-left { background: #e74c3c; color: white; }
+        .btn-right { background: #27ae60; color: white; }
+        .btn-config { background: #f39c12; color: white; }
+        .btn-destroy { background: #7f8c8d; color: white; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Message 组件定位测试</h1>
+        <div class="button-group">
+            <button class="btn-top" onclick="showMessage('top')">顶部消息</button>
+            <button class="btn-bottom" onclick="showMessage('bottom')">底部消息</button>
+            <button class="btn-left" onclick="showMessage('left')">左侧消息</button>
+            <button class="btn-right" onclick="showMessage('right')">右侧消息</button>
+            <button class="btn-config" onclick="configMessage()">配置默认位置</button>
+            <button class="btn-destroy" onclick="destroyMessages()">销毁所有消息</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Message } from './src/components/commands/index.ts';
+
+        function showMessage(placement) {
+            const messages = [
+                '这是一条测试消息',
+                '操作成功完成',
+                '警告：请检查输入',
+                '错误：操作失败',
+                '加载中，请稍候...'
+            ];
+            const types = ['info', 'success', 'warning', 'error', 'loading'];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            const randomType = types[Math.floor(Math.random() * types.length)];
+
+            Message[randomType](randomMessage, {
+                duration: 3000,
+                placement: placement,
+                closable: true,
+                description: `位置: ${placement}, 类型: ${randomType}`
+            });
+        }
+
+        function configMessage() {
+            Message.config({
+                top: 40,
+                bottom: 40,
+                left: 40,
+                right: 40,
+                placement: 'top'
+            });
+            Message.info('默认配置已更新', { duration: 2000 });
+        }
+
+        function destroyMessages() {
+            Message.destroy();
+            Message.info('所有消息已销毁', { duration: 2000 });
+        }
+
+        // 页面加载时显示欢迎消息
+        window.onload = function() {
+            Message.success('欢迎使用 Message 组件定位测试', {
+                duration: 3000,
+                description: '点击上方按钮测试不同位置的消息'
+            });
+        };
+    </script>
+</body>
+</html>

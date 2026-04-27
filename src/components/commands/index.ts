@@ -9,7 +9,7 @@ export { Drawer } from './drawer';
 export { Popconfirm } from './popconfirm';
 
 // 导出类型
-export type { MessageOptions, MessageInstance, MessageConfig, MessageType } from './message/types';
+export type { MessageOptions, MessageInstance, MessageConfig, MessageType, MessagePlacement } from './message/types';
 export type { ModalOptions, ModalInstance, ModalConfig, ModalType, ModalButton } from './modal/types';
 export type { TooltipOptions, TooltipInstance, TooltipConfig, TooltipPlacement, TooltipTrigger } from './tooltip/types';
 export type { DrawerOptions, DrawerInstance, DrawerConfig, DrawerPlacement } from './drawer/types';
