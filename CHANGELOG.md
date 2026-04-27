@@ -7,6 +7,19 @@
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-04-27
+
+### Added
+
+- **feat(message)**: 支持消息组件多位置显示功能
+    - 添加消息组件在 4 个不同位置显示的能力，包括顶部、底部、左侧和右侧的各种组合
+    - 更新全局配置支持设置默认位置和各个方向的偏移量
+    - 重构消息容器管理逻辑以支持多位置布局
+
+### Fixed
+
+- **fix(message)**: 修复获取容器时的类型断言问题
+
 ## [0.4.3] - 2025-04-26
 
 ### Changed
@@ -269,7 +282,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.4...HEAD
+[0.4.4]: https://github.com/solelyjs/solely/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/solelyjs/solely/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/solelyjs/solely/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/solelyjs/solely/compare/v0.4.0...v0.4.1
