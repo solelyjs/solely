@@ -261,6 +261,13 @@ const routes: RouteConfig[] = [
             return { tagName: 'docs-tooltip' };
         },
     },
+    {
+        path: '/not-found',
+        component: async () => {
+            await import('./views/not-found');
+            return { tagName: 'docs-not-found' };
+        },
+    },
 ];
 
 // 创建路由实例

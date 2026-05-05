@@ -1,0 +1,325 @@
+/**
+ * Solely NotFound 404 组件样式
+ */
+
+/* ==================== 基础重置 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--solely-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==================== 容器 ==================== */
+.not-found {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--solely-spacing-xl, 32px);
+  position: relative;
+  z-index: 1;
+}
+
+.not-found__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 500px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* ==================== 404 数字 ==================== */
+.not-found__numbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.not-found__number {
+  font-size: 120px;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--solely-primary, #1890ff) 0%, var(--solely-primary-hover, #40a9ff) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: float 3s ease-in-out infinite;
+  text-shadow: none;
+}
+
+.not-found__number:first-child {
+  animation-delay: 0s;
+}
+
+.not-found__number:last-child {
+  animation-delay: 0.5s;
+}
+
+/* ==================== 中间图标 ==================== */
+.not-found__icon-wrapper {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite, float 3s ease-in-out infinite;
+  animation-delay: 0.25s, 0.25s;
+  box-shadow: 0 8px 32px rgba(238, 90, 111, 0.3);
+}
+
+.not-found__icon {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+/* ==================== 文字内容 ==================== */
+.not-found__title {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--solely-text-primary, #262626);
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.not-found__subtitle {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--solely-text-secondary, #595959);
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.not-found__description {
+  font-size: 14px;
+  color: var(--solely-text-tertiary, #8c8c8c);
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+/* ==================== 返回按钮 ==================== */
+.not-found__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 28px;
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+  background: linear-gradient(135deg, var(--solely-primary, #1890ff) 0%, var(--solely-primary-hover, #40a9ff) 100%);
+  border: none;
+  border-radius: 22px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+  outline: none;
+}
+
+.not-found__button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(24, 144, 255, 0.4);
+}
+
+.not-found__button:active {
+  transform: translateY(0);
+}
+
+.not-found__button-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.not-found__button:hover .not-found__button-icon {
+  transform: translateX(-3px);
+}
+
+/* ==================== 背景装饰 ==================== */
+.not-found__bg-decoration {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.not-found__bg-decoration--1 {
+  width: 300px;
+  height: 300px;
+  background: var(--solely-primary, #1890ff);
+  top: -100px;
+  right: -100px;
+  animation: float 8s ease-in-out infinite;
+}
+
+.not-found__bg-decoration--2 {
+  width: 200px;
+  height: 200px;
+  background: #ff6b6b;
+  bottom: -50px;
+  left: -50px;
+  animation: float 6s ease-in-out infinite reverse;
+}
+
+.not-found__bg-decoration--3 {
+  width: 150px;
+  height: 150px;
+  background: #52c41a;
+  top: 50%;
+  right: 10%;
+  animation: float 10s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+/* ==================== 动画 ==================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 576px) {
+  .not-found__number {
+    font-size: 80px;
+  }
+
+  .not-found__icon-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+
+  .not-found__icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .not-found__title {
+    font-size: 36px;
+  }
+
+  .not-found__subtitle {
+    font-size: 18px;
+  }
+
+  .not-found__description {
+    font-size: 13px;
+  }
+
+  .not-found__numbers {
+    gap: 12px;
+  }
+}
+
+/* ==================== 嵌入模式（用于文档演示等场景） ==================== */
+:host([embedded]) {
+  min-height: auto;
+  background: var(--docs-bg-secondary, #f5f5f5);
+}
+
+:not(.not-found--embedded) {
+  /* 保持原有全屏样式 */
+}
+
+.not-found--embedded {
+  padding: var(--solely-spacing-lg, 24px);
+}
+
+.not-found--embedded .not-found__container {
+  max-width: 400px;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.not-found--embedded .not-found__number {
+  font-size: 64px;
+}
+
+.not-found--embedded .not-found__icon-wrapper {
+  width: 48px;
+  height: 48px;
+  box-shadow: 0 4px 16px rgba(238, 90, 111, 0.2);
+}
+
+.not-found--embedded .not-found__icon {
+  width: 24px;
+  height: 24px;
+}
+
+.not-found--embedded .not-found__title {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.not-found--embedded .not-found__subtitle {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.not-found--embedded .not-found__description {
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.not-found--embedded .not-found__button {
+  height: 36px;
+  padding: 0 20px;
+  font-size: 13px;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.25);
+}
+
+.not-found--embedded .not-found__button-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.not-found--embedded .not-found__numbers {
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.not-found--embedded .not-found__bg-decoration {
+  display: none;
+}

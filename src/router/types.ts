@@ -43,6 +43,11 @@ export interface RouteConfig {
      * 实际上通常可以通过判断 component 属性是否存在来推断。
      */
     async?: boolean;
+
+    /** * 404 页面组件标签名。
+     * 当没有匹配到路由时显示的组件，优先级高于 RouterView 的 not-found 属性。
+     */
+    notFoundComponent?: string;
 }
 
 export interface MatchedRoute {

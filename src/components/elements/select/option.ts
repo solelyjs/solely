@@ -24,7 +24,7 @@ class SelectOption extends BaseElement<{
     /**
      * 获取选项值
      */
-    getOptionData() {
+    getOptionData(): { value: string; label: string; disabled: boolean; element: SelectOption } {
         // 如果有 label 属性，使用 label；否则尝试从插槽获取文本
         const label = this.$data.label || this.textContent?.trim() || '';
         return {

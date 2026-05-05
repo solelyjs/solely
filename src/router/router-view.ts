@@ -8,8 +8,11 @@ const globalKeepAliveCache = new Map<string, HTMLElement>();
 @CustomElement({
     tagName: 'router-view',
     // 注意：删除了 shadowDOM 配置，默认为 false
+    props: [{ name: 'notFound', type: 'string', default: '' }],
 })
-class RouterView extends BaseElement {
+class RouterView extends BaseElement<{
+    notFound: string;
+}> {
     private unsubscribe?: () => void;
     private level = 0;
     private currentElement: HTMLElement | null = null;
@@ -222,7 +225,28 @@ class RouterView extends BaseElement {
 
     private handleEmptyRoute() {
         this.clear();
-        if (this.level === 0) this.renderError('404 Not Found');
+        if (this.level === 0) {
+            // 优先使用路由配置中的 404 组件
+            const currentRoute = this.router?.getCurrentRoute();
+            const matched = currentRoute?.matched?.[0];
+            const notFoundComponent = matched?.config?.notFoundComponent;
+
+            if (notFoundComponent) {
+                const el = document.createElement(notFoundComponent);
+                this.appendChild(el);
+                this.currentElement = el;
+                this.currentTagName = notFoundComponent.toLowerCase();
+            } else if (this.$data.notFound) {
+                // 其次使用 RouterView 的 not-found 属性指定的组件
+                const el = document.createElement(this.$data.notFound);
+                this.appendChild(el);
+                this.currentElement = el;
+                this.currentTagName = this.$data.notFound.toLowerCase();
+            } else {
+                // 默认 404 提示
+                this.renderError('404 Not Found');
+            }
+        }
     }
 
     private renderLoading() {
