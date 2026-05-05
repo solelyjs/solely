@@ -37,7 +37,7 @@ export async function loadIconSprite(path: string): Promise<void> {
                 }
             });
 
-            console.log(`[Solely Icon] Loaded ${svgSpriteCache.size} icons from sprite`);
+            console.info(`[Solely Icon] Loaded ${svgSpriteCache.size} icons from sprite`);
         } catch (error) {
             console.warn('[Solely Icon] Failed to load icon sprite:', error);
         }
@@ -158,7 +158,12 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
     }
 
     private getDefaultIcon(): string {
-        return '<rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="11.5" r="0.75" fill="currentColor"/>';
+        return (
+            '<rect x="2" y="2" width="12" height="12" rx="2" fill="none" ' +
+            'stroke="currentColor" stroke-width="1.5"/>' +
+            '<line x1="6" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.5"/>' +
+            '<circle cx="8" cy="11.5" r="0.75" fill="currentColor"/>'
+        );
     }
 
     /**
