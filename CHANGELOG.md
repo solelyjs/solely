@@ -7,6 +7,27 @@
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-05-05
+
+### Added
+
+- **feat(icon)**: 新增 SVG 图标组件及文档
+    - 添加全新的 SolelyIcon 组件，支持 SVG Sprite 和自定义图标注册
+    - 提供尺寸、颜色、旋转等属性控制
+    - 集成到组件文档系统
+
+- **feat(router)**: 添加 404 页面组件及路由支持
+    - 新增 NotFound 404 页面组件，支持自定义标题、描述和返回按钮
+    - 扩展路由配置支持指定 404 组件
+    - 优化 RouterView 对未匹配路由的处理逻辑，优先显示配置的 404 组件
+
+### Changed
+
+- **refactor(icon)**: 优化图标组件代码格式和日志级别
+    - 将 console.log 改为 console.info 以区分日志级别
+    - 调整 SVG 字符串的格式以提高可读性
+    - 统一文档中图标注册的代码格式
+
 ## [0.4.4] - 2026-04-27
 
 ### Added
@@ -282,7 +303,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.4...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.5...HEAD
+[0.4.5]: https://github.com/solelyjs/solely/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/solelyjs/solely/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/solelyjs/solely/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/solelyjs/solely/compare/v0.4.1...v0.4.2
