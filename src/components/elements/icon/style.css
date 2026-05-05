@@ -1,0 +1,80 @@
+/**
+ * Solely Icon 组件样式
+ * 基于 CSS 变量实现可定制主题
+ */
+
+/* ==================== Host 样式 ==================== */
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-size, 16px);
+  height: var(--icon-size, 16px);
+  color: var(--icon-color, currentColor);
+  font-size: var(--icon-size, 16px);
+  line-height: 1;
+  vertical-align: middle;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+/* ==================== SVG 样式 ==================== */
+.icon-svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  transition: transform var(--solely-transition-duration, 0.2s) var(--solely-transition-timing, ease);
+}
+
+/* 尺寸预设 - 定义在 :host 上确保变量可被读取 */
+:host(.icon--small) {
+  --icon-size: 12px;
+}
+
+:host(.icon--medium) {
+  --icon-size: 16px;
+}
+
+:host(.icon--large) {
+  --icon-size: 24px;
+}
+
+/* 旋转动画 */
+.is-spinning {
+  animation: icon-spin var(--spin-duration, 1s) linear infinite;
+  animation-direction: var(--spin-direction, normal);
+}
+
+@keyframes icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 禁用状态 */
+:host([disabled]) {
+  cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity, 0.6);
+}
+
+/* 占位符 */
+.icon-placeholder {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 可交互样式 */
+.icon-svg:not([disabled]) {
+  cursor: pointer;
+}
+
+/* Hover 效果 */
+.icon-svg:not([disabled]):hover {
+  opacity: 0.8;
+}

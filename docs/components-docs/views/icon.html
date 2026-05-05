@@ -1,0 +1,292 @@
+<h1 class="page-title">Icon 图标</h1>
+<p class="page-desc">语义化的矢量图形，支持 SVG Sprite、自定义图标和第三方图标库，提供灵活的尺寸、颜色和旋转控制。</p>
+
+<div class="component-section" id="icon">
+    <div class="demo-block">
+        <h3 class="demo-block-title">SVG Sprite 方式（推荐）</h3>
+        <p class="demo-block-desc">直接使用 SVG Sprite 文件，图标按需加载，无需打包。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-icon name="house-fill" size="24"></solely-icon>
+                <solely-icon name="person-fill" size="24"></solely-icon>
+                <solely-icon name="gear-fill" size="24"></solely-icon>
+                <solely-icon name="heart-fill" size="24" color="#ff4d4f"></solely-icon>
+                <solely-icon name="star-fill" size="24" color="#faad14"></solely-icon>
+                <solely-icon name="check-circle-fill" size="24" color="#52c41a"></solely-icon>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 方式一：在入口文件全局设置（推荐）</span>
+<span class="code-keyword">import</span> { setIconSpritePath } <span class="code-keyword">from</span> <span class="code-value">'solely'</span>;
+
+<span class="code-comment">// 设置 SVG Sprite 路径（相对于 public 目录）</span>
+setIconSpritePath(<span class="code-value">'/icons/bootstrap-icons.svg'</span>);
+
+<span class="code-comment">// 然后直接使用</span>
+&lt;<span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"house-fill"</span>&gt;&lt;/<span class="code-tag">solely-icon</span>&gt;
+&lt;<span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"person-fill"</span>&gt;&lt;/<span class="code-tag">solely-icon</span>&gt;
+
+<span class="code-comment">// 方式二：每个图标单独指定 sprite</span>
+&lt;<span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"gear-fill"</span> <span class="code-attr">sprite</span>=<span class="code-value">"/icons/bootstrap-icons.svg"</span>&gt;&lt;/<span class="code-tag">solely-icon</span>&gt;</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">手动注册图标</h3>
+        <p class="demo-block-desc">使用 registerIcon 或 registerIcons 手动注册自定义图标。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-icon name="my-icon" size="24"></solely-icon>
+                <solely-icon name="logo" size="32"></solely-icon>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">import</span> { registerIcon, registerIcons } <span class="code-keyword">from</span> <span class="code-value">'solely'</span>;
+
+<span class="code-comment">// 注册单个图标（六边形）</span>
+registerIcon(<span class="code-value">'my-icon'</span>, <span class="code-value">'&lt;polygon points="8,1 14.1,4.5 14.1,11.5 8,15 1.9,11.5 1.9,4.5" fill="currentColor"/&gt;'</span>);
+
+<span class="code-comment">// 批量注册多个图标</span>
+registerIcons({
+  <span class="code-value">'logo'</span>: <span class="code-value">'&lt;circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/&gt;&lt;path d="M8 4v8M4 8h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/&gt;'</span>,
+  <span class="code-value">'arrow'</span>: <span class="code-value">'&lt;path d="M4 12l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/&gt;'</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">图标尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种预设尺寸，或自定义数值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-icon name="star-fill" size="small" color="#faad14"></solely-icon>
+                <solely-icon name="star-fill" size="medium" color="#faad14"></solely-icon>
+                <solely-icon name="star-fill" size="large" color="#faad14"></solely-icon>
+                <solely-icon name="star-fill" size="32" color="#faad14"></solely-icon>
+                <solely-icon name="star-fill" size="48" color="#faad14"></solely-icon>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"star-fill"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"star-fill"</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"star-fill"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"star-fill"</span> <span class="code-attr">size</span>=<span class="code-value">"32"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"star-fill"</span> <span class="code-attr">size</span>=<span class="code-value">"48"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">图标颜色</h3>
+        <p class="demo-block-desc">使用 color 属性自定义图标颜色，支持 CSS 变量或具体颜色值。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-icon name="heart-fill" color="#ff4d4f"></solely-icon>
+                <solely-icon name="star-fill" color="#faad14"></solely-icon>
+                <solely-icon name="check-circle-fill" color="#52c41a"></solely-icon>
+                <solely-icon name="info-circle-fill" color="#1890ff"></solely-icon>
+                <solely-icon name="exclamation-triangle-fill" color="#fa8c16"></solely-icon>
+                <solely-icon name="x-circle-fill" color="#f5222d"></solely-icon>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"heart-fill"</span> <span class="code-attr">color</span>=<span class="code-value">"#ff4d4f"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"star-fill"</span> <span class="code-attr">color</span>=<span class="code-value">"#faad14"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"check-circle-fill"</span> <span class="code-attr">color</span>=<span class="code-value">"#52c41a"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"info-circle-fill"</span> <span class="code-attr">color</span>=<span class="code-value">"#1890ff"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"exclamation-triangle-fill"</span> <span class="code-attr">color</span>=<span class="code-value">"#fa8c16"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"x-circle-fill"</span> <span class="code-attr">color</span>=<span class="code-value">"#f5222d"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">图标旋转</h3>
+        <p class="demo-block-desc">使用 spin 属性开启旋转动画，支持顺时针和逆时针旋转。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-icon name="arrow-clockwise" spin="clockwise" size="large"></solely-icon>
+                <solely-icon name="arrow-repeat" spin="counterclockwise" size="large"></solely-icon>
+                <solely-icon name="arrow-clockwise" spin="clockwise" size="large" spinDuration="2"></solely-icon>
+                <solely-icon name="gear-fill" spin="clockwise" size="large" color="#1890ff"></solely-icon>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"arrow-clockwise"</span> <span class="code-attr">spin</span>=<span class="code-value">"clockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"arrow-repeat"</span> <span class="code-attr">spin</span>=<span class="code-value">"counterclockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"arrow-clockwise"</span> <span class="code-attr">spin</span>=<span class="code-value">"clockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">spinDuration</span>=<span class="code-value">"2"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"gear-fill"</span> <span class="code-attr">spin</span>=<span class="code-value">"clockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">color</span>=<span class="code-value">"#1890ff"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">Bootstrap Icons</h3>
+        <p class="demo-block-desc">Bootstrap Icons 提供 2000+ 个高质量图标，涵盖各种使用场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <div class="icon-grid">
+                    <div class="icon-item"><solely-icon name="house-fill" size="24"></solely-icon><span>home</span>
+                    </div>
+                    <div class="icon-item"><solely-icon name="person-fill" size="24"></solely-icon><span>user</span>
+                    </div>
+                    <div class="icon-item"><solely-icon name="gear-fill" size="24"></solely-icon><span>settings</span>
+                    </div>
+                    <div class="icon-item"><solely-icon name="search" size="24"></solely-icon><span>search</span></div>
+                    <div class="icon-item"><solely-icon name="bell-fill"
+                            size="24"></solely-icon><span>notification</span></div>
+                    <div class="icon-item"><solely-icon name="envelope-fill" size="24"></solely-icon><span>mail</span>
+                    </div>
+                    <div class="icon-item"><solely-icon name="calendar-fill"
+                            size="24"></solely-icon><span>calendar</span></div>
+                    <div class="icon-item"><solely-icon name="folder-fill" size="24"></solely-icon><span>folder</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="api-section">
+    <h2 class="api-title">API</h2>
+    <h3 class="api-subtitle">属性</h3>
+    <div class="api-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>name</td>
+                    <td>图标名称</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>图标尺寸，可选值：small、medium、large 或自定义数值</td>
+                    <td>string | number</td>
+                    <td>medium</td>
+                </tr>
+                <tr>
+                    <td>color</td>
+                    <td>图标颜色，支持 CSS 变量或具体颜色值</td>
+                    <td>string</td>
+                    <td>currentColor</td>
+                </tr>
+                <tr>
+                    <td>spin</td>
+                    <td>旋转方向，可选值：clockwise、counterclockwise</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>spinDuration</td>
+                    <td>旋转一圈所需时间（秒）</td>
+                    <td>number</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
+                    <td>是否禁用</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>sprite</td>
+                    <td>SVG Sprite 文件路径（优先级高于全局设置）</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3 class="api-subtitle">事件</h3>
+    <div class="api-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>事件名</th>
+                    <th>说明</th>
+                    <th>回调参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>click</td>
+                    <td>点击图标时触发</td>
+                    <td>(event: MouseEvent)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3 class="api-subtitle">静态方法</h3>
+    <div class="api-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>registerIcon</td>
+                    <td>注册单个自定义图标</td>
+                    <td>(name: string, svgContent: string)</td>
+                </tr>
+                <tr>
+                    <td>registerIcons</td>
+                    <td>批量注册自定义图标</td>
+                    <td>(icons: Record&lt;string, string&gt;)</td>
+                </tr>
+                <tr>
+                    <td>getIcon</td>
+                    <td>获取已注册图标的 SVG 内容</td>
+                    <td>(name: string) => string | undefined</td>
+                </tr>
+                <tr>
+                    <td>hasIcon</td>
+                    <td>检查图标是否已注册</td>
+                    <td>(name: string) => boolean</td>
+                </tr>
+                <tr>
+                    <td>getRegisteredIcons</td>
+                    <td>获取所有已注册图标名称</td>
+                    <td>() => string[]</td>
+                </tr>
+                <tr>
+                    <td>setIconSpritePath</td>
+                    <td>设置 SVG Sprite 文件路径（全局）</td>
+                    <td>(path: string) => void</td>
+                </tr>
+                <tr>
+                    <td>loadIconSprite</td>
+                    <td>手动加载 SVG Sprite 文件</td>
+                    <td>(path: string) => Promise&lt;void&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3 class="api-subtitle">使用示例</h3>
+    <div class="code-block">
+        <pre><code><span class="code-comment">// 导入图标组件和注册函数</span>
+<span class="code-keyword">import</span> { SolelyIcon, registerIcon, setIconSpritePath, loadIconSprite } <span class="code-keyword">from</span> <span class="code-value">'solely'</span>;
+
+<span class="code-comment">// 方式一：全局设置 SVG Sprite（推荐）</span>
+setIconSpritePath(<span class="code-value">'/icons/bootstrap-icons.svg'</span>);
+
+<span class="code-comment">// 方式二：手动注册自定义图标</span>
+registerIcon(<span class="code-value">'my-icon'</span>, <span class="code-value">'&lt;path d="M12 2L2 7l10 5 10-5-10-5z"/&gt;'</span>);
+
+<span class="code-comment">// 使用图标</span>
+&lt;<span class="code-type">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"house-fill"</span>&gt;&lt;/<span class="code-type">solely-icon</span>&gt;</code></pre>
+    </div>
+</div>
+

@@ -4,6 +4,7 @@
 
 // 基础组件
 export { SolelyButton } from './button';
+export { SolelyIcon, registerIcon, registerIcons, getIcon, hasIcon, getRegisteredIcons } from './icon';
 export { SolelyInput } from './input';
 export { SolelyFab } from './fab';
 export { SolelyCard } from './card';
@@ -33,6 +34,7 @@ export { SolelyCoordinateInput } from './coordinate-input';
 
 // 导出类型
 export type { ButtonProps, ButtonType, ButtonSize, ButtonShape } from './button/types';
+export type { IconProps, IconSize, IconSpin, IconRefs } from './icon/types';
 export type { InputProps, InputType, InputSize } from './input/types';
 export type { FabProps, FabPosition, FabSize, FabShape } from './fab/types';
 export type { CardProps, CardSize } from './card/types';

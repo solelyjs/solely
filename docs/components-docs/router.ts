@@ -37,6 +37,13 @@ const routes: RouteConfig[] = [
         },
     },
     {
+        path: '/icon',
+        component: async () => {
+            await import('./views/icon');
+            return { tagName: 'docs-icon' };
+        },
+    },
+    {
         path: '/input',
         component: async () => {
             await import('./views/input');
