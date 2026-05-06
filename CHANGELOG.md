@@ -7,6 +7,29 @@
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-05-06
+
+### Changed
+
+- **refactor(components)**: 优化组件事件处理与属性暴露
+    - 移除 Checkbox 组件冗余的 change 事件派发
+    - 在 Message 组件中使用常量 Z_INDEX 替代硬编码值
+    - 为 Tree 组件添加 value 和 selectedKeys 属性，提供更一致的 API
+
+- **refactor(pagination)**: 优化分页组件计算可见页码的逻辑
+    - 将计算可见页码的方法改为返回计算结果而非直接修改状态
+    - 移除重复的 calculateVisiblePages 调用
+    - 更新模板中引用计算页码的方式
+
+- **refactor(commands/message)**: 清理导入路径中的注释
+    - 移除导入路径中不必要的注释，保持代码整洁
+
+### Added
+
+- **docs**: 添加第三方资源说明和许可证文件
+    - 添加 Bootstrap Icons 使用说明到 README
+    - 添加 LICENSE 和 NOTICE 文件
+
 ## [0.4.5] - 2026-05-05
 
 ### Added
@@ -303,7 +326,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.5...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.6...HEAD
+[0.4.6]: https://github.com/solelyjs/solely/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/solelyjs/solely/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/solelyjs/solely/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/solelyjs/solely/compare/v0.4.2...v0.4.3
