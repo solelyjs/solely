@@ -19,7 +19,7 @@
     </span>
 
     <!-- 页码 -->
-    <For each="$data.visiblePages" item="page">
+    <For each="this.calculateVisiblePages()" item="page">
         <If test="page !== '...'">
             <span
                 class="pagination__item"

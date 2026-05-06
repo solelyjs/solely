@@ -29,7 +29,6 @@ import { safeJsonParse } from '../utils/helpers';
 })
 class SolelyPagination extends BaseElement<
     PaginationProps & {
-        visiblePages: (number | string)[];
         parsedPageSizeOptions: number[];
     }
 > {
@@ -42,7 +41,6 @@ class SolelyPagination extends BaseElement<
 
     set current(value: number) {
         this.$data.current = value;
-        this.calculateVisiblePages();
         this.dispatchEvent(
             new Event('change', {
                 bubbles: true,
@@ -60,7 +58,6 @@ class SolelyPagination extends BaseElement<
 
     set pageSize(value: number) {
         this.$data.pageSize = value;
-        this.calculateVisiblePages();
         this.dispatchEvent(
             new Event('change', {
                 bubbles: true,
@@ -116,7 +113,6 @@ class SolelyPagination extends BaseElement<
     mounted(): void {
         this.$data.jumperValue = '';
         this.parsePageSizeOptions();
-        this.calculateVisiblePages();
     }
 
     /**
@@ -136,7 +132,7 @@ class SolelyPagination extends BaseElement<
     /**
      * 计算可见页码
      */
-    calculateVisiblePages(): void {
+    calculateVisiblePages(): (number | string)[] {
         const current = this.$data.current || 1;
         const total = this.totalPages;
         const pages: (number | string)[] = [];
@@ -155,7 +151,7 @@ class SolelyPagination extends BaseElement<
             }
         }
 
-        this.$data.visiblePages = pages;
+        return pages;
     }
 
     /**
@@ -165,7 +161,6 @@ class SolelyPagination extends BaseElement<
         if (this.$data.disabled || page === this.$data.current) return;
 
         this.$data.current = page;
-        this.calculateVisiblePages();
 
         // 派发原生 change 事件
         this.dispatchEvent(
@@ -209,7 +204,6 @@ class SolelyPagination extends BaseElement<
 
         this.$data.pageSize = newPageSize;
         this.$data.current = 1;
-        this.calculateVisiblePages();
 
         // 派发 showSizeChange 事件
         this.dispatchEvent(
@@ -258,7 +252,6 @@ class SolelyPagination extends BaseElement<
      */
     public setCurrent(current: number): void {
         this.$data.current = current;
-        this.calculateVisiblePages();
     }
 
     /**

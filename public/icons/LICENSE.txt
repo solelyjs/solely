@@ -1,0 +1,14 @@
+Bootstrap Icons License
+=======================
+
+The file bootstrap-icons.svg in this directory is from Bootstrap Icons:
+  https://github.com/twbs/icons
+
+License: MIT License
+Copyright (c) 2019-2024 The Bootstrap Authors
+
+See the project's NOTICE file or https://github.com/twbs/icons/blob/main/LICENSE
+for the full license text.
+
+This file is used for demonstration purposes only and is not bundled with
+the published npm package.

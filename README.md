@@ -1311,6 +1311,10 @@ npm run pack:local
 
 感谢所有为这个项目做出贡献的人！
 
+### 第三方资源
+
+- [Bootstrap Icons](https://icons.getbootstrap.com/) - 用于文档演示的图标库（MIT License）
+
 ---
 
 **Happy Coding with Solely! 🚀**
