@@ -122,6 +122,44 @@
             </div>
         </div>
     </div>
+
+    <!-- 方法演示 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">方法演示</h3>
+        <p class="demo-block-desc">通过方法动态控制徽标数字，操作后查看事件日志。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <solely-badge id="badge-method-demo" count="5">
+                        <solely-button>Messages</solely-button>
+                    </solely-badge>
+                    <div style="display: flex; gap: 8px;">
+                        <solely-button size="small" @click="this.handleBadgeIncrease()">+1</solely-button>
+                        <solely-button size="small" @click="this.handleBadgeDecrease()">-1</solely-button>
+                        <solely-button size="small" @click="this.handleBadgeShowDot()">显示红点</solely-button>
+                        <solely-button size="small" @click="this.handleBadgeHideDot()">隐藏红点</solely-button>
+                    </div>
+                </div>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">操作日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待操作...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">id</span>=<span class="code-value">"my-badge"</span> <span class="code-attr">count</span>=<span class="code-value">"5"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> badge = document.querySelector(<span class="code-value">'#my-badge'</span>);
+badge.increase();  <span class="code-comment">// 数字 +1</span>
+badge.decrease();  <span class="code-comment">// 数字 -1</span>
+badge.showDot();   <span class="code-comment">// 显示红点</span>
+badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="api-section">

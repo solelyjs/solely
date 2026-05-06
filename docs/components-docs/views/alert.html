@@ -67,10 +67,14 @@
 
     <div class="demo-block">
         <h3 class="demo-block-title">事件监听</h3>
-        <p class="demo-block-desc">监听关闭事件。</p>
+        <p class="demo-block-desc">监听关闭事件，点击关闭按钮查看事件日志。</p>
         <div class="demo-box">
-            <div class="demo-preview">
-                <solely-alert id="alert-event-demo" type="info" message="Click the close button" closable></solely-alert>
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                <solely-alert id="alert-event-demo" type="info" message="Click the close button" closable @close="this.handleAlertClose(event)"></solely-alert>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
+                    <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
+                </div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"Click the close button"</span> <span class="code-attr">closable</span> <span class="code-attr">@close</span>=<span class="code-value">"handleClose()"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
