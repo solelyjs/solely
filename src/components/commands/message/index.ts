@@ -1,5 +1,5 @@
 import type { MessageOptions, MessageInstance, MessageConfig, MessageType, MessagePlacement } from './types';
-import { generateId, injectStyle, createElement, addClosingAnimation, ANIMATION_DURATION } from '../utils'; // 路径按实际调整
+import { generateId, injectStyle, createElement, addClosingAnimation, ANIMATION_DURATION, Z_INDEX } from '../utils'; // 路径按实际调整
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-message-styles';
@@ -82,7 +82,7 @@ function getContainer(placement: MessagePlacement = globalConfig.placement): HTM
         flexDirection: 'column',
         gap: `${globalConfig.gap}px`,
         pointerEvents: 'none',
-        zIndex: 'var(--solely-z-index-toast)',
+        zIndex: String(Z_INDEX.TOAST),
     };
 
     switch (placement) {

@@ -60,14 +60,6 @@ class SolelyCheckbox extends BaseElement<CheckboxProps, CheckboxRefs> {
         }
 
         this.toggle();
-
-        // 派发原生 change 事件
-        this.dispatchEvent(
-            new Event('change', {
-                bubbles: true,
-                composed: true,
-            }),
-        );
     }
 
     /**

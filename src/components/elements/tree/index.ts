@@ -504,6 +504,45 @@ class SolelyTree extends BaseElement<
     public getTreeData(): TreeNode[] {
         return this.treeData;
     }
+
+    /**
+     * 暴露 value 属性，使外部可通过 event.target.value 访问选中节点 key
+     */
+    get value(): string[] {
+        return this.getSelectedKeys();
+    }
+
+    set value(keys: string[]) {
+        this.clearSelection();
+        const setSelected = (nodes: TreeNode[], targetKeys: string[]) => {
+            for (const node of nodes) {
+                if (targetKeys.includes(node.key)) {
+                    node.selected = true;
+                }
+                if (node.children) setSelected(node.children, targetKeys);
+            }
+        };
+        setSelected(this.treeData, keys);
+        this.flattenTree();
+
+        this.dispatchEvent(
+            new Event('change', {
+                bubbles: true,
+                composed: true,
+            }),
+        );
+    }
+
+    /**
+     * selectedKeys getter/setter（与 checkedKeys/expandedKeys 对称）
+     */
+    get selectedKeys(): string[] {
+        return this.getSelectedKeys();
+    }
+
+    set selectedKeys(keys: string[]) {
+        this.value = keys;
+    }
 }
 
 export default SolelyTree;
