@@ -7,6 +7,22 @@
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-05-06
+
+### Added
+
+- **feat(docs)**: 为组件文档添加交互式演示和事件日志功能
+    - 为 Alert、Empty 和 Badge 组件的文档页面添加交互式演示功能
+    - 增加事件监听和操作日志显示区域
+    - 实现组件方法调用的演示功能
+    - 统一添加事件日志记录和显示逻辑
+
+### Changed
+
+- **style(components)**: 使用 CSS 变量替换硬编码颜色值
+    - 统一使用 CSS 变量管理颜色值，提升主题切换的灵活性和维护性
+    - 修改涉及 FAB 组件和 NotFound 组件的样式文件
+
 ## [0.4.6] - 2026-05-06
 
 ### Changed
@@ -326,7 +342,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.6...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.7...HEAD
+[0.4.7]: https://github.com/solelyjs/solely/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/solelyjs/solely/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/solelyjs/solely/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/solelyjs/solely/compare/v0.4.3...v0.4.4
