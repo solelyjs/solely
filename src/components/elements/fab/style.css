@@ -107,7 +107,7 @@
 /* 类型变体 */
 .fab--primary {
   background: linear-gradient(135deg, var(--solely-primary) 0%, var(--solely-primary-hover) 100%);
-  color: #fff;
+  color: var(--solely-white, #ffffff);
 }
 
 .fab--primary:hover {
@@ -116,7 +116,7 @@
 
 .fab--secondary {
   background: linear-gradient(135deg, var(--solely-secondary) 0%, var(--solely-secondary-hover) 100%);
-  color: #fff;
+  color: var(--solely-white, #ffffff);
 }
 
 .fab--secondary:hover {
@@ -125,7 +125,7 @@
 
 .fab--success {
   background: linear-gradient(135deg, var(--solely-success) 0%, var(--solely-success-hover) 100%);
-  color: #fff;
+  color: var(--solely-white, #ffffff);
 }
 
 .fab--success:hover {
@@ -134,7 +134,7 @@
 
 .fab--warning {
   background: linear-gradient(135deg, var(--solely-warning) 0%, var(--solely-warning-hover) 100%);
-  color: #fff;
+  color: var(--solely-white, #ffffff);
 }
 
 .fab--warning:hover {
@@ -143,7 +143,7 @@
 
 .fab--error {
   background: linear-gradient(135deg, var(--solely-error) 0%, var(--solely-error-hover) 100%);
-  color: #fff;
+  color: var(--solely-white, #ffffff);
 }
 
 .fab--error:hover {

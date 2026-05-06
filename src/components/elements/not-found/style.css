@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--solely-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, var(--solely-gray-3, #f5f7fa) 0%, var(--solely-gray-5, #c3cfe2) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -30,7 +30,7 @@
   width: 100%;
   padding: var(--solely-spacing-xl, 32px);
   position: relative;
-  z-index: 1;
+  z-index: var(--solely-z-index-base, 1);
 }
 
 .not-found__container {
@@ -78,7 +78,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  background: linear-gradient(135deg, var(--solely-error, #ff6b6b) 0%, var(--solely-error-hover, #ee5a6f) 100%);
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite, float 3s ease-in-out infinite;
   animation-delay: 0.25s, 0.25s;
@@ -88,7 +88,7 @@
 .not-found__icon {
   width: 40px;
   height: 40px;
-  color: white;
+  color: var(--solely-white, #ffffff);
 }
 
 /* ==================== 文字内容 ==================== */
@@ -125,7 +125,7 @@
   padding: 0 28px;
   font-size: 15px;
   font-weight: 500;
-  color: white;
+  color: var(--solely-white, #ffffff);
   background: linear-gradient(135deg, var(--solely-primary, #1890ff) 0%, var(--solely-primary-hover, #40a9ff) 100%);
   border: none;
   border-radius: 22px;
@@ -174,7 +174,7 @@
 .not-found__bg-decoration--2 {
   width: 200px;
   height: 200px;
-  background: #ff6b6b;
+  background: var(--solely-error, #ff6b6b);
   bottom: -50px;
   left: -50px;
   animation: float 6s ease-in-out infinite reverse;
@@ -183,7 +183,7 @@
 .not-found__bg-decoration--3 {
   width: 150px;
   height: 150px;
-  background: #52c41a;
+  background: var(--solely-success, #52c41a);
   top: 50%;
   right: 10%;
   animation: float 10s ease-in-out infinite;
