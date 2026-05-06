@@ -1,5 +1,5 @@
 import type { MessageOptions, MessageInstance, MessageConfig, MessageType, MessagePlacement } from './types';
-import { generateId, injectStyle, createElement, addClosingAnimation, ANIMATION_DURATION, Z_INDEX } from '../utils'; // 路径按实际调整
+import { generateId, injectStyle, createElement, addClosingAnimation, ANIMATION_DURATION, Z_INDEX } from '../utils';
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-message-styles';
