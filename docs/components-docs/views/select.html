@@ -297,6 +297,178 @@ select.addEventListener(<span class="code-value">'clear'</span>, (e) => {
             </div>
         </div>
     </div>
+
+    <!-- 下拉框头部和底部插槽 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">下拉框头部和底部插槽</h3>
+        <p class="demo-block-desc">使用 slot="header" 和 slot="footer" 在下拉框顶部和底部添加自定义内容。header/footer 始终固定显示，中间选项区域可独立滚动。支持分组展示，点击 header/footer 不会关闭下拉框。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: flex-start;">
+                <div style="width: 280px;">
+                    <solely-select style="width: 100%;" placeholder="选择成员">
+                        <div slot="header" style="padding: 12px; border-bottom: 1px solid var(--solely-border-color);">
+                            <input type="text" placeholder="搜索成员..." style="width: 100%; padding: 6px 12px; border: 1px solid var(--solely-border-color); border-radius: var(--solely-border-radius-sm); font-size: var(--solely-font-size-sm); background: var(--solely-component-bg); color: var(--solely-text-primary); box-sizing: border-box;" />
+                        </div>
+
+                        <div data-value="group-dev" data-group data-label="研发部" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-weight: 500;">
+                            <span style="font-size: 14px; width: 20px; height: 20px; background: var(--solely-primary-light); color: var(--solely-primary); border-radius: 4px; display: flex; align-items: center; justify-content: center;">R</span>
+                            <span>研发部</span>
+                        </div>
+                        <div data-value="zhangsan" data-label="张三" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>张三</span>
+                            <span style="margin-left: auto; font-size: 11px; background: var(--solely-primary-light); color: var(--solely-primary); padding: 1px 6px; border-radius: 4px;">组长</span>
+                        </div>
+                        <div data-value="lisi" data-label="李四" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>李四</span>
+                        </div>
+                        <div data-value="wangwu" data-label="王五" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>王五</span>
+                        </div>
+
+                        <div data-value="group-product" data-group data-label="产品部" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-weight: 500;">
+                            <span style="font-size: 14px; width: 20px; height: 20px; background: var(--solely-success-light, rgba(82,196,26,0.15)); color: var(--solely-success); border-radius: 4px; display: flex; align-items: center; justify-content: center;">P</span>
+                            <span>产品部</span>
+                        </div>
+                        <div data-value="zhaoliu" data-label="赵六" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>赵六</span>
+                            <span style="margin-left: auto; font-size: 11px; background: var(--solely-success-light, rgba(82,196,26,0.15)); color: var(--solely-success); padding: 1px 6px; border-radius: 4px;">经理</span>
+                        </div>
+                        <div data-value="sunqi" data-label="孙七" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>孙七</span>
+                        </div>
+
+                        <div data-value="group-design" data-group data-label="设计部" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-weight: 500;">
+                            <span style="font-size: 14px; width: 20px; height: 20px; background: var(--solely-warning-light, rgba(250,173,20,0.15)); color: var(--solely-warning); border-radius: 4px; display: flex; align-items: center; justify-content: center;">D</span>
+                            <span>设计部</span>
+                        </div>
+                        <div data-value="zhouba" data-label="周八" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>周八</span>
+                        </div>
+
+                        <div slot="footer" style="padding: 12px; border-top: 1px solid var(--solely-border-color);" @click="this.handleAddMember()">
+                            <button style="width: 100%; padding: 8px 16px; background: var(--solely-primary); color: #fff; border: none; border-radius: var(--solely-border-radius-sm); font-size: var(--solely-font-size-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                <span>+</span>
+                                <span>邀请成员</span>
+                            </button>
+                        </div>
+                    </solely-select>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- header/footer 固定，中间内容可滚动，支持分组 --&gt;</span>
+&lt;<span class="code-tag">solely-select</span> <span class="code-attr">placeholder</span>=<span class="code-value">"选择成员"</span>&gt;
+  <span class="code-comment">&lt;!-- header 插槽：固定在顶部 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"header"</span>&gt;
+    &lt;<span class="code-tag">input</span> <span class="code-attr">type</span>=<span class="code-value">"text"</span>
+           <span class="code-attr">placeholder</span>=<span class="code-value">"搜索成员..."</span>
+           <span class="code-attr">style</span>=<span class="code-value">"box-sizing: border-box"</span> /&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+
+  <span class="code-comment">&lt;!-- 第一组 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"group-dev"</span> <span class="code-attr">data-group</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;研发部&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"zhangsan"</span>&gt;张三&lt;/<span class="code-tag">div</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"lisi"</span>&gt;李四&lt;/<span class="code-tag">div</span>&gt;
+
+  <span class="code-comment">&lt;!-- 第二组 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"group-product"</span> <span class="code-attr">data-group</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;产品部&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"zhaoliu"</span>&gt;赵六&lt;/<span class="code-tag">div</span>&gt;
+
+  <span class="code-comment">&lt;!-- footer 插槽：固定在底部 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"footer"</span> <span class="code-attr">@click</span>=<span class="code-value">"handleAddMember()"</span>&gt;
+    &lt;<span class="code-tag">button</span>&gt;+ 邀请成员&lt;/<span class="code-tag">button</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+&lt;/<span class="code-tag">solely-select</span>&gt;</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分组展示 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">分组展示</h3>
+        <p class="demo-block-desc">使用 data-group 属性将选项分组展示。分组标题带有灰色背景，不可选中，会随选项一起滚动。适合商品分类、部门列表等场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: flex-start;">
+                <div style="width: 280px;">
+                    <solely-select style="width: 100%;" placeholder="选择商品分类">
+                        <div data-value="group-1" data-group data-label="电子数码" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-weight: 500;">
+                            <span style="font-size: 16px;">📱</span>
+                            <span>电子数码</span>
+                        </div>
+                        <div data-value="phone" data-label="智能手机" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>智能手机</span>
+                            <span style="margin-left: auto; font-size: 11px; background: var(--solely-primary-light); color: var(--solely-primary); padding: 1px 6px; border-radius: 4px;">热卖</span>
+                        </div>
+                        <div data-value="laptop" data-label="笔记本电脑" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>笔记本电脑</span>
+                        </div>
+                        <div data-value="tablet" data-label="平板电脑" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>平板电脑</span>
+                        </div>
+
+                        <div data-value="group-2" data-group data-label="家用电器" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-weight: 500;">
+                            <span style="font-size: 16px;">📺</span>
+                            <span>家用电器</span>
+                        </div>
+                        <div data-value="tv" data-label="智能电视" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>智能电视</span>
+                        </div>
+                        <div data-value="fridge" data-label="冰箱" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>冰箱</span>
+                            <span style="margin-left: auto; font-size: 11px; background: var(--solely-success-light); color: var(--solely-success); padding: 1px 6px; border-radius: 4px;">新品</span>
+                        </div>
+                        <div data-value="washer" data-label="洗衣机" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>洗衣机</span>
+                        </div>
+
+                        <div data-value="group-3" data-group data-label="图书文具" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-weight: 500;">
+                            <span style="font-size: 16px;">📚</span>
+                            <span>图书文具</span>
+                        </div>
+                        <div data-value="book" data-label="图书" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>图书</span>
+                        </div>
+                        <div data-value="stationery" data-label="文具用品" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; padding-left: 32px;">
+                            <span>文具用品</span>
+                        </div>
+                    </solely-select>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 data-group 属性实现分组 --&gt;</span>
+&lt;<span class="code-tag">solely-select</span> <span class="code-attr">placeholder</span>=<span class="code-value">"选择商品分类"</span>&gt;
+  <span class="code-comment">&lt;!-- 分组标题：data-group 属性，不可选中 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"group-1"</span> <span class="code-attr">data-group</span>
+       <span class="code-attr">data-label</span>=<span class="code-value">"电子数码"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;📱&lt;/<span class="code-tag">span</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;电子数码&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+
+  <span class="code-comment">&lt;!-- 分组选项：缩进显示 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"phone"</span> <span class="code-attr">data-label</span>=<span class="code-value">"智能手机"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;智能手机&lt;/<span class="code-tag">span</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;热卖&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"laptop"</span> <span class="code-attr">data-label</span>=<span class="code-value">"笔记本电脑"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;笔记本电脑&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+
+  <span class="code-comment">&lt;!-- 第二组 --&gt;</span>
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"group-2"</span> <span class="code-attr">data-group</span>
+       <span class="code-attr">data-label</span>=<span class="code-value">"家用电器"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;📺&lt;/<span class="code-tag">span</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;家用电器&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+  &lt;<span class="code-tag">div</span> <span class="code-attr">data-value</span>=<span class="code-value">"tv"</span> <span class="code-attr">data-label</span>=<span class="code-value">"智能电视"</span>&gt;
+    &lt;<span class="code-tag">span</span>&gt;智能电视&lt;/<span class="code-tag">span</span>&gt;
+  &lt;/<span class="code-tag">div</span>&gt;
+&lt;/<span class="code-tag">solely-select</span>&gt;</code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- API 文档 -->

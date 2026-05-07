@@ -15,6 +15,8 @@ export interface SelectOption {
     value: string;
     /** 是否禁用 */
     disabled?: boolean;
+    /** 是否为分组标题 */
+    isGroup?: boolean;
 }
 
 /**

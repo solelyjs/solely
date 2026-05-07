@@ -106,6 +106,25 @@ skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">
         </div>
     </div>
 
+    <!-- 头像位置 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">头像位置</h3>
+        <p class="demo-block-desc">使用 avatar-position 属性设置头像在左侧或右侧，适用于对话等场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-skeleton avatar title paragraph-rows="2" avatar-position="left"></solely-skeleton>
+                <solely-skeleton avatar title paragraph-rows="2" avatar-position="right"></solely-skeleton>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 左侧头像（默认） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"2"</span> <span class="code-attr">avatar-position</span>=<span class="code-value">"left"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 右侧头像 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">avatar</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"2"</span> <span class="code-attr">avatar-position</span>=<span class="code-value">"right"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 标题宽度 -->
     <div class="demo-block">
         <h3 class="demo-block-title">标题宽度</h3>
@@ -236,6 +255,12 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
                     <td>40</td>
                 </tr>
                 <tr>
+                    <td>avatar-position</td>
+                    <td>头像位置</td>
+                    <td>'left' | 'right'</td>
+                    <td>'left'</td>
+                </tr>
+                <tr>
                     <td>title</td>
                     <td>是否显示标题占位图</td>
                     <td>boolean</td>
@@ -320,6 +345,9 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
         <pre><code><span class="code-comment">// 头像形状</span>
 <span class="code-keyword">type</span> <span class="code-type">SkeletonAvatarShape</span> = <span class="code-value">'circle'</span> | <span class="code-value">'square'</span>;
 
+<span class="code-comment">// 头像位置</span>
+<span class="code-keyword">type</span> <span class="code-type">SkeletonAvatarPosition</span> = <span class="code-value">'left'</span> | <span class="code-value">'right'</span>;
+
 <span class="code-comment">// 骨架屏元素类型</span>
 <span class="code-keyword">type</span> <span class="code-type">SkeletonElement</span> = <span class="code-value">'avatar'</span> | <span class="code-value">'title'</span> | <span class="code-value">'paragraph'</span> | <span class="code-value">'button'</span> | <span class="code-value">'input'</span> | <span class="code-value">'image'</span>;
 
@@ -329,6 +357,7 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
   <span class="code-attr">avatar</span>?: <span class="code-type">boolean</span>;              <span class="code-comment">// 是否显示头像</span>
   <span class="code-attr">avatarShape</span>?: <span class="code-type">SkeletonAvatarShape</span>; <span class="code-comment">// 头像形状</span>
   <span class="code-attr">avatarSize</span>?: <span class="code-type">number</span>;            <span class="code-comment">// 头像大小</span>
+  <span class="code-attr">avatarPosition</span>?: <span class="code-type">SkeletonAvatarPosition</span>; <span class="code-comment">// 头像位置</span>
   <span class="code-attr">title</span>?: <span class="code-type">boolean</span>;               <span class="code-comment">// 是否显示标题</span>
   <span class="code-attr">titleWidth</span>?: <span class="code-type">string</span> | <span class="code-type">number</span>; <span class="code-comment">// 标题宽度</span>
   <span class="code-attr">paragraphRows</span>?: <span class="code-type">number</span>;        <span class="code-comment">// 段落行数</span>

@@ -18,6 +18,7 @@ import template from './index.html?raw';
         { name: 'avatar', type: 'boolean', default: false },
         { name: 'avatarShape', type: 'string', default: 'circle' },
         { name: 'avatarSize', type: 'number', default: 40 },
+        { name: 'avatarPosition', type: 'string', default: 'left' },
         { name: 'title', type: 'boolean', default: false },
         { name: 'titleWidth', type: 'string', default: '' },
         { name: 'paragraphRows', type: 'number', default: 3 },
@@ -43,6 +44,15 @@ class SolelySkeleton extends BaseElement<SkeletonProps> {
             classes[`skeleton__avatar--${this.$data.avatarShape}`] = true;
         }
         return classes;
+    }
+
+    /**
+     * 获取 header class 对象
+     */
+    getHeaderClasses(): Record<string, boolean> {
+        return {
+            'skeleton__header--right': this.$data.avatarPosition === 'right',
+        };
     }
 
     /**

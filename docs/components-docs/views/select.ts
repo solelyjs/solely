@@ -4,6 +4,7 @@
 
 import { BaseElement, CustomElement } from '../../../src/runtime/component';
 import type { SelectOption } from '../../../src/components/elements/select/types';
+import { Message } from '../../../src/components/commands/message';
 import template from './select.html?raw';
 
 @CustomElement({
@@ -53,6 +54,13 @@ class DocsSelect extends BaseElement<{
     setSelectValues(): void {
         this.$data.modelSelect1 = 'shanghai';
         this.$data.modelSelect2 = 'b';
+    }
+
+    /**
+     * 处理邀请成员点击
+     */
+    handleAddMember(): void {
+        Message.info('点击了邀请成员按钮');
     }
 }
 

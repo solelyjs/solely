@@ -15,22 +15,39 @@
     <!-- 下拉菜单 -->
     <If test="$data.isOpen">
         <div class="select__dropdown" :class="this.getDropdownClasses()">
-            <!-- 使用 options 属性时的渲染 -->
-            <If test="!$data.useSlot">
-                <If test="$data.parsedOptions.length === 0">
-                    <div class="select__empty">暂无数据</div>
-                </If>
-                <For each="$data.parsedOptions" item="option">
-                    <div class="select__option" :class="this.getOptionClasses(option)" @click="this.handleSelect(option, event)">
-                        <span class="select__option-label">{{option.label}}</span>
-                    </div>
-                </For>
+            <!-- header 插槽 - 固定顶部 -->
+            <If test="$data.hasHeaderSlot">
+                <div class="select__header" @click="this.handleHeaderFooterClick(event)">
+                    <slot name="header"></slot>
+                </div>
             </If>
 
-            <!-- 使用插槽时的渲染 -->
-            <If test="$data.useSlot">
-                <div class="select__slot-options" @click="this.handleSlotClick(event)">
-                    <slot></slot>
+            <!-- 滚动内容区域 -->
+            <div class="select__dropdown-content">
+                <!-- 使用 options 属性时的渲染 -->
+                <If test="!$data.useSlot">
+                    <If test="$data.parsedOptions.length === 0">
+                        <div class="select__empty">暂无数据</div>
+                    </If>
+                    <For each="$data.parsedOptions" item="option">
+                        <div class="select__option" :class="this.getOptionClasses(option)" @click="this.handleSelect(option, event)">
+                            <span class="select__option-label">{{option.label}}</span>
+                        </div>
+                    </For>
+                </If>
+
+                <!-- 使用插槽时的渲染 -->
+                <If test="$data.useSlot">
+                    <div class="select__slot-options" @click="this.handleSlotClick(event)">
+                        <slot></slot>
+                    </div>
+                </If>
+            </div>
+
+            <!-- footer 插槽 - 固定底部 -->
+            <If test="$data.hasFooterSlot">
+                <div class="select__footer" @click="this.handleHeaderFooterClick(event)">
+                    <slot name="footer"></slot>
                 </div>
             </If>
         </div>

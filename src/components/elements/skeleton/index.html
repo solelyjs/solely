@@ -3,7 +3,7 @@
     <If test="$data.loading">
         <If test="$data.avatar || $data.title">
             <!-- 有头像或标题时显示头部 -->
-            <div class="skeleton__header">
+            <div class="skeleton__header" :class="this.getHeaderClasses()">
                 <If test="$data.avatar">
                     <div
                         class="skeleton__element skeleton__avatar"

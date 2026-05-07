@@ -23,6 +23,10 @@
   margin-bottom: var(--solely-spacing-md);
 }
 
+.skeleton__header--right {
+  flex-direction: row-reverse;
+}
+
 .skeleton__content {
   flex: 1;
 }

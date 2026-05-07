@@ -34,6 +34,8 @@ class SolelySelect extends BaseElement<
         dropdownPlacement: 'top' | 'bottom';
         useSlot: boolean; // 是否使用插槽
         slotOptions: Array<{ value: string; label: string; disabled: boolean; element: Element }>;
+        hasHeaderSlot: boolean;
+        hasFooterSlot: boolean;
     }
 > {
     clickOutsideHandler?: (event: MouseEvent) => void;
@@ -115,15 +117,22 @@ class SolelySelect extends BaseElement<
      */
     collectSlotOptions(): void {
         // 获取直接子元素（排除 shadow root 的内部元素）
-        const children = Array.from(this.children).filter(el => el.hasAttribute('data-value'));
+        const children = Array.from(this.children);
 
-        if (children.length === 0) {
+        // 检查是否有 header/footer 具名插槽
+        this.$data.hasHeaderSlot = children.some(el => el.getAttribute('slot') === 'header');
+        this.$data.hasFooterSlot = children.some(el => el.getAttribute('slot') === 'footer');
+
+        // 获取所有选项元素（排除具名插槽元素）
+        const optionChildren = children.filter(el => !el.getAttribute('slot') && el.hasAttribute('data-value'));
+
+        if (optionChildren.length === 0) {
             this.$data.useSlot = false;
             return;
         }
 
         this.$data.useSlot = true;
-        this.$data.slotOptions = children.map(el => {
+        this.$data.slotOptions = optionChildren.map(el => {
             const optionEl = el as HTMLElement;
             return {
                 value: optionEl.getAttribute('data-value') || '',
@@ -283,6 +292,14 @@ class SolelySelect extends BaseElement<
 
         if (!optionEl) return;
 
+        // 检查是否是分组标题（data-group 属性）
+        const isGroup = optionEl.hasAttribute('data-group');
+        if (isGroup) {
+            // 分组标题不可选中，但阻止事件继续传播
+            event.stopPropagation();
+            return;
+        }
+
         const value = optionEl.getAttribute('data-value') || '';
         const label = optionEl.getAttribute('data-label') || optionEl.textContent?.trim() || '';
         const disabled = optionEl.hasAttribute('disabled');
@@ -300,6 +317,13 @@ class SolelySelect extends BaseElement<
                 composed: true,
             }),
         );
+    }
+
+    /**
+     * 处理 header/footer 点击，阻止事件冒泡避免关闭下拉框
+     */
+    handleHeaderFooterClick(event: Event): void {
+        event.stopPropagation();
     }
 
     /**

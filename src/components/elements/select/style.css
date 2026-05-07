@@ -114,14 +114,25 @@
 .select__dropdown {
   position: absolute;
   left: 0;
-  right: 0;
-  max-height: 256px;
-  overflow-y: auto;
+  width: auto;
+  /* 宽度由内容决定 */
+  min-width: 100%;
+  /* 至少与 select 同宽 */
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
   background-color: var(--solely-component-bg);
   border: 1px solid var(--solely-border-color);
   border-radius: var(--solely-border-radius-md);
   box-shadow: var(--solely-shadow-md);
   z-index: var(--solely-z-index-dropdown);
+}
+
+/* 下拉菜单内容区域 - 可滚动 */
+.select__dropdown-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* 向下展开（默认） */
@@ -152,6 +163,8 @@
   cursor: pointer;
   transition: all var(--solely-transition-duration);
   color: var(--solely-text-primary);
+  box-sizing: border-box;
+  min-width: 100%;
 }
 
 .select__option:hover:not(.select__option--disabled) {
@@ -199,8 +212,10 @@
 
 .select__option-label {
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  /* 允许内容超出 */
+  text-overflow: clip;
+  /* 不显示省略号 */
   white-space: nowrap;
 }
 
@@ -208,10 +223,12 @@
 .select__slot-options {
   display: flex;
   flex-direction: column;
+  width: fit-content;
+  min-width: 100%;
 }
 
 .select__slot-options ::slotted([data-value]),
-.select__slot-options > [data-value] {
+.select__slot-options>[data-value] {
   padding: var(--solely-spacing-sm) var(--solely-spacing-md);
   cursor: pointer;
   transition: all var(--solely-transition-duration);
@@ -219,25 +236,84 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  box-sizing: border-box;
+  /* 包含 padding 在内的宽度计算 */
 }
 
 .select__slot-options ::slotted([data-value]:hover:not([disabled])),
-.select__slot-options > [data-value]:hover:not([disabled]) {
+.select__slot-options>[data-value]:hover:not([disabled]) {
   background-color: var(--solely-primary-light);
 }
 
 .select__slot-options ::slotted([data-value][data-selected]),
-.select__slot-options > [data-value][data-selected] {
+.select__slot-options>[data-value][data-selected] {
   background-color: var(--solely-primary-light);
   color: var(--solely-primary);
   font-weight: 500;
 }
 
 .select__slot-options ::slotted([data-value][disabled]),
-.select__slot-options > [data-value][disabled] {
+.select__slot-options>[data-value][disabled] {
   cursor: not-allowed;
   color: var(--solely-text-tertiary);
   opacity: var(--solely-disabled-opacity);
+}
+
+/* header 插槽 - 固定在顶部 */
+.select__header {
+  flex-shrink: 0;
+  color: var(--solely-text-secondary);
+  font-size: var(--solely-font-size-sm);
+  background-color: var(--solely-component-bg);
+}
+
+/* footer 插槽 - 固定在底部 */
+.select__footer {
+  flex-shrink: 0;
+  color: var(--solely-text-secondary);
+  font-size: var(--solely-font-size-sm);
+  background-color: var(--solely-component-bg);
+}
+
+/* 分组标题 */
+.select__group-label,
+.select__slot-options ::slotted([data-group]),
+.select__slot-options>[data-group] {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  color: var(--solely-text-secondary);
+  font-size: var(--solely-font-size-sm);
+  font-weight: 600;
+  cursor: default;
+  background-color: transparent;
+}
+
+/* 非第一个分组标题，上方增加间距 */
+.select__slot-options>[data-group]:not(:first-child) {
+  margin-top: var(--solely-spacing-sm);
+}
+
+/* 分组标题 hover 不变色 */
+.select__slot-options ::slotted([data-group]:hover),
+.select__slot-options>[data-group]:hover {
+  background-color: transparent;
+}
+
+/* 滚动条暗色主题适配 */
+.select__dropdown-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.select__dropdown-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.select__dropdown-content::-webkit-scrollbar-thumb {
+  background-color: var(--solely-border-color);
+  border-radius: 3px;
+}
+
+.select__dropdown-content::-webkit-scrollbar-thumb:hover {
+  background-color: var(--solely-text-tertiary);
 }
 
 /* 空状态 */
@@ -254,6 +330,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -265,6 +342,7 @@
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(-10px);
@@ -277,6 +355,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -288,6 +367,7 @@
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(10px);

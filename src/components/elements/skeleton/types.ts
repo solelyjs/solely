@@ -3,6 +3,7 @@
  */
 
 export type SkeletonAvatarShape = 'circle' | 'square';
+export type SkeletonAvatarPosition = 'left' | 'right';
 export type SkeletonElement = 'avatar' | 'title' | 'paragraph' | 'button' | 'input' | 'image';
 
 export interface SkeletonProps {
@@ -14,6 +15,8 @@ export interface SkeletonProps {
     avatarShape: SkeletonAvatarShape;
     /** 头像大小 */
     avatarSize: number;
+    /** 头像位置 */
+    avatarPosition: SkeletonAvatarPosition;
     /** 是否显示标题占位图 */
     title: boolean;
     /** 标题宽度 */
