@@ -7,6 +7,21 @@
 
 ## [Unreleased]
 
+## [0.4.8] - 2026-05-07
+
+### Added
+
+- **feat(select)**: 增强 Select 组件功能
+    - 新增 header/footer 插槽支持，可固定显示在下拉框顶部和底部
+    - 添加分组功能，通过 `data-group` 属性标记分组标题
+    - 优化下拉框布局结构，header/footer 固定，中间内容区域独立滚动
+    - 支持自定义滚动条样式，适配暗色主题
+    - 更新文档示例，展示分组展示和插槽使用场景
+
+- **feat(skeleton)**: 增加头像位置配置
+    - 新增 `avatarPosition` 属性，支持头像在左侧或右侧显示
+    - 适用于对话列表等需要左右布局的场景
+
 ## [0.4.7] - 2026-05-06
 
 ### Added
@@ -342,7 +357,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.7...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.8...HEAD
+[0.4.8]: https://github.com/solelyjs/solely/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/solelyjs/solely/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/solelyjs/solely/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/solelyjs/solely/compare/v0.4.4...v0.4.5
