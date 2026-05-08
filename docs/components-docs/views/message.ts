@@ -31,7 +31,7 @@ export class DocsMessage extends BaseElement<DocsData> {
     }
 
     showInfo(): void {
-        const instance = Message.info('这是一条信息提示');
+        Message.info('这是一条信息提示');
         this.addLog('显示信息提示');
     }
 
@@ -69,7 +69,7 @@ export class DocsMessage extends BaseElement<DocsData> {
     }
 
     showPersistent(): void {
-        const instance = Message.open({
+        Message.open({
             content: '这条提示不会自动关闭，需手动关闭',
             type: 'info',
             duration: 0,

@@ -5,6 +5,7 @@
         :class="this.getButtonClasses()"
         :href="$data.href"
         :target="$data.target"
+        :aria-disabled="$data.disabled || $data.loading ? 'true' : 'false'"
         @click="this.handleClick(event)"
     >
         <If test="$data.loading">
@@ -47,6 +48,7 @@
         class="btn"
         :class="this.getButtonClasses()"
         :disabled="$data.disabled || $data.loading"
+        :aria-disabled="$data.disabled || $data.loading ? 'true' : 'false'"
         @click="this.handleClick(event)"
     >
         <If test="$data.loading">

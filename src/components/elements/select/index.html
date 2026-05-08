@@ -1,4 +1,11 @@
-<div class="select" :class="this.getSelectClasses()" @click="this.handleClick(event)">
+<div
+    class="select"
+    :class="this.getSelectClasses()"
+    role="combobox"
+    :aria-expanded="$data.isOpen ? 'true' : 'false'"
+    :aria-disabled="$data.disabled ? 'true' : 'false'"
+    @click="this.handleClick(event)"
+>
     <div class="select__selector">
         <If test="!$data.selectedLabel">
             <span class="select__placeholder">{{$data.placeholder || '请选择'}}</span>
@@ -14,7 +21,7 @@
 
     <!-- 下拉菜单 -->
     <If test="$data.isOpen">
-        <div class="select__dropdown" :class="this.getDropdownClasses()">
+        <div class="select__dropdown" :class="this.getDropdownClasses()" role="listbox">
             <!-- header 插槽 - 固定顶部 -->
             <If test="$data.hasHeaderSlot">
                 <div class="select__header" @click="this.handleHeaderFooterClick(event)">
@@ -30,7 +37,13 @@
                         <div class="select__empty">暂无数据</div>
                     </If>
                     <For each="$data.parsedOptions" item="option">
-                        <div class="select__option" :class="this.getOptionClasses(option)" @click="this.handleSelect(option, event)">
+                        <div
+                            class="select__option"
+                            :class="this.getOptionClasses(option)"
+                            role="option"
+                            :aria-selected="option.value === $data.value ? 'true' : 'false'"
+                            @click="this.handleSelect(option, event)"
+                        >
                             <span class="select__option-label">{{option.label}}</span>
                         </div>
                     </For>

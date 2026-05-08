@@ -9,6 +9,7 @@ const MANIFEST_SYMBOL: unique symbol = Symbol.for('solely.manifest');
 
 /* -------------------- 类型定义 -------------------- */
 declare interface BaseElement<
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     TData extends object = Record<string, unknown>,
     TRefs extends Record<string, Element> = Record<string, Element>,
 > {
@@ -187,7 +188,7 @@ class BaseElement<
         const manifest = this.#manifest as InternalManifest;
         if (!manifest.attributeMap) return;
 
-        for (const [_attrName, desc] of manifest.attributeMap) {
+        for (const [, desc] of manifest.attributeMap) {
             // 跳过非响应式
             if (desc.reactive === false) continue;
 

@@ -25,7 +25,7 @@ export class DocsTree extends BaseElement<TreeDocData> {
      * 处理选中事件
      */
     handleSelect(event: CustomEvent<{ node: { title: string; key: string }; selectedKeys: string[] }>): void {
-        const { node, selectedKeys } = event.detail ?? {};
+        const { node } = event.detail ?? {};
         this.addEventLog(`select: ${node?.title ?? '未知节点'} (key: ${node?.key ?? 'none'})`);
     }
 

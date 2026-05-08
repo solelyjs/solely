@@ -10,10 +10,10 @@ export const ANIMATION_DURATION = {
 };
 
 export const Z_INDEX = {
-    TOOLTIP: 9999,
-    POPOVER: 1050,
-    MODAL: 1000,
-    TOAST: 9999,
+    TOOLTIP: 1070,
+    POPOVER: 1060,
+    MODAL: 1050,
+    TOAST: 1100,
 };
 
 let idCounter = 0;

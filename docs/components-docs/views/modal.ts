@@ -26,7 +26,7 @@ export class DocsModal extends BaseElement<DocsData> {
     }
 
     openBasicModal(): void {
-        const modal = Modal.open({
+        Modal.open({
             title: '基础对话框',
             content: '这是一个基础的对话框示例',
             onOk: () => {

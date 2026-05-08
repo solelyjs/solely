@@ -1,6 +1,9 @@
 <label
     class="radio"
     :class="this.getRadioClasses()"
+    role="radio"
+    :aria-checked="$data.checked ? 'true' : 'false'"
+    :aria-disabled="$data.disabled ? 'true' : 'false'"
     @click="this.handleClick(event)"
 >
     <span class="radio__input"></span>

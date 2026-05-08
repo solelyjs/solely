@@ -73,7 +73,7 @@ export class WeatherApp extends BaseElement<{
 
         try {
             await this.fetchWeatherData(this.$data.city);
-        } catch (err) {
+        } catch {
             this.$data.error = `无法获取 "${this.$data.city}" 的天气数据，请检查城市名称是否正确`;
         } finally {
             this.$data.isLoading = false;

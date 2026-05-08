@@ -38,8 +38,6 @@ coverage/
 * copy *.*
 * copy*/
 * 副本*/
-test
-test.*
 dist-examples
 
 # 开发工具

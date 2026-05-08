@@ -174,7 +174,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
                     sheet.replaceSync(manifest.styles);
                     manifest.sheet = sheet;
                 }
-            } catch (e) {
+            } catch {
                 if (IS_DEV) {
                     console.warn(`[Style Warning] <${tagName}>: CSSStyleSheet 不可用，将使用 style 标签回退方案`);
                 }

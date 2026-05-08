@@ -42,7 +42,6 @@ module.exports = {
         'prefer-const': 'error',
         'no-var': 'error',
         '@typescript-eslint/no-unsafe-declaration-merging': 'off',
-        '@typescript-eslint/no-unused-vars': 'off',
     },
     // 为示例文件放宽规则
     overrides: [
