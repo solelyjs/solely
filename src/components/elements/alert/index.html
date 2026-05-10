@@ -3,7 +3,9 @@
     :class="this.getAlertClasses()"
 >
     <If test="$data.showIcon">
-        <span class="alert__icon">{{this.getIcon($data.type)}}</span>
+        <span class="alert__icon">
+            <slot name="icon">{{this.getIcon($data.type)}}</slot>
+        </span>
     </If>
     <div class="alert__content">
         <If test="$data.message">
@@ -18,6 +20,8 @@
         <span
             class="alert__close"
             @click="this.handleClose()"
-        >×</span>
+        >
+            <slot name="close-icon">×</slot>
+        </span>
     </If>
 </div>

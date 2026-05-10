@@ -29,7 +29,7 @@
   display: inline-flex;
   align-items: flex-start;
   gap: var(--solely-spacing-sm);
-  padding: var(--solely-spacing-md) var(--solely-spacing-lg);
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
   font-family: var(--solely-font-family);
   font-size: var(--solely-font-size-md);
   line-height: var(--solely-line-height-md);
@@ -68,11 +68,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--solely-height-md);
-  height: var(--solely-height-md);
-  font-size: var(--solely-font-size-md);
+  width: var(--solely-font-size-lg);
+  height: var(--solely-font-size-lg);
+  font-size: var(--solely-font-size-lg);
   flex-shrink: 0;
-  margin-top: var(--solely-spacing-xs);
+  margin-top: 2px;
 }
 
 .alert__content {
@@ -96,17 +96,73 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--solely-height-md);
-  height: var(--solely-height-md);
-  font-size: var(--solely-font-size-sm);
+  width: var(--solely-font-size-lg);
+  height: var(--solely-font-size-lg);
+  font-size: var(--solely-font-size-lg);
   color: var(--solely-text-tertiary);
   cursor: pointer;
   transition: color var(--solely-transition-duration);
   flex-shrink: 0;
+  margin-top: 2px;
+  line-height: 1;
 }
 
 .alert__close:hover {
   color: var(--solely-text-secondary);
+}
+
+/* 各类型图标颜色 */
+.alert--info .alert__icon {
+  color: var(--solely-primary);
+}
+
+.alert--success .alert__icon {
+  color: var(--solely-success);
+}
+
+.alert--warning .alert__icon {
+  color: var(--solely-warning);
+}
+
+.alert--error .alert__icon {
+  color: var(--solely-error);
+}
+
+/* 各类型关闭按钮颜色 */
+.alert--info .alert__close {
+  color: var(--solely-primary);
+  opacity: 0.6;
+}
+
+.alert--info .alert__close:hover {
+  opacity: 1;
+}
+
+.alert--success .alert__close {
+  color: var(--solely-success);
+  opacity: 0.6;
+}
+
+.alert--success .alert__close:hover {
+  opacity: 1;
+}
+
+.alert--warning .alert__close {
+  color: var(--solely-warning);
+  opacity: 0.6;
+}
+
+.alert--warning .alert__close:hover {
+  opacity: 1;
+}
+
+.alert--error .alert__close {
+  color: var(--solely-error);
+  opacity: 0.6;
+}
+
+.alert--error .alert__close:hover {
+  opacity: 1;
 }
 
 /* 块级显示 */

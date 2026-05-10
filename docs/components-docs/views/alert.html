@@ -104,6 +104,52 @@
             </div>
         </div>
     </div>
+
+    <!-- 使用插槽自定义 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">使用插槽自定义</h3>
+        <p class="demo-block-desc">通过插槽自定义图标、关闭按钮或内容区域。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <!-- 自定义图标 -->
+                <solely-alert type="info" message="自定义图标" show-icon>
+                    <span slot="icon">🚀</span>
+                </solely-alert>
+                
+                <!-- 自定义关闭按钮 -->
+                <solely-alert type="warning" message="自定义关闭按钮" closable>
+                    <span slot="close-icon">❌</span>
+                </solely-alert>
+                
+                <!-- 完全自定义内容 -->
+                <solely-alert type="success" show-icon closable>
+                    <span slot="icon">✅</span>
+                    <span slot="close-icon">👋</span>
+                    <div style="font-weight: bold;">自定义标题</div>
+                    <div style="font-size: 12px; color: #666;">这是通过默认插槽传入的自定义内容</div>
+                </solely-alert>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 自定义图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"自定义图标"</span> <span class="code-attr">show-icon</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"icon"</span><span class="code-bracket">&gt;</span>🚀<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 自定义关闭按钮 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">message</span>=<span class="code-value">"自定义关闭按钮"</span> <span class="code-attr">closable</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"close-icon"</span><span class="code-bracket">&gt;</span>❌<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 完全自定义内容（不使用 message/description） --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">show-icon</span> <span class="code-attr">closable</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"icon"</span><span class="code-bracket">&gt;</span>✅<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"close-icon"</span><span class="code-bracket">&gt;</span>👋<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">style</span>=<span class="code-value">"font-weight: bold;"</span><span class="code-bracket">&gt;</span>自定义标题<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 12px;"</span><span class="code-bracket">&gt;</span>自定义内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="api-section">
@@ -175,6 +221,36 @@
                 <tr>
                     <td>close</td>
                     <td>关闭时触发的事件</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>icon</td>
+                    <td>自定义图标，需要设置 show-icon 属性才显示</td>
+                    <td>根据 type 自动选择：ℹ️ ✓ ⚠️ ✗</td>
+                </tr>
+                <tr>
+                    <td>close-icon</td>
+                    <td>自定义关闭按钮图标，需要设置 closable 属性才显示</td>
+                    <td>×</td>
+                </tr>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>自定义内容区域，会显示在 message 和 description 之后</td>
                     <td>-</td>
                 </tr>
             </tbody>
