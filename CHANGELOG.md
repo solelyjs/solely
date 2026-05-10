@@ -7,6 +7,31 @@
 
 ## [Unreleased]
 
+## [0.4.9] - 2026-05-08
+
+### Added
+
+- **feat(accessibility)**: 为多个组件添加 ARIA 属性以提升可访问性
+    - **Button**: 添加 `aria-disabled` 属性，支持屏幕阅读器识别禁用状态
+    - **Input**: 添加 `aria-disabled`、`aria-readonly`、`aria-invalid` 属性，完善表单无障碍支持
+    - **Select**: 添加 `role="combobox"`、`aria-expanded`、`aria-disabled` 等属性，下拉选项支持 `role="option"` 和 `aria-selected`
+    - **Radio**: 添加 `role="radio"`、`aria-checked`、`aria-disabled` 属性
+
+### Changed
+
+- **docs(components-docs)**: 为组件文档的类型定义添加代码块容器
+    - 优化类型定义在文档中的展示效果
+    - 统一文档中代码块的样式
+
+### Refactored
+
+- **refactor**: 优化 Z_INDEX 常量值并移除未使用的代码
+- **style**: 清理 .gitignore 和 .eslintrc.cjs 中的冗余配置
+
+### Fixed
+
+- **fix**: 修复未使用的变量和错误处理逻辑
+
 ## [0.4.8] - 2026-05-07
 
 ### Added
@@ -357,7 +382,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.8...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.9...HEAD
+[0.4.9]: https://github.com/solelyjs/solely/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/solelyjs/solely/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/solelyjs/solely/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/solelyjs/solely/compare/v0.4.5...v0.4.6
