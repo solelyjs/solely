@@ -19,7 +19,6 @@ import { safeJsonParse } from '../utils/helpers';
 })
 class SolelySteps extends BaseElement<
     StepsProps & {
-        parsedItems: StepItem[];
         useSlot: boolean;
         slotItems: Array<{ step: string; title: string; description?: string; disabled?: boolean; iconHtml: string }>;
     }
@@ -131,8 +130,21 @@ class SolelySteps extends BaseElement<
 
     mounted(): void {
         this.refresh();
-        this.parseItems();
         this.setupSlotObserver();
+    }
+
+    /**
+     * 获取解析后的步骤项
+     */
+    getParsedItems(): StepItem[] {
+        const value = this.$data.items;
+        if (Array.isArray(value)) {
+            return value;
+        }
+        if (typeof value === 'string' && value) {
+            return safeJsonParse(value, []);
+        }
+        return [];
     }
 
     /**
@@ -161,18 +173,15 @@ class SolelySteps extends BaseElement<
         }
     }
 
-    parseItems(): void {
-        this.$data.parsedItems = safeJsonParse(this.$data.items, []);
-    }
-
     getStepStatus(index: number): StepStatus {
         const current = this.$data.current || 0;
+        const parsedItems = this.getParsedItems();
 
-        if (!Array.isArray(this.$data.parsedItems) || index < 0 || index >= this.$data.parsedItems.length) {
+        if (!Array.isArray(parsedItems) || index < 0 || index >= parsedItems.length) {
             return 'wait';
         }
 
-        const item = this.$data.parsedItems[index];
+        const item = parsedItems[index];
 
         if (item?.status) {
             return item.status;
@@ -264,7 +273,7 @@ class SolelySteps extends BaseElement<
     }
 
     public next(): void {
-        const maxIndex = this.$data.useSlot ? this.$data.slotItems.length - 1 : this.$data.parsedItems.length - 1;
+        const maxIndex = this.$data.useSlot ? this.$data.slotItems.length - 1 : this.getParsedItems().length - 1;
         if (this.$data.current < maxIndex) {
             this.$data.current++;
         }
@@ -279,7 +288,7 @@ class SolelySteps extends BaseElement<
     public setItems(items: StepItem[]): void {
         this.$data.items = JSON.stringify(items);
         this.$data.useSlot = false;
-        this.parseItems();
+        this.refresh();
     }
 }
 

@@ -24,7 +24,7 @@ import { safeJsonParse } from '../utils/helpers';
         { name: 'addable', type: 'boolean', default: false },
     ],
 })
-class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
+class SolelyTabs extends BaseElement<TabsProps> {
     /**
      * 暴露 activeKey 属性，使外部可通过 event.target.activeKey 访问
      */
@@ -82,11 +82,11 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
 
     mounted(): void {
         this.refresh();
-        this.parseItems();
 
         // 如果没有设置 activeKey，默认选中第一个
-        if (!this.$data.activeKey && Array.isArray(this.$data.parsedItems) && this.$data.parsedItems.length > 0) {
-            const firstItem = this.$data.parsedItems[0];
+        const parsedItems = this.getParsedItems();
+        if (!this.$data.activeKey && Array.isArray(parsedItems) && parsedItems.length > 0) {
+            const firstItem = parsedItems[0];
             if (firstItem && firstItem.key) {
                 this.$data.activeKey = firstItem.key;
             }
@@ -94,10 +94,17 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
     }
 
     /**
-     * 解析标签项
+     * 获取解析后的标签项
      */
-    parseItems(): void {
-        this.$data.parsedItems = safeJsonParse(this.$data.items, []);
+    getParsedItems(): TabItem[] {
+        const value = this.$data.items;
+        if (Array.isArray(value)) {
+            return value;
+        }
+        if (typeof value === 'string' && value) {
+            return safeJsonParse(value, []);
+        }
+        return [];
     }
 
     /**
@@ -124,25 +131,22 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
         event.stopPropagation();
 
         // 从列表中移除该标签
-        const index = this.$data.parsedItems.findIndex((i: TabItem) => i.key === item.key);
+        const parsedItems = this.getParsedItems();
+        const index = parsedItems.findIndex((i: TabItem) => i.key === item.key);
         if (index > -1) {
-            this.$data.parsedItems.splice(index, 1);
+            parsedItems.splice(index, 1);
 
             // 如果关闭的是当前激活的标签，切换到相邻标签
-            if (
-                this.$data.activeKey === item.key &&
-                Array.isArray(this.$data.parsedItems) &&
-                this.$data.parsedItems.length > 0
-            ) {
-                const newIndex = Math.min(index, this.$data.parsedItems.length - 1);
-                const nextItem = this.$data.parsedItems[newIndex];
+            if (this.$data.activeKey === item.key && Array.isArray(parsedItems) && parsedItems.length > 0) {
+                const newIndex = Math.min(index, parsedItems.length - 1);
+                const nextItem = parsedItems[newIndex];
                 if (nextItem && nextItem.key) {
                     this.$data.activeKey = nextItem.key;
                 }
             }
 
             // 更新 items 属性
-            this.$data.items = JSON.stringify(this.$data.parsedItems);
+            this.$data.items = JSON.stringify(parsedItems);
         }
 
         // 派发原生 close 事件
@@ -163,20 +167,21 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
      */
     handleAdd(): void {
         // 生成新标签的 key 和 label
-        const newIndex = this.$data.parsedItems.length + 1;
+        const parsedItems = this.getParsedItems();
+        const newIndex = parsedItems.length + 1;
         const newItem: TabItem = {
             key: `new-${Date.now()}`,
             label: `新标签 ${newIndex}`,
         };
 
         // 添加到列表
-        this.$data.parsedItems.push(newItem);
+        parsedItems.push(newItem);
 
         // 自动切换到新标签
         this.$data.activeKey = newItem.key;
 
         // 更新 items 属性
-        this.$data.items = JSON.stringify(this.$data.parsedItems);
+        this.$data.items = JSON.stringify(parsedItems);
 
         // 派发原生 add 事件
         this.dispatchEvent(
@@ -210,7 +215,7 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
      */
     public setItems(items: TabItem[]): void {
         this.$data.items = JSON.stringify(items);
-        this.parseItems();
+        this.refresh();
     }
 }
 

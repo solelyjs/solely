@@ -20,6 +20,13 @@ import template from './index.html?raw';
 })
 class SolelyEmpty extends BaseElement<EmptyProps> {
     /**
+     * 检查是否有 image 插槽
+     */
+    hasImageSlot(): boolean {
+        return this.querySelector('[slot="image"]') !== null;
+    }
+
+    /**
      * 设置描述文字
      */
     public setDescription(description: string): void {

@@ -147,6 +147,20 @@ class SolelySwitch extends BaseElement<SwitchProps, SwitchRefs> {
     }
 
     /**
+     * 检查是否有 checked 插槽
+     */
+    hasCheckedSlot(): boolean {
+        return this.querySelector('[slot="checked"]') !== null;
+    }
+
+    /**
+     * 检查是否有 unchecked 插槽
+     */
+    hasUncheckedSlot(): boolean {
+        return this.querySelector('[slot="unchecked"]') !== null;
+    }
+
+    /**
      * 组件挂载后的生命周期钩子
      */
     mounted(): void {

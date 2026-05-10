@@ -206,6 +206,44 @@
         </div>
     </div>
 
+    <!-- 响应式数据绑定 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">响应式数据绑定</h3>
+        <p class="demo-block-desc">使用 :items 语法绑定组件数据，当数据变化时步骤条自动更新。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px;">
+                <solely-steps
+                    :items="this.getBindItems()"
+                    :current="this.$data.bindCurrent"
+                    @change="this.handleBindChange(event)">
+                </solely-steps>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <solely-button size="small" type="primary" @click="this.addBindStep()">添加步骤</solely-button>
+                    <solely-button size="small" @click="this.removeBindStep()">移除步骤</solely-button>
+                    <solely-button size="small" type="error" @click="this.resetBindSteps()">重置数据</solely-button>
+                </div>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">当前数据：</div>
+                    <div style="font-family: monospace; white-space: pre-wrap;">{{JSON.stringify(this.$data.bindItems, null, 2)}}</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">:items</span>=<span class="code-value">"this.getBindItems()"</span>
+  <span class="code-attr">:current</span>=<span class="code-value">"this.$data.bindCurrent"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-comment">// 修改数据，组件自动更新</span>
+<span class="code-keyword">this</span>.$data.bindItems = [
+  ...this.$data.bindItems,
+  { title: '新步骤', description: '新描述' }
+];</code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 步骤切换 -->
     <div class="demo-block">
         <h3 class="demo-block-title">步骤切换</h3>

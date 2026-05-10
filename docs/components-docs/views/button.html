@@ -155,13 +155,51 @@
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary" loading>Loading</solely-button>
-                <solely-button type="primary" loading icon-only></solely-button>
                 <solely-button type="primary" loading loading-icon="⏳">自定义图标</solely-button>
+                <solely-button type="primary" loading icon-only loading-icon="🔄"></solely-button>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span><span class="code-bracket">&gt;</span><span class="code-content">Loading</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span> <span class="code-attr">icon-only</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span> <span class="code-attr">loading-icon</span>=<span class="code-value">"⏳"</span><span class="code-bracket">&gt;</span><span class="code-content">自定义图标</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span> <span class="code-attr">loading-icon</span>=<span class="code-value">"⏳"</span><span class="code-bracket">&gt;</span><span class="code-content">自定义图标</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span> <span class="code-attr">icon-only</span> <span class="code-attr">loading-icon</span>=<span class="code-value">"🔄"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义加载图标插槽</h3>
+        <p class="demo-block-desc">通过 loading-icon 插槽可以使用更复杂的加载动画或图标，优先级高于 loading-icon 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-button type="primary" loading>
+                    <span slot="loading-icon" style="animation: spin 1s linear infinite; display: inline-block;">🔄</span>
+                    加载中...
+                </solely-button>
+                <solely-button type="secondary" loading>
+                    <span slot="loading-icon" style="color: var(--solely-warning);">⏳</span>
+                    请稍候
+                </solely-button>
+                <solely-button loading icon-only>
+                    <span slot="loading-icon" style="font-size: 18px; animation: pulse 1.5s ease-in-out infinite;">⚡</span>
+                </solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 旋转动画图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">loading</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"loading-icon"</span> <span class="code-attr">style</span>=<span class="code-value">"animation: spin 1s linear infinite;"</span><span class="code-bracket">&gt;</span>🔄<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  加载中...
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 带颜色的沙漏 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"secondary"</span> <span class="code-attr">loading</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"loading-icon"</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-warning);"</span><span class="code-bracket">&gt;</span>⏳<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  请稍候
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 仅图标按钮的自定义加载 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">loading</span> <span class="code-attr">icon-only</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"loading-icon"</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 18px;"</span><span class="code-bracket">&gt;</span>⚡<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
     </div>
@@ -443,6 +481,10 @@
                     <tr>
                         <td>icon-right</td>
                         <td>右侧图标（优先级高于 icon-right 属性）</td>
+                    </tr>
+                    <tr>
+                        <td>loading-icon</td>
+                        <td>加载状态图标（优先级高于 loading-icon 属性）</td>
                     </tr>
                 </tbody>
             </table>

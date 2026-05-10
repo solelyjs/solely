@@ -1,11 +1,14 @@
 <div class="empty">
     <div class="empty__image">
-        <If test="$data.image">
+        <If test="this.hasImageSlot()">
+            <slot name="image"></slot>
+        </If>
+        <ElseIf test="$data.image">
             <img :src="$data.image" alt="empty" />
-        </If>
-        <If test="!$data.image">
+        </ElseIf>
+        <Else>
             <span class="empty__icon">📭</span>
-        </If>
+        </Else>
     </div>
     <p class="empty__description">{{$data.description || '暂无数据'}}</p>
     <div class="empty__footer">

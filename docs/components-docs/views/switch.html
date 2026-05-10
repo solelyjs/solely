@@ -94,6 +94,47 @@
         </div>
     </div>
 
+    <!-- 自定义状态插槽 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义状态插槽</h3>
+        <p class="demo-block-desc">使用 checked 和 unchecked 插槽可以自定义开关状态的内容，支持 HTML 元素，优先级高于 checkedChildren/unCheckedChildren 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-switch checked>
+                    <span slot="checked" style="color: #fff; font-weight: bold;">✓</span>
+                    <span slot="unchecked" style="color: #999;">✕</span>
+                </solely-switch>
+                <solely-switch>
+                    <span slot="checked" style="font-size: 14px;">🌞</span>
+                    <span slot="unchecked" style="font-size: 14px;">🌙</span>
+                </solely-switch>
+                <solely-switch size="large" type="success" checked>
+                    <span slot="checked" style="color: #fff; font-size: 12px;">启用</span>
+                    <span slot="unchecked" style="color: #999; font-size: 12px;">禁用</span>
+                </solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 带样式的勾选图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"checked"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #fff; font-weight: bold;"</span><span class="code-bracket">&gt;</span>✓<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"unchecked"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #999;"</span><span class="code-bracket">&gt;</span>✕<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- Emoji 图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"checked"</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 14px;"</span><span class="code-bracket">&gt;</span>🌞<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"unchecked"</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 14px;"</span><span class="code-bracket">&gt;</span>🌙<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 带文字的状态 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"checked"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #fff; font-size: 12px;"</span><span class="code-bracket">&gt;</span>启用<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"unchecked"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #999; font-size: 12px;"</span><span class="code-bracket">&gt;</span>禁用<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 禁用状态 -->
     <div class="demo-block">
         <h3 class="demo-block-title">禁用状态</h3>
@@ -365,6 +406,28 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                     <td>从开关元素移除焦点</td>
                     <td>-</td>
                     <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>checked</td>
+                    <td>选中状态显示的内容（优先级高于 checkedChildren 属性）</td>
+                </tr>
+                <tr>
+                    <td>unchecked</td>
+                    <td>非选中状态显示的内容（优先级高于 unCheckedChildren 属性）</td>
                 </tr>
             </tbody>
         </table>

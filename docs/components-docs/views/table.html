@@ -215,6 +215,33 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
             </div>
         </div>
     </div>
+
+    <!-- 自定义单元格内容 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义单元格内容</h3>
+        <p class="demo-block-desc">通过插槽自定义特定单元格的渲染内容，插槽名格式为 <code>col-{key}-{rowIndex}</code>。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"状态","dataIndex":"status","key":"status"},{"title":"操作","dataIndex":"action","key":"action"}]' data-source='[{"name":"张三","status":"active"},{"name":"李四","status":"inactive"}]'>
+                    <span slot="col-status-0" style="color: #52c41a;">● 活跃</span>
+                    <span slot="col-status-1" style="color: #ff4d4f;">● 禁用</span>
+                    <solely-button slot="col-action-0" type="primary" size="small">编辑</solely-button>
+                    <solely-button slot="col-action-1" size="small">查看</solely-button>
+                </solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
+  <span class="code-comment">&lt;!-- col-status-0: 第一行 status 列 --&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"col-status-0"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #52c41a;"</span><span class="code-bracket">&gt;</span>● 活跃<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"col-status-1"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #ff4d4f;"</span><span class="code-bracket">&gt;</span>● 禁用<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  
+  <span class="code-comment">&lt;!-- col-action-0: 第一行 action 列 --&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">slot</span>=<span class="code-value">"col-action-0"</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>编辑<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">slot</span>=<span class="code-value">"col-action-1"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>查看<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- API 文档 -->
@@ -339,6 +366,24 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
                     <td>获取数据源</td>
                     <td>-</td>
                     <td>Record&lt;string, unknown&gt;[]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>col-&#123;key&#125;-&#123;rowIndex&#125;</td>
+                    <td>自定义单元格内容，key 为列的 key，rowIndex 为行索引。例如：col-name-0 表示第一行 name 列的插槽</td>
                 </tr>
             </tbody>
         </table>

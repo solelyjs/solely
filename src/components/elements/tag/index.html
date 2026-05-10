@@ -8,6 +8,8 @@
         <span
             class="tag__close"
             @click="this.handleClose(event)"
-        >×</span>
+        >
+            <slot name="close-icon">×</slot>
+        </span>
     </If>
 </span>

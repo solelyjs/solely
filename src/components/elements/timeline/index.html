@@ -3,7 +3,7 @@
     :class="this.getTimelineClasses()"
 >
     <ul class="timeline__list">
-        <For each="$data.parsedItems" item="item" index="index">
+        <For each="this.getParsedItems()" item="item" index="index">
             <li
                 class="timeline__item"
                 :class="this.getItemClasses(item, index)"

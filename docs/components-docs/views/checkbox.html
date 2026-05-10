@@ -56,6 +56,42 @@
         </div>
     </div>
 
+    <!-- 使用插槽自定义内容 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">使用插槽自定义内容</h3>
+        <p class="demo-block-desc">通过默认插槽自定义复选框的文本内容，支持 HTML 元素实现更丰富的展示效果。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-checkbox checked>
+                    <span style="color: var(--solely-primary); font-weight: 600;">✓ 已同意</span>
+                </solely-checkbox>
+                <solely-checkbox>
+                    <span style="color: var(--solely-warning); margin-right: 4px;">⚠️</span>
+                    重要提醒
+                </solely-checkbox>
+                <solely-checkbox>
+                    <span style="background: var(--solely-error-light); color: var(--solely-error); padding: 2px 8px; border-radius: 4px; font-size: 12px;">必选项</span>
+                </solely-checkbox>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 带样式的文本 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-checkbox</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-primary); font-weight: 600;"</span><span class="code-bracket">&gt;</span>✓ 已同意<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 带图标的选项 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-warning);"</span><span class="code-bracket">&gt;</span>⚠️<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>重要提醒
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 标签样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"background: var(--solely-error-light); color: var(--solely-error); padding: 2px 8px; border-radius: 4px;"</span><span class="code-bracket">&gt;</span>必选项<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-checkbox</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 半选状态 -->
     <div class="demo-block">
         <h3 class="demo-block-title">半选状态</h3>
@@ -335,6 +371,26 @@ toggleBtn.addEventListener(<span class="code-value">'click'</span>, () => {
                     <td>从复选框移除焦点</td>
                     <td>-</td>
                     <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>复选框的文本内容，优先级高于 content 属性</td>
+                    <td>content 属性的值</td>
                 </tr>
             </tbody>
         </table>

@@ -18,7 +18,7 @@ import { safeJsonParse } from '../utils/helpers';
         { name: 'variant', type: 'string', default: 'outlined' },
     ],
 })
-class SolelyTimeline extends BaseElement<TimelineProps & { parsedItems: TimelineItem[] }> {
+class SolelyTimeline extends BaseElement<TimelineProps> {
     isHorizontal(): boolean {
         return this.$data.mode?.startsWith('horizontal-') ?? false;
     }
@@ -120,20 +120,25 @@ class SolelyTimeline extends BaseElement<TimelineProps & { parsedItems: Timeline
 
     mounted(): void {
         this.refresh();
-        this.parseItems();
     }
 
-    parseItems(): void {
-        let items = safeJsonParse(this.$data.items, []);
-        if (this.$data.reverse) {
-            items = items.reverse();
+    getParsedItems(): TimelineItem[] {
+        const value = this.$data.items;
+        if (Array.isArray(value)) {
+            return value;
         }
-        this.$data.parsedItems = items;
+        if (typeof value === 'string' && value) {
+            let items = safeJsonParse(value, []);
+            if (this.$data.reverse) {
+                items = items.reverse();
+            }
+            return items;
+        }
+        return [];
     }
 
     public setItems(items: TimelineItem[]): void {
         this.$data.items = JSON.stringify(items);
-        this.parseItems();
     }
 }
 

@@ -142,6 +142,43 @@ radioEls.forEach(radio => {
             </div>
         </div>
     </div>
+
+    <!-- 使用插槽自定义内容 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">使用插槽自定义内容</h3>
+        <p class="demo-block-desc">通过默认插槽自定义单选框的文本内容，可以包含 HTML 元素实现更丰富的展示。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-radio name="slot-demo1" value="option1" checked>
+                    <span style="color: #1890ff; font-weight: bold;">蓝色选项</span>
+                </solely-radio>
+                <solely-radio name="slot-demo2" value="option2">
+                    <span style="color: #faad14; margin-right: 4px;">⭐</span>
+                    带图标的选项
+                </solely-radio>
+                <solely-radio name="slot-demo3" value="option3">
+                    <span style="background: var(--solely-success-light); color: var(--solely-success); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--solely-success);">标签样式</span>
+                </solely-radio>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 带样式的文本 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"slot-demo1"</span> <span class="code-attr">value</span>=<span class="code-value">"option1"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"color: #1890ff; font-weight: bold;"</span><span class="code-bracket">&gt;</span>蓝色选项<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 带图标的选项 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"slot-demo2"</span> <span class="code-attr">value</span>=<span class="code-value">"option2"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"color: #faad14; margin-right: 4px;"</span><span class="code-bracket">&gt;</span>⭐<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  带图标的选项
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 标签样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"slot-demo3"</span> <span class="code-attr">value</span>=<span class="code-value">"option3"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"background: var(--solely-success-light); color: var(--solely-success); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--solely-success);"</span><span class="code-bracket">&gt;</span>标签样式<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- API 文档 -->
@@ -249,6 +286,26 @@ radioEls.forEach(radio => {
                     <td>获取当前选中状态</td>
                     <td>-</td>
                     <td>boolean</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>单选框的文本内容，优先级高于 content 属性</td>
+                    <td>content 属性的值</td>
                 </tr>
             </tbody>
         </table>

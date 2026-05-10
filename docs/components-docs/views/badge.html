@@ -160,6 +160,51 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
             </div>
         </div>
     </div>
+
+    <!-- 使用插槽包裹任意内容 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">使用插槽包裹任意内容</h3>
+        <p class="demo-block-desc">通过默认插槽可以包裹任意 HTML 元素，不仅限于按钮。徽标会自动定位在内容的右上角。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="gap: 24px;">
+                <solely-badge count="3">
+                    <span style="font-size: 24px;">📧</span>
+                </solely-badge>
+                <solely-badge dot color="#ff4d4f">
+                    <span style="font-size: 20px; cursor: pointer;">🔔</span>
+                </solely-badge>
+                <solely-badge count="5" color="#722ed1">
+                    <div style="width: 40px; height: 40px; background: var(--solely-component-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--solely-border-color);">
+                        <span style="font-size: 20px;">👤</span>
+                    </div>
+                </solely-badge>
+                <solely-badge count="99+">
+                    <span style="padding: 8px 16px; background: var(--solely-primary-light); color: var(--solely-primary); border-radius: 4px; font-size: 14px;">消息中心</span>
+                </solely-badge>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 包裹表情符号 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 24px;"</span><span class="code-bracket">&gt;</span>📧<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 包裹通知图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">dot</span> <span class="code-attr">color</span>=<span class="code-value">"#ff4d4f"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 20px;"</span><span class="code-bracket">&gt;</span>🔔<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 包裹自定义卡片 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"5"</span> <span class="code-attr">color</span>=<span class="code-value">"#722ed1"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">style</span>=<span class="code-value">"width: 40px; height: 40px; ..."</span><span class="code-bracket">&gt;</span>👤<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 包裹文字标签 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"99+"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"padding: 8px 16px; ..."</span><span class="code-bracket">&gt;</span>消息中心<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="api-section">
@@ -258,6 +303,24 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
                     <td>隐藏小红点</td>
                     <td>-</td>
                     <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>默认插槽</td>
+                    <td>徽标包裹的内容，可以是任意 HTML 元素</td>
                 </tr>
             </tbody>
         </table>

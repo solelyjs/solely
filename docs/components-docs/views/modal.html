@@ -10,7 +10,7 @@
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary" @click="this.openBasicModal()">打开对话框</solely-button>
-                <div ref="modalLog" class="event-log">等待交互...</div>
+                <div ref="modalLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.modalLog.length > 0 ? $data.modalLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-keyword">import</span> { <span class="code-type">Modal</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
@@ -247,7 +247,7 @@
                 <solely-button type="primary" ref="modalTriggerBtn" @click="this.openElementModal()">Element 触发</solely-button>
                 <solely-button type="default" @click="this.openModalWithElementContent()">Element 作为内容</solely-button>
                 <solely-button type="primary" @click="this.openCustomDomModal()">自定义 DOM 无图标</solely-button>
-                <div ref="elementModalLog" class="event-log">等待交互...</div>
+                <div ref="elementModalLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.elementModalLog.length > 0 ? $data.elementModalLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 通过 ref 获取 Element 组件触发 Modal</span>

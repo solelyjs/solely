@@ -156,6 +156,46 @@
         </div>
     </div>
 
+    <!-- 响应式数据绑定 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">响应式数据绑定</h3>
+        <p class="demo-block-desc">使用 :items 语法绑定组件数据，当数据变化时标签页自动更新。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px;">
+                <solely-tabs
+                    :items="this.getBindItems()"
+                    :activeKey="this.$data.bindActiveKey"
+                    @change="this.handleBindChange(event)">
+                    <div slot="tab-1">首页内容</div>
+                    <div slot="tab-2">产品内容</div>
+                    <div slot="tab-3">关于内容</div>
+                </solely-tabs>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <solely-button size="small" type="primary" @click="this.addBindTab()">添加标签</solely-button>
+                    <solely-button size="small" @click="this.removeBindTab()">移除标签</solely-button>
+                    <solely-button size="small" type="error" @click="this.resetBindTabs()">重置数据</solely-button>
+                </div>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">当前数据：</div>
+                    <div style="font-family: monospace; white-space: pre-wrap;">{{JSON.stringify(this.$data.bindItems, null, 2)}}</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span>
+  <span class="code-attr">:items</span>=<span class="code-value">"this.getBindItems()"</span>
+  <span class="code-attr">:activeKey</span>=<span class="code-value">"this.$data.bindActiveKey"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-1"</span><span class="code-bracket">&gt;</span>首页内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-2"</span><span class="code-bracket">&gt;</span>产品内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-comment">// 修改数据，组件自动更新</span>
+<span class="code-keyword">this</span>.$data.bindItems = [...this.$data.bindItems, { key: '4', label: '新标签' }];</code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件演示 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件演示</h3>

@@ -13,7 +13,7 @@
                 <solely-button type="primary" ref="clickBtn" @click="this.bindClickTooltip()">点击触发</solely-button>
                 <solely-input type="primary" ref="focusInput" placeholder="聚焦触发" style="width: 200px;"
                     @click="this.bindFocusTooltip()">
-                    <div ref="tooltipLog" class="event-log">等待交互...</div>
+                    <div ref="tooltipLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.tooltipLog.length > 0 ? $data.tooltipLog.join('\n') : '等待交互...'}}</div>
             </div>
         </div>
         <div class="demo-code">
@@ -166,7 +166,7 @@ tooltip.<span class="code-attr">destroy</span>();
                 <solely-button type="default" ref="elementShowBtn" @click="this.showElementTooltip()">显示临时提示</solely-button>
                 <solely-button type="success" @click="this.showElementContentTooltip()">DOM 内容提示</solely-button>
                 <solely-button type="error" @click="this.hideAllElementTooltips()">隐藏所有</solely-button>
-                <div ref="elementTooltipLog" class="event-log">等待交互...</div>
+                <div ref="elementTooltipLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.elementTooltipLog.length > 0 ? $data.elementTooltipLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 使用 ref 获取 Element 组件并绑定 Tooltip</span>

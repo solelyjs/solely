@@ -51,6 +51,38 @@
         </div>
     </div>
 
+    <!-- 图片插槽 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">图片插槽</h3>
+        <p class="demo-block-desc">使用 image 插槽可以使用更复杂的自定义图片内容，如 SVG 图标、动画图标等，优先级高于 image 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-empty description="使用 Emoji 图标">
+                    <span slot="image" style="font-size: 64px;">📂</span>
+                </solely-empty>
+                <solely-empty description="自定义 SVG">
+                    <div slot="image" style="width: 120px; height: 120px; background: linear-gradient(135deg, var(--solely-primary-light), var(--solely-primary)); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 48px; color: #fff;">🔍</span>
+                    </div>
+                </solely-empty>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- Emoji 图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-empty</span> <span class="code-attr">description</span>=<span class="code-value">"使用 Emoji 图标"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"image"</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 64px;"</span><span class="code-bracket">&gt;</span>📂<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-empty</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 自定义样式容器 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-empty</span> <span class="code-attr">description</span>=<span class="code-value">"自定义 SVG"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"image"</span> 
+       <span class="code-attr">style</span>=<span class="code-value">"width: 120px; height: 120px; background: linear-gradient(...); ..."</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"font-size: 48px; color: #fff;"</span><span class="code-bracket">&gt;</span>🔍<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-empty</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 底部内容 -->
     <div class="demo-block">
         <h3 class="demo-block-title">底部内容</h3>
@@ -143,6 +175,10 @@ empty.setDescription(<span class="code-value">'新的描述文字'</span>);</cod
                 <tr>
                     <td>默认插槽</td>
                     <td>底部内容区域，常用于放置操作按钮</td>
+                </tr>
+                <tr>
+                    <td>image</td>
+                    <td>自定义图片内容，优先级高于 image 属性</td>
                 </tr>
             </tbody>
         </table>

@@ -10,7 +10,7 @@
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary" @click="this.openDrawer()">打开抽屉</solely-button>
-                <div ref="drawerLog" class="event-log">等待交互...</div>
+                <div ref="drawerLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.drawerLog.length > 0 ? $data.drawerLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-keyword">import</span> { <span class="code-type">Drawer</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
@@ -202,7 +202,7 @@ drawer.<span class="code-attr">update</span>({
                 <solely-button type="primary" ref="drawerTriggerBtn" @click="this.openElementDrawer()">Element 触发</solely-button>
                 <solely-button type="default" @click="this.openDrawerWithElementContent()">Element 作为内容</solely-button>
                 <solely-button type="primary" @click="this.openCustomDomDrawer()">自定义 DOM 内容</solely-button>
-                <div ref="elementDrawerLog" class="event-log">等待交互...</div>
+                <div ref="elementDrawerLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.elementDrawerLog.length > 0 ? $data.elementDrawerLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 通过 ref 获取 Element 组件触发 Drawer</span>

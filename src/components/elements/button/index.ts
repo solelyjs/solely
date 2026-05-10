@@ -94,8 +94,15 @@ class SolelyButton extends BaseElement<ButtonProps, ButtonRefs> {
     }
 
     /**
+     * 检查是否有 loading-icon 插槽内容
+     */
+    hasLoadingIconSlot(): boolean {
+        return this.querySelector('[slot="loading-icon"]') !== null;
+    }
+
+    /**
      * 获取加载图标
-     * 如果设置了 loadingIcon 属性则使用自定义图标，否则使用默认 CSS 动画
+     * 如果设置了 loadingIcon 属性则使用自定义图标，否则返回空字符串（显示默认 CSS 动画）
      */
     getLoadingIcon(): string {
         return this.$data.loadingIcon || '';

@@ -27,7 +27,7 @@
                 <solely-button type="success" @click="this.showSuccess()">成功提示</solely-button>
                 <solely-button type="warning" @click="this.showWarning()">警告提示</solely-button>
                 <solely-button type="error" @click="this.showError()">错误提示</solely-button>
-                <div ref="messageLog" class="event-log">等待交互...</div>
+                <div ref="messageLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.messageLog.length > 0 ? $data.messageLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-keyword">import</span> { <span class="code-type">Message</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
@@ -217,7 +217,7 @@ instance.<span class="code-attr">update</span>({
                 <solely-button type="default" @click="this.showElementLoading()">Element 加载</solely-button>
                 <solely-button type="primary" @click="this.showElementContent()">Element 内容</solely-button>
                 <solely-button type="default" @click="this.showCustomDomMessage()">自定义 DOM 无图标</solely-button>
-                <div ref="elementMessageLog" class="event-log">等待交互...</div>
+                <div ref="elementMessageLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.elementMessageLog.length > 0 ? $data.elementMessageLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 在 Element 组件事件中触发 Message</span>

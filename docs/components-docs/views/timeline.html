@@ -167,6 +167,72 @@
             </div>
         </div>
     </div>
+
+    <!-- 数据绑定 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">响应式数据绑定</h3>
+        <p class="demo-block-desc">使用 :items 语法绑定组件数据，当数据变化时时间轴自动更新。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                <solely-timeline :items="this.getTimelineItems()"></solely-timeline>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <solely-button size="small" type="primary" @click="this.addBindItem()">添加节点</solely-button>
+                    <solely-button size="small" type="error" @click="this.resetBindItems()">重置数据</solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 模板中绑定数据 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">:items</span>=<span class="code-value">"this.$data.timelineItems"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 或使用 getter 方法 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">:items</span>=<span class="code-value">"this.getTimelineItems()"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 组件数据定义</span>
+<span class="code-keyword">interface</span> <span class="code-type">Data</span> {
+  timelineItems: <span class="code-type">TimelineItem</span>[];
+}
+
+<span class="code-comment">// 修改数据后自动更新</span>
+<span class="code-keyword">this</span>.$data.timelineItems.push({
+  <span class="code-attr">title</span>: <span class="code-value">'新节点'</span>,
+  <span class="code-attr">time</span>: <span class="code-value">'2024-01-01'</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 动态数据绑定 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">方法动态更新</h3>
+        <p class="demo-block-desc">通过 setItems() 方法可以动态更新时间轴数据，适合外部控制场景。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                <solely-timeline id="timeline-dynamic-demo" items='[{"title":"初始数据","time":"2024-01-01"}]'></solely-timeline>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <solely-button size="small" type="primary" @click="this.addTimelineItem()">添加节点</solely-button>
+                    <solely-button size="small" @click="this.updateTimelineItem()">更新首个节点</solely-button>
+                    <solely-button size="small" type="error" @click="this.clearTimelineItems()">清空数据</solely-button>
+                </div>
+                <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
+                    <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">操作日志：</div>
+                    <div ref="timelineLog" style="font-family: monospace; white-space: pre-wrap;">等待操作...</div>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">id</span>=<span class="code-value">"my-timeline"</span> <span class="code-attr">items</span>=<span class="code-value">'[]'</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> timeline = document.querySelector(<span class="code-value">'#my-timeline'</span>);
+
+<span class="code-comment">// 通过方法设置数据</span>
+timeline.setItems([
+  { <span class="code-attr">title</span>: <span class="code-value">'新节点 1'</span>, <span class="code-attr">time</span>: <span class="code-value">'2024-01-01'</span>, <span class="code-attr">color</span>: <span class="code-value">'blue'</span> },
+  { <span class="code-attr">title</span>: <span class="code-value">'新节点 2'</span>, <span class="code-attr">time</span>: <span class="code-value">'2024-01-15'</span>, <span class="code-attr">icon</span>: <span class="code-value">'🚀'</span> }
+]);</code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- API 文档 -->

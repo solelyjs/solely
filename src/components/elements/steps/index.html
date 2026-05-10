@@ -1,7 +1,7 @@
 <div class="steps" :class="this.getStepsClasses()">
     <!-- 使用 items 属性时的渲染 -->
     <If test="!$data.useSlot">
-        <For each="$data.parsedItems" item="item" index="index">
+        <For each="this.getParsedItems()" item="item" index="index">
             <div class="step" :class="this.getStepClasses(item, index)" @click="this.handleStepClick(item, index)">
                 <div class="step__tail"></div>
                 <div class="step__wrapper">

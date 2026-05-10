@@ -10,7 +10,7 @@
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary" @click="this.showBasicConfirm(event)">删除项目</solely-button>
-                <div ref="popconfirmLog" class="event-log">等待交互...</div>
+                <div ref="popconfirmLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.popconfirmLog.length > 0 ? $data.popconfirmLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-keyword">import</span> { <span class="code-type">Popconfirm</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
@@ -151,7 +151,7 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
                 <solely-button type="primary" ref="actionBtn" @click="this.showElementActionConfirm(event)">操作按钮</solely-button>
                 <solely-button type="warning" @click="this.showElementCustomConfirm(event)">自定义 DOM</solely-button>
                 <solely-button type="default" @click="this.showElementNoIconConfirm(event)">无图标</solely-button>
-                <div ref="elementPopconfirmLog" class="event-log">等待交互...</div>
+                <div ref="elementPopconfirmLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.elementPopconfirmLog.length > 0 ? $data.elementPopconfirmLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 在 Element 组件点击事件中触发 Popconfirm</span>

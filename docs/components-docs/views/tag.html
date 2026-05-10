@@ -97,6 +97,41 @@
         </div>
     </div>
 
+    <!-- 自定义关闭图标 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义关闭图标</h3>
+        <p class="demo-block-desc">使用 close-icon 插槽可以自定义关闭按钮的图标内容。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-tag type="primary" closable content="删除">
+                    <span slot="close-icon" style="color: var(--solely-error); font-weight: bold;">🗑</span>
+                </solely-tag>
+                <solely-tag type="success" closable content="移除">
+                    <span slot="close-icon" style="color: var(--solely-warning);">✕</span>
+                </solely-tag>
+                <solely-tag type="warning" closable content="清空">
+                    <span slot="close-icon" style="color: var(--solely-error);">✖</span>
+                </solely-tag>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 垃圾桶图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">closable</span> <span class="code-attr">content</span>=<span class="code-value">"删除"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"close-icon"</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-error);"</span><span class="code-bracket">&gt;</span>🗑<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 自定义 X 图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span> <span class="code-attr">closable</span> <span class="code-attr">content</span>=<span class="code-value">"移除"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"close-icon"</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-warning);"</span><span class="code-bracket">&gt;</span>✕<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 粗 X 图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">type</span>=<span class="code-value">"warning"</span> <span class="code-attr">closable</span> <span class="code-attr">content</span>=<span class="code-value">"清空"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"close-icon"</span> <span class="code-attr">style</span>=<span class="code-value">"color: var(--solely-error);"</span><span class="code-bracket">&gt;</span>✖<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 自定义颜色 -->
     <div class="demo-block">
         <h3 class="demo-block-title">自定义颜色</h3>
@@ -193,6 +228,10 @@
                 <tr>
                     <td>默认插槽</td>
                     <td>标签内容，优先级高于 content 属性</td>
+                </tr>
+                <tr>
+                    <td>close-icon</td>
+                    <td>关闭按钮图标（仅在 closable 为 true 时有效，优先级高于默认关闭图标）</td>
                 </tr>
             </tbody>
         </table>

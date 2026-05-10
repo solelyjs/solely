@@ -10,7 +10,14 @@
     >
         <If test="$data.loading">
             <!-- 加载状态：显示加载图标 -->
-            <span class="btn__icon loading-spinner btn__loading-icon">{{this.getLoadingIcon()}}</span>
+            <span class="btn__icon loading-spinner btn__loading-icon">
+                <If test="this.hasLoadingIconSlot()">
+                    <slot name="loading-icon"></slot>
+                </If>
+                <ElseIf test="$data.loadingIcon">
+                    {{$data.loadingIcon}}
+                </ElseIf>
+            </span>
         </If>
         <ElseIf test="this.hasIconSlot()">
             <!-- 非加载状态，有图标插槽：显示图标插槽内容 -->
@@ -23,8 +30,8 @@
             <span class="btn__icon">{{$data.icon}}</span>
         </ElseIf>
 
-        <If test="!$data.loading && !$data.iconOnly && ($data.content || this.hasDefaultSlotContent())">
-            <!-- 按钮内容（非加载状态且非 icon-only 模式显示） -->
+        <If test="!$data.iconOnly && ($data.content || this.hasDefaultSlotContent())">
+            <!-- 按钮内容（非 icon-only 模式显示） -->
             <span class="btn__content">
                 <slot>{{$data.content}}</slot>
             </span>
@@ -53,7 +60,14 @@
     >
         <If test="$data.loading">
             <!-- 加载状态：显示加载图标 -->
-            <span class="btn__icon loading-spinner btn__loading-icon">{{this.getLoadingIcon()}}</span>
+            <span class="btn__icon loading-spinner btn__loading-icon">
+                <If test="this.hasLoadingIconSlot()">
+                    <slot name="loading-icon"></slot>
+                </If>
+                <ElseIf test="$data.loadingIcon">
+                    {{$data.loadingIcon}}
+                </ElseIf>
+            </span>
         </If>
         <ElseIf test="this.hasIconSlot()">
             <!-- 非加载状态，有图标插槽：显示图标插槽内容 -->
@@ -66,8 +80,8 @@
             <span class="btn__icon">{{$data.icon}}</span>
         </ElseIf>
 
-        <If test="!$data.loading && !$data.iconOnly && ($data.content || this.hasDefaultSlotContent())">
-            <!-- 按钮内容（非加载状态且非 icon-only 模式显示） -->
+        <If test="!$data.iconOnly && ($data.content || this.hasDefaultSlotContent())">
+            <!-- 按钮内容（非 icon-only 模式显示） -->
             <span class="btn__content">
                 <slot>{{$data.content}}</slot>
             </span>
