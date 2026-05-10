@@ -48,6 +48,13 @@ class SolelyAlert extends BaseElement<AlertProps & { closing: boolean }> {
     }
 
     /**
+     * 组件挂载后
+     */
+    mounted(): void {
+        this.refresh();
+    }
+
+    /**
      * 关闭事件处理
      */
     handleClose(): void {

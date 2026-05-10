@@ -161,6 +161,7 @@ class SolelyCheckbox extends BaseElement<CheckboxProps, CheckboxRefs> {
      * 组件挂载后的生命周期钩子
      */
     mounted(): void {
+        this.refresh();
         this.updateAriaAttributes();
     }
 

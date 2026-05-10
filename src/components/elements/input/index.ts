@@ -60,6 +60,7 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 组件挂载后
      */
     mounted(): void {
+        this.refresh();
         // 自动聚焦
         if (this.$data.autofocus) {
             this.focus();

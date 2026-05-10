@@ -111,6 +111,7 @@ class SolelyPagination extends BaseElement<
     }
 
     mounted(): void {
+        this.refresh();
         this.$data.jumperValue = '';
         this.parsePageSizeOptions();
     }

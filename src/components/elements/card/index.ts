@@ -44,6 +44,13 @@ class SolelyCard extends BaseElement<CardProps, CardRefs> {
     }
 
     /**
+     * 组件挂载后
+     */
+    mounted(): void {
+        this.refresh();
+    }
+
+    /**
      * 设置加载状态
      */
     public setLoading(loading: boolean): void {

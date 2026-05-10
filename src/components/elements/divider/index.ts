@@ -38,6 +38,7 @@ class SolelyDivider extends BaseElement<DividerProps & { hasSlotContent: boolean
     }
 
     mounted(): void {
+        this.refresh();
         // 检查是否有 slot 内容
         this.$data.hasSlotContent = this.childNodes.length > 0;
     }

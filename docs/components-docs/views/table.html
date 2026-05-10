@@ -7,16 +7,88 @@
     <!-- 基础用法 -->
     <div class="demo-block">
         <h3 class="demo-block-title">基础用法</h3>
-        <p class="demo-block-desc">通过 columns 和 data-source 属性传入表格配置和数据。</p>
+        <p class="demo-block-desc">通过 columns 和 data-source 属性传入表格配置和数据（JSON 字符串格式）。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"},{"title":"地址","dataIndex":"address","key":"address"}]' data-source='[{"name":"张三","age":28,"address":"北京市"},{"name":"李四","age":32,"address":"上海市"},{"name":"王五","age":24,"address":"广州市"}]'></solely-table>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> 
+                <pre><code><span class="code-comment">&lt;!-- HTML 中通过 JSON 字符串传递 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> 
   <span class="code-attr">columns</span>=<span class="code-value">'[{"title":"姓名","dataIndex":"name"},...]'</span> 
   <span class="code-attr">data-source</span>=<span class="code-value">'[{"name":"张三","age":28},...]'</span>
 <span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通过属性绑定设置数据 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">通过属性绑定设置数据</h3>
+        <p class="demo-block-desc">在 Solely 模板中使用 <code>:columns</code> 和 <code>:dataSource</code> 绑定组件数据，无需手写 JSON 字符串。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table :columns="$data.bindColumns" :dataSource="$data.bindDataSource"></solely-table>
+                <div style="display: flex; gap: 8px;">
+                    <solely-button type="primary" @click="this.loadBindData()">加载数据</solely-button>
+                    <solely-button @click="this.clearBindData()">清空数据</solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 使用 :prop 绑定组件数据 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> 
+  <span class="code-attr">:columns</span>=<span class="code-value">"this.columns"</span> 
+  <span class="code-attr">:dataSource</span>=<span class="code-value">"this.dataSource"</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> columns = [
+  { title: <span class="code-value">'姓名'</span>, dataIndex: <span class="code-value">'name'</span>, key: <span class="code-value">'name'</span> },
+  { title: <span class="code-value">'年龄'</span>, dataIndex: <span class="code-value">'age'</span>, key: <span class="code-value">'age'</span> },
+  { title: <span class="code-value">'地址'</span>, dataIndex: <span class="code-value">'address'</span>, key: <span class="code-value">'address'</span> }
+];
+
+<span class="code-keyword">const</span> dataSource = [
+  { name: <span class="code-value">'张三'</span>, age: <span class="code-value">28</span>, address: <span class="code-value">'北京市'</span> },
+  { name: <span class="code-value">'李四'</span>, age: <span class="code-value">32</span>, address: <span class="code-value">'上海市'</span> },
+  { name: <span class="code-value">'王五'</span>, age: <span class="code-value">24</span>, address: <span class="code-value">'广州市'</span> }
+];</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通过 JS API 设置数据 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">通过 JS API 设置数据</h3>
+        <p class="demo-block-desc">在 JavaScript 中使用 setColumns 和 setDataSource 方法动态设置数据。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table ref="jsApiTable" columns='[]' data-source='[]'></solely-table>
+                <div style="display: flex; gap: 8px;">
+                    <solely-button type="primary" @click="this.loadTableData()">加载数据</solely-button>
+                    <solely-button type="default" @click="this.clearTableData()">清空数据</solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">ref</span>=<span class="code-value">"myTable"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
+<span class="code-keyword">const</span> table = document.querySelector(<span class="code-value">'solely-table'</span>);
+
+<span class="code-comment">// 使用 setColumns 设置列配置</span>
+table.setColumns([
+  { title: <span class="code-value">'姓名'</span>, dataIndex: <span class="code-value">'name'</span>, key: <span class="code-value">'name'</span> },
+  { title: <span class="code-value">'年龄'</span>, dataIndex: <span class="code-value">'age'</span>, key: <span class="code-value">'age'</span> },
+  { title: <span class="code-value">'地址'</span>, dataIndex: <span class="code-value">'address'</span>, key: <span class="code-value">'address'</span> }
+]);
+
+<span class="code-comment">// 使用 setDataSource 设置数据</span>
+table.setDataSource([
+  { name: <span class="code-value">'张三'</span>, age: <span class="code-value">28</span>, address: <span class="code-value">'北京市'</span> },
+  { name: <span class="code-value">'李四'</span>, age: <span class="code-value">32</span>, address: <span class="code-value">'上海市'</span> },
+  { name: <span class="code-value">'王五'</span>, age: <span class="code-value">24</span>, address: <span class="code-value">'广州市'</span> }
+]);</code></pre>
             </div>
         </div>
     </div>

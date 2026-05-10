@@ -279,15 +279,29 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
      * 组件挂载后更新 SVG 内容
      */
     async mounted(): Promise<void> {
+        this.refresh();
         this.updateHostStyles();
 
         const sprite = this.$data.sprite;
         if (sprite) {
-            await loadIconSprite(sprite);
-            this.updateSvgContent();
+            try {
+                await loadIconSprite(sprite);
+                this.updateSvgContent();
+                // 从组件内部派发 sprite-loaded 事件，确保 composed: true 可穿透 Shadow DOM
+                this.dispatchEvent(new Event('sprite-loaded', { bubbles: true, composed: true }));
+            } catch {
+                this.updateSvgContent();
+                this.dispatchEvent(new Event('sprite-error', { bubbles: true, composed: true }));
+            }
         } else if (spriteLoadingPromise) {
-            await spriteLoadingPromise;
-            this.updateSvgContent();
+            try {
+                await spriteLoadingPromise;
+                this.updateSvgContent();
+                this.dispatchEvent(new Event('sprite-loaded', { bubbles: true, composed: true }));
+            } catch {
+                this.updateSvgContent();
+                this.dispatchEvent(new Event('sprite-error', { bubbles: true, composed: true }));
+            }
         } else {
             this.updateSvgContent();
         }

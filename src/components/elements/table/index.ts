@@ -25,12 +25,7 @@ import { safeJsonParse } from '../utils/helpers';
         { name: 'rowKey', type: 'string' },
     ],
 })
-class SolelyTable extends BaseElement<
-    TableProps & {
-        parsedColumns: TableColumn[];
-        parsedDataSource: Record<string, unknown>[];
-    }
-> {
+class SolelyTable extends BaseElement<TableProps> {
     /**
      * 获取 table class 对象
      */
@@ -49,6 +44,34 @@ class SolelyTable extends BaseElement<
         classes['table--striped'] = !!this.$data.striped;
         classes['table--clickable'] = !!this.$data.rowClickable;
         return classes;
+    }
+
+    /**
+     * 获取解析后的列配置
+     */
+    getParsedColumns(): TableColumn[] {
+        const value = this.$data.columns;
+        if (Array.isArray(value)) {
+            return value;
+        }
+        if (typeof value === 'string' && value) {
+            return safeJsonParse(value, []);
+        }
+        return [];
+    }
+
+    /**
+     * 获取解析后的数据源
+     */
+    getParsedDataSource(): Record<string, unknown>[] {
+        const value = this.$data.dataSource;
+        if (Array.isArray(value)) {
+            return value;
+        }
+        if (typeof value === 'string' && value) {
+            return safeJsonParse(value, []);
+        }
+        return [];
     }
 
     /**
@@ -82,15 +105,7 @@ class SolelyTable extends BaseElement<
     }
 
     mounted(): void {
-        this.parseData();
-    }
-
-    /**
-     * 解析数据
-     */
-    parseData(): void {
-        this.$data.parsedColumns = safeJsonParse(this.$data.columns, []);
-        this.$data.parsedDataSource = safeJsonParse(this.$data.dataSource, []);
+        this.refresh();
     }
 
     /**
@@ -126,7 +141,6 @@ class SolelyTable extends BaseElement<
      */
     public setColumns(columns: TableColumn[]): void {
         this.$data.columns = JSON.stringify(columns);
-        this.parseData();
     }
 
     /**
@@ -134,14 +148,13 @@ class SolelyTable extends BaseElement<
      */
     public setDataSource(dataSource: Record<string, unknown>[]): void {
         this.$data.dataSource = JSON.stringify(dataSource);
-        this.parseData();
     }
 
     /**
      * 获取数据源
      */
     public getDataSource(): Record<string, unknown>[] {
-        return this.$data.parsedDataSource;
+        return this.getParsedDataSource();
     }
 }
 

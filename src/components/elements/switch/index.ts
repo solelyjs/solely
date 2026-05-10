@@ -150,6 +150,7 @@ class SolelySwitch extends BaseElement<SwitchProps, SwitchRefs> {
      * 组件挂载后的生命周期钩子
      */
     mounted(): void {
+        this.refresh();
         // 可以在这里添加额外的初始化逻辑
         this.updateAriaAttributes();
     }

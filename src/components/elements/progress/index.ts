@@ -95,6 +95,13 @@ class SolelyProgress extends BaseElement<ProgressProps> {
     }
 
     /**
+     * 组件挂载后
+     */
+    mounted(): void {
+        this.refresh();
+    }
+
+    /**
      * 设置进度
      */
     public setPercent(percent: number): void {

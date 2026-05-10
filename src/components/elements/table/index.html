@@ -2,7 +2,7 @@
     <table class="table" :class="this.getTableClasses()">
         <thead>
             <tr>
-                <For each="$data.parsedColumns" item="col">
+                <For each="this.getParsedColumns()" item="col">
                     <th :class="this.getThClasses(col)"
                         :style="col.width ? 'width: ' + (typeof col.width === 'number' ? col.width + 'px' : col.width) : ''">
                         {{col.title}}
@@ -11,9 +11,9 @@
             </tr>
         </thead>
         <tbody>
-            <For each="$data.parsedDataSource" item="row" index="rowIndex">
+            <For each="this.getParsedDataSource()" item="row" index="rowIndex">
                 <tr @click="this.handleRowClick(row, rowIndex)">
-                    <For each="$data.parsedColumns" item="col">
+                    <For each="this.getParsedColumns()" item="col">
                         <td :class="this.getTdClasses(col)">
                             <slot :name="'col-' + col.key + '-' + rowIndex">
                                 {{this.getCellValue(row, col)}}
@@ -33,7 +33,7 @@
     </If>
 
     <!-- 空状态 -->
-    <If condition="!$data.loading && $data.parsedDataSource?.length === 0">
+    <If condition="!$data.loading && this.getParsedDataSource().length === 0">
         <div class="table__empty">
             暂无数据
         </div>

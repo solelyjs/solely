@@ -62,6 +62,13 @@ class SolelyFab extends BaseElement<FabProps, FabRefs> {
     }
 
     /**
+     * 组件挂载后
+     */
+    mounted(): void {
+        this.refresh();
+    }
+
+    /**
      * 获取 FAB 内联样式
      */
     getFabStyles(): Record<string, string> {

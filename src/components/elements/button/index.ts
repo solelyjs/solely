@@ -33,6 +33,14 @@ import template from './index.html?raw';
 })
 class SolelyButton extends BaseElement<ButtonProps, ButtonRefs> {
     /**
+     * 组件挂载后
+     */
+    mounted() {
+        // 初始化时刷新按钮类名
+        this.refresh();
+    }
+
+    /**
      * 获取按钮 class 对象
      */
     getButtonClasses(): Record<string, boolean> {
@@ -49,8 +57,8 @@ class SolelyButton extends BaseElement<ButtonProps, ButtonRefs> {
         } else if (this.$data.size === 'large') {
             classes['btn--lg'] = true;
         }
-        if (this.$data.shape) {
-            classes[`btn--${this.$data.shape}`] = true;
+        if (this.$data.shape && this.$data.shape !== 'default') {
+            classes[`btn--shape-${this.$data.shape}`] = true;
         }
         classes['is-disabled'] = !!this.$data.disabled;
         classes['is-loading'] = !!this.$data.loading;

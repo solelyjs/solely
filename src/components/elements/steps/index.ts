@@ -130,6 +130,7 @@ class SolelySteps extends BaseElement<
     }
 
     mounted(): void {
+        this.refresh();
         this.parseItems();
         this.setupSlotObserver();
     }

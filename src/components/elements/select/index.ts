@@ -156,6 +156,7 @@ class SolelySelect extends BaseElement<
     }
 
     mounted(): void {
+        this.refresh();
         this.parseOptions();
 
         // 监听插槽变化

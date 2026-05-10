@@ -107,6 +107,7 @@ class SolelyTree extends BaseElement<
     }
 
     mounted(): void {
+        this.refresh();
         this.parseTreeData();
     }
 

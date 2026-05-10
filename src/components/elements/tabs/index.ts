@@ -81,6 +81,7 @@ class SolelyTabs extends BaseElement<TabsProps & { parsedItems: TabItem[] }> {
     }
 
     mounted(): void {
+        this.refresh();
         this.parseItems();
 
         // 如果没有设置 activeKey，默认选中第一个

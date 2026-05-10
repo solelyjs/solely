@@ -119,6 +119,7 @@ class SolelyTimeline extends BaseElement<TimelineProps & { parsedItems: Timeline
     }
 
     mounted(): void {
+        this.refresh();
         this.parseItems();
     }
 

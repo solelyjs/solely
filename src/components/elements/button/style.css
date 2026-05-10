@@ -73,21 +73,21 @@
 }
 
 /* 按钮形状 */
-.btn--circle {
+.btn--shape-circle {
   border-radius: var(--solely-border-radius-circle);
   padding: 0;
   width: var(--solely-height-md);
 }
 
-.btn--circle.btn--sm {
+.btn--shape-circle.btn--sm {
   width: var(--solely-height-sm);
 }
 
-.btn--circle.btn--lg {
+.btn--shape-circle.btn--lg {
   width: var(--solely-height-lg);
 }
 
-.btn--round {
+.btn--shape-round {
   border-radius: var(--solely-border-radius-full);
 }
 

@@ -47,6 +47,13 @@ class SolelySkeleton extends BaseElement<SkeletonProps> {
     }
 
     /**
+     * 组件挂载后
+     */
+    mounted(): void {
+        this.refresh();
+    }
+
+    /**
      * 获取 header class 对象
      */
     getHeaderClasses(): Record<string, boolean> {

@@ -66,6 +66,13 @@ class SolelyRadio extends BaseElement<RadioProps> {
     }
 
     /**
+     * 组件挂载后
+     */
+    mounted(): void {
+        this.refresh();
+    }
+
+    /**
      * 点击事件处理
      */
     handleClick(_event: Event): void {

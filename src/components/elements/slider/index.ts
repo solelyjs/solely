@@ -73,6 +73,8 @@ class SolelySlider extends BaseElement<
         if (this.$data.max === undefined) this.$data.max = 100;
         if (this.$data.step === undefined) this.$data.step = 1;
         if (this.$data.value === undefined) this.$data.value = this.$data.min;
+
+        this.refresh();
     }
 
     protected afterMount(): void {

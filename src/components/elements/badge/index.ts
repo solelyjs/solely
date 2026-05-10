@@ -46,6 +46,13 @@ class SolelyBadge extends BaseElement<BadgeProps> {
     }
 
     /**
+     * 组件挂载后
+     */
+    mounted(): void {
+        this.refresh();
+    }
+
+    /**
      * 设置数字
      */
     public setCount(count: number): void {

@@ -45,6 +45,7 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
      * 组件挂载后
      */
     mounted(): void {
+        this.refresh();
         this.initializeValues();
     }
 

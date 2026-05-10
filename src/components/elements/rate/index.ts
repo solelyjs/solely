@@ -62,6 +62,7 @@ class SolelyRate extends BaseElement<RateProps & { hoverValue: number | undefine
     }
 
     mounted(): void {
+        this.refresh();
         this.$data.hoverValue = undefined;
         this.generateStarCount();
     }

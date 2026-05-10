@@ -59,6 +59,7 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
     }
 
     mounted(): void {
+        this.refresh();
         this.parseFileList();
         this.$data.isDragging = false;
     }

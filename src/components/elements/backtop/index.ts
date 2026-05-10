@@ -66,6 +66,7 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
     }
 
     mounted(): void {
+        this.refresh();
         this.$data.visible = false;
         this.mountTimeout = setTimeout(() => {
             this.initializeContainer();
