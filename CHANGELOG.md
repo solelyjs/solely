@@ -7,6 +7,34 @@
 
 ## [Unreleased]
 
+## [0.4.10] - 2026-05-10
+
+### Added
+
+- **feat(components)**: 为所有组件添加 mounted 时调用 refresh 方法
+    - 确保组件在挂载后能正确刷新状态
+
+- **feat(components)**: 为多个组件添加插槽支持并优化数据绑定
+    - 为 Tag、Empty、Switch、Button 等组件添加插槽支持，增强自定义能力
+    - 优化 Timeline、Steps、Tabs 等组件的数据绑定逻辑，支持响应式更新
+    - 更新文档展示插槽用法和数据绑定示例
+
+- **feat(alert)**: 添加插槽支持以自定义图标和关闭按钮
+    - 为 Alert 组件添加 `icon` 和 `close-icon` 插槽，允许用户自定义图标和关闭按钮
+    - 调整样式以支持插槽内容，并更新文档展示插槽用法
+
+### Changed
+
+- **refactor(table)**: 重构表格组件数据解析逻辑
+    - 使用 getter 方法替代内部状态，提升性能和响应性
+
+- **style(button)**: 重命名按钮形状样式类名
+    - 添加 `btn--shape-` 前缀，统一命名规范
+
+- **docs(table)**: 添加表格组件属性绑定和 JS API 使用示例
+
+- **chore**: 更新 tsconfig.json 包含 docs 目录
+
 ## [0.4.9] - 2026-05-08
 
 ### Added
@@ -382,7 +410,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.9...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.10...HEAD
+[0.4.10]: https://github.com/solelyjs/solely/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/solelyjs/solely/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/solelyjs/solely/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/solelyjs/solely/compare/v0.4.6...v0.4.7
