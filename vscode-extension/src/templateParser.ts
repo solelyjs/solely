@@ -371,8 +371,12 @@ export function getMethodSignatures(tsPath: string): MethodSignature[] {
     const lines = content.split('\n');
     const signatures: MethodSignature[] = [];
 
-    const methodRegex =
-        /^\s*(?:(?:public|private|protected)\s+)?(?:static\s+)?(?:async\s+)?(\w+)\s*\(([^)]*)\)\s*(?::\s*(\w+(?:\[\])?))?\s*\{/;
+    const methodPattern =
+        '^\\s*(?:(?:public|private|protected)\\s+)?' +
+        '(?:static\\s+)?(?:async\\s+)?' +
+        '(\\w+)\\s*\\(([^)]*)\\)\\s*' +
+        '(?::\\s*(\\w+(?:\\[\\])?))?\\s*\\{';
+    const methodRegex = new RegExp(methodPattern);
 
     for (let i = 0; i < lines.length; i++) {
         const match = methodRegex.exec(lines[i]);
