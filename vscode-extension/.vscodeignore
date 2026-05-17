@@ -1,0 +1,10 @@
+.vscode/**
+.vscode-test/**
+src/**
+scripts/**
+PUBLISH.md
+icons/solely.svg
+*.vsix
+tsconfig.json
+.gitignore
+node_modules/**

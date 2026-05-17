@@ -1,0 +1,72 @@
+{
+    "name": "solely-vscode",
+    "displayName": "Solely Framework Support",
+    "description": "VS Code extension for Solely framework - provides syntax highlighting, go-to-definition, hover hints, and diagnostics for Solely HTML templates",
+    "version": "0.1.0",
+    "publisher": "solely",
+    "license": "MIT",
+    "icon": "icons/solely.png",
+    "homepage": "https://github.com/solelyjs/solely/tree/main/vscode-extension",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/solelyjs/solely"
+    },
+    "bugs": {
+        "url": "https://github.com/solelyjs/solely/issues"
+    },
+    "galleryBanner": {
+        "color": "#1e1e2e",
+        "theme": "dark"
+    },
+    "pricing": "Free",
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Other"
+    ],
+    "keywords": [
+        "solely",
+        "web-components",
+        "template",
+        "syntax-highlighting",
+        "go-to-definition"
+    ],
+    "activationEvents": [
+        "onLanguage:html"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "solely-template",
+                "extensions": [],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "solely-template",
+                "scopeName": "text.html.solely",
+                "path": "./syntaxes/solely-template.tmLanguage.json",
+                "injectTo": [
+                    "text.html.derivative"
+                ]
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./tsconfig.json",
+        "watch": "tsc -watch -p ./tsconfig.json",
+        "package": "vsce package",
+        "publish:vsce": "vsce publish",
+        "publish:ovsx": "ovsx publish"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.85.0",
+        "typescript": "^5.3.0",
+        "@vscode/vsce": "^2.22.0"
+    }
+}

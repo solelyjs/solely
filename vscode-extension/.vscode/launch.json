@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Vite + Plugin (TS)",
+            "type": "pwa-node",
+            "request": "attach",
+            "port": 9229,
+            "restart": true,
+            "sourceMaps": true,
+            "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
+        }
+    ]
+}

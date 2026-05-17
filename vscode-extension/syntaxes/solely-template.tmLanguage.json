@@ -1,0 +1,205 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Solely Template",
+    "scopeName": "text.html.solely",
+    "injectionSelector": "L:text.html.derivative",
+    "patterns": [
+        {
+            "name": "meta.embedded.solely.expression",
+            "match": "\\{\\{[^}]*\\}\\}",
+            "patterns": [
+                {
+                    "name": "keyword.other.solely.data",
+                    "match": "\\$data\\b"
+                },
+                {
+                    "name": "variable.language.solely.this",
+                    "match": "\\bthis\\b"
+                },
+                {
+                    "name": "variable.other.property",
+                    "match": "(?<=\\$data\\.)(\\w+)"
+                },
+                {
+                    "name": "entity.name.function",
+                    "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                }
+            ]
+        },
+        {
+            "name": "meta.tag.solely.control",
+            "match": "<\\/?(If|ElseIf|Else|For)\\b",
+            "captures": {
+                "1": {
+                    "name": "keyword.control.solely"
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.event",
+            "match": "@(\\w+(?:-\\w+)*)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "entity.other.attribute-name.event.solely"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.event-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        },
+                        {
+                            "name": "variable.parameter.solely",
+                            "match": "\\bevent\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.bind",
+            "match": ":(\\w+(?:-\\w+)*)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "entity.other.attribute-name.bind.solely"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.bind-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.s-model",
+            "match": "s-model\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "0": {
+                    "name": "entity.other.attribute-name.s-model.solely"
+                },
+                "1": {
+                    "name": "meta.embedded.solely.s-model-value",
+                    "patterns": [
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.ref",
+            "match": "\\bref\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "variable.other.constant"
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.slot-name",
+            "match": "\\bname\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "string.quoted.double"
+                }
+            }
+        },
+        {
+            "name": "meta.tag.solely.slot",
+            "match": "<\\/?slot\\b",
+            "captures": {
+                "0": {
+                    "name": "entity.name.tag"
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.control-attr",
+            "match": "\\b(test|each|item|index|condition)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.solely.control-attr"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.control-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.lifecycle",
+            "match": "\\b(s-init|s-mounted|s-beforeUpdate|s-updated|s-unmounted|init|mounted|beforeUpdate|updated|unmounted)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "entity.other.attribute-name.lifecycle.solely"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.lifecycle-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "repository": {}
+}

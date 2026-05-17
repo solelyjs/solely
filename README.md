@@ -7,6 +7,7 @@
 **一个轻量级、现代化的 Web 组件开发框架**
 
 [![npm version](https://img.shields.io/npm/v/solely.svg)](https://www.npmjs.com/package/solely)
+[![VS Code Extension](https://img.shields.io/badge/VS%20Code-Solely-blue?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=solely.solely-vscode)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
 
@@ -29,6 +30,7 @@
 - [快速开始指南](./docs/guide.md) - 从零开始学习 Solely
 - [API 文档](./docs/api.md) - 完整的 API 参考
 - [示例项目](./examples/) - 实际应用示例
+- [VS Code 扩展](./vscode-extension/) - 语法高亮、智能跳转、错误诊断
 - [插件系统](#插件系统) - 了解 Vite 插件的使用方法
 - [安全机制说明](#安全机制) - 了解框架的 XSS 防护机制
 - [安全演示](./examples/security-demo/) - 查看 XSS 防护实际效果
@@ -45,6 +47,38 @@ yarn add solely
 # 使用 pnpm
 pnpm add solely
 ```
+
+## 🛠️ VS Code 扩展
+
+Solely 提供了官方 VS Code 扩展，为 `.html` 模板文件提供语法高亮、智能跳转、悬停提示和错误诊断。
+
+### 安装
+
+**方式一：通过 VS Code 扩展面板安装（推荐）**
+
+按 `Ctrl+Shift+X` 打开扩展面板，搜索 **"Solely Framework Support"** 即可安装。
+
+**方式二：通过命令行安装**
+
+需确保 `code` 命令已在系统 PATH 中（可通过 `Shell Command: Install 'code' command in PATH` 命令添加）：
+
+```bash
+code --install-extension solely.solely-vscode
+```
+
+### 功能
+
+| 功能         | 说明                                                                              |
+| ------------ | --------------------------------------------------------------------------------- |
+| **语法高亮** | `$data.xxx`、`this.xxx()`、`<If>`/`<For>`、`@click`、`ref="xxx"` 等均有独立配色   |
+| **定义跳转** | Ctrl+点击模板中的方法名/属性名/引用，跳转到 TS 文件中对应定义                     |
+| **悬停提示** | 鼠标悬停显示方法签名、属性信息和跳转提示                                          |
+| **错误诊断** | `<If>`/`<ElseIf>`/`<Else>`/`<For>` 标签配对检查和嵌套错误提示                     |
+| **模板关联** | 自动识别 `import template from './xxx.html?raw'` / `?solely`，正确关联 HTML 与 TS |
+
+### 版本要求
+
+- VS Code `>= 1.85.0`
 
 ## 🎯 快速开始
 
