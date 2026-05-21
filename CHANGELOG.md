@@ -7,6 +7,26 @@
 
 ## [Unreleased]
 
+## [0.4.11] - 2026-05-21
+
+### Added
+
+- **feat(tooltip)**: 添加声明式 Tooltip 组件并优化命令式 Tooltip
+    - 新增声明式 Tooltip 组件，支持通过 HTML 属性方式使用
+    - 优化命令式 Tooltip 的 API 和性能
+    - 支持更多配置选项，如位置、触发方式、延迟等
+
+- **feat(vscode-extension)**: 新增 Solely 框架 VS Code 扩展支持
+    - 提供组件语法高亮和智能提示
+    - 支持模板语法补全和错误检测
+    - 集成框架文档快速查阅功能
+
+### Changed
+
+- **refactor(templateParser)**: 拆分正则表达式为多行字符串提升可读性
+    - 优化正则表达式的组织结构
+    - 提高代码可维护性和可读性
+
 ## [0.4.10] - 2026-05-10
 
 ### Added
@@ -410,7 +430,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.10...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.11...HEAD
+[0.4.11]: https://github.com/solelyjs/solely/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/solelyjs/solely/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/solelyjs/solely/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/solelyjs/solely/compare/v0.4.7...v0.4.8
