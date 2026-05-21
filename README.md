@@ -7,6 +7,7 @@
 **一个轻量级、现代化的 Web 组件开发框架**
 
 [![npm version](https://img.shields.io/npm/v/solely.svg)](https://www.npmjs.com/package/solely)
+[![codecov](https://codecov.io/gh/solelyjs/solely/branch/main/graph/badge.svg)](https://codecov.io/gh/solelyjs/solely)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Solely-blue?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=solely.solely-vscode)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)

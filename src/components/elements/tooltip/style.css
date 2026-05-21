@@ -1,0 +1,259 @@
+/**
+ * Solely Tooltip 组件样式（声明式）
+ * 基于 BEM 命名规范
+ * 纯 CSS 定位，无需 JavaScript 计算
+ */
+
+/* ==================== 包裹容器 ==================== */
+:host {
+    display: inline-block;
+    position: relative;
+    overflow: visible;
+}
+
+.tooltip-wrapper {
+    display: inline-block;
+    position: relative;
+    overflow: visible;
+}
+
+.tooltip-trigger {
+    display: inline-block;
+}
+
+/* ==================== 提示框容器 ==================== */
+.tooltip {
+    position: absolute;
+    background-color: var(--solely-inverted-bg);
+    border-radius: var(--solely-border-radius-md);
+    box-shadow: var(--solely-shadow-md);
+    padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+    width: max-content;
+    max-width: 250px;
+    font-family: var(--solely-font-family);
+    font-size: var(--solely-font-size-md);
+    font-weight: 400;
+    line-height: var(--solely-line-height-md);
+    color: var(--solely-inverted-text);
+    text-align: left;
+    text-decoration: none;
+    z-index: var(--solely-z-index-tooltip);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--solely-transition-duration) var(--solely-transition-timing),
+                transform var(--solely-transition-duration) var(--solely-transition-timing);
+    transform: scale(0.8);
+}
+
+.tooltip.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+/* ==================== 内容区域 ==================== */
+.tooltip__content {
+    position: relative;
+    z-index: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* ==================== 箭头样式 ==================== */
+.tooltip__arrow {
+    position: absolute;
+    width: var(--solely-tooltip-arrow-size, 8px);
+    height: var(--solely-tooltip-arrow-size, 8px);
+    background-color: var(--solely-inverted-bg);
+    transform: rotate(45deg);
+    z-index: 0;
+}
+
+/* ==================== 上方位置 ==================== */
+.tooltip--top {
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+}
+
+.tooltip--top.is-visible {
+    transform: translateX(-50%) scale(1);
+}
+
+.tooltip--top .tooltip__arrow {
+    bottom: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.tooltip--topLeft {
+    bottom: calc(100% + 8px);
+    left: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--topLeft.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--topLeft .tooltip__arrow {
+    bottom: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    left: 16px;
+}
+
+.tooltip--topRight {
+    bottom: calc(100% + 8px);
+    right: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--topRight.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--topRight .tooltip__arrow {
+    bottom: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    right: 16px;
+}
+
+/* ==================== 下方位置 ==================== */
+.tooltip--bottom {
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+}
+
+.tooltip--bottom.is-visible {
+    transform: translateX(-50%) scale(1);
+}
+
+.tooltip--bottom .tooltip__arrow {
+    top: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.tooltip--bottomLeft {
+    top: calc(100% + 8px);
+    left: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--bottomLeft.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--bottomLeft .tooltip__arrow {
+    top: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    left: 16px;
+}
+
+.tooltip--bottomRight {
+    top: calc(100% + 8px);
+    right: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--bottomRight.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--bottomRight .tooltip__arrow {
+    top: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    right: 16px;
+}
+
+/* ==================== 左侧位置 ==================== */
+.tooltip--left {
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.8);
+}
+
+.tooltip--left.is-visible {
+    transform: translateY(-50%) scale(1);
+}
+
+.tooltip--left .tooltip__arrow {
+    right: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.tooltip--leftTop {
+    right: calc(100% + 8px);
+    top: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--leftTop.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--leftTop .tooltip__arrow {
+    right: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    top: 16px;
+}
+
+.tooltip--leftBottom {
+    right: calc(100% + 8px);
+    bottom: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--leftBottom.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--leftBottom .tooltip__arrow {
+    right: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    bottom: 16px;
+}
+
+/* ==================== 右侧位置 ==================== */
+.tooltip--right {
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.8);
+}
+
+.tooltip--right.is-visible {
+    transform: translateY(-50%) scale(1);
+}
+
+.tooltip--right .tooltip__arrow {
+    left: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.tooltip--rightTop {
+    left: calc(100% + 8px);
+    top: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--rightTop.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--rightTop .tooltip__arrow {
+    left: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    top: 16px;
+}
+
+.tooltip--rightBottom {
+    left: calc(100% + 8px);
+    bottom: 0;
+    transform: scale(0.8);
+}
+
+.tooltip--rightBottom.is-visible {
+    transform: scale(1);
+}
+
+.tooltip--rightBottom .tooltip__arrow {
+    left: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+    bottom: 16px;
+}

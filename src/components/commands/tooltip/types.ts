@@ -56,4 +56,6 @@ export interface TooltipConfig {
     trigger: TooltipTrigger;
     /** 默认显示时长（show 方法使用） */
     duration: number;
+    /** 是否单例模式（新 tooltip 显示时自动关闭其他） */
+    singleton?: boolean;
 }

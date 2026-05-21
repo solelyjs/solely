@@ -62,6 +62,37 @@ class DocsSelect extends BaseElement<{
     handleAddMember(): void {
         Message.info('点击了邀请成员按钮');
     }
+
+    /**
+     * 处理选择器 change 事件
+     */
+    handleSelectChange(event: Event): void {
+        const target = event.target as HTMLElement & { value: string };
+        const value = target.value;
+        this.$data.selectedValue = value;
+
+        // 从 options 属性中找到对应的 label
+        const optionsAttr = target.getAttribute('options');
+        if (optionsAttr) {
+            try {
+                const options = JSON.parse(optionsAttr) as SelectOption[];
+                const selected = options.find(opt => opt.value === value);
+                this.$data.selectedLabel = selected?.label || value;
+            } catch {
+                this.$data.selectedLabel = value;
+            }
+        } else {
+            this.$data.selectedLabel = value;
+        }
+    }
+
+    /**
+     * 处理选择器清空事件
+     */
+    handleClear(): void {
+        this.$data.selectedValue = '';
+        this.$data.selectedLabel = '';
+    }
 }
 
 export default DocsSelect;

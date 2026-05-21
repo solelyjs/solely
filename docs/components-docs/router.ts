@@ -262,6 +262,13 @@ const routes: RouteConfig[] = [
         },
     },
     {
+        path: '/tooltip-declarative',
+        component: async () => {
+            await import('./views/tooltip-declarative');
+            return { tagName: 'docs-tooltip-declarative' };
+        },
+    },
+    {
         path: '/not-found',
         component: async () => {
             await import('./views/not-found');

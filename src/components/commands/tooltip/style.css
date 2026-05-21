@@ -1,34 +1,17 @@
 /**
  * Solely Tooltip 组件样式
- * 基于 BEM 命名规范，参照 Popconfirm 实现
+ * 基于 BEM 命名规范
+ * tooltip 元素直接 position:fixed 挂载到 document.body
  */
 
-/* ==================== 基础重置 ==================== */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* ==================== 遮罩层样式 ==================== */
-.tooltip-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  min-height: 100%;
-  z-index: var(--solely-z-index-tooltip);
-  pointer-events: none;
-}
-
-/* ==================== 提示框容器 ==================== */
+/* ==================== 提示框容器（position:fixed，直接挂 body） ==================== */
 .tooltip {
-  position: absolute;
+  position: fixed;
   background-color: var(--solely-inverted-bg);
   border-radius: var(--solely-border-radius-md);
   box-shadow: var(--solely-shadow-md);
   padding: var(--solely-spacing-sm) var(--solely-spacing-md);
-  min-width: 30px;
+  width: max-content;
   max-width: 250px;
   font-family: var(--solely-font-family);
   font-size: var(--solely-font-size-md);
@@ -37,8 +20,8 @@
   color: var(--solely-inverted-text);
   text-align: left;
   text-decoration: none;
-  word-wrap: break-word;
   z-index: var(--solely-z-index-tooltip);
+  pointer-events: auto;
   animation: tooltip-fade-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
@@ -50,6 +33,8 @@
 .tooltip__content {
   position: relative;
   z-index: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ==================== 箭头样式 ==================== */

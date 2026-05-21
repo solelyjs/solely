@@ -1,0 +1,367 @@
+<div class="page-header">
+    <h1 class="page-title">Tooltip 文字提示（声明式）</h1>
+    <p class="page-desc">简单的文字提示气泡框，使用声明式方式编写，支持多种触发方式和位置。相比命令式组件，更符合组件化开发习惯。</p>
+</div>
+
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">基础用法</h3>
+        <p class="demo-block-desc">将需要添加提示的元素包裹在 <code>&lt;solely-tooltip&gt;</code> 组件中，通过 <code>content</code> 属性设置提示内容。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="gap: 24px; padding: 40px 20px;">
+                <solely-tooltip content="悬停显示提示" placement="top">
+                    <solely-button type="primary">悬停我（上）</solely-button>
+                </solely-tooltip>
+
+                <solely-tooltip content="点击显示提示" trigger="click" placement="bottom">
+                    <solely-button type="success">点击我（下）</solely-button>
+                </solely-tooltip>
+
+                <solely-tooltip content="聚焦显示提示" trigger="focus" placement="right">
+                    <input type="text" placeholder="聚焦我（右）" style="padding: 8px 12px; border: 1px solid var(--solely-border-color); border-radius: var(--solely-border-radius-md); width: 150px;">
+                </solely-tooltip>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 悬停触发 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">content</span>=<span class="code-value">"悬停显示提示"</span> <span class="code-attr">placement</span>=<span class="code-value">"top"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span>悬停我<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 点击触发 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">content</span>=<span class="code-value">"点击显示提示"</span> <span class="code-attr">trigger</span>=<span class="code-value">"click"</span> <span class="code-attr">placement</span>=<span class="code-value">"bottom"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"success"</span><span class="code-bracket">&gt;</span>点击我<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 聚焦触发 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">content</span>=<span class="code-value">"聚焦显示提示"</span> <span class="code-attr">trigger</span>=<span class="code-value">"focus"</span> <span class="code-attr">placement</span>=<span class="code-value">"right"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">input</span> <span class="code-attr">type</span>=<span class="code-value">"text"</span> <span class="code-attr">placeholder</span>=<span class="code-value">"聚焦我"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">12 个方向位置</h3>
+        <p class="demo-block-desc">支持 12 个方向的定位：上下左右及其变体。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 60px 20px;">
+                <!-- 上方三个 -->
+                <div style="text-align: center;">
+                    <solely-tooltip content="TopLeft 提示" placement="topLeft">
+                        <solely-button size="small">TopLeft</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="Top 提示" placement="top">
+                        <solely-button size="small">Top</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="TopRight 提示" placement="topRight">
+                        <solely-button size="small">TopRight</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div></div>
+
+                <!-- 左右两个 -->
+                <div style="text-align: center;">
+                    <solely-tooltip content="LeftTop 提示" placement="leftTop">
+                        <solely-button size="small">LeftTop</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div></div>
+                <div></div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="RightTop 提示" placement="rightTop">
+                        <solely-button size="small">RightTop</solely-button>
+                    </solely-tooltip>
+                </div>
+
+                <!-- 左中右中 -->
+                <div style="text-align: center;">
+                    <solely-tooltip content="Left 提示" placement="left">
+                        <solely-button size="small">Left</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div></div>
+                <div></div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="Right 提示" placement="right">
+                        <solely-button size="small">Right</solely-button>
+                    </solely-tooltip>
+                </div>
+
+                <!-- 左下右下 -->
+                <div style="text-align: center;">
+                    <solely-tooltip content="LeftBottom 提示" placement="leftBottom">
+                        <solely-button size="small">LeftBottom</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div></div>
+                <div></div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="RightBottom 提示" placement="rightBottom">
+                        <solely-button size="small">RightBottom</solely-button>
+                    </solely-tooltip>
+                </div>
+
+                <!-- 下方三个 -->
+                <div></div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="BottomLeft 提示" placement="bottomLeft">
+                        <solely-button size="small">BottomLeft</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="Bottom 提示" placement="bottom">
+                        <solely-button size="small">Bottom</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div style="text-align: center;">
+                    <solely-tooltip content="BottomRight 提示" placement="bottomRight">
+                        <solely-button size="small">BottomRight</solely-button>
+                    </solely-tooltip>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"top"</span><span class="code-bracket">&gt;</span>上<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"bottom"</span><span class="code-bracket">&gt;</span>下<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"left"</span><span class="code-bracket">&gt;</span>左<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"right"</span><span class="code-bracket">&gt;</span>右<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 变体位置 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"topLeft"</span><span class="code-bracket">&gt;</span>左上<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"topRight"</span><span class="code-bracket">&gt;</span>右上<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"bottomLeft"</span><span class="code-bracket">&gt;</span>左下<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">placement</span>=<span class="code-value">"bottomRight"</span><span class="code-bracket">&gt;</span>右下<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义颜色和宽度</h3>
+        <p class="demo-block-desc">通过 <code>color</code> 属性自定义背景色，通过 <code>maxWidth</code> 设置最大宽度。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="gap: 24px; padding: 40px 20px;">
+                <solely-tooltip content="红色警告提示" color="#ff4d4f" placement="bottom">
+                    <solely-button type="error">红色提示</solely-button>
+                </solely-tooltip>
+
+                <solely-tooltip content="绿色成功提示" color="#52c41a" placement="bottom">
+                    <solely-button type="success">绿色提示</solely-button>
+                </solely-tooltip>
+
+                <solely-tooltip content="这是一段很长的提示文本，用于测试最大宽度限制效果。当内容超过设置的最大宽度时会自动换行。" :maxWidth="300" placement="bottom">
+                    <solely-button>宽提示（300px）</solely-button>
+                </solely-tooltip>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 自定义颜色 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">content</span>=<span class="code-value">"红色警告"</span> <span class="code-attr">color</span>=<span class="code-value">"#ff4d4f"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"error"</span><span class="code-bracket">&gt;</span>红色提示<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 自定义宽度 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> 
+    <span class="code-attr">content</span>=<span class="code-value">"长文本..."</span> 
+    <span class="code-attr">max-width</span>=<span class="code-value">"300"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>宽提示<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">包裹任意元素</h3>
+        <p class="demo-block-desc">Tooltip 可以包裹任意 HTML 元素，不仅限于按钮。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="gap: 24px; padding: 40px 20px;">
+                <solely-tooltip content="这是一个链接提示" placement="bottom">
+                    <a href="#" style="color: var(--solely-primary); text-decoration: underline;">链接文字</a>
+                </solely-tooltip>
+
+                <solely-tooltip content="图标按钮提示" placement="bottom">
+                    <span style="font-size: 24px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--solely-component-bg); border: 1px solid var(--solely-border-color);">❓</span>
+                </solely-tooltip>
+
+                <solely-tooltip content="图片说明" placement="top">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect fill='%23ddd' width='32' height='32' rx='4'/%3E%3Ctext x='16' y='20' text-anchor='middle' fill='%23999' font-size='14'%3E📷%3C/text%3E%3C/svg%3E" alt="示例图片" style="width: 32px; height: 32px; border-radius: 4px;">
+                </solely-tooltip>
+
+                <solely-tooltip content="文本标签提示" placement="bottom">
+                    <span style="padding: 4px 12px; background: var(--solely-primary-light); color: var(--solely-primary); border-radius: 12px; font-size: 13px;">Tag 标签</span>
+                </solely-tooltip>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 包裹链接 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">content</span>=<span class="code-value">"链接提示"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">a</span> <span class="code-attr">href</span>=<span class="code-value">"#"</span><span class="code-bracket">&gt;</span>链接文字<span class="code-bracket">&lt;/</span><span class="code-tag">a</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 包裹图标 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">content</span>=<span class="code-value">"图标提示"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>❓<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 包裹图片 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> <span class="code-attr">content</span>=<span class="code-value">"图片说明"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">img</span> <span class="code-attr">src</span>=<span class="code-value">"..."</span> <span class="code-attr">alt</span>=<span class="code-value">"图片"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
+        <h3 class="demo-block-title">手动控制（方法调用）</h3>
+        <p class="demo-block-desc">可以通过 JavaScript 调用组件的 <code>show()</code> 和 <code>hide()</code> 方法来手动控制提示的显示与隐藏。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: stretch; gap: 12px; padding: 40px 20px;">
+                <div style="display: flex; gap: 16px; align-items: center; justify-content: center;">
+                    <solely-tooltip id="manual-tooltip-demo" content="手动控制的提示" placement="top" trigger="manual">
+                        <solely-button type="warning">目标按钮</solely-button>
+                    </solely-tooltip>
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <solely-button size="small" @click="this.handleShowManual()">调用 show()</solely-button>
+                    <solely-button size="small" @click="this.handleHideManual()">调用 hide()</solely-button>
+                </div>
+                <div ref="eventLog" class="event-log" style="font-family: monospace; white-space: pre-wrap; margin-top: 8px;">{{$data.eventLogs.length > 0 ? $data.eventLogs.join('\n') : '等待操作...'}}</div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML 模板 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tooltip</span> 
+    <span class="code-attr">id</span>=<span class="code-value">"my-tooltip"</span>
+    <span class="code-attr">content</span>=<span class="code-value">"手动控制的提示"</span>
+    <span class="code-attr">trigger</span>=<span class="code-value">"manual"</span><span class="code-bracket">&gt;</span>
+    <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>目标按钮<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tooltip</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">button</span> <span class="code-attr">@click</span>=<span class="code-value">"showTooltip()"</span><span class="code-bracket">&gt;</span>显示<span class="code-bracket">&lt;/</span><span class="code-tag">button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">button</span> <span class="code-attr">@click</span>=<span class="code-value">"hideTooltip()"</span><span class="code-bracket">&gt;</span>隐藏<span class="code-bracket">&lt;/</span><span class="code-tag">button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// JavaScript</span>
+<span class="code-keyword">const</span> tooltip = document.querySelector(<span class="code-value">'#my-tooltip'</span>);
+tooltip.<span class="code-attr">show</span>();   <span class="code-comment">// 显示提示</span>
+tooltip.<span class="code-attr">hide</span>();   <span class="code-comment">// 隐藏提示</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="api-section">
+    <h3 class="api-section-title">API</h3>
+    
+    <div class="api-block">
+        <h4 class="api-block-title">属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>content</td>
+                    <td>提示内容</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>placement</td>
+                    <td>气泡框位置</td>
+                    <td>'top' | 'bottom' | 'left' | 'right' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' |
+                        'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom'</td>
+                    <td>'top'</td>
+                </tr>
+                <tr>
+                    <td>trigger</td>
+                    <td>触发方式</td>
+                    <td>'hover' | 'click' | 'focus'</td>
+                    <td>'hover'</td>
+                </tr>
+                <tr>
+                    <td>visible</td>
+                    <td>是否显示（受控模式）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>color</td>
+                    <td>背景颜色</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>maxWidth</td>
+                    <td>最大宽度（像素）</td>
+                    <td>number</td>
+                    <td>250</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">方法</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>方法名</th>
+                    <th>说明</th>
+                    <th>参数</th>
+                    <th>返回值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>show()</td>
+                    <td>显示提示</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>hide()</td>
+                    <td>隐藏提示</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">类型定义</h4>
+        <div class="demo-code">
+            <pre><code><span class="code-comment">// TooltipPlacement 类型</span>
+<span class="code-keyword">type</span> <span class="code-type">TooltipPlacement</span> =
+    | <span class="code-value">'top'</span>
+    | <span class="code-value">'bottom'</span>
+    | <span class="code-value">'left'</span>
+    | <span class="code-value">'right'</span>
+    | <span class="code-value">'topLeft'</span>
+    | <span class="code-value">'topRight'</span>
+    | <span class="code-value">'bottomLeft'</span>
+    | <span class="code-value">'bottomRight'</span>
+    | <span class="code-value">'leftTop'</span>
+    | <span class="code-value">'leftBottom'</span>
+    | <span class="code-value">'rightTop'</span>
+    | <span class="code-value">'rightBottom'</span>;
+
+<span class="code-comment">// TooltipTrigger 类型</span>
+<span class="code-keyword">type</span> <span class="code-type">TooltipTrigger</span> = <span class="code-value">'hover'</span> | <span class="code-value">'click'</span> | <span class="code-value">'focus'</span>;
+
+<span class="code-comment">// TooltipProps 接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">TooltipProps</span> {
+    <span class="code-attr">content</span>?: <span class="code-type">string</span>;           <span class="code-comment">// 提示内容</span>
+    <span class="code-attr">placement</span>?: <span class="code-type">TooltipPlacement</span>;   <span class="code-comment">// 气泡框位置</span>
+    <span class="code-attr">trigger</span>?: <span class="code-type">TooltipTrigger</span>;       <span class="code-comment">// 触发方式</span>
+    <span class="code-attr">visible</span>?: <span class="code-type">boolean</span>;            <span class="code-comment">// 是否显示（受控模式）</span>
+    <span class="code-attr">color</span>?: <span class="code-type">string</span>;             <span class="code-comment">// 背景颜色</span>
+    <span class="code-attr">maxWidth</span>?: <span class="code-type">number</span>;          <span class="code-comment">// 最大宽度（像素）</span>
+}</code></pre>
+        </div>
+    </div>
+</div>
