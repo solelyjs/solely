@@ -269,7 +269,7 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
             <tbody>
                 <tr>
                     <td>activeKey</td>
-                    <td>当前激活标签页的 key</td>
+                    <td>当前激活标签页的 key（支持属性读写）</td>
                     <td>string</td>
                     <td>-</td>
                 </tr>
@@ -326,18 +326,36 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
             <tbody>
                 <tr>
                     <td>change</td>
-                    <td>切换标签时触发</td>
-                    <td>Event</td>
+                    <td>切换标签时触发（自定义事件）</td>
+                    <td>CustomEvent&lt;{ key: string; label: string }&gt;</td>
                 </tr>
                 <tr>
                     <td>close</td>
-                    <td>关闭标签时触发</td>
+                    <td>关闭标签时触发（自定义事件）</td>
                     <td>CustomEvent&lt;{ key: string; label: string }&gt;</td>
                 </tr>
                 <tr>
                     <td>add</td>
-                    <td>点击新增按钮时触发</td>
+                    <td>点击新增按钮时触发（自定义事件）</td>
                     <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">插槽</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>插槽名</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>tab-{key}</td>
+                    <td>对应 key 的标签页内容，如 tab-1、tab-2</td>
                 </tr>
             </tbody>
         </table>
@@ -351,6 +369,7 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
                     <th>方法名</th>
                     <th>说明</th>
                     <th>参数</th>
+                    <th>返回值</th>
                 </tr>
             </thead>
             <tbody>
@@ -358,16 +377,19 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
                     <td>setActiveKey(key)</td>
                     <td>设置当前激活的标签</td>
                     <td>key: string</td>
+                    <td>void</td>
                 </tr>
                 <tr>
                     <td>getActiveKey()</td>
                     <td>获取当前激活的标签</td>
                     <td>-</td>
+                    <td>string</td>
                 </tr>
                 <tr>
                     <td>setItems(items)</td>
                     <td>设置标签项</td>
                     <td>items: TabItem[]</td>
+                    <td>void</td>
                 </tr>
             </tbody>
         </table>
@@ -392,23 +414,5 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
 <span class="code-comment">// Tabs 尺寸</span>
 <span class="code-keyword">type</span> <span class="code-type">TabsSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'default'</span> | <span class="code-value">'large'</span>;</code></pre>
         </div>
-    </div>
-
-    <div class="api-block">
-        <h4 class="api-block-title">插槽</h4>
-        <table class="api-table">
-            <thead>
-                <tr>
-                    <th>插槽名</th>
-                    <th>说明</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>tab-{key}</td>
-                    <td>对应 key 的标签页内容，如 tab-1、tab-2</td>
-                </tr>
-            </tbody>
-        </table>
     </div>
 </div>

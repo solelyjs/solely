@@ -169,41 +169,6 @@
         </div>
     </div>
 
-    <!-- 事件处理 -->
-    <div class="demo-block">
-        <h3 class="demo-block-title">事件处理</h3>
-        <p class="demo-block-desc">监听 change 事件获取开关状态变化。点击开关或按钮查看效果。</p>
-        <div class="demo-box">
-            <div class="demo-preview">
-                <solely-switch ref="eventSwitch" @change="this.handleSwitchChange(event)"></solely-switch>
-                <span style="margin-left: 12px; color: var(--solely-text-secondary);">当前状态: {{$data.switchStatus}}</span>
-                <solely-button size="small" type="primary" style="margin-left: 16px;" @click="this.handleToggleClick()">调用 toggle()</solely-button>
-            </div>
-            <div class="demo-code">
-                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">ref</span>=<span class="code-value">"mySwitch"</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>当前状态: &#123;&#123;status&#125;&#125;<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">@click</span>=<span class="code-value">"toggleSwitch()"</span><span class="code-bracket">&gt;</span>调用 toggle()<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
-
-<span class="code-comment">&lt;!-- JavaScript --&gt;</span>
-<span class="code-keyword">const</span> switchEl = document.getElementById(<span class="code-value">'my-switch'</span>);
-<span class="code-keyword">const</span> statusEl = document.getElementById(<span class="code-value">'status'</span>);
-<span class="code-keyword">const</span> toggleBtn = document.getElementById(<span class="code-value">'toggle-btn'</span>);
-
-<span class="code-comment">// 监听 change 事件（原生事件）</span>
-switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
-  <span class="code-keyword">const</span> checked = e.target.checked;
-  statusEl.textContent = <span class="code-value">`当前状态: ${checked ? '开启' : '关闭'}`</span>;
-});
-
-<span class="code-comment">// 通过方法触发事件</span>
-toggleBtn.addEventListener(<span class="code-value">'click'</span>, () => {
-  switchEl.toggle(); <span class="code-comment">// 会触发 change 事件</span>
-});</code></pre>
-            </div>
-        </div>
-    </div>
-
     <!-- 键盘操作 -->
     <div class="demo-block">
         <h3 class="demo-block-title">键盘操作</h3>
@@ -301,9 +266,9 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>checked</td>
-                    <td>指定当前是否选中（支持属性和方法操作）</td>
-                    <td>boolean</td>
-                    <td>false</td>
+                        <td>指定当前是否选中（支持属性读写）</td>
+                        <td>boolean</td>
+                        <td>false</td>
                 </tr>
                 <tr>
                     <td>size</td>
@@ -358,8 +323,8 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>change</td>
-                    <td>开关状态变化时触发</td>
-                    <td>Event</td>
+                        <td>开关状态变化时触发（原生事件）</td>
+                        <td>Event</td>
                 </tr>
             </tbody>
         </table>

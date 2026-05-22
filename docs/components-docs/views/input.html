@@ -427,7 +427,7 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                 <tbody>
                     <tr>
                         <td>value</td>
-                        <td>输入框值（支持属性和方法操作）</td>
+                        <td>输入框值（支持属性读写）</td>
                         <td>string</td>
                         <td>''</td>
                     </tr>
@@ -585,7 +585,7 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>change</td>
-                        <td>值改变时触发（失焦或回车）</td>
+                        <td>值改变时触发（失焦或回车，原生事件）</td>
                         <td>Event</td>
                     </tr>
                     <tr>
@@ -603,10 +603,9 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                         <td>键盘按下时触发（原生事件）</td>
                         <td>KeyboardEvent</td>
                     </tr>
-
                     <tr>
                         <td>clear</td>
-                        <td>点击清空按钮时触发</td>
+                        <td>点击清空按钮时触发（自定义事件）</td>
                         <td>Event</td>
                     </tr>
                     <tr>
@@ -657,28 +656,40 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     <tr>
                         <th>方法名</th>
                         <th>说明</th>
+                        <th>参数</th>
+                        <th>返回值</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>focus()</td>
                         <td>使输入框获得焦点</td>
+                        <td>-</td>
+                        <td>void</td>
                     </tr>
                     <tr>
                         <td>blur()</td>
                         <td>使输入框失去焦点</td>
+                        <td>-</td>
+                        <td>void</td>
                     </tr>
                     <tr>
                         <td>select()</td>
                         <td>选中输入框中的文字</td>
+                        <td>-</td>
+                        <td>void</td>
                     </tr>
                     <tr>
                         <td>setValue(value)</td>
-                        <td>设置输入框的值</td>
+                        <td>设置输入框的值（触发 change 事件）</td>
+                        <td>value: string</td>
+                        <td>void</td>
                     </tr>
                     <tr>
                         <td>getValue()</td>
                         <td>获取输入框的值（去除格式化空格）</td>
+                        <td>-</td>
+                        <td>string</td>
                     </tr>
                 </tbody>
             </table>
