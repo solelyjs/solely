@@ -30,6 +30,29 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
     private animating = false;
     private isDocumentContainer = false;
 
+    /**
+     * 暴露 visibilityHeight 属性，使外部可通过 event.target.visibilityHeight 访问
+     */
+    get visibilityHeight(): number {
+        return this.$data.visibilityHeight ?? 400;
+    }
+
+    set visibilityHeight(value: number) {
+        this.$data.visibilityHeight = value;
+        this.handleScroll();
+    }
+
+    /**
+     * 暴露 duration 属性，使外部可通过 event.target.duration 访问
+     */
+    get duration(): number {
+        return this.$data.duration ?? 450;
+    }
+
+    set duration(value: number) {
+        this.$data.duration = value;
+    }
+
     updateVisibleClass(): void {
         if (this.$data.visible) {
             this.classList.add('backtop--visible');

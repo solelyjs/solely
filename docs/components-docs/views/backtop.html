@@ -151,28 +151,77 @@
         </div>
     </div>
 
-    <!-- 点击事件 -->
+    <!-- 事件演示 -->
     <div class="demo-block">
-        <h3 class="demo-block-title">点击事件</h3>
-        <p class="demo-block-desc">监听 click 事件，在回到顶部后执行自定义操作。</p>
+        <h3 class="demo-block-title">事件演示</h3>
+        <p class="demo-block-desc">监听 click 和 backtop-finish 事件，通过 <code>event.target</code> 获取组件状态。</p>
         <div class="demo-box">
             <div class="demo-preview backtop-scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid var(--solely-border-color); position: relative; padding: 0;">
                 <div style="height: 1000px; padding: 20px;">
-                    <p>👇 点击按钮查看事件...</p>
+                    <p>👇 滚动后点击按钮，查看事件日志...</p>
                     <p style="margin-top: 400px; color: var(--solely-primary);">继续滚动...</p>
                     <p style="margin-top: 400px; color: var(--solely-text-secondary);">到底了</p>
                 </div>
-                <solely-backtop></solely-backtop>
+                <solely-backtop id="demo-backtop-event" visibility-height="100" duration="400"></solely-backtop>
+                <div id="backtop-event-log" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.75); color: #fff; padding: 8px 12px; border-radius: 4px; font-size: 12px; line-height: 1.6; max-width: 260px; z-index: 10;">
+                    等待交互...
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 监听 click 事件（原生事件）</span>
+backtop.addEventListener(<span class="code-value">'click'</span>, (event) => {
+  <span class="code-keyword">const</span> target = event.target;
+  console.log(<span class="code-value">'点击了按钮'</span>, target.visibilityHeight);
+});
+
+<span class="code-comment">// 监听 backtop-finish 事件（自定义事件）</span>
+backtop.addEventListener(<span class="code-value">'backtop-finish'</span>, (event) => {
+  console.log(<span class="code-value">'动画结束'</span>);
+});</code></pre>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const backtop = document.getElementById('demo-backtop-event');
+            const log = document.getElementById('backtop-event-log');
+            if (!backtop || !log) return;
+            backtop.addEventListener('click', () => {
+                log.innerHTML = '<div>click 触发</div>' + log.innerHTML.split('<div>').slice(0, 4).join('<div>');
+            });
+            backtop.addEventListener('backtop-finish', () => {
+                log.innerHTML = '<div style="color:#52c41a;">backtop-finish 触发</div>' + log.innerHTML.split('<div>').slice(0, 4).join('<div>');
+            });
+        })();
+    </script>
+
+    <!-- 通过属性读取配置 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">通过属性读取配置</h3>
+        <p class="demo-block-desc">可以通过 <code>event.target.visibilityHeight</code> 和 <code>event.target.duration</code> 读取当前配置，或直接设置属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview backtop-scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid var(--solely-border-color); position: relative; padding: 0;">
+                <div style="height: 1000px; padding: 20px;">
+                    <p>👇 滚动后点击按钮，查看控制台输出...</p>
+                    <p style="margin-top: 400px; color: var(--solely-primary);">继续滚动...</p>
+                    <p style="margin-top: 400px; color: var(--solely-text-secondary);">到底了</p>
+                </div>
+                <solely-backtop id="demo-backtop-config" visibility-height="150" duration="600"></solely-backtop>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">@click</span>=<span class="code-value">"handleClick()"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">id</span>=<span class="code-value">"my-backtop"</span> <span class="code-attr">visibility-height</span>=<span class="code-value">"150"</span> <span class="code-attr">duration</span>=<span class="code-value">"600"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
 
 <span class="code-comment">&lt;!-- JavaScript --&gt;</span>
-<span class="code-keyword">const</span> backtop = document.querySelector(<span class="code-value">'solely-backtop'</span>);
-backtop.addEventListener(<span class="code-value">'click'</span>, () => {
-  console.log(<span class="code-value">'已回到顶部'</span>);
-});</code></pre>
+<span class="code-keyword">const</span> backtop = document.querySelector(<span class="code-value">'#my-backtop'</span>);
+
+<span class="code-comment">// 读取配置</span>
+console.log(backtop.visibilityHeight); <span class="code-comment">// 150</span>
+console.log(backtop.duration);         <span class="code-comment">// 600</span>
+
+<span class="code-comment">// 设置配置</span>
+backtop.visibilityHeight = 200;
+backtop.duration = 800;</code></pre>
             </div>
         </div>
     </div>
@@ -187,7 +236,7 @@ backtop.addEventListener(<span class="code-value">'click'</span>, () => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性名</th>
+                    <th>属性</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -196,13 +245,13 @@ backtop.addEventListener(<span class="code-value">'click'</span>, () => {
             <tbody>
                 <tr>
                     <td>visibilityHeight</td>
-                    <td>滚动高度达到此参数值时才显示按钮</td>
+                    <td>滚动高度达到此参数值时才显示按钮（支持属性读写）</td>
                     <td>number</td>
                     <td>400</td>
                 </tr>
                 <tr>
                     <td>duration</td>
-                    <td>回到顶部的动画持续时间（毫秒）</td>
+                    <td>回到顶部的动画持续时间，单位毫秒（支持属性读写）</td>
                     <td>number</td>
                     <td>450</td>
                 </tr>
@@ -223,58 +272,76 @@ backtop.addEventListener(<span class="code-value">'click'</span>, () => {
             <tbody>
                 <tr>
                     <td>click</td>
-                    <td>点击按钮时触发</td>
-                    <td>Event</td>
+                    <td>点击按钮时触发（原生事件）</td>
+                    <td>MouseEvent</td>
+                </tr>
+                <tr>
+                    <td>backtop-finish</td>
+                    <td>回到顶部动画结束时触发（自定义事件）</td>
+                    <td>CustomEvent</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
     <div class="api-block">
-        <h4 class="api-block-title">使用指南</h4>
-        
-        <div class="usage-intro">
-            <p class="usage-desc">BackTop 组件会自动检测最近的滚动父元素（overflow-y 为 auto 或 scroll 的元素），并在该容器右下角显示按钮。</p>
+        <h4 class="api-block-title">类型定义</h4>
+        <div class="demo-code">
+            <pre><code><span class="code-comment">// BackTop 属性接口</span>
+<span class="code-keyword">interface</span> <span class="code-type">BackTopProps</span> {
+  <span class="code-attr">visibilityHeight</span>?: <span class="code-type">number</span>;  <span class="code-comment">// 显示按钮的滚动高度阈值</span>
+  <span class="code-attr">duration</span>?: <span class="code-type">number</span>;          <span class="code-comment">// 回到顶部动画持续时间（毫秒）</span>
+}</code></pre>
         </div>
+    </div>
+</div>
 
-        <div class="usage-tips">
-            <h5 class="usage-tips-title">💡 使用要点</h5>
-            <div class="usage-tips-list">
-                <div class="usage-tip-item">
-                    <span class="usage-tip-icon">📦</span>
-                    <div class="usage-tip-content">
-                        <strong>容器要求</strong>
-                        <span>容器需要设置 <code>overflow-y: auto</code> 或 <code>overflow-y: scroll</code> 才能被检测到</span>
-                    </div>
+<!-- 使用指南 -->
+<div class="usage-section">
+    <h2 class="usage-section-title">使用指南</h2>
+
+    <div class="usage-intro">
+        <p class="usage-desc">BackTop 组件会自动检测最近的滚动父元素（overflow-y 为 auto 或 scroll 的元素），并在该容器右下角显示按钮。</p>
+    </div>
+
+    <div class="usage-tips">
+        <h5 class="usage-tips-title">使用要点</h5>
+        <div class="usage-tips-list">
+            <div class="usage-tip-item">
+                <span class="usage-tip-icon">📦</span>
+                <div class="usage-tip-content">
+                    <strong>容器要求</strong>
+                    <span>容器需要设置 <code>overflow-y: auto</code> 或 <code>overflow-y: scroll</code> 才能被检测到</span>
                 </div>
-                <div class="usage-tip-item">
-                    <span class="usage-tip-icon">📍</span>
-                    <div class="usage-tip-content">
-                        <strong>放置位置</strong>
-                        <span>组件本身应该放在可滚动容器内部</span>
-                    </div>
+            </div>
+            <div class="usage-tip-item">
+                <span class="usage-tip-icon">📍</span>
+                <div class="usage-tip-content">
+                    <strong>放置位置</strong>
+                    <span>组件本身应该放在可滚动容器内部</span>
                 </div>
-                <div class="usage-tip-item">
-                    <span class="usage-tip-icon">🎯</span>
-                    <div class="usage-tip-content">
-                        <strong>定位方式</strong>
-                        <span>按钮使用固定定位，会显示在容器右下角（相对于视口）</span>
-                    </div>
+            </div>
+            <div class="usage-tip-item">
+                <span class="usage-tip-icon">🎯</span>
+                <div class="usage-tip-content">
+                    <strong>定位方式</strong>
+                    <span>按钮使用固定定位，会显示在容器右下角（相对于视口）</span>
                 </div>
-                <div class="usage-tip-item">
-                    <span class="usage-tip-icon">🔀</span>
-                    <div class="usage-tip-content">
-                        <strong>多实例支持</strong>
-                        <span>多个 BackTop 组件可以共存，各自显示在自己的容器内</span>
-                    </div>
+            </div>
+            <div class="usage-tip-item">
+                <span class="usage-tip-icon">🔀</span>
+                <div class="usage-tip-content">
+                    <strong>多实例支持</strong>
+                    <span>多个 BackTop 组件可以共存，各自显示在自己的容器内</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="usage-example">
-            <h5 class="usage-example-title">📝 完整示例</h5>
-            <div class="demo-code">
-                <pre><code><span class="code-comment">&lt;!-- 基础用法 --&gt;</span>
+    <div class="usage-example">
+        <h5 class="usage-example-title">完整示例</h5>
+        <div class="demo-code">
+            <pre><code><span class="code-comment">&lt;!-- 基础用法 --&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">class</span>=<span class="code-value">"scroll-container"</span><span class="code-bracket">&gt;</span>
   <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">class</span>=<span class="code-value">"content"</span><span class="code-bracket">&gt;</span>
     长内容...
@@ -287,7 +354,8 @@ backtop.addEventListener(<span class="code-value">'click'</span>, () => {
   <span class="code-attr">overflow-y</span>: <span class="code-value">auto</span>;
   <span class="code-attr">position</span>: <span class="code-value">relative</span>;
 }</code></pre>
-            </div>
         </div>
     </div>
 </div>
+
+
