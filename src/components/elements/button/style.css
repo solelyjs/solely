@@ -333,12 +333,23 @@
   border-color: var(--solely-error-active);
 }
 
-.btn--danger:not(.btn--primary):not(.btn--success):not(.btn--warning):not(.btn--error) {
+.btn--danger:not(.btn--primary):not(.btn--success):not(.btn--warning):not(.btn--error):not(.btn--text):not(.btn--link) {
   color: var(--solely-error);
   border-color: var(--solely-error);
 }
 
-.btn--danger:not(.btn--primary):not(.btn--success):not(.btn--warning):not(.btn--error):hover:not(.is-disabled):not(.is-loading) {
+.btn--danger:not(.btn--primary):not(.btn--success):not(.btn--warning):not(.btn--error):not(.btn--text):not(.btn--link):hover:not(.is-disabled):not(.is-loading) {
   color: var(--solely-error-hover);
   border-color: var(--solely-error-hover);
+}
+
+/* text 和 link 类型的 danger 样式 */
+.btn--danger.btn--text,
+.btn--danger.btn--link {
+  color: var(--solely-error);
+}
+
+.btn--danger.btn--text:hover:not(.is-disabled):not(.is-loading),
+.btn--danger.btn--link:hover:not(.is-disabled):not(.is-loading) {
+  color: var(--solely-error-hover);
 }
