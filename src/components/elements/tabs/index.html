@@ -1,13 +1,18 @@
 <div
     class="tabs"
-     :class="this.getTabsClasses()"
+    :class="this.getTabsClasses()"
+    role="tablist"
 >
     <!-- 标签栏 -->
     <div class="tabs__nav">
         <For each="this.getParsedItems()" item="item">
             <div
                 class="tabs__tab"
-                 :class="this.getTabClasses(item)"
+                :class="this.getTabClasses(item)"
+                role="tab"
+                :aria-selected="item.key === $data.activeKey ? 'true' : 'false'"
+                :aria-controls="'panel-' + item.key"
+                :tabindex="item.key === $data.activeKey ? '0' : '-1'"
                 @click="this.handleTabClick(item)"
             >
                 {{item.label}}
@@ -15,12 +20,21 @@
                     <span
                         class="tabs__close"
                         @click="this.handleClose(item, event)"
+                        role="button"
+                        aria-label="关闭标签"
+                        tabindex="0"
                     >×</span>
                 </If>
             </div>
         </For>
         <If test="$data.addable">
-            <span class="tabs__add" @click="this.handleAdd(event)">+</span>
+            <span
+                class="tabs__add"
+                @click="this.handleAdd(event)"
+                role="button"
+                aria-label="新增标签"
+                tabindex="0"
+            >+</span>
         </If>
     </div>
 
@@ -29,7 +43,10 @@
         <For each="this.getParsedItems()" item="item">
             <div
                 class="tabs__pane"
-                 :class="this.getPaneClasses(item)"
+                :class="this.getPaneClasses(item)"
+                :id="'panel-' + item.key"
+                role="tabpanel"
+                :aria-hidden="item.key !== $data.activeKey ? 'true' : 'false'"
             >
                 <slot :name="'tab-' + item.key"></slot>
             </div>

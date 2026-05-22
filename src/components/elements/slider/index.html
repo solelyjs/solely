@@ -1,6 +1,18 @@
 <div class="slider" :class="this.getSliderClasses()">
-    <div class="slider__rail" ref="rail" @mousedown="this.handleMouseDown(event)"
-        @touchstart="this.handleTouchStart(event)">
+    <div
+        class="slider__rail"
+        ref="rail"
+        role="slider"
+        :aria-valuemin="$data.min ?? 0"
+        :aria-valuemax="$data.max ?? 100"
+        :aria-valuenow="$data.value ?? ($data.min ?? 0)"
+        :aria-valuetext="$data.value ?? ($data.min ?? 0)"
+        :aria-disabled="$data.disabled ? 'true' : 'false'"
+        :aria-orientation="$data.vertical ? 'vertical' : 'horizontal'"
+        tabindex="0"
+        @mousedown="this.handleMouseDown(event)"
+        @touchstart="this.handleTouchStart(event)"
+    >
         <div class="slider__track" :style="this.getTrackStyle()"></div>
         <div class="slider__handle" :class="this.getHandleClasses()" :style="this.getHandleStyle()">
             <If test="$data.tooltipVisible !== false">
@@ -10,7 +22,7 @@
 
         <!-- 刻度标记 -->
         <If test="$data.marks">
-            <div class="slider__marks">
+            <div class="slider__marks" aria-hidden="true">
                 <For each="this.getParsedMarks()" item="mark">
                     <span class="slider__mark" :style="this.getMarkStyle(mark.value)">
                         <span class="slider__mark-dot"

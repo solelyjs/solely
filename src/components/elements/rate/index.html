@@ -1,9 +1,20 @@
-<div class="rate"  :class="this.getRateClasses()">
+<div
+    class="rate"
+    :class="this.getRateClasses()"
+    role="radiogroup"
+    :aria-label="'评分，当前 ' + ($data.value || 0) + ' 分'"
+    :aria-disabled="$data.disabled ? 'true' : 'false'"
+    :aria-readonly="$data.readonly ? 'true' : 'false'"
+>
     <For each="$data.starCount" item="i">
         <span
             class="rate__star"
-             :class="this.getStarClasses(i)"
+            :class="this.getStarClasses(i)"
             :data-char="$data.character || '★'"
+            role="radio"
+            :aria-checked="i === ($data.value || 0) ? 'true' : 'false'"
+            :aria-label="i + ' 分'"
+            :tabindex="i === 1 ? '0' : '-1'"
             @click="this.handleClick(i)"
             @mouseenter="this.handleMouseEnter(i)"
             @mouseleave="this.handleMouseLeave(i)"

@@ -1,8 +1,15 @@
-<div class="steps" :class="this.getStepsClasses()">
+<div class="steps" :class="this.getStepsClasses()" role="list" aria-label="步骤条">
     <!-- 使用 items 属性时的渲染 -->
     <If test="!$data.useSlot">
         <For each="this.getParsedItems()" item="item" index="index">
-            <div class="step" :class="this.getStepClasses(item, index)" @click="this.handleStepClick(item, index)">
+            <div
+                class="step"
+                :class="this.getStepClasses(item, index)"
+                role="listitem"
+                :aria-current="this.getStepStatus(index) === 'process' ? 'step' : undefined"
+                :aria-disabled="item.disabled ? 'true' : 'false'"
+                @click="this.handleStepClick(item, index)"
+            >
                 <div class="step__tail"></div>
                 <div class="step__wrapper">
                     <div class="step__icon-wrapper" :class="this.getIconClasses(item)"
@@ -33,7 +40,14 @@
     <!-- 使用插槽时的渲染 -->
     <If test="$data.useSlot">
         <For each="$data.slotItems" item="slotItem" index="index">
-            <div class="step" :class="this.getSlotStepClasses(slotItem, index)" @click="this.handleSlotStepClick(slotItem, index)">
+            <div
+                class="step"
+                :class="this.getSlotStepClasses(slotItem, index)"
+                role="listitem"
+                :aria-current="this.getSlotStepStatus(index) === 'process' ? 'step' : undefined"
+                :aria-disabled="slotItem.disabled ? 'true' : 'false'"
+                @click="this.handleSlotStepClick(slotItem, index)"
+            >
                 <div class="step__tail"></div>
                 <div class="step__wrapper">
                     <div class="step__icon-wrapper">

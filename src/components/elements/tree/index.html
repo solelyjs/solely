@@ -1,21 +1,29 @@
-<div class="tree"  :class="this.getTreeClasses()">
+<div class="tree" :class="this.getTreeClasses()" role="tree">
     <ul class="tree__list">
         <For each="$data.flattenedTree" item="node">
             <li
                 class="tree__node"
-                 :class="this.getNodeClasses(node)"
+                :class="this.getNodeClasses(node)"
                 :style="'padding-left: ' + (node.level * 24 + 12) + 'px'"
+                role="treeitem"
+                :aria-expanded="node.children && node.children.length > 0 ? (node.expanded ? 'true' : 'false') : undefined"
+                :aria-selected="node.selected ? 'true' : 'false'"
+                :aria-disabled="node.disabled ? 'true' : 'false'"
+                :aria-level="node.level + 1"
             >
                 <div
                     class="tree__content"
-                     :class="this.getContentClasses(node)"
+                    :class="this.getContentClasses(node)"
                     @click="this.handleNodeClick(node)"
                 >
                     <!-- 展开/折叠图标 -->
                     <span
                         class="tree__switcher"
-                         :class="this.getSwitcherClasses(node)"
+                        :class="this.getSwitcherClasses(node)"
                         @click="this.handleToggle(node, event)"
+                        role="button"
+                        :aria-label="node.expanded ? '折叠' : '展开'"
+                        tabindex="0"
                     >
                         ▶
                     </span>
@@ -24,8 +32,12 @@
                     <If condition="$data.checkable">
                         <span
                             class="tree__checkbox"
-                             :class="this.getCheckboxClasses(node)"
+                            :class="this.getCheckboxClasses(node)"
                             @click="this.handleCheck(node, event)"
+                            role="checkbox"
+                            :aria-checked="node.halfChecked ? 'mixed' : (node.checked ? 'true' : 'false')"
+                            :aria-disabled="node.disabled ? 'true' : 'false'"
+                            tabindex="0"
                         ></span>
                     </If>
 
