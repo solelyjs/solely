@@ -7,6 +7,57 @@
 
 ## [Unreleased]
 
+## [0.4.12] - 2026-05-23
+
+### Added
+
+- **feat(components)**: 为组件添加 CSS Part 自定义样式支持
+    - 为 Button、Tag、Radio、Checkbox、Tab、Alert、Badge、Card、Switch、Input、Select 等基础组件添加 `part` 属性，支持通过 CSS `::part()` 伪元素自定义样式
+    - 为 Modal、Drawer、Tooltip、Message、Popconfirm 等弹出组件添加自定义类名样式支持
+    - 更新各组件文档，新增 CSS Part 自定义样式演示示例与 API 说明
+
+- **feat(backtop)**: 为回到顶部组件添加属性读写支持
+    - 添加 `visibilityHeight` 和 `duration` 的 getter/setter，支持外部读写配置
+    - 更新文档，新增事件演示和属性读取配置示例
+
+- **test**: 为核心模块添加完整测试用例
+    - 新增模板错误处理、路由组件、Vite 插件、渲染器和 IR 构建器的完整测试套件
+    - 覆盖各类功能场景和边界情况，完善项目测试覆盖率
+
+### Changed
+
+- **refactor(components)**: 统一组件规范，修复事件与样式问题
+    - 为 Fab 和 Button 组件添加默认 `type="button"`，防止默认提交行为
+    - 为 Upload 组件添加 `fileList` setter 同步数据
+    - 为 Tooltip 组件添加 show/hide 事件抛出
+    - 重构 Pagination 组件事件名，新增 `sizeChange` 并兼容旧版 `showSizeChange`
+    - 将文档样式替换为 CSS 变量统一主题色
+
+- **refactor(components)**: 标准化组件事件 Detail 类型定义
+    - 为 Tabs、Steps、Tree 组件新增事件 Detail 类型接口
+    - 替换组件内事件派发的类型断言为正式的事件 Detail 类型
+    - 更新文档中的事件类型注释，统一使用自定义类型名
+
+- **refactor(components)**: 为表单组件添加无障碍属性
+    - 为 Rate、Slider、Steps、Tabs、Tree 组件添加 ARIA 无障碍属性
+    - 优化屏幕阅读器兼容性，统一格式化模板缩进样式
+
+- **style(button)**: 补充 danger 类型文本/链接按钮的样式
+    - 完善危险按钮中 text 和 link 变体的颜色样式，修复对应状态下的配色缺失问题
+
+- **docs**: 更新各组件文档的属性事件说明与排版
+    - 统一将文档中"支持属性和方法操作"改为"支持属性读写"
+    - 补充事件是否为原生/自定义事件的说明
+    - 调整 Button 组件的插槽与方法文档排版位置
+    - 补全 Input 组件的方法表格与参数返回值列
+    - 调整 Tabs 组件的插槽文档位置并补全方法返回值
+    - 移除 Switch 组件的冗余事件处理示例
+    - 整理 Select 组件的文档结构，移动并补全类型定义与方法表格
+
+- **build(vitest)**: 更新测试覆盖率配置
+    - 更新覆盖率统计的排除文件范围，忽略类型声明文件、入口 index 文件以及组件、类型目录文件
+    - 添加 lcov reporter 到测试覆盖率输出
+
 ## [0.4.11] - 2026-05-21
 
 ### Added
@@ -430,7 +481,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.11...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.12...HEAD
+[0.4.12]: https://github.com/solelyjs/solely/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/solelyjs/solely/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/solelyjs/solely/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/solelyjs/solely/compare/v0.4.8...v0.4.9
