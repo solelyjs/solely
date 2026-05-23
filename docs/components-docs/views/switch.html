@@ -248,6 +248,48 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
     </div>
 </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义开关内部样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="switch-part-demo">
+                <style>
+                    #switch-part-demo solely-switch::part(base) {
+                        cursor: pointer;
+                    }
+                    #switch-part-demo solely-switch::part(track) {
+                        border-radius: 20px;
+                        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                    }
+                    #switch-part-demo solely-switch::part(handle) {
+                        background: #fff;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    }
+                </style>
+                <solely-switch checked></solely-switch>
+                <solely-switch></solely-switch>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-switch</span>::part(<span class="code-attr">track</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">20px</span>;
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(90deg, #667eea 0%, #764ba2 100%)</span>;
+  }
+  <span class="code-tag">solely-switch</span>::part(<span class="code-attr">handle</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 2px 8px rgba(0,0,0,0.2)</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- API 文档 -->
 <div class="api-section">
     <h3 class="api-section-title">API</h3>
@@ -393,6 +435,57 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 <tr>
                     <td>unchecked</td>
                     <td>非选中状态显示的内容（优先级高于 unCheckedChildren 属性）</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <p class="api-block-desc">通过 <code>::part()</code> 伪元素可在 Shadow DOM 外部自定义开关内部样式。</p>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>开关根元素（&lt;div&gt;）</td>
+                    <td>.switch</td>
+                </tr>
+                <tr>
+                    <td>track</td>
+                    <td>开关轨道</td>
+                    <td>.switch__track</td>
+                </tr>
+                <tr>
+                    <td>inner</td>
+                    <td>内部文字容器</td>
+                    <td>.switch__inner</td>
+                </tr>
+                <tr>
+                    <td>checked-text</td>
+                    <td>选中状态文字</td>
+                    <td>.switch__inner-checked</td>
+                </tr>
+                <tr>
+                    <td>unchecked-text</td>
+                    <td>未选中状态文字</td>
+                    <td>.switch__inner-unchecked</td>
+                </tr>
+                <tr>
+                    <td>handle</td>
+                    <td>开关滑块</td>
+                    <td>.switch__handle</td>
+                </tr>
+                <tr>
+                    <td>loading-icon</td>
+                    <td>加载图标</td>
+                    <td>.switch__loading-icon</td>
                 </tr>
             </tbody>
         </table>

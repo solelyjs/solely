@@ -296,6 +296,66 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
     </div>
 </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义卡片内部样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="card-part-demo">
+                <style>
+                    #card-part-demo solely-card::part(base) {
+                        border-radius: 16px;
+                        border: 2px solid #667eea;
+                        background: #f8f9ff;
+                        overflow: hidden;
+                    }
+                    #card-part-demo solely-card::part(header) {
+                        background: #667eea;
+                        color: #fff;
+                    }
+                    #card-part-demo solely-card::part(title) {
+                        color: #fff;
+                    }
+                    #card-part-demo solely-card::part(body) {
+                        padding: 24px;
+                    }
+                    #card-part-demo solely-card::part(actions) {
+                        background: #f0f2ff;
+                    }
+                </style>
+                <solely-card title="自定义样式卡片" bordered>
+                    <p>卡片内容区域</p>
+                </solely-card>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"自定义样式卡片"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>卡片内容区域<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-card</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">16px</span>;
+    <span class="code-attr">border</span>: <span class="code-value">2px solid #667eea</span>;
+    <span class="code-attr">background</span>: <span class="code-value">#f8f9ff</span>;
+  }
+  <span class="code-tag">solely-card</span>::part(<span class="code-attr">header</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+  }
+  <span class="code-tag">solely-card</span>::part(<span class="code-attr">body</span>) {
+    <span class="code-attr">padding</span>: <span class="code-value">24px</span>;
+  }
+  <span class="code-tag">solely-card</span>::part(<span class="code-attr">actions</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#f0f2ff</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- API 文档 -->
 <div class="api-section">
     <h3 class="api-section-title">API</h3>
@@ -433,6 +493,72 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
                     <td>设置卡片标题</td>
                     <td>title: string</td>
                     <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <p class="api-block-desc">通过 <code>::part()</code> 伪元素可在 Shadow DOM 外部自定义卡片内部样式。</p>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>卡片根元素（&lt;div&gt;）</td>
+                    <td>.card</td>
+                </tr>
+                <tr>
+                    <td>cover</td>
+                    <td>封面图片容器</td>
+                    <td>.card__cover</td>
+                </tr>
+                <tr>
+                    <td>header</td>
+                    <td>卡片头部区域</td>
+                    <td>.card__header</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>卡片标题</td>
+                    <td>.card__title</td>
+                </tr>
+                <tr>
+                    <td>extra</td>
+                    <td>标题右侧额外操作区</td>
+                    <td>.card__extra</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
+                    <td>加载状态容器</td>
+                    <td>.card__loading</td>
+                </tr>
+                <tr>
+                    <td>loading-icon</td>
+                    <td>加载图标</td>
+                    <td>.card__loading-icon</td>
+                </tr>
+                <tr>
+                    <td>body</td>
+                    <td>卡片内容区域</td>
+                    <td>.card__body</td>
+                </tr>
+                <tr>
+                    <td>actions</td>
+                    <td>底部操作区</td>
+                    <td>.card__actions</td>
+                </tr>
+                <tr>
+                    <td>action</td>
+                    <td>操作按钮</td>
+                    <td>.card__action</td>
                 </tr>
             </tbody>
         </table>

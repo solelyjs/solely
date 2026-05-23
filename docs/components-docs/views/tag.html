@@ -153,6 +153,50 @@
     </div>
 </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义标签内部样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="tag-part-demo">
+                <style>
+                    #tag-part-demo solely-tag::part(base) {
+                        border-radius: 8px;
+                        border: 2px solid #667eea;
+                        background: #f8f9ff;
+                        color: #667eea;
+                        font-weight: 600;
+                    }
+                    #tag-part-demo solely-tag::part(close) {
+                        color: #667eea;
+                        font-size: 16px;
+                    }
+                </style>
+                <solely-tag closable content="自定义样式标签"></solely-tag>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tag</span> <span class="code-attr">closable</span> <span class="code-attr">content</span>=<span class="code-value">"自定义样式标签"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tag</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-tag</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">border</span>: <span class="code-value">2px solid #667eea</span>;
+    <span class="code-attr">background</span>: <span class="code-value">#f8f9ff</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-tag</span>::part(<span class="code-attr">close</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">font-size</span>: <span class="code-value">16px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- API 文档 -->
 <div class="api-section">
     <h3 class="api-section-title">API</h3>
@@ -280,6 +324,32 @@
                     <td>设置标签类型</td>
                     <td>type: TagType</td>
                     <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <p class="api-block-desc">通过 <code>::part()</code> 伪元素可在 Shadow DOM 外部自定义标签内部样式。</p>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>标签根元素（&lt;span&gt;）</td>
+                    <td>.tag</td>
+                </tr>
+                <tr>
+                    <td>close</td>
+                    <td>关闭按钮</td>
+                    <td>.tag__close</td>
                 </tr>
             </tbody>
         </table>

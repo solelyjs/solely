@@ -409,6 +409,47 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义输入框内部样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="input-part-demo">
+                <style>
+                    #input-part-demo solely-input::part(base) {
+                        border-radius: 12px;
+                        border: 2px solid #667eea;
+                        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+                    }
+                    #input-part-demo solely-input::part(input) {
+                        font-family: 'Courier New', monospace;
+                        font-size: 16px;
+                    }
+                    #input-part-demo solely-input::part(input)::placeholder {
+                        color: #a0aec0;
+                        font-style: italic;
+                    }
+                </style>
+                <solely-input placeholder="自定义样式的输入框"></solely-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">placeholder</span>=<span class="code-value">"自定义样式的输入框"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-input</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">12px</span>;
+    <span class="code-attr">border</span>: <span class="code-value">2px solid #667eea</span>;
+  }
+  <span class="code-tag">solely-input</span>::part(<span class="code-attr">input</span>) {
+    <span class="code-attr">font-family</span>: <span class="code-value">'Courier New', monospace</span>;
+    <span class="code-attr">font-size</span>: <span class="code-value">16px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- API 文档 -->
     <div class="api-section">
         <h3 class="api-section-title">API</h3>
@@ -690,6 +731,77 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                         <td>获取输入框的值（去除格式化空格）</td>
                         <td>-</td>
                         <td>string</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">CSS Part</h4>
+            <p class="api-block-desc">通过 <code>::part()</code> 伪元素可在 Shadow DOM 外部自定义输入框内部样式。</p>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>Part 名</th>
+                        <th>说明</th>
+                        <th>对应元素</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>base</td>
+                        <td>输入框根容器（&lt;div&gt;）</td>
+                        <td>.form-control</td>
+                    </tr>
+                    <tr>
+                        <td>input</td>
+                        <td>输入框元素（&lt;input&gt; 或 &lt;textarea&gt;）</td>
+                        <td>.form-control__input</td>
+                    </tr>
+                    <tr>
+                        <td>prefix</td>
+                        <td>前缀区域</td>
+                        <td>.form-control__prefix</td>
+                    </tr>
+                    <tr>
+                        <td>suffix</td>
+                        <td>后缀区域</td>
+                        <td>.form-control__suffix</td>
+                    </tr>
+                    <tr>
+                        <td>clear</td>
+                        <td>清空按钮</td>
+                        <td>.form-control__clear</td>
+                    </tr>
+                    <tr>
+                        <td>password-toggle</td>
+                        <td>密码可见切换按钮</td>
+                        <td>.form-control__password-toggle</td>
+                    </tr>
+                    <tr>
+                        <td>copy</td>
+                        <td>复制按钮</td>
+                        <td>.form-control__copy</td>
+                    </tr>
+                    <tr>
+                        <td>dropdown</td>
+                        <td>建议下拉面板</td>
+                        <td>.dropdown</td>
+                    </tr>
+                    <tr>
+                        <td>dropdown-item</td>
+                        <td>建议下拉项</td>
+                        <td>.dropdown__item</td>
+                    </tr>
+                    <tr>
+                        <td>count</td>
+                        <td>字数统计区域</td>
+                        <td>.form-control__count</td>
+                    </tr>
+                    <tr>
+                        <td>message</td>
+                        <td>状态消息区域</td>
+                        <td>.form-control__message</td>
                     </tr>
                 </tbody>
             </table>

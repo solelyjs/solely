@@ -195,6 +195,50 @@
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义 FAB 内部样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview demo-preview--fab" id="fab-part-demo">
+                <style>
+                    #fab-part-demo solely-fab::part(base) {
+                        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                        border: none;
+                        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+                        position: relative !important;
+                        inset: auto !important;
+                        transform: none !important;
+                    }
+                    #fab-part-demo solely-fab::part(base):hover {
+                        transform: scale(1.1) rotate(90deg) !important;
+                    }
+                    #fab-part-demo solely-fab::part(icon) {
+                        font-size: 24px;
+                    }
+                </style>
+                <solely-fab absolute position="center" type="primary" icon="✨"></solely-fab>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-fab</span> <span class="code-attr">icon</span>=<span class="code-value">"✨"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-fab</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-fab</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #f093fb 0%, #f5576c 100%)</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+  }
+  <span class="code-tag">solely-fab</span>::part(<span class="code-attr">base</span>):hover {
+    <span class="code-attr">transform</span>: <span class="code-value">scale(1.1) rotate(90deg)</span>;
+  }
+  <span class="code-tag">solely-fab</span>::part(<span class="code-attr">icon</span>) {
+    <span class="code-attr">font-size</span>: <span class="code-value">24px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- API 文档 -->
     <div class="api-section">
         <h3 class="api-section-title">API</h3>
@@ -296,6 +340,32 @@
                     <tr>
                         <td>icon</td>
                         <td>自定义图标内容，优先级高于 icon 属性</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">CSS Part</h4>
+            <p class="api-block-desc">通过 <code>::part()</code> 伪元素可在 Shadow DOM 外部自定义 FAB 内部样式。</p>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>Part 名</th>
+                        <th>说明</th>
+                        <th>对应元素</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>base</td>
+                        <td>按钮根元素（&lt;button&gt;）</td>
+                        <td>.fab</td>
+                    </tr>
+                    <tr>
+                        <td>icon</td>
+                        <td>图标区域</td>
+                        <td>.fab__icon</td>
                     </tr>
                 </tbody>
             </table>

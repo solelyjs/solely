@@ -205,6 +205,59 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
             </div>
         </div>
     </div>
+
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义徽标内部样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="badge-part-demo">
+                <style>
+                    #badge-part-demo solely-badge::part(count) {
+                        background: #667eea;
+                        border-radius: 8px;
+                        font-weight: 600;
+                    }
+                    #badge-part-demo solely-badge::part(dot) {
+                        background: #667eea;
+                    }
+                    #badge-part-demo solely-badge::part(status-dot) {
+                        width: 10px;
+                        height: 10px;
+                    }
+                </style>
+                <solely-badge count="5">
+                    <solely-button>Messages</solely-button>
+                </solely-badge>
+                <solely-badge dot>
+                    <solely-button>Notifications</solely-button>
+                </solely-badge>
+                <solely-badge status="success" text="Online"></solely-badge>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"5"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>Messages<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-badge</span>::part(<span class="code-attr">count</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-badge</span>::part(<span class="code-attr">dot</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#667eea</span>;
+  }
+  <span class="code-tag">solely-badge</span>::part(<span class="code-attr">status-dot</span>) {
+    <span class="code-attr">width</span>: <span class="code-value">10px</span>;
+    <span class="code-attr">height</span>: <span class="code-value">10px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="api-section">
@@ -321,6 +374,52 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
                 <tr>
                     <td>默认插槽</td>
                     <td>徽标包裹的内容，可以是任意 HTML 元素</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <p class="api-block-desc">通过 <code>::part()</code> 伪元素可在 Shadow DOM 外部自定义徽标内部样式。</p>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>徽标根元素（&lt;span&gt;）</td>
+                    <td>.badge</td>
+                </tr>
+                <tr>
+                    <td>count</td>
+                    <td>数字徽标</td>
+                    <td>.badge__count</td>
+                </tr>
+                <tr>
+                    <td>dot</td>
+                    <td>小红点</td>
+                    <td>.badge__dot</td>
+                </tr>
+                <tr>
+                    <td>status</td>
+                    <td>状态点容器</td>
+                    <td>.badge__status</td>
+                </tr>
+                <tr>
+                    <td>status-dot</td>
+                    <td>状态点</td>
+                    <td>.badge__status-dot</td>
+                </tr>
+                <tr>
+                    <td>status-text</td>
+                    <td>状态文本</td>
+                    <td>.badge__status-text</td>
                 </tr>
             </tbody>
         </table>

@@ -1,4 +1,5 @@
 <label
+    part="base"
     class="radio"
     :class="this.getRadioClasses()"
     role="radio"
@@ -6,8 +7,8 @@
     :aria-disabled="$data.disabled ? 'true' : 'false'"
     @click="this.handleClick(event)"
 >
-    <span class="radio__input"></span>
-    <span class="radio__content">
+    <span part="input" class="radio__input"></span>
+    <span part="content" class="radio__content">
         <slot>{{$data.content}}</slot>
     </span>
 </label>

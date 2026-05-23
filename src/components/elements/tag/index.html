@@ -1,4 +1,5 @@
 <span
+    part="base"
     class="tag"
     :class="this.getTagClasses()"
     :style="$data.color ? 'background-color: ' + $data.color + '; border-color: ' + $data.color : ''"
@@ -6,6 +7,7 @@
     <slot>{{$data.content}}</slot>
     <If test="$data.closable && !$data.disabled">
         <span
+            part="close"
             class="tag__close"
             @click="this.handleClose(event)"
         >

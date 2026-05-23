@@ -150,6 +150,56 @@
             </div>
         </div>
     </div>
+
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义警告提示内部样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="alert-part-demo">
+                <style>
+                    #alert-part-demo solely-alert::part(base) {
+                        border-radius: 8px;
+                        border: 2px solid #667eea;
+                        background: #f8f9ff;
+                    }
+                    #alert-part-demo solely-alert::part(icon) {
+                        font-size: 20px;
+                    }
+                    #alert-part-demo solely-alert::part(message) {
+                        font-weight: 600;
+                        color: #333;
+                    }
+                    #alert-part-demo solely-alert::part(close) {
+                        color: #667eea;
+                        font-size: 18px;
+                    }
+                </style>
+                <solely-alert type="info" message="自定义样式警告" closable show-icon></solely-alert>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-alert</span> <span class="code-attr">type</span>=<span class="code-value">"info"</span> <span class="code-attr">message</span>=<span class="code-value">"自定义样式警告"</span> <span class="code-attr">closable</span> <span class="code-attr">show-icon</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-alert</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-alert</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">border</span>: <span class="code-value">2px solid #667eea</span>;
+    <span class="code-attr">background</span>: <span class="code-value">#f8f9ff</span>;
+  }
+  <span class="code-tag">solely-alert</span>::part(<span class="code-attr">message</span>) {
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#333</span>;
+  }
+  <span class="code-tag">solely-alert</span>::part(<span class="code-attr">close</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">font-size</span>: <span class="code-value">18px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="api-section">

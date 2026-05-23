@@ -1,23 +1,25 @@
 <div
+    part="base"
     class="alert"
     :class="this.getAlertClasses()"
 >
     <If test="$data.showIcon">
-        <span class="alert__icon">
+        <span part="icon" class="alert__icon">
             <slot name="icon">{{this.getIcon($data.type)}}</slot>
         </span>
     </If>
-    <div class="alert__content">
+    <div part="content" class="alert__content">
         <If test="$data.message">
-            <div class="alert__message">{{$data.message}}</div>
+            <div part="message" class="alert__message">{{$data.message}}</div>
         </If>
         <If test="$data.description">
-            <div class="alert__description">{{$data.description}}</div>
+            <div part="description" class="alert__description">{{$data.description}}</div>
         </If>
         <slot></slot>
     </div>
     <If test="$data.closable">
         <span
+            part="close"
             class="alert__close"
             @click="this.handleClose()"
         >

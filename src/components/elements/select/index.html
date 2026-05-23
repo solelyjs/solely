@@ -1,4 +1,5 @@
 <div
+    part="base"
     class="select"
     :class="this.getSelectClasses()"
     role="combobox"
@@ -6,52 +7,53 @@
     :aria-disabled="$data.disabled ? 'true' : 'false'"
     @click="this.handleClick(event)"
 >
-    <div class="select__selector">
+    <div part="selector" class="select__selector">
         <If test="!$data.selectedLabel">
-            <span class="select__placeholder">{{$data.placeholder || '请选择'}}</span>
+            <span part="placeholder" class="select__placeholder">{{$data.placeholder || '请选择'}}</span>
         </If>
         <If test="$data.selectedLabel">
-            <span class="select__value">{{$data.selectedLabel}}</span>
+            <span part="value" class="select__value">{{$data.selectedLabel}}</span>
         </If>
         <If test="$data.clearable && $data.selectedLabel && !$data.disabled">
-            <span class="select__clear" @click="this.handleClear(event)">×</span>
+            <span part="clear" class="select__clear" @click="this.handleClear(event)">×</span>
         </If>
-        <span class="select__arrow">▼</span>
+        <span part="arrow" class="select__arrow">▼</span>
     </div>
 
     <!-- 下拉菜单 -->
     <If test="$data.isOpen">
-        <div class="select__dropdown" :class="this.getDropdownClasses()" role="listbox">
+        <div part="dropdown" class="select__dropdown" :class="this.getDropdownClasses()" role="listbox">
             <!-- header 插槽 - 固定顶部 -->
             <If test="$data.hasHeaderSlot">
-                <div class="select__header" @click="this.handleHeaderFooterClick(event)">
+                <div part="header" class="select__header" @click="this.handleHeaderFooterClick(event)">
                     <slot name="header"></slot>
                 </div>
             </If>
 
             <!-- 滚动内容区域 -->
-            <div class="select__dropdown-content">
+            <div part="dropdown-content" class="select__dropdown-content">
                 <!-- 使用 options 属性时的渲染 -->
                 <If test="!$data.useSlot">
                     <If test="$data.parsedOptions.length === 0">
-                        <div class="select__empty">暂无数据</div>
+                        <div part="empty" class="select__empty">暂无数据</div>
                     </If>
                     <For each="$data.parsedOptions" item="option">
                         <div
+                            part="option"
                             class="select__option"
                             :class="this.getOptionClasses(option)"
                             role="option"
                             :aria-selected="option.value === $data.value ? 'true' : 'false'"
                             @click="this.handleSelect(option, event)"
                         >
-                            <span class="select__option-label">{{option.label}}</span>
+                            <span part="option-label" class="select__option-label">{{option.label}}</span>
                         </div>
                     </For>
                 </If>
 
                 <!-- 使用插槽时的渲染 -->
                 <If test="$data.useSlot">
-                    <div class="select__slot-options" @click="this.handleSlotClick(event)">
+                    <div part="slot-options" class="select__slot-options" @click="this.handleSlotClick(event)">
                         <slot></slot>
                     </div>
                 </If>
@@ -59,7 +61,7 @@
 
             <!-- footer 插槽 - 固定底部 -->
             <If test="$data.hasFooterSlot">
-                <div class="select__footer" @click="this.handleHeaderFooterClick(event)">
+                <div part="footer" class="select__footer" @click="this.handleHeaderFooterClick(event)">
                     <slot name="footer"></slot>
                 </div>
             </If>
