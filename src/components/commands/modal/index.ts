@@ -181,7 +181,7 @@ function open(options: ModalOptions): ModalInstance {
 
     const wrap = createElement('div', {
         className: 'modal-wrap',
-        attrs: { tabIndex: '-1' },
+        attrs: { tabIndex: '-1', part: 'wrap' },
     });
 
     // 主题适配
@@ -230,7 +230,7 @@ function open(options: ModalOptions): ModalInstance {
         const close = createElement('button', {
             className: 'modal__close',
             textContent: '×',
-            attrs: { type: 'button', 'aria-label': '关闭' },
+            attrs: { type: 'button', 'aria-label': '关闭', part: 'close' },
         });
         const handleCloseClick = () => {
             closeModalById(id);
@@ -267,7 +267,6 @@ function open(options: ModalOptions): ModalInstance {
     }
 
     contentWrapper.appendChild(content);
-
     body.appendChild(contentWrapper);
     modal.appendChild(body);
 

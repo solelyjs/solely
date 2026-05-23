@@ -194,6 +194,55 @@ drawer.<span class="code-attr">update</span>({
         </div>
     </div>
 
+    <!-- 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义样式</h3>
+        <p class="demo-block-desc">通过 <code>className</code> 参数传入自定义类名，使用普通 CSS 选择器自定义 Drawer 样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="drawer-part-demo">
+                <solely-button type="primary" @click="this.openPartDrawer()">打开自定义样式抽屉</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 打开抽屉时传入自定义类名</span>
+<span class="code-type">Drawer</span>.<span class="code-attr">open</span>({
+  <span class="code-attr">title</span>: <span class="code-value">'自定义样式抽屉'</span>,
+  <span class="code-attr">content</span>: <span class="code-value">'内容区域'</span>,
+  <span class="code-attr">className</span>: <span class="code-value">'custom-drawer-style'</span>
+});
+
+<span class="code-comment">&lt;!-- CSS：通过普通类选择器自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  .custom-drawer-style .drawer__mask {
+    <span class="code-attr">background</span>: <span class="code-value">rgba(102, 126, 234, 0.2)</span>;
+    <span class="code-attr">backdrop-filter</span>: <span class="code-value">blur(4px)</span>;
+  }
+  .custom-drawer-style .drawer__panel {
+    <span class="code-attr">border-radius</span>: <span class="code-value">16px 0 0 16px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">-8px 0 32px rgba(0, 0, 0, 0.15)</span>;
+  }
+  .custom-drawer-style .drawer__header {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border-bottom</span>: <span class="code-value">none</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">16px 24px</span>;
+  }
+  .custom-drawer-style .drawer__title {
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+    <span class="code-attr">font-size</span>: <span class="code-value">18px</span>;
+  }
+  .custom-drawer-style .drawer__close {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">opacity</span>: <span class="code-value">0.8</span>;
+  }
+  .custom-drawer-style .drawer__body {
+    <span class="code-attr">background</span>: <span class="code-value">#fafafa</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">24px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <div class="demo-block">
         <h3 class="demo-block-title">与 Element 组件结合</h3>
         <p class="demo-block-desc">在 Solely Element 组件中通过事件绑定触发 Drawer，支持使用 <code>ref</code> 引用组件。</p>
@@ -423,6 +472,54 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>Drawer.destroy()</td>
                     <td>销毁所有抽屉</td>
                     <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">自定义样式类名</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>类名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>drawer-wrap</td>
+                    <td>抽屉外层容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drawer-mask</td>
+                    <td>遮罩层</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drawer</td>
+                    <td>抽屉面板</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drawer__header</td>
+                    <td>头部区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drawer__title</td>
+                    <td>标题</td>
+                    <td>&lt;h3&gt;</td>
+                </tr>
+                <tr>
+                    <td>drawer__close</td>
+                    <td>关闭按钮</td>
+                    <td>&lt;button&gt;</td>
+                </tr>
+                <tr>
+                    <td>drawer__body</td>
+                    <td>内容区域</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

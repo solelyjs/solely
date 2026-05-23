@@ -20,6 +20,42 @@ export class DocsModal extends BaseElement<DocsData> {
         });
     }
 
+    mounted(): void {
+        this.injectDemoStyles();
+    }
+
+    private injectDemoStyles(): void {
+        const id = 'docs-modal-demo-styles';
+        if (document.getElementById(id)) return;
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = `
+            .custom-modal-style {
+                border-radius: 16px !important;
+                box-shadow: 0 24px 48px rgba(0,0,0,0.15) !important;
+                overflow: hidden !important;
+            }
+            .custom-modal-style .modal__header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: #fff !important;
+                border-bottom: none !important;
+                padding: 16px 24px !important;
+            }
+            .custom-modal-style .modal__title { color: #fff !important; font-weight: 600 !important; }
+            .custom-modal-style .modal__close { color: #fff !important; opacity: 0.8 !important; }
+            .custom-modal-style .modal__body {
+                background: #fafafa !important;
+                padding: 24px !important;
+            }
+            .custom-modal-style .modal__footer {
+                background: #fafafa !important;
+                border-top: 1px solid #e8e8e8 !important;
+                padding: 12px 24px !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     private addLog(message: string): void {
         this.$data.modalLog = [...this.$data.modalLog.slice(-4), message];
         this.refresh();
@@ -323,5 +359,20 @@ export class DocsModal extends BaseElement<DocsData> {
             },
         });
         this.addElementLog('打开无默认图标的自定义 DOM 对话框');
+    }
+
+    openCustomPartModal(): void {
+        Modal.open({
+            title: '自定义样式对话框',
+            content: '通过自定义类名自定义样式的对话框内容',
+            className: 'custom-modal-style',
+            onOk: () => {
+                this.addLog('自定义样式对话框：用户点击了确定');
+            },
+            onCancel: () => {
+                this.addLog('自定义样式对话框：用户点击了取消');
+            },
+        });
+        this.addLog('打开自定义样式对话框');
     }
 }

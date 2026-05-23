@@ -208,6 +208,47 @@ instance.<span class="code-attr">update</span>({
     </div>
 
     <div class="demo-block">
+        <h3 class="demo-block-title">自定义样式</h3>
+        <p class="demo-block-desc">通过 <code>className</code> 参数传入自定义类名，使用普通 CSS 选择器自定义 Message 样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="message-part-demo">
+                <solely-button type="primary" @click="this.showCustomPartMessage()">自定义样式消息</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 打开消息时传入自定义类名</span>
+<span class="code-type">Message</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">content</span>: <span class="code-value">'自定义样式消息'</span>,
+    <span class="code-attr">type</span>: <span class="code-value">'success'</span>,
+    <span class="code-attr">className</span>: <span class="code-value">'custom-message-style'</span>,
+    <span class="code-attr">duration</span>: <span class="code-value">5000</span>
+});
+
+<span class="code-comment">&lt;!-- CSS：通过普通类选择器自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  .custom-message-style {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.4)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+  }
+  .custom-message-style .message__icon {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+  }
+  .custom-message-style .message__text {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  .custom-message-style .message__close {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">opacity</span>: <span class="code-value">0.8</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
         <h3 class="demo-block-title">与 Element 组件结合</h3>
         <p class="demo-block-desc">在 Solely Element 组件中通过事件绑定触发 Message，常用于操作反馈场景。</p>
         <div class="demo-box">
@@ -496,6 +537,54 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>默认消息位置</td>
                     <td>'top' | 'topLeft' | 'topRight' | 'bottom' | 'bottomLeft' | 'bottomRight' | 'left' | 'right'</td>
                     <td>'top'</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">自定义样式类名</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>类名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>message-container</td>
+                    <td>消息容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>message</td>
+                    <td>单个消息项</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>message__icon</td>
+                    <td>消息图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>message__content</td>
+                    <td>内容包装器</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>message__text</td>
+                    <td>主文本</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>message__description</td>
+                    <td>描述文本</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>message__close</td>
+                    <td>关闭按钮</td>
+                    <td>&lt;button&gt;</td>
                 </tr>
             </tbody>
         </table>

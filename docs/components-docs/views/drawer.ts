@@ -20,6 +20,42 @@ export class DocsDrawer extends BaseElement<DocsData> {
         });
     }
 
+    mounted(): void {
+        this.injectDemoStyles();
+    }
+
+    private injectDemoStyles(): void {
+        const id = 'docs-drawer-demo-styles';
+        if (document.getElementById(id)) return;
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = `
+            .custom-drawer-style {
+                border-radius: 16px 0 0 16px !important;
+                box-shadow: -8px 0 32px rgba(0,0,0,0.15) !important;
+            }
+            .custom-drawer-style .drawer__header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: #fff !important;
+                border-bottom: none !important;
+                padding: 16px 24px !important;
+            }
+            .custom-drawer-style .drawer__title {
+                font-weight: 600 !important;
+                font-size: 18px !important;
+            }
+            .custom-drawer-style .drawer__close {
+                color: #fff !important;
+                opacity: 0.8 !important;
+            }
+            .custom-drawer-style .drawer__body {
+                background: #fafafa !important;
+                padding: 24px !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     private addLog(message: string): void {
         this.$data.drawerLog = [...this.$data.drawerLog.slice(-4), message];
         this.refresh();
@@ -250,5 +286,19 @@ export class DocsDrawer extends BaseElement<DocsData> {
             },
         });
         this.addElementLog('打开完全自定义 DOM 内容的抽屉');
+    }
+
+    openPartDrawer(): void {
+        Drawer.open({
+            title: '自定义样式抽屉',
+            content: '通过自定义类名自定义样式的抽屉内容区域',
+            placement: 'right',
+            className: 'custom-drawer-style',
+            width: 400,
+            onClose: () => {
+                this.addLog('自定义样式抽屉已关闭');
+            },
+        });
+        this.addLog('自定义样式抽屉已打开');
     }
 }

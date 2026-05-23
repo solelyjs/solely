@@ -202,6 +202,41 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义样式</h3>
+        <p class="demo-block-desc">通过 <code>className</code> 参数传入自定义类名，使用普通 CSS 选择器自定义命令式 Tooltip 样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="tooltip-part-demo">
+                <solely-button type="primary" ref="customStyleBtn" @click="this.showCustomStyleTooltip()">自定义样式提示</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 显示提示时传入自定义类名</span>
+<span class="code-type">Tooltip</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">content</span>: <span class="code-value">'自定义样式提示'</span>,
+    <span class="code-attr">placement</span>: <span class="code-value">'top'</span>,
+    <span class="code-attr">className</span>: <span class="code-value">'custom-tooltip-style'</span>,
+    <span class="code-attr">duration</span>: <span class="code-value">3000</span>
+});
+
+<span class="code-comment">&lt;!-- CSS：通过普通类选择器自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  .custom-tooltip-style {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.4)</span>;
+  }
+  .custom-tooltip-style .tooltip__arrow {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+  }
+  .custom-tooltip-style .tooltip__content {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <div class="api-block">
     <h3 class="api-block-title">API</h3>
 
@@ -495,6 +530,67 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>显示隐藏回调</td>
                     <td>(visible: boolean) => void</td>
                     <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">自定义样式类名（命令式）</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>类名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>tooltip</td>
+                    <td>Tooltip 气泡框主体</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>tooltip__content</td>
+                    <td>提示文本内容区</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>tooltip__arrow</td>
+                    <td>气泡框箭头</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">CSS Part（声明式组件）</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>wrapper</td>
+                    <td>Tooltip 包装器根元素</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>base</td>
+                    <td>Tooltip 气泡框主体</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>提示文本内容区</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>arrow</td>
+                    <td>气泡框箭头</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

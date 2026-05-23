@@ -240,6 +240,63 @@
     </div>
 
     <div class="demo-block">
+        <h3 class="demo-block-title">自定义样式</h3>
+        <p class="demo-block-desc">通过 <code>className</code> 参数传入自定义类名，使用普通 CSS 选择器自定义 Modal 样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="modal-part-demo">
+                <solely-button type="primary" @click="this.openCustomPartModal()">自定义样式对话框</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 打开对话框时传入自定义类名</span>
+<span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'自定义样式对话框'</span>,
+    <span class="code-attr">content</span>: <span class="code-value">'通过自定义类名自定义样式的对话框内容'</span>,
+    <span class="code-attr">className</span>: <span class="code-value">'custom-modal-style'</span>,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'确定'</span>);
+    }
+});
+
+<span class="code-comment">&lt;!-- CSS：通过普通类选择器自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  .custom-modal-style .modal__mask {
+    <span class="code-attr">background</span>: <span class="code-value">rgba(102, 126, 234, 0.2)</span>;
+    <span class="code-attr">backdrop-filter</span>: <span class="code-value">blur(4px)</span>;
+  }
+  .custom-modal-style .modal__wrap {
+    <span class="code-attr">border-radius</span>: <span class="code-value">16px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 24px 48px rgba(0, 0, 0, 0.15)</span>;
+    <span class="code-attr">overflow</span>: <span class="code-value">hidden</span>;
+  }
+  .custom-modal-style .modal__header {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border-bottom</span>: <span class="code-value">none</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">16px 24px</span>;
+  }
+  .custom-modal-style .modal__title {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  .custom-modal-style .modal__close {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">opacity</span>: <span class="code-value">0.8</span>;
+  }
+  .custom-modal-style .modal__body {
+    <span class="code-attr">background</span>: <span class="code-value">#fafafa</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">24px</span>;
+  }
+  .custom-modal-style .modal__footer {
+    <span class="code-attr">background</span>: <span class="code-value">#fafafa</span>;
+    <span class="code-attr">border-top</span>: <span class="code-value">1px solid #e8e8e8</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">12px 24px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
         <h3 class="demo-block-title">与 Element 组件结合</h3>
         <p class="demo-block-desc">在 Solely Element 组件中通过事件绑定触发 Modal，支持使用 <code>ref</code> 引用组件。</p>
         <div class="demo-box">
@@ -575,6 +632,74 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>默认取消按钮文字</td>
                     <td>string</td>
                     <td>'取消'</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">自定义样式类名</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>类名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>modal-wrap</td>
+                    <td>模态框外层容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal-mask</td>
+                    <td>遮罩层</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal</td>
+                    <td>模态框面板</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__header</td>
+                    <td>头部区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__title</td>
+                    <td>标题</td>
+                    <td>&lt;h3&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__close</td>
+                    <td>关闭按钮</td>
+                    <td>&lt;button&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__body</td>
+                    <td>内容区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__content-wrapper</td>
+                    <td>内容包装器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__icon</td>
+                    <td>类型图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__content</td>
+                    <td>内容文本</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>modal__footer</td>
+                    <td>底部按钮区域</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

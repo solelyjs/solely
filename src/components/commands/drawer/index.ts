@@ -131,7 +131,7 @@ function open(options: DrawerOptions): DrawerInstance {
     const maskClosable = options.maskClosable ?? globalConfig.maskClosable;
     const closable = options.closable ?? globalConfig.closable;
 
-    const wrap = createElement('div', { className: 'drawer-wrap', attrs: { part: 'wrap' } });
+    const wrap = createElement('div', { className: 'drawer-wrap' });
 
     // 主题适配
     const cleanupTheme = observeTheme(wrap);
@@ -140,7 +140,7 @@ function open(options: DrawerOptions): DrawerInstance {
     const handlersToCleanup: Array<{ element: HTMLElement; type: string; handler: EventListener }> = [];
 
     if (mask !== false) {
-        const maskEl = createElement('div', { className: 'drawer-mask', attrs: { part: 'mask' } });
+        const maskEl = createElement('div', { className: 'drawer-mask' });
         if (maskClosable) {
             const handleMaskClick = () => {
                 closeDrawerById(id);
@@ -155,7 +155,6 @@ function open(options: DrawerOptions): DrawerInstance {
     const drawer = createElement('div', {
         className: `drawer drawer--${placement}${options.className ? ` ${options.className}` : ''}`,
         styles: options.style as Partial<CSSStyleDeclaration>,
-        attrs: { part: 'drawer' },
     });
 
     if (placement === 'left' || placement === 'right') {
@@ -165,12 +164,11 @@ function open(options: DrawerOptions): DrawerInstance {
     }
 
     if (options.title || closable !== false) {
-        const header = createElement('div', { className: 'drawer__header', attrs: { part: 'header' } });
+        const header = createElement('div', { className: 'drawer__header' });
 
         if (options.title) {
             const title = createElement('h3', {
                 className: 'drawer__title',
-                attrs: { part: 'title' },
             });
 
             // 支持字符串和 DOM 元素作为标题
@@ -187,7 +185,7 @@ function open(options: DrawerOptions): DrawerInstance {
             const close = createElement('button', {
                 className: 'drawer__close',
                 textContent: '×',
-                attrs: { type: 'button', 'aria-label': '关闭', part: 'close' },
+                attrs: { type: 'button', 'aria-label': '关闭' },
             });
             const handleCloseClick = () => {
                 closeDrawerById(id);
@@ -204,7 +202,6 @@ function open(options: DrawerOptions): DrawerInstance {
     const body = createElement('div', {
         className: 'drawer__body',
         styles: options.bodyStyle as Partial<CSSStyleDeclaration>,
-        attrs: { part: 'body' },
     });
 
     // 支持字符串和 DOM 元素作为内容

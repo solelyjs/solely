@@ -143,6 +143,60 @@ instance.<span class="code-attr">destroy</span>();</code></pre>
     </div>
 
     <div class="demo-block">
+        <h3 class="demo-block-title">自定义样式</h3>
+        <p class="demo-block-desc">通过 <code>className</code> 参数传入自定义类名，使用普通 CSS 选择器自定义 Popconfirm 样式。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="popconfirm-part-demo">
+                <solely-button type="primary" @click="this.showCustomPartConfirm(event)">自定义样式确认框</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 显示确认框时传入自定义类名</span>
+<span class="code-type">Popconfirm</span>.<span class="code-attr">show</span>(target, {
+    <span class="code-attr">title</span>: <span class="code-value">'自定义样式'</span>,
+    <span class="code-attr">description</span>: <span class="code-value">'通过自定义类名自定义样式的确认框'</span>,
+    <span class="code-attr">className</span>: <span class="code-value">'custom-popconfirm-style'</span>,
+    <span class="code-attr">onConfirm</span>: () => {
+        <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'确认'</span>);
+    }
+});
+
+<span class="code-comment">&lt;!-- CSS：通过普通类选择器自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  .custom-popconfirm-style .popconfirm__panel {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.4)</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+  }
+  .custom-popconfirm-style .popconfirm__arrow {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+  }
+  .custom-popconfirm-style .popconfirm__title {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  .custom-popconfirm-style .popconfirm__description {
+    <span class="code-attr">color</span>: <span class="code-value">rgba(255, 255, 255, 0.9)</span>;
+  }
+  .custom-popconfirm-style .popconfirm__icon {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+  }
+  .custom-popconfirm-style .popconfirm__ok-btn {
+    <span class="code-attr">background</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#764ba2</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+  }
+  .custom-popconfirm-style .popconfirm__cancel-btn {
+    <span class="code-attr">background</span>: <span class="code-value">rgba(255, 255, 255, 0.2)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
         <h3 class="demo-block-title">与 Element 组件结合</h3>
         <p class="demo-block-desc">在 Solely Element 组件中使用 Popconfirm，支持通过 <code>event.target</code> 获取触发元素。</p>
         <div class="demo-box">
@@ -399,6 +453,74 @@ customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`
                     <td>destroy()</td>
                     <td>关闭最顶层的确认框</td>
                     <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 class="api-block-subtitle">自定义样式类名</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>类名</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>popconfirm-overlay</td>
+                    <td>气泡确认框外层容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm</td>
+                    <td>气泡确认框面板</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__content</td>
+                    <td>内容区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__icon</td>
+                    <td>警告图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__text</td>
+                    <td>文本包装器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__title</td>
+                    <td>标题</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__description</td>
+                    <td>描述文本</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__buttons</td>
+                    <td>按钮区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__btn--cancel</td>
+                    <td>取消按钮</td>
+                    <td>&lt;button&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__btn--ok</td>
+                    <td>确认按钮</td>
+                    <td>&lt;button&gt;</td>
+                </tr>
+                <tr>
+                    <td>popconfirm__arrow</td>
+                    <td>箭头</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

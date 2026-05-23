@@ -25,6 +25,33 @@ export class DocsMessage extends BaseElement<DocsData> {
         });
     }
 
+    mounted(): void {
+        this.injectDemoStyles();
+    }
+
+    private injectDemoStyles(): void {
+        const id = 'docs-message-demo-styles';
+        if (document.getElementById(id)) return;
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = `
+            .custom-message-style {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+                color: #fff !important;
+                border: none !important;
+            }
+            .custom-message-style .message__icon { color: #fff !important; }
+            .custom-message-style .message__text {
+                color: #fff !important;
+                font-weight: 600 !important;
+            }
+            .custom-message-style .message__close { color: #fff !important; opacity: 0.8 !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
     private addLog(message: string): void {
         this.$data.messageLog = [...this.$data.messageLog.slice(-4), message];
         this.refresh();
@@ -231,5 +258,16 @@ export class DocsMessage extends BaseElement<DocsData> {
             duration: 4000,
         });
         this.addElementLog('Element：显示无默认图标的自定义 DOM 消息');
+    }
+
+    showCustomPartMessage(): void {
+        Message.open({
+            content: '自定义样式消息',
+            type: 'success',
+            className: 'custom-message-style',
+            duration: 5000,
+            closable: true,
+        });
+        this.addLog('显示自定义样式消息');
     }
 }

@@ -23,12 +23,50 @@ export class DocsPopconfirm extends BaseElement<DocsData> {
         });
     }
 
+    private injectDemoStyles(): void {
+        const id = 'docs-popconfirm-demo-styles';
+        if (document.getElementById(id)) return;
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = `
+            .custom-popconfirm-style {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+                border: none !important;
+            }
+            .custom-popconfirm-style .popconfirm__arrow {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+            .custom-popconfirm-style .popconfirm__title {
+                color: #fff !important;
+                font-weight: 600 !important;
+            }
+            .custom-popconfirm-style .popconfirm__description {
+                color: rgba(255,255,255,0.9) !important;
+            }
+            .custom-popconfirm-style .popconfirm__icon { color: #fff !important; }
+            .custom-popconfirm-style .popconfirm__btn--ok {
+                background: #fff !important;
+                color: #764ba2 !important;
+                border: none !important;
+            }
+            .custom-popconfirm-style .popconfirm__btn--cancel {
+                background: rgba(255,255,255,0.2) !important;
+                color: #fff !important;
+                border: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     private addLog(message: string): void {
         this.$data.popconfirmLog = [...this.$data.popconfirmLog.slice(-4), message];
         this.refresh();
     }
 
     mounted(): void {
+        this.injectDemoStyles();
         // 在组件挂载时就绑定到元素
         const btn = this.$refs.bindBtn as HTMLElement;
         if (btn) {
@@ -249,5 +287,22 @@ export class DocsPopconfirm extends BaseElement<DocsData> {
             },
         });
         this.addElementLog('Element：显示无图标的确认框');
+    }
+
+    showCustomPartConfirm(event: Event): void {
+        const target = event.target as HTMLElement;
+        Popconfirm.show(target, {
+            title: '自定义样式',
+            description: '通过自定义类名自定义样式的确认框',
+            className: 'custom-popconfirm-style',
+            placement: 'top',
+            onConfirm: () => {
+                this.addLog('用户确认了自定义样式操作');
+            },
+            onCancel: () => {
+                this.addLog('用户取消了自定义样式操作');
+            },
+        });
+        this.addLog('显示自定义样式确认框');
     }
 }

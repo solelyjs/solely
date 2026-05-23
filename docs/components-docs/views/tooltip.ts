@@ -38,6 +38,7 @@ export class DocsTooltip extends BaseElement<DocsData> {
     }
 
     mounted(): void {
+        this.injectDemoStyles();
         // 绑定基础用法的 Tooltip
         const hoverBtn = this.$refs.hoverBtn as HTMLElement;
         if (hoverBtn) {
@@ -213,6 +214,28 @@ export class DocsTooltip extends BaseElement<DocsData> {
         this.addLog('所有提示已隐藏');
     }
 
+    private injectDemoStyles(): void {
+        const id = 'docs-tooltip-demo-styles';
+        if (document.getElementById(id)) return;
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = `
+            .custom-tooltip-style {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+            }
+            .custom-tooltip-style .tooltip__arrow {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+            .custom-tooltip-style .tooltip__content {
+                color: #fff !important;
+                font-weight: 600 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     private addElementLog(message: string): void {
         this.$data.elementTooltipLog = [...this.$data.elementTooltipLog.slice(-4), message];
         this.refresh();
@@ -279,5 +302,18 @@ export class DocsTooltip extends BaseElement<DocsData> {
         }
         Tooltip.hide();
         this.addElementLog('Element：所有提示已隐藏');
+    }
+
+    showCustomStyleTooltip(): void {
+        const btn = this.$refs.customStyleBtn as HTMLElement;
+        if (btn) {
+            Tooltip.show(btn, {
+                content: '自定义样式提示',
+                placement: 'top',
+                className: 'custom-tooltip-style',
+                duration: 3000,
+            });
+            this.addLog('自定义样式提示已显示');
+        }
     }
 }
