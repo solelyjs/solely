@@ -152,14 +152,14 @@
 }
 
 .sidebar-item:hover {
-    color: #1890ff;
-    background: rgba(24, 144, 255, 0.06);
+    color: var(--solely-primary);
+    background: var(--solely-primary-light, rgba(24, 144, 255, 0.06));
 }
 
 .sidebar-item.active {
-    color: #1890ff;
-    background: rgba(24, 144, 255, 0.1);
-    border-right: 3px solid #1890ff;
+    color: var(--solely-primary);
+    background: var(--solely-primary-light, rgba(24, 144, 255, 0.1));
+    border-right: 3px solid var(--solely-primary);
 }
 
 /* ==================== 内容区域 ==================== */
@@ -509,8 +509,8 @@
 }
 
 .code-tab.active {
-    color: #1890ff;
-    border-bottom-color: #1890ff;
+    color: var(--solely-primary);
+    border-bottom-color: var(--solely-primary);
 }
 
 /* ==================== API 文档 ==================== */
@@ -659,13 +659,13 @@
 }
 
 .btn-primary {
-    background: #1890ff;
+    background: var(--solely-primary);
     color: white;
     border: none;
 }
 
 .btn-primary:hover {
-    background: #40a9ff;
+    background: var(--solely-primary-hover);
 }
 
 .btn-default {
@@ -675,8 +675,8 @@
 }
 
 .btn-default:hover {
-    border-color: #1890ff;
-    color: #1890ff;
+    border-color: var(--solely-primary);
+    color: var(--solely-primary);
 }
 
 .btn-secondary {
@@ -686,8 +686,8 @@
 }
 
 .btn-secondary:hover {
-    border-color: #1890ff;
-    color: #1890ff;
+    border-color: var(--solely-primary);
+    color: var(--solely-primary);
 }
 
 .home-badges {
@@ -797,7 +797,7 @@
 .overview-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-    border-color: #1890ff;
+    border-color: var(--solely-primary);
 }
 
 .overview-icon {
@@ -827,7 +827,7 @@
 }
 
 .overview-link {
-    color: #1890ff;
+    color: var(--solely-primary);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
@@ -880,8 +880,8 @@
 }
 
 .install-tab.active {
-    color: #1890ff;
-    border-bottom-color: #1890ff;
+    color: var(--solely-primary);
+    border-bottom-color: var(--solely-primary);
     background: var(--docs-bg-secondary);
 }
 
@@ -949,7 +949,7 @@
 }
 
 .draggable-item:hover {
-    border-color: #1890ff;
+    border-color: var(--solely-primary);
     box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
 }
 
@@ -968,7 +968,7 @@
 }
 
 .drop-zone.drag-over {
-    border-color: #1890ff;
+    border-color: var(--solely-primary);
     background: var(--solely-primary-light);
 }
 

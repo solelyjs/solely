@@ -206,17 +206,10 @@ class SolelyPagination extends BaseElement<
         this.$data.pageSize = newPageSize;
         this.$data.current = 1;
 
-        // 派发 showSizeChange 事件
-        this.dispatchEvent(
-            new CustomEvent('showSizeChange', {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    current: 1,
-                    pageSize: newPageSize,
-                },
-            }),
-        );
+        // 派发 sizeChange 事件（同时兼容旧名称 showSizeChange）
+        const detail = { current: 1, pageSize: newPageSize };
+        this.emit('sizeChange', detail);
+        this.emit('showSizeChange', detail);
     }
 
     /**

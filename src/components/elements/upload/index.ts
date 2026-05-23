@@ -49,6 +49,11 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
         return this.$data.parsedFileList;
     }
 
+    set fileList(value: UploadFile[]) {
+        this.$data.parsedFileList = value;
+        this.$data.fileList = JSON.stringify(value);
+    }
+
     /**
      * 获取 drag class 对象
      */

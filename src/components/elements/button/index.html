@@ -52,6 +52,7 @@
 <ElseIf test="this.getTagName() === 'button'">
     <button
         ref="buttonRef"
+        type="button"
         class="btn"
         :class="this.getButtonClasses()"
         :disabled="$data.disabled || $data.loading"

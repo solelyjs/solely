@@ -50,6 +50,7 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
     public show(): void {
         if (this.$data.visible) return;
         this.$data.visible = true;
+        this.emit('show');
     }
 
     /**
@@ -58,6 +59,7 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
     public hide(): void {
         if (!this.$data.visible) return;
         this.$data.visible = false;
+        this.emit('hide');
     }
 
     /**
