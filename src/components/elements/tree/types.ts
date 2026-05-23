@@ -47,3 +47,23 @@ export interface TreeProps {
     /** 是否撑满父容器宽度 */
     block?: boolean;
 }
+
+/** select 事件 detail */
+export interface TreeSelectEventDetail {
+    selectedKeys: string[];
+    selectedNodes: TreeNode[];
+    node: TreeNode;
+}
+
+/** check 事件 detail */
+export interface TreeCheckEventDetail {
+    checkedKeys: string[];
+    checkedNodes: TreeNode[];
+    node: TreeNode;
+}
+
+/** expand 事件 detail */
+export interface TreeExpandEventDetail {
+    expandedKeys: string[];
+    node: TreeNode;
+}

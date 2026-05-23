@@ -31,3 +31,15 @@ export interface TabsProps {
     /** 是否可新增 */
     addable: boolean;
 }
+
+/** close 事件 detail */
+export interface TabsCloseEventDetail {
+    key: string;
+    label: string;
+}
+
+/** add 事件 detail */
+export interface TabsAddEventDetail {
+    key: string;
+    label: string;
+}

@@ -332,12 +332,12 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
                 <tr>
                     <td>close</td>
                     <td>关闭标签时触发（自定义事件）</td>
-                    <td>CustomEvent&lt;{ key: string; label: string }&gt;</td>
+                    <td>CustomEvent&lt;TabsCloseEventDetail&gt;</td>
                 </tr>
                 <tr>
                     <td>add</td>
                     <td>点击新增按钮时触发（自定义事件）</td>
-                    <td>Event</td>
+                    <td>CustomEvent&lt;TabsAddEventDetail&gt;</td>
                 </tr>
             </tbody>
         </table>
@@ -403,6 +403,18 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
   <span class="code-attr">key</span>: <span class="code-type">string</span>;      <span class="code-comment">// 标签页标识</span>
   <span class="code-attr">label</span>: <span class="code-type">string</span>;    <span class="code-comment">// 标签页标题</span>
   <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否禁用</span>
+}
+
+<span class="code-comment">// close 事件 detail</span>
+<span class="code-keyword">interface</span> <span class="code-type">TabsCloseEventDetail</span> {
+  <span class="code-attr">key</span>: <span class="code-type">string</span>;   <span class="code-comment">// 关闭的标签 key</span>
+  <span class="code-attr">label</span>: <span class="code-type">string</span>; <span class="code-comment">// 关闭的标签标题</span>
+}
+
+<span class="code-comment">// add 事件 detail</span>
+<span class="code-keyword">interface</span> <span class="code-type">TabsAddEventDetail</span> {
+  <span class="code-attr">key</span>: <span class="code-type">string</span>;   <span class="code-comment">// 新增标签 key</span>
+  <span class="code-attr">label</span>: <span class="code-type">string</span>; <span class="code-comment">// 新增标签标题</span>
 }
 
 <span class="code-comment">// Tabs 类型</span>

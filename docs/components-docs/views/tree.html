@@ -255,17 +255,17 @@ treeEl.addEventListener(<span class="code-value">'check'</span>, (e) => {
                 <tr>
                     <td>select</td>
                     <td>选中节点时触发（自定义事件）</td>
-                    <td>CustomEvent&lt;{ node: TreeNode; selectedKeys: string[] }&gt;</td>
+                    <td>CustomEvent&lt;TreeSelectEventDetail&gt;</td>
                 </tr>
                 <tr>
                     <td>expand</td>
                     <td>展开/收起节点时触发（自定义事件）</td>
-                    <td>CustomEvent&lt;{ node: TreeNode; expandedKeys: string[] }&gt;</td>
+                    <td>CustomEvent&lt;TreeExpandEventDetail&gt;</td>
                 </tr>
                 <tr>
                     <td>check</td>
                     <td>勾选节点时触发（自定义事件）</td>
-                    <td>CustomEvent&lt;{ node: TreeNode; checkedKeys: string[] }&gt;</td>
+                    <td>CustomEvent&lt;TreeCheckEventDetail&gt;</td>
                 </tr>
             </tbody>
         </table>
@@ -373,6 +373,26 @@ treeEl.addEventListener(<span class="code-value">'check'</span>, (e) => {
   <span class="code-attr">searchable</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否可搜索</span>
   <span class="code-attr">searchValue</span>?: <span class="code-type">string</span>; <span class="code-comment">// 搜索值</span>
   <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;      <span class="code-comment">// 是否撑满父容器宽度</span>
+}
+
+<span class="code-comment">// select 事件 detail</span>
+<span class="code-keyword">interface</span> <span class="code-type">TreeSelectEventDetail</span> {
+  <span class="code-attr">selectedKeys</span>: <span class="code-type">string[]</span>;
+  <span class="code-attr">selectedNodes</span>: <span class="code-type">TreeNode[]</span>;
+  <span class="code-attr">node</span>: <span class="code-type">TreeNode</span>;
+}
+
+<span class="code-comment">// check 事件 detail</span>
+<span class="code-keyword">interface</span> <span class="code-type">TreeCheckEventDetail</span> {
+  <span class="code-attr">checkedKeys</span>: <span class="code-type">string[]</span>;
+  <span class="code-attr">checkedNodes</span>: <span class="code-type">TreeNode[]</span>;
+  <span class="code-attr">node</span>: <span class="code-type">TreeNode</span>;
+}
+
+<span class="code-comment">// expand 事件 detail</span>
+<span class="code-keyword">interface</span> <span class="code-type">TreeExpandEventDetail</span> {
+  <span class="code-attr">expandedKeys</span>: <span class="code-type">string[]</span>;
+  <span class="code-attr">node</span>: <span class="code-type">TreeNode</span>;
 }</code></pre>
         </div>
     </div>

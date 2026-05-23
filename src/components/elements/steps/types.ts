@@ -18,3 +18,18 @@ export interface StepsProps {
     items: string;
     progressDot: boolean;
 }
+
+/** 步骤项（插槽模式，从 Light DOM 收集） */
+export interface StepsSlotItem {
+    step: string;
+    title: string;
+    description?: string;
+    disabled?: boolean;
+    iconHtml: string;
+}
+
+/** change 事件 detail */
+export interface StepsChangeEventDetail {
+    index: number;
+    item: StepItem | StepsSlotItem;
+}

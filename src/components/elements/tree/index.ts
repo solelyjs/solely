@@ -4,7 +4,7 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { TreeProps, TreeNode } from './types';
+import type { TreeProps, TreeNode, TreeSelectEventDetail, TreeCheckEventDetail, TreeExpandEventDetail } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
 import { safeJsonParse } from '../utils/helpers';
@@ -187,7 +187,7 @@ class SolelyTree extends BaseElement<
             this.emit('expand', {
                 expandedKeys: this.getExpandedKeys(),
                 node: originalNode,
-            });
+            } as TreeExpandEventDetail);
 
             // 同时派发原生 change 事件
             this.dispatchEvent(
@@ -220,7 +220,7 @@ class SolelyTree extends BaseElement<
                 selectedKeys: this.getSelectedKeys(),
                 selectedNodes: this.getSelectedNodes(),
                 node: originalNode,
-            });
+            } as TreeSelectEventDetail);
 
             // 同时派发原生 change 事件
             this.dispatchEvent(
@@ -251,7 +251,7 @@ class SolelyTree extends BaseElement<
                 checkedKeys: this.getCheckedKeys(),
                 checkedNodes: this.getCheckedNodes(),
                 node: originalNode,
-            });
+            } as TreeCheckEventDetail);
 
             // 同时派发原生 change 事件
             this.dispatchEvent(

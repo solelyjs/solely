@@ -423,7 +423,7 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 <tr>
                     <td>change</td>
                     <td>点击步骤时触发</td>
-                    <td>CustomEvent&lt;{ index: number; item: StepItem }&gt;</td>
+                    <td>CustomEvent&lt;StepsChangeEventDetail&gt;</td>
                 </tr>
             </tbody>
         </table>
@@ -480,6 +480,21 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
   <span class="code-attr">status</span>?: <span class="code-type">StepStatus</span>;
   <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;
   <span class="code-attr">color</span>?: <span class="code-type">string</span>;
+}
+
+<span class="code-comment">// 插槽步骤项类型</span>
+<span class="code-keyword">interface</span> <span class="code-type">StepsSlotItem</span> {
+  <span class="code-attr">step</span>: <span class="code-type">string</span>;      <span class="code-comment">// 步骤序号</span>
+  <span class="code-attr">title</span>: <span class="code-type">string</span>;     <span class="code-comment">// 步骤标题</span>
+  <span class="code-attr">description</span>?: <span class="code-type">string</span>;
+  <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;
+  <span class="code-attr">iconHtml</span>: <span class="code-type">string</span>;  <span class="code-comment">// 图标 HTML</span>
+}
+
+<span class="code-comment">// change 事件 detail</span>
+<span class="code-keyword">interface</span> <span class="code-type">StepsChangeEventDetail</span> {
+  <span class="code-attr">index</span>: <span class="code-type">number</span>;                    <span class="code-comment">// 步骤索引</span>
+  <span class="code-attr">item</span>: <span class="code-type">StepItem | StepsSlotItem</span>; <span class="code-comment">// 步骤数据</span>
 }
 
 <span class="code-comment">// 步骤状态</span>

@@ -1,5 +1,5 @@
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { StepsProps, StepItem, StepStatus } from './types';
+import type { StepsProps, StepItem, StepStatus, StepsSlotItem, StepsChangeEventDetail } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
 import { safeJsonParse } from '../utils/helpers';
@@ -20,7 +20,7 @@ import { safeJsonParse } from '../utils/helpers';
 class SolelySteps extends BaseElement<
     StepsProps & {
         useSlot: boolean;
-        slotItems: Array<{ step: string; title: string; description?: string; disabled?: boolean; iconHtml: string }>;
+        slotItems: StepsSlotItem[];
     }
 > {
     // 预设颜色列表（与 CSS 修饰类对应）
@@ -239,7 +239,7 @@ class SolelySteps extends BaseElement<
                 detail: {
                     index,
                     item,
-                },
+                } as StepsChangeEventDetail,
             }),
         );
     }
@@ -247,7 +247,7 @@ class SolelySteps extends BaseElement<
     /**
      * 处理插槽步骤点击
      */
-    handleSlotStepClick(slotItem: { disabled?: boolean; iconHtml?: string }, index: number): void {
+    handleSlotStepClick(slotItem: StepsSlotItem, index: number): void {
         if (slotItem.disabled) return;
 
         this.$data.current = index;
@@ -259,7 +259,7 @@ class SolelySteps extends BaseElement<
                 detail: {
                     index,
                     item: slotItem,
-                },
+                } as StepsChangeEventDetail,
             }),
         );
     }

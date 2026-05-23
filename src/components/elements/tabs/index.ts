@@ -4,7 +4,7 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { TabsProps, TabItem } from './types';
+import type { TabsProps, TabItem, TabsCloseEventDetail, TabsAddEventDetail } from './types';
 import styles from './style.css?inline';
 import template from './index.html?raw';
 import { safeJsonParse } from '../utils/helpers';
@@ -157,7 +157,7 @@ class SolelyTabs extends BaseElement<TabsProps> {
                 detail: {
                     key: item.key,
                     label: item.label,
-                },
+                } as TabsCloseEventDetail,
             }),
         );
     }
@@ -191,7 +191,7 @@ class SolelyTabs extends BaseElement<TabsProps> {
                 detail: {
                     key: newItem.key,
                     label: newItem.label,
-                },
+                } as TabsAddEventDetail,
             }),
         );
     }
