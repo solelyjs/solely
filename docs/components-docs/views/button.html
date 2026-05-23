@@ -314,6 +314,55 @@
         </div>
     </div>
 
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义按钮内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="part-demo">
+                <style>
+                    #part-demo solely-button::part(base) {
+                        border-radius: 20px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    }
+                    #part-demo solely-button::part(base):hover {
+                        opacity: 0.9;
+                        transform: translateY(-2px);
+                    }
+                    #part-demo solely-button::part(icon) {
+                        font-size: 18px;
+                    }
+                    #part-demo solely-button::part(content) {
+                        font-weight: 600;
+                        letter-spacing: 1px;
+                    }
+                </style>
+                <solely-button type="primary" icon="✨">渐变按钮</solely-button>
+                <solely-button type="primary" icon-right="→">右侧图标</solely-button>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">icon</span>=<span class="code-value">"✨"</span><span class="code-bracket">&gt;</span><span class="code-content">渐变按钮</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-button</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">20px</span>;
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+  }
+  <span class="code-tag">solely-button</span>::part(<span class="code-attr">icon</span>) {
+    <span class="code-attr">font-size</span>: <span class="code-value">18px</span>;
+  }
+  <span class="code-tag">solely-button</span>::part(<span class="code-attr">content</span>) {
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- API 文档 -->
     <div class="api-section">
         <h3 class="api-section-title">API</h3>
@@ -497,6 +546,45 @@
         </div>
 
         <div class="api-block">
+            <h4 class="api-block-title">CSS Part</h4>
+            <p class="api-block-desc">通过 <code>::part()</code> 伪元素可在 Shadow DOM 外部自定义按钮内部样式。</p>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>Part 名</th>
+                        <th>说明</th>
+                        <th>对应元素</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>base</td>
+                        <td>按钮根元素（&lt;button&gt; 或 &lt;a&gt;）</td>
+                        <td>.btn</td>
+                    </tr>
+                    <tr>
+                        <td>icon</td>
+                        <td>左侧图标区域</td>
+                        <td>.btn__icon</td>
+                    </tr>
+                    <tr>
+                        <td>content</td>
+                        <td>文字内容区域</td>
+                        <td>.btn__content</td>
+                    </tr>
+                    <tr>
+                        <td>icon-right</td>
+                        <td>右侧图标区域</td>
+                        <td>.btn__icon-right</td>
+                    </tr>
+                    <tr>
+                        <td>loading-icon</td>
+                        <td>加载图标区域</td>
+                        <td>.btn__loading-icon</td>
+                    </tr>
+                </tbody>
+            </table>
+
             <h4 class="api-block-title">类型定义</h4>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 按钮类型</span>

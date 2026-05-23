@@ -1,6 +1,7 @@
 <If test="this.getTagName() === 'a'">
     <a
         ref="buttonRef"
+        part="base"
         class="btn"
         :class="this.getButtonClasses()"
         :href="$data.href"
@@ -10,7 +11,7 @@
     >
         <If test="$data.loading">
             <!-- 加载状态：显示加载图标 -->
-            <span class="btn__icon loading-spinner btn__loading-icon">
+            <span part="loading-icon" class="btn__icon loading-spinner btn__loading-icon">
                 <If test="this.hasLoadingIconSlot()">
                     <slot name="loading-icon"></slot>
                 </If>
@@ -21,37 +22,38 @@
         </If>
         <ElseIf test="this.hasIconSlot()">
             <!-- 非加载状态，有图标插槽：显示图标插槽内容 -->
-            <span class="btn__icon">
+            <span part="icon" class="btn__icon">
                 <slot name="icon"></slot>
             </span>
         </ElseIf>
         <ElseIf test="$data.icon">
             <!-- 非加载状态，有图标属性：显示图标 -->
-            <span class="btn__icon">{{$data.icon}}</span>
+            <span part="icon" class="btn__icon">{{$data.icon}}</span>
         </ElseIf>
 
         <If test="!$data.iconOnly && ($data.content || this.hasDefaultSlotContent())">
             <!-- 按钮内容（非 icon-only 模式显示） -->
-            <span class="btn__content">
+            <span part="content" class="btn__content">
                 <slot>{{$data.content}}</slot>
             </span>
         </If>
 
         <If test="!$data.loading && !$data.iconOnly && this.hasIconRightSlot()">
             <!-- 右侧图标插槽（非加载状态且非 icon-only 模式显示） -->
-            <span class="btn__icon-right">
+            <span part="icon-right" class="btn__icon-right">
                 <slot name="icon-right"></slot>
             </span>
         </If>
         <ElseIf test="!$data.loading && !$data.iconOnly && $data.iconRight">
             <!-- 右侧图标属性（非加载状态且非 icon-only 模式显示） -->
-            <span class="btn__icon-right">{{$data.iconRight}}</span>
+            <span part="icon-right" class="btn__icon-right">{{$data.iconRight}}</span>
         </ElseIf>
     </a>
 </If>
 <ElseIf test="this.getTagName() === 'button'">
     <button
         ref="buttonRef"
+        part="base"
         type="button"
         class="btn"
         :class="this.getButtonClasses()"
@@ -61,7 +63,7 @@
     >
         <If test="$data.loading">
             <!-- 加载状态：显示加载图标 -->
-            <span class="btn__icon loading-spinner btn__loading-icon">
+            <span part="loading-icon" class="btn__icon loading-spinner btn__loading-icon">
                 <If test="this.hasLoadingIconSlot()">
                     <slot name="loading-icon"></slot>
                 </If>
@@ -72,31 +74,31 @@
         </If>
         <ElseIf test="this.hasIconSlot()">
             <!-- 非加载状态，有图标插槽：显示图标插槽内容 -->
-            <span class="btn__icon">
+            <span part="icon" class="btn__icon">
                 <slot name="icon"></slot>
             </span>
         </ElseIf>
         <ElseIf test="$data.icon">
             <!-- 非加载状态，有图标属性：显示图标 -->
-            <span class="btn__icon">{{$data.icon}}</span>
+            <span part="icon" class="btn__icon">{{$data.icon}}</span>
         </ElseIf>
 
         <If test="!$data.iconOnly && ($data.content || this.hasDefaultSlotContent())">
             <!-- 按钮内容（非 icon-only 模式显示） -->
-            <span class="btn__content">
+            <span part="content" class="btn__content">
                 <slot>{{$data.content}}</slot>
             </span>
         </If>
 
         <If test="!$data.loading && !$data.iconOnly && this.hasIconRightSlot()">
             <!-- 右侧图标插槽（非加载状态且非 icon-only 模式显示） -->
-            <span class="btn__icon-right">
+            <span part="icon-right" class="btn__icon-right">
                 <slot name="icon-right"></slot>
             </span>
         </If>
         <ElseIf test="!$data.loading && !$data.iconOnly && $data.iconRight">
             <!-- 右侧图标属性（非加载状态且非 icon-only 模式显示） -->
-            <span class="btn__icon-right">{{$data.iconRight}}</span>
+            <span part="icon-right" class="btn__icon-right">{{$data.iconRight}}</span>
         </ElseIf>
     </button>
 </ElseIf>
