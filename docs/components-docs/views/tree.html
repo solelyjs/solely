@@ -111,6 +111,71 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义树形控件内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="tree-part-demo">
+                <style>
+                    #tree-part-demo solely-tree::part(base) {
+                        background: #fafafa;
+                        border-radius: 8px;
+                        padding: 12px;
+                        border: 1px solid #e8e8e8;
+                    }
+                    #tree-part-demo solely-tree::part(node) {
+                        border-radius: 4px;
+                        transition: background 0.2s;
+                    }
+                    #tree-part-demo solely-tree::part(node):hover {
+                        background: #e6f7ff;
+                    }
+                    #tree-part-demo solely-tree::part(node-selected) {
+                        background: #1890ff;
+                        color: #fff;
+                        border-radius: 4px;
+                    }
+                    #tree-part-demo solely-tree::part(switcher) {
+                        color: #1890ff;
+                        font-weight: 600;
+                    }
+                    #tree-part-demo solely-tree::part(checkbox) {
+                        accent-color: #1890ff;
+                    }
+                </style>
+                <solely-tree checkable default-expand-all tree-data='[{"title":"父节点 1","key":"0-0","children":[{"title":"子节点 1-1","key":"0-0-1"},{"title":"子节点 1-2","key":"0-0-2"}]},{"title":"父节点 2","key":"0-1","children":[{"title":"子节点 2-1","key":"0-1-1"}]}]'></solely-tree>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tree</span> <span class="code-attr">checkable</span> <span class="code-attr">default-expand-all</span> <span class="code-attr">tree-data</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-tree</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-tree</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fafafa</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">12px</span>;
+  }
+  <span class="code-tag">solely-tree</span>::part(<span class="code-attr">node</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">4px</span>;
+    <span class="code-attr">transition</span>: <span class="code-value">background 0.2s</span>;
+  }
+  <span class="code-tag">solely-tree</span>::part(<span class="code-attr">node</span>):hover {
+    <span class="code-attr">background</span>: <span class="code-value">#e6f7ff</span>;
+  }
+  <span class="code-tag">solely-tree</span>::part(<span class="code-attr">node-selected</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#1890ff</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+  }
+  <span class="code-tag">solely-tree</span>::part(<span class="code-attr">switcher</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#1890ff</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件处理 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件处理</h3>
@@ -342,6 +407,61 @@ treeEl.addEventListener(<span class="code-value">'check'</span>, (e) => {
                     <td>收起所有节点</td>
                     <td>-</td>
                     <td>void</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>树形组件根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>list</td>
+                    <td>节点列表容器</td>
+                    <td>&lt;ul&gt;</td>
+                </tr>
+                <tr>
+                    <td>node</td>
+                    <td>单个树节点</td>
+                    <td>&lt;li&gt;</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>节点内容区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>switcher</td>
+                    <td>展开/折叠图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>checkbox</td>
+                    <td>复选框</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>节点图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>节点标题文本</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

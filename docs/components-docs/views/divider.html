@@ -98,6 +98,79 @@
     </div>
 </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义 Divider 内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="divider-part-demo">
+                <style>
+                    #divider-part-demo solely-divider.custom-divider-style::part(base) {
+                        border-color: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                        border-width: 2px;
+                    }
+                    #divider-part-demo solely-divider.custom-divider-style::part(content) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        font-weight: 600;
+                        font-size: 14px;
+                        padding: 0 16px;
+                    }
+                    #divider-part-demo .vertical-divider-demo {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        margin-top: 12px;
+                    }
+                    #divider-part-demo solely-divider.vertical-custom::part(base) {
+                        border-color: #764ba2;
+                        border-width: 2px;
+                        height: 24px;
+                    }
+                </style>
+                <solely-divider class="custom-divider-style" content="自定义渐变文字"></solely-divider>
+                <div class="vertical-divider-demo">
+                    <span>文字</span>
+                    <solely-divider class="vertical-custom" type="vertical"></solely-divider>
+                    <span>链接</span>
+                    <solely-divider class="vertical-custom" type="vertical"></solely-divider>
+                    <span>链接</span>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">class</span>=<span class="code-value">"custom-divider-style"</span> <span class="code-attr">content</span>=<span class="code-value">"自定义渐变文字"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>文字<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-divider</span> <span class="code-attr">class</span>=<span class="code-value">"vertical-custom"</span> <span class="code-attr">type</span>=<span class="code-value">"vertical"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-divider</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>链接<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-divider</span>.custom-divider-style::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-color</span>: <span class="code-value">linear-gradient(90deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border-width</span>: <span class="code-value">2px</span>;
+  }
+  <span class="code-tag">solely-divider</span>.custom-divider-style::part(<span class="code-attr">content</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">-webkit-background-clip</span>: <span class="code-value">text</span>;
+    <span class="code-attr">-webkit-text-fill-color</span>: <span class="code-value">transparent</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+    <span class="code-attr">font-size</span>: <span class="code-value">14px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">0 16px</span>;
+  }
+  <span class="code-tag">solely-divider</span>.vertical-custom::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-color</span>: <span class="code-value">#764ba2</span>;
+    <span class="code-attr">border-width</span>: <span class="code-value">2px</span>;
+    <span class="code-attr">height</span>: <span class="code-value">24px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- API 文档 -->
 <div class="api-section">
     <h3 class="api-section-title">API</h3>
@@ -155,6 +228,31 @@
                 <tr>
                     <td>默认插槽</td>
                     <td>分割线文字内容，优先级高于 content 属性</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>分割线根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>分割线文字内容</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

@@ -101,6 +101,68 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义空状态内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="empty-part-demo">
+                <style>
+                    #empty-part-demo solely-empty::part(base) {
+                        background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+                        border-radius: 12px;
+                        padding: 40px 32px;
+                        border: 1px solid #d6e4ff;
+                    }
+                    #empty-part-demo solely-empty::part(icon) {
+                        font-size: 72px;
+                        filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
+                    }
+                    #empty-part-demo solely-empty::part(description) {
+                        color: #667eea;
+                        font-size: 16px;
+                        font-weight: 600;
+                        margin-top: 16px;
+                    }
+                    #empty-part-demo solely-empty::part(footer) {
+                        margin-top: 24px;
+                    }
+                </style>
+                <solely-empty description="暂无数据，请稍后重试">
+                    <solely-button type="primary" size="small">刷新页面</solely-button>
+                </solely-empty>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-empty</span> <span class="code-attr">description</span>=<span class="code-value">"暂无数据，请稍后重试"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>刷新页面<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-empty</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-empty</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">12px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">40px 32px</span>;
+    <span class="code-attr">border</span>: <span class="code-value">1px solid #d6e4ff</span>;
+  }
+  <span class="code-tag">solely-empty</span>::part(<span class="code-attr">icon</span>) {
+    <span class="code-attr">font-size</span>: <span class="code-value">72px</span>;
+    <span class="code-attr">filter</span>: <span class="code-value">drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3))</span>;
+  }
+  <span class="code-tag">solely-empty</span>::part(<span class="code-attr">description</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">font-size</span>: <span class="code-value">16px</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-empty</span>::part(<span class="code-attr">footer</span>) {
+    <span class="code-attr">margin-top</span>: <span class="code-value">24px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 方法演示 -->
     <div class="demo-block">
         <h3 class="demo-block-title">方法演示</h3>
@@ -179,6 +241,51 @@ empty.setDescription(<span class="code-value">'新的描述文字'</span>);</cod
                 <tr>
                     <td>image</td>
                     <td>自定义图片内容，优先级高于 image 属性</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>空状态根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>image</td>
+                    <td>图片区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>img</td>
+                    <td>自定义图片</td>
+                    <td>&lt;img&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>默认图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>描述文本</td>
+                    <td>&lt;p&gt;</td>
+                </tr>
+                <tr>
+                    <td>footer</td>
+                    <td>底部操作区域</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

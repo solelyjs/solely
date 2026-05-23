@@ -51,6 +51,82 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义 404 页面内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="notfound-part-demo" style="min-height: 320px;">
+                <style>
+                    #notfound-part-demo solely-not-found::part(base) {
+                        background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+                        border-radius: 12px;
+                    }
+                    #notfound-part-demo solely-not-found::part(numbers) {
+                        color: #667eea;
+                        text-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                    }
+                    #notfound-part-demo solely-not-found::part(number) {
+                        font-weight: 800;
+                    }
+                    #notfound-part-demo solely-not-found::part(icon-wrapper) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    }
+                    #notfound-part-demo solely-not-found::part(subtitle) {
+                        color: #262626;
+                        font-weight: 600;
+                    }
+                    #notfound-part-demo solely-not-found::part(description) {
+                        color: #595959;
+                    }
+                    #notfound-part-demo solely-not-found::part(button) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border: none;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                        transition: all 0.3s;
+                    }
+                    #notfound-part-demo solely-not-found::part(button):hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+                    }
+                </style>
+                <solely-not-found embedded></solely-not-found>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-not-found</span> <span class="code-attr">embedded</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-not-found</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-not-found</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">12px</span>;
+  }
+  <span class="code-tag">solely-not-found</span>::part(<span class="code-attr">numbers</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">text-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.3)</span>;
+  }
+  <span class="code-tag">solely-not-found</span>::part(<span class="code-attr">icon-wrapper</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.4)</span>;
+  }
+  <span class="code-tag">solely-not-found</span>::part(<span class="code-attr">button</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.4)</span>;
+  }
+  <span class="code-tag">solely-not-found</span>::part(<span class="code-attr">button</span>):hover {
+    <span class="code-attr">transform</span>: <span class="code-value">translateY(-2px)</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 6px 16px rgba(102, 126, 234, 0.5)</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 在路由中使用 -->
     <div class="demo-block">
         <h3 class="demo-block-title">在路由中使用</h3>
@@ -124,6 +200,81 @@
                     <td>是否为嵌入模式（用于文档演示等场景）</td>
                     <td>boolean</td>
                     <td>false</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>404 页面根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>container</td>
+                    <td>内容容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>numbers</td>
+                    <td>404 数字区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>number</td>
+                    <td>单个数字</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon-wrapper</td>
+                    <td>图标包装器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>感叹号图标</td>
+                    <td>&lt;svg&gt;</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>主标题</td>
+                    <td>&lt;h1&gt;</td>
+                </tr>
+                <tr>
+                    <td>subtitle</td>
+                    <td>副标题</td>
+                    <td>&lt;h2&gt;</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>描述文本</td>
+                    <td>&lt;p&gt;</td>
+                </tr>
+                <tr>
+                    <td>button</td>
+                    <td>返回按钮</td>
+                    <td>&lt;button&gt;</td>
+                </tr>
+                <tr>
+                    <td>button-icon</td>
+                    <td>按钮内图标</td>
+                    <td>&lt;svg&gt;</td>
+                </tr>
+                <tr>
+                    <td>bg-decoration</td>
+                    <td>装饰性背景元素</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

@@ -201,6 +201,69 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义时间轴内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="timeline-part-demo">
+                <style>
+                    #timeline-part-demo solely-timeline::part(base) {
+                        background: #fafafa;
+                        border-radius: 8px;
+                        padding: 16px;
+                    }
+                    #timeline-part-demo solely-timeline::part(tail) {
+                        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                        width: 3px;
+                    }
+                    #timeline-part-demo solely-timeline::part(dot) {
+                        border-color: #667eea;
+                        background: #fff;
+                        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+                    }
+                    #timeline-part-demo solely-timeline::part(item-wrapper) {
+                        background: #fff;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                        border: 1px solid #e8e8e8;
+                    }
+                    #timeline-part-demo solely-timeline::part(head) {
+                        color: #667eea;
+                        font-weight: 600;
+                    }
+                </style>
+                <solely-timeline items='[{"title":"项目启动","time":"2024-01-01","color":"blue"},{"title":"开发阶段","time":"2024-01-15","color":"green"},{"title":"测试验收","time":"2024-02-01","color":"orange"}]'></solely-timeline>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-timeline</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-timeline</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-timeline</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fafafa</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">16px</span>;
+  }
+  <span class="code-tag">solely-timeline</span>::part(<span class="code-attr">tail</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(180deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">width</span>: <span class="code-value">3px</span>;
+  }
+  <span class="code-tag">solely-timeline</span>::part(<span class="code-attr">dot</span>) {
+    <span class="code-attr">border-color</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 0 0 4px rgba(102, 126, 234, 0.2)</span>;
+  }
+  <span class="code-tag">solely-timeline</span>::part(<span class="code-attr">item-wrapper</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 2px 8px rgba(0, 0, 0, 0.06)</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 动态数据绑定 -->
     <div class="demo-block">
         <h3 class="demo-block-title">方法动态更新</h3>
@@ -341,6 +404,81 @@ timeline.setItems([
                     <td>verticalPosition</td>
                     <td>垂直位置（仅 horizontal-alternate 模式）：'top' | 'bottom'</td>
                     <td>string</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>时间轴根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>list</td>
+                    <td>时间轴列表容器</td>
+                    <td>&lt;ul&gt;</td>
+                </tr>
+                <tr>
+                    <td>item</td>
+                    <td>单个时间轴节点</td>
+                    <td>&lt;li&gt;</td>
+                </tr>
+                <tr>
+                    <td>tail</td>
+                    <td>连接线</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>item-wrapper</td>
+                    <td>节点内容包装器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>head</td>
+                    <td>节点头部（含圆点/图标）</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>dot</td>
+                    <td>圆点标记</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon-wrapper</td>
+                    <td>图标包装器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>item-content</td>
+                    <td>节点内容区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>标题文本</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>content-text</td>
+                    <td>详细内容文本</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>time</td>
+                    <td>时间文本</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

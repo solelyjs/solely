@@ -1,6 +1,7 @@
 <If test="this.hasIcon()">
     <svg
         ref="svgRef"
+        part="base"
         class="icon-svg"
         :class="this.getIconClasses()"
         :viewBox="this.getViewBox()"
@@ -11,5 +12,5 @@
     ></svg>
 </If>
 <Else>
-    <span class="icon-placeholder"></span>
+    <span part="placeholder" class="icon-placeholder"></span>
 </Else>

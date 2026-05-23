@@ -1,20 +1,20 @@
-<div class="table-wrapper">
-    <table class="table" :class="this.getTableClasses()">
-        <thead>
-            <tr>
+<div part="wrapper" class="table-wrapper">
+    <table part="base" class="table" :class="this.getTableClasses()">
+        <thead part="head">
+            <tr part="head-row">
                 <For each="this.getParsedColumns()" item="col">
-                    <th :class="this.getThClasses(col)"
+                    <th part="head-cell" :class="this.getThClasses(col)"
                         :style="col.width ? 'width: ' + (typeof col.width === 'number' ? col.width + 'px' : col.width) : ''">
                         {{col.title}}
                     </th>
                 </For>
             </tr>
         </thead>
-        <tbody>
+        <tbody part="body">
             <For each="this.getParsedDataSource()" item="row" index="rowIndex">
-                <tr @click="this.handleRowClick(row, rowIndex)">
+                <tr part="row" @click="this.handleRowClick(row, rowIndex)">
                     <For each="this.getParsedColumns()" item="col">
-                        <td :class="this.getTdClasses(col)">
+                        <td part="cell" :class="this.getTdClasses(col)">
                             <slot :name="'col-' + col.key + '-' + rowIndex">
                                 {{this.getCellValue(row, col)}}
                             </slot>
@@ -27,14 +27,14 @@
 
     <!-- 加载状态 -->
     <If condition="$data.loading">
-        <div class="table__loading">
-            <span class="table__loading-icon"></span>
+        <div part="loading" class="table__loading">
+            <span part="loading-icon" class="table__loading-icon"></span>
         </div>
     </If>
 
     <!-- 空状态 -->
     <If condition="!$data.loading && this.getParsedDataSource().length === 0">
-        <div class="table__empty">
+        <div part="empty" class="table__empty">
             暂无数据
         </div>
     </If>

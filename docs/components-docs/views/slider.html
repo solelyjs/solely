@@ -94,6 +94,68 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义滑块内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="slider-part-demo">
+                <style>
+                    #slider-part-demo solely-slider::part(rail) {
+                        background: linear-gradient(90deg, #e6f7ff 0%, #1890ff 100%);
+                        height: 8px;
+                        border-radius: 4px;
+                    }
+                    #slider-part-demo solely-slider::part(track) {
+                        background: linear-gradient(90deg, #1890ff 0%, #52c41a 100%);
+                        border-radius: 4px;
+                    }
+                    #slider-part-demo solely-slider::part(handle) {
+                        background: #fff;
+                        border: 3px solid #1890ff;
+                        box-shadow: 0 2px 8px rgba(24, 144, 255, 0.4);
+                        width: 20px;
+                        height: 20px;
+                    }
+                    #slider-part-demo solely-slider::part(tooltip) {
+                        background: #1890ff;
+                        color: #fff;
+                        font-weight: 600;
+                        border-radius: 4px;
+                    }
+                </style>
+                <solely-slider value="60" style="width: 300px;"></solely-slider>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">value</span>=<span class="code-value">"60"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-slider</span>::part(<span class="code-attr">rail</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(90deg, #e6f7ff 0%, #1890ff 100%)</span>;
+    <span class="code-attr">height</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">4px</span>;
+  }
+  <span class="code-tag">solely-slider</span>::part(<span class="code-attr">track</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(90deg, #1890ff 0%, #52c41a 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">4px</span>;
+  }
+  <span class="code-tag">solely-slider</span>::part(<span class="code-attr">handle</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border</span>: <span class="code-value">3px solid #1890ff</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 2px 8px rgba(24, 144, 255, 0.4)</span>;
+  }
+  <span class="code-tag">solely-slider</span>::part(<span class="code-attr">tooltip</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#1890ff</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件处理 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件处理</h3>
@@ -258,6 +320,66 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                     <td>获取当前值</td>
                     <td>-</td>
                     <td>number</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>滑块根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>rail</td>
+                    <td>滑块轨道（可交互区域）</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>track</td>
+                    <td>已填充轨道</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>handle</td>
+                    <td>滑块手柄</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>tooltip</td>
+                    <td>手柄上的数值提示</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>marks</td>
+                    <td>刻度标记容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>mark</td>
+                    <td>单个刻度标记</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>mark-dot</td>
+                    <td>刻度圆点</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>mark-label</td>
+                    <td>刻度标签文本</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

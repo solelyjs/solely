@@ -302,6 +302,73 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义步骤条内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="steps-part-demo">
+                <style>
+                    #steps-part-demo solely-steps::part(base) {
+                        background: #fafafa;
+                        border-radius: 8px;
+                        padding: 16px;
+                    }
+                    #steps-part-demo solely-steps::part(step-icon) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: #fff;
+                        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+                        border: none;
+                    }
+                    #steps-part-demo solely-steps::part(step-icon-active) {
+                        background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+                        transform: scale(1.1);
+                        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+                    }
+                    #steps-part-demo solely-steps::part(step-title) {
+                        color: #262626;
+                        font-weight: 600;
+                    }
+                    #steps-part-demo solely-steps::part(step-description) {
+                        color: #595959;
+                    }
+                    #steps-part-demo solely-steps::part(step-line) {
+                        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                        height: 3px;
+                    }
+                </style>
+                <solely-steps current="1" items='[{"title":"填写信息","description":"请填写基本信息"},{"title":"验证身份","description":"进行身份验证"},{"title":"完成","description":"注册成功"}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-steps</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fafafa</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">16px</span>;
+  }
+  <span class="code-tag">solely-steps</span>::part(<span class="code-attr">step-icon</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 2px 8px rgba(102, 126, 234, 0.4)</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+  }
+  <span class="code-tag">solely-steps</span>::part(<span class="code-attr">step-icon-active</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #1890ff 0%, #36cfc9 100%)</span>;
+    <span class="code-attr">transform</span>: <span class="code-value">scale(1.1)</span>;
+  }
+  <span class="code-tag">solely-steps</span>::part(<span class="code-attr">step-line</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(90deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">height</span>: <span class="code-value">3px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 使用插槽 -->
     <div class="demo-block">
         <h3 class="demo-block-title">使用插槽</h3>
@@ -424,6 +491,76 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
                     <td>change</td>
                     <td>点击步骤时触发</td>
                     <td>CustomEvent&lt;StepsChangeEventDetail&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>步骤条根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>step</td>
+                    <td>单个步骤</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>tail</td>
+                    <td>步骤连接线</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>wrapper</td>
+                    <td>步骤内容包装器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon-wrapper</td>
+                    <td>图标包装器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>图标容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon-substitution</td>
+                    <td>图标替代内容</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon-text</td>
+                    <td>图标文本（序号）</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>步骤内容区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>步骤标题</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>步骤描述</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

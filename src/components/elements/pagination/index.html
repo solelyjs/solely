@@ -1,16 +1,18 @@
 <div
+    part="base"
     class="pagination"
      :class="this.getPaginationClasses()"
 >
     <!-- 总数 -->
     <If test="$data.showTotal">
-        <span class="pagination__total">
+        <span part="total" class="pagination__total">
             共 {{$data.total}} 条
         </span>
     </If>
 
     <!-- 上一页 -->
     <span
+        part="prev"
         class="pagination__prev"
          :class="this.getPrevClasses()"
         @click="this.handlePrev(event)"
@@ -22,6 +24,7 @@
     <For each="this.calculateVisiblePages()" item="page">
         <If test="page !== '...'">
             <span
+                part="item"
                 class="pagination__item"
                  :class="this.getItemClasses(page)"
                 @click="this.handlePageClick(page, event)"
@@ -30,12 +33,13 @@
             </span>
         </If>
         <If test="page === '...'">
-            <span class="pagination__ellipsis">...</span>
+            <span part="ellipsis" class="pagination__ellipsis">...</span>
         </If>
     </For>
 
     <!-- 下一页 -->
     <span
+        part="next"
         class="pagination__next"
          :class="this.getNextClasses()"
         @click="this.handleNext(event)"
@@ -45,7 +49,7 @@
 
     <!-- 每页条数选择器 -->
     <If test="$data.showSizeChanger">
-        <span class="pagination__size-changer">
+        <span part="size-changer" class="pagination__size-changer">
             <select @change="this.handleSizeChange(event)">
                 <For each="$data.parsedPageSizeOptions" item="size">
                     <option
@@ -61,19 +65,20 @@
 
     <!-- 快速跳转 -->
     <If test="$data.showQuickJumper">
-        <span class="pagination__jumper">
+        <span part="jumper" class="pagination__jumper">
             跳至
-            <span class="pagination__jumper-input-wrapper">
+            <span part="jumper-input-wrapper" class="pagination__jumper-input-wrapper">
                 <input
+                    part="jumper-input"
                     type="number"
                     min="1"
                     :max="$data.totalPages"
                     s-model="$data.jumperValue"
                     @keydown="this.handleJumperKeydown(event)"
                 />
-                <span class="pagination__jumper-controls">
-                    <span class="pagination__jumper-up" @click="this.handleJumperStep(1)">▲</span>
-                    <span class="pagination__jumper-down" @click="this.handleJumperStep(-1)">▼</span>
+                <span part="jumper-controls" class="pagination__jumper-controls">
+                    <span part="jumper-up" class="pagination__jumper-up" @click="this.handleJumperStep(1)">▲</span>
+                    <span part="jumper-down" class="pagination__jumper-down" @click="this.handleJumperStep(-1)">▼</span>
                 </span>
             </span>
             页

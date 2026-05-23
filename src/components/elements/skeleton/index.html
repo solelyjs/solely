@@ -1,27 +1,29 @@
-<div class="skeleton" :class="this.getSkeletonClasses()">
+<div part="base" class="skeleton" :class="this.getSkeletonClasses()">
     <!-- 加载中显示骨架屏 -->
     <If test="$data.loading">
         <If test="$data.avatar || $data.title">
             <!-- 有头像或标题时显示头部 -->
-            <div class="skeleton__header" :class="this.getHeaderClasses()">
+            <div part="header" class="skeleton__header" :class="this.getHeaderClasses()">
                 <If test="$data.avatar">
                     <div
+                        part="avatar"
                         class="skeleton__element skeleton__avatar"
                         :class="this.getAvatarClasses()"
                         :style="'width: ' + ($data.avatarSize || 40) + 'px; height: ' + ($data.avatarSize || 40) + 'px'"
                     ></div>
                 </If>
-                <div class="skeleton__content">
+                <div part="content" class="skeleton__content">
                     <If test="$data.title">
                         <div
+                            part="title"
                             class="skeleton__element skeleton__title"
                             :style="$data.titleWidth ? 'width: ' + (typeof $data.titleWidth === 'number' ? $data.titleWidth + 'px' : $data.titleWidth) : ''"
                         ></div>
                     </If>
                     <If test="$data.paragraphRows > 0">
-                        <div class="skeleton__paragraph">
+                        <div part="paragraph" class="skeleton__paragraph">
                             <For each="Array.from({length: $data.paragraphRows})" item="i">
-                                <div class="skeleton__element skeleton__row"></div>
+                                <div part="row" class="skeleton__element skeleton__row"></div>
                             </For>
                         </div>
                     </If>
@@ -30,9 +32,9 @@
         </If>
         <If test="!$data.avatar && !$data.title && $data.paragraphRows > 0">
             <!-- 只有段落时显示段落 -->
-            <div class="skeleton__paragraph">
+            <div part="paragraph" class="skeleton__paragraph">
                 <For each="Array.from({length: $data.paragraphRows})" item="i">
-                    <div class="skeleton__element skeleton__row"></div>
+                    <div part="row" class="skeleton__element skeleton__row"></div>
                 </For>
             </div>
         </If>
@@ -40,7 +42,7 @@
 
     <!-- 加载完成显示真实内容 -->
     <If test="!$data.loading">
-        <div class="skeleton__real-content">
+        <div part="real-content" class="skeleton__real-content">
             <slot></slot>
         </div>
     </If>

@@ -133,6 +133,61 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义评分内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="rate-part-demo">
+                <style>
+                    #rate-part-demo solely-rate::part(base) {
+                        gap: 8px;
+                    }
+                    #rate-part-demo solely-rate::part(star) {
+                        font-size: 28px;
+                        transition: transform 0.2s;
+                    }
+                    #rate-part-demo solely-rate::part(star):hover {
+                        transform: scale(1.2);
+                    }
+                    #rate-part-demo solely-rate::part(star-filled) {
+                        color: #faad14;
+                        text-shadow: 0 0 8px rgba(250, 173, 20, 0.5);
+                    }
+                    #rate-part-demo solely-rate::part(star-empty) {
+                        color: #d9d9d9;
+                    }
+                </style>
+                <solely-rate value="3.5" allow-half></solely-rate>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-rate</span> <span class="code-attr">value</span>=<span class="code-value">"3.5"</span> <span class="code-attr">allow-half</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-rate</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-rate</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">gap</span>: <span class="code-value">8px</span>;
+  }
+  <span class="code-tag">solely-rate</span>::part(<span class="code-attr">star</span>) {
+    <span class="code-attr">font-size</span>: <span class="code-value">28px</span>;
+    <span class="code-attr">transition</span>: <span class="code-value">transform 0.2s</span>;
+  }
+  <span class="code-tag">solely-rate</span>::part(<span class="code-attr">star</span>):hover {
+    <span class="code-attr">transform</span>: <span class="code-value">scale(1.2)</span>;
+  }
+  <span class="code-tag">solely-rate</span>::part(<span class="code-attr">star-filled</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#faad14</span>;
+    <span class="code-attr">text-shadow</span>: <span class="code-value">0 0 8px rgba(250, 173, 20, 0.5)</span>;
+  }
+  <span class="code-tag">solely-rate</span>::part(<span class="code-attr">star-empty</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#d9d9d9</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件处理 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件处理</h3>
@@ -239,6 +294,31 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                     <td>change</td>
                     <td>评分改变时触发（原生事件）</td>
                     <td>Event</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>评分组件根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>star</td>
+                    <td>单个评分星/字符</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

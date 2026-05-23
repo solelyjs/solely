@@ -195,6 +195,64 @@ backtop.addEventListener(<span class="code-value">'backtop-finish'</span>, (even
         })();
     </script>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义回到顶部按钮样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview backtop-scroll-container" id="backtop-part-demo" style="height: 300px; overflow-y: auto; border: 1px solid var(--solely-border-color); position: relative; padding: 0;">
+                <style>
+                    #backtop-part-demo solely-backtop::part(base) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 50%;
+                        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                        width: 48px;
+                        height: 48px;
+                        transition: all 0.3s;
+                    }
+                    #backtop-part-demo solely-backtop::part(base):hover {
+                        transform: translateY(-4px);
+                        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+                    }
+                    #backtop-part-demo solely-backtop::part(icon) {
+                        color: #fff;
+                        font-size: 20px;
+                    }
+                </style>
+                <div style="height: 1000px; padding: 20px;">
+                    <p>👇 向下滚动查看自定义样式的回到顶部按钮...</p>
+                    <p style="margin-top: 400px; color: var(--solely-primary);">继续向下滚动...</p>
+                    <p style="margin-top: 400px; color: var(--solely-text-secondary);">到底了，点击右下角渐变按钮回到顶部</p>
+                </div>
+                <solely-backtop visibility-height="100"></solely-backtop>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-backtop</span> <span class="code-attr">visibility-height</span>=<span class="code-value">"100"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-backtop</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-backtop</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">50%</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.4)</span>;
+    <span class="code-attr">width</span>: <span class="code-value">48px</span>;
+    <span class="code-attr">height</span>: <span class="code-value">48px</span>;
+    <span class="code-attr">transition</span>: <span class="code-value">all 0.3s</span>;
+  }
+  <span class="code-tag">solely-backtop</span>::part(<span class="code-attr">base</span>):hover {
+    <span class="code-attr">transform</span>: <span class="code-value">translateY(-4px)</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 8px 20px rgba(102, 126, 234, 0.5)</span>;
+  }
+  <span class="code-tag">solely-backtop</span>::part(<span class="code-attr">icon</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-size</span>: <span class="code-value">20px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 通过属性读取配置 -->
     <div class="demo-block">
         <h3 class="demo-block-title">通过属性读取配置</h3>
@@ -279,6 +337,31 @@ backtop.duration = 800;</code></pre>
                     <td>backtop-finish</td>
                     <td>回到顶部动画结束时触发（自定义事件）</td>
                     <td>CustomEvent</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>回到顶部按钮根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>按钮图标</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

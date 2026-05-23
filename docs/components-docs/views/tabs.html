@@ -196,6 +196,85 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义标签页内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="tabs-part-demo">
+                <style>
+                    #tabs-part-demo solely-tabs::part(nav) {
+                        background: #f0f5ff;
+                        border-radius: 8px 8px 0 0;
+                        padding: 4px 4px 0;
+                        border-bottom: 2px solid #e6f7ff;
+                    }
+                    #tabs-part-demo solely-tabs::part(tab) {
+                        border-radius: 6px 6px 0 0;
+                        transition: all 0.2s;
+                        margin-right: 4px;
+                    }
+                    #tabs-part-demo solely-tabs::part(tab):hover {
+                        background: rgba(24, 144, 255, 0.1);
+                        color: #1890ff;
+                    }
+                    #tabs-part-demo solely-tabs::part(tab-active) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: #fff;
+                        font-weight: 600;
+                        box-shadow: 0 -2px 8px rgba(102, 126, 234, 0.3);
+                    }
+                    #tabs-part-demo solely-tabs::part(content) {
+                        background: #fff;
+                        border-radius: 0 0 8px 8px;
+                        padding: 16px;
+                        border: 1px solid #e8e8e8;
+                        border-top: none;
+                    }
+                </style>
+                <solely-tabs items='[{"key":"1","label":"首页"},{"key":"2","label":"产品"},{"key":"3","label":"关于"}]' activeKey="1">
+                    <div slot="tab-1">首页内容区域</div>
+                    <div slot="tab-2">产品内容区域</div>
+                    <div slot="tab-3">关于内容区域</div>
+                </solely-tabs>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-tabs</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span> <span class="code-attr">activeKey</span>=<span class="code-value">"1"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"tab-1"</span><span class="code-bracket">&gt;</span>首页内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-tabs</span>::part(<span class="code-attr">nav</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#f0f5ff</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px 8px 0 0</span>;
+    <span class="code-attr">border-bottom</span>: <span class="code-value">2px solid #e6f7ff</span>;
+  }
+  <span class="code-tag">solely-tabs</span>::part(<span class="code-attr">tab</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">6px 6px 0 0</span>;
+    <span class="code-attr">transition</span>: <span class="code-value">all 0.2s</span>;
+  }
+  <span class="code-tag">solely-tabs</span>::part(<span class="code-attr">tab</span>):hover {
+    <span class="code-attr">background</span>: <span class="code-value">rgba(24, 144, 255, 0.1)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#1890ff</span>;
+  }
+  <span class="code-tag">solely-tabs</span>::part(<span class="code-attr">tab-active</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-tabs</span>::part(<span class="code-attr">content</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">0 0 8px 8px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">16px</span>;
+    <span class="code-attr">border</span>: <span class="code-value">1px solid #e8e8e8</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件演示 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件演示</h3>
@@ -338,6 +417,56 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
                     <td>add</td>
                     <td>点击新增按钮时触发（自定义事件）</td>
                     <td>CustomEvent&lt;TabsAddEventDetail&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>标签页根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>nav</td>
+                    <td>标签栏导航区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>tab</td>
+                    <td>单个标签</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>close</td>
+                    <td>关闭按钮</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>add</td>
+                    <td>新增标签按钮</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>内容区域容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>pane</td>
+                    <td>单个标签面板</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

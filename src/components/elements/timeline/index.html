@@ -1,18 +1,21 @@
 <div
+    part="base"
     class="timeline"
     :class="this.getTimelineClasses()"
 >
-    <ul class="timeline__list">
+    <ul part="list" class="timeline__list">
         <For each="this.getParsedItems()" item="item" index="index">
             <li
+                part="item"
                 class="timeline__item"
                 :class="this.getItemClasses(item, index)"
             >
-                <div class="timeline__item-tail"></div>
-                <div class="timeline__item-wrapper">
-                    <div class="timeline__item-head">
+                <div part="tail" class="timeline__item-tail"></div>
+                <div part="item-wrapper" class="timeline__item-wrapper">
+                    <div part="head" class="timeline__item-head">
                         <If test="item.loading">
                             <div
+                                part="dot"
                                 class="timeline__dot"
                                 :class="this.getDotClasses(item)"
                                 :style="this.getDotStyle(item)"
@@ -20,25 +23,27 @@
                         </If>
                         <ElseIf test="item.icon">
                             <div
+                                part="icon-wrapper"
                                 class="timeline__icon-wrapper"
                                 :style="this.getIconStyle(item)"
                             >{{item.icon}}</div>
                         </ElseIf>
                         <Else>
                             <div
+                                part="dot"
                                 class="timeline__dot"
                                 :class="this.getDotClasses(item)"
                                 :style="this.getDotStyle(item)"
                             ></div>
                         </Else>
                     </div>
-                    <div class="timeline__item-content">
-                        <div class="timeline__title">{{item.title}}</div>
+                    <div part="item-content" class="timeline__item-content">
+                        <div part="title" class="timeline__title">{{item.title}}</div>
                         <If test="item.content">
-                            <div class="timeline__content-text">{{item.content}}</div>
+                            <div part="content-text" class="timeline__content-text">{{item.content}}</div>
                         </If>
                         <If test="item.time">
-                            <div class="timeline__time">{{item.time}}</div>
+                            <div part="time" class="timeline__time">{{item.time}}</div>
                         </If>
                     </div>
                 </div>
@@ -46,13 +51,13 @@
         </For>
 
         <If test="$data.pending">
-            <li class="timeline__item timeline__item--pending">
-                <div class="timeline__item-tail"></div>
-                <div class="timeline__item-wrapper">
-                    <div class="timeline__item-head">
-                        <div class="timeline__dot"></div>
+            <li part="item" class="timeline__item timeline__item--pending">
+                <div part="tail" class="timeline__item-tail"></div>
+                <div part="item-wrapper" class="timeline__item-wrapper">
+                    <div part="head" class="timeline__item-head">
+                        <div part="dot" class="timeline__dot"></div>
                     </div>
-                    <div class="timeline__item-content">
+                    <div part="item-content" class="timeline__item-content">
                         <span>{{$data.pendingContent || '待定'}}</span>
                     </div>
                 </div>

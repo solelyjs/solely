@@ -1,26 +1,26 @@
-<div class="not-found" :class="{ 'not-found--embedded': $data.embedbed }">
-    <div class="not-found__container">
+<div part="base" class="not-found" :class="{ 'not-found--embedded': $data.embedbed }">
+    <div part="container" class="not-found__container">
         <!-- 404 数字动画 -->
-        <div class="not-found__numbers">
-            <span class="not-found__number">4</span>
-            <div class="not-found__icon-wrapper">
-                <svg class="not-found__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div part="numbers" class="not-found__numbers">
+            <span part="number" class="not-found__number">4</span>
+            <div part="icon-wrapper" class="not-found__icon-wrapper">
+                <svg part="icon" class="not-found__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="12"></line>
                     <line x1="12" y1="16" x2="12.01" y2="16"></line>
                 </svg>
             </div>
-            <span class="not-found__number">4</span>
+            <span part="number" class="not-found__number">4</span>
         </div>
 
         <!-- 文字内容 -->
-        <h1 class="not-found__title">{{ $data.title }}</h1>
-        <h2 class="not-found__subtitle">{{ $data.subtitle }}</h2>
-        <p class="not-found__description">{{ $data.description }}</p>
+        <h1 part="title" class="not-found__title">{{ $data.title }}</h1>
+        <h2 part="subtitle" class="not-found__subtitle">{{ $data.subtitle }}</h2>
+        <p part="description" class="not-found__description">{{ $data.description }}</p>
 
         <!-- 返回按钮 -->
-        <button class="not-found__button" @click="this.handleBack()">
-            <svg class="not-found__button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button part="button" class="not-found__button" @click="this.handleBack()">
+            <svg part="button-icon" class="not-found__button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
@@ -29,7 +29,7 @@
     </div>
 
     <!-- 装饰性背景元素 -->
-    <div class="not-found__bg-decoration not-found__bg-decoration--1"></div>
-    <div class="not-found__bg-decoration not-found__bg-decoration--2"></div>
-    <div class="not-found__bg-decoration not-found__bg-decoration--3"></div>
+    <div part="bg-decoration" class="not-found__bg-decoration not-found__bg-decoration--1"></div>
+    <div part="bg-decoration" class="not-found__bg-decoration not-found__bg-decoration--2"></div>
+    <div part="bg-decoration" class="not-found__bg-decoration not-found__bg-decoration--3"></div>
 </div>

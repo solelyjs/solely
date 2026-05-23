@@ -1,9 +1,9 @@
-<div class="tooltip-wrapper" @mouseenter="this.handleMouseEnter(event)" @mouseleave="this.handleMouseLeave(event)" @click="this.handleClick(event)">
+<div part="wrapper" class="tooltip-wrapper" @mouseenter="this.handleMouseEnter(event)" @mouseleave="this.handleMouseLeave(event)" @click="this.handleClick(event)">
     <slot></slot>
     <If test="$data.visible">
-        <div ref="tooltipRef" class="tooltip" :class="this.getTooltipClasses()">
-            <div class="tooltip__content">{{ $data.content }}</div>
-            <div ref="arrowRef" class="tooltip__arrow"></div>
+        <div ref="tooltipRef" part="base" class="tooltip" :class="this.getTooltipClasses()">
+            <div part="content" class="tooltip__content">{{ $data.content }}</div>
+            <div ref="arrowRef" part="arrow" class="tooltip__arrow"></div>
         </div>
     </If>
 </div>

@@ -1,4 +1,5 @@
 <div
+    part="base"
     class="rate"
     :class="this.getRateClasses()"
     role="radiogroup"
@@ -8,6 +9,7 @@
 >
     <For each="$data.starCount" item="i">
         <span
+            part="star"
             class="rate__star"
             :class="this.getStarClasses(i)"
             :data-char="$data.character || '★'"

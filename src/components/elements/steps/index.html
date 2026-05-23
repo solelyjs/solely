@@ -1,8 +1,9 @@
-<div class="steps" :class="this.getStepsClasses()" role="list" aria-label="步骤条">
+<div part="base" class="steps" :class="this.getStepsClasses()" role="list" aria-label="步骤条">
     <!-- 使用 items 属性时的渲染 -->
     <If test="!$data.useSlot">
         <For each="this.getParsedItems()" item="item" index="index">
             <div
+                part="step"
                 class="step"
                 :class="this.getStepClasses(item, index)"
                 role="listitem"
@@ -10,26 +11,26 @@
                 :aria-disabled="item.disabled ? 'true' : 'false'"
                 @click="this.handleStepClick(item, index)"
             >
-                <div class="step__tail"></div>
-                <div class="step__wrapper">
-                    <div class="step__icon-wrapper" :class="this.getIconClasses(item)"
+                <div part="tail" class="step__tail"></div>
+                <div part="wrapper" class="step__wrapper">
+                    <div part="icon-wrapper" class="step__icon-wrapper" :class="this.getIconClasses(item)"
                         :style="item.icon ? this.getIconStyle(item) : ''">
-                        <div class="step__icon">
+                        <div part="icon" class="step__icon">
                             <If test="!$data.progressDot">
                                 <If
                                     test="item.icon || this.getStepStatus(index) === 'finish' || this.getStepStatus(index) === 'error'">
-                                    <span class="step__icon-substitution">{{this.getStepIcon(item, index)}}</span>
+                                    <span part="icon-substitution" class="step__icon-substitution">{{this.getStepIcon(item, index)}}</span>
                                 </If>
                                 <Else>
-                                    <span class="step__icon-text">{{index + 1}}</span>
+                                    <span part="icon-text" class="step__icon-text">{{index + 1}}</span>
                                 </Else>
                             </If>
                         </div>
                     </div>
-                    <div class="step__content">
-                        <div class="step__title">{{item.title}}</div>
+                    <div part="content" class="step__content">
+                        <div part="title" class="step__title">{{item.title}}</div>
                         <If test="item.description">
-                            <div class="step__description">{{item.description}}</div>
+                            <div part="description" class="step__description">{{item.description}}</div>
                         </If>
                     </div>
                 </div>
@@ -41,6 +42,7 @@
     <If test="$data.useSlot">
         <For each="$data.slotItems" item="slotItem" index="index">
             <div
+                part="step"
                 class="step"
                 :class="this.getSlotStepClasses(slotItem, index)"
                 role="listitem"
@@ -48,20 +50,20 @@
                 :aria-disabled="slotItem.disabled ? 'true' : 'false'"
                 @click="this.handleSlotStepClick(slotItem, index)"
             >
-                <div class="step__tail"></div>
-                <div class="step__wrapper">
-                    <div class="step__icon-wrapper">
-                        <div class="step__icon">
+                <div part="tail" class="step__tail"></div>
+                <div part="wrapper" class="step__wrapper">
+                    <div part="icon-wrapper" class="step__icon-wrapper">
+                        <div part="icon" class="step__icon">
                             <If test="!$data.progressDot">
                                 <!-- 使用插槽元素的 innerHTML 作为图标内容 -->
-                                <span class="step__icon-substitution" :innerHTML="slotItem.iconHtml"></span>
+                                <span part="icon-substitution" class="step__icon-substitution" :innerHTML="slotItem.iconHtml"></span>
                             </If>
                         </div>
                     </div>
-                    <div class="step__content">
-                        <div class="step__title">{{slotItem.title}}</div>
+                    <div part="content" class="step__content">
+                        <div part="title" class="step__title">{{slotItem.title}}</div>
                         <If test="slotItem.description">
-                            <div class="step__description">{{slotItem.description}}</div>
+                            <div part="description" class="step__description">{{slotItem.description}}</div>
                         </If>
                     </div>
                 </div>

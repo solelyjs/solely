@@ -216,6 +216,65 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义表格内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="table-part-demo">
+                <style>
+                    #table-part-demo solely-table::part(base) {
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                    }
+                    #table-part-demo solely-table::part(head) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    }
+                    #table-part-demo solely-table::part(head-cell) {
+                        color: #fff;
+                        font-weight: 600;
+                    }
+                    #table-part-demo solely-table::part(row):nth-child(even) {
+                        background: #f0f5ff;
+                    }
+                    #table-part-demo solely-table::part(row):hover {
+                        background: #e6f7ff;
+                    }
+                    #table-part-demo solely-table::part(cell) {
+                        padding: 12px 16px;
+                    }
+                </style>
+                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"},{"title":"地址","dataIndex":"address","key":"address"}]' data-source='[{"name":"张三","age":28,"address":"北京市"},{"name":"李四","age":32,"address":"上海市"},{"name":"王五","age":24,"address":"广州市"}]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-table</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 2px 8px rgba(0, 0, 0, 0.08)</span>;
+  }
+  <span class="code-tag">solely-table</span>::part(<span class="code-attr">head</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+  }
+  <span class="code-tag">solely-table</span>::part(<span class="code-attr">head-cell</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-table</span>::part(<span class="code-attr">row</span>):nth-child(even) {
+    <span class="code-attr">background</span>: <span class="code-value">#f0f5ff</span>;
+  }
+  <span class="code-tag">solely-table</span>::part(<span class="code-attr">row</span>):hover {
+    <span class="code-attr">background</span>: <span class="code-value">#e6f7ff</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 自定义单元格内容 -->
     <div class="demo-block">
         <h3 class="demo-block-title">自定义单元格内容</h3>
@@ -366,6 +425,76 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
                     <td>获取数据源</td>
                     <td>-</td>
                     <td>Record&lt;string, unknown&gt;[]</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>wrapper</td>
+                    <td>表格包装器容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>base</td>
+                    <td>表格根元素</td>
+                    <td>&lt;table&gt;</td>
+                </tr>
+                <tr>
+                    <td>head</td>
+                    <td>表头区域</td>
+                    <td>&lt;thead&gt;</td>
+                </tr>
+                <tr>
+                    <td>head-row</td>
+                    <td>表头行</td>
+                    <td>&lt;tr&gt;</td>
+                </tr>
+                <tr>
+                    <td>head-cell</td>
+                    <td>表头单元格</td>
+                    <td>&lt;th&gt;</td>
+                </tr>
+                <tr>
+                    <td>body</td>
+                    <td>表格主体区域</td>
+                    <td>&lt;tbody&gt;</td>
+                </tr>
+                <tr>
+                    <td>row</td>
+                    <td>数据行</td>
+                    <td>&lt;tr&gt;</td>
+                </tr>
+                <tr>
+                    <td>cell</td>
+                    <td>数据单元格</td>
+                    <td>&lt;td&gt;</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
+                    <td>加载状态容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>loading-icon</td>
+                    <td>加载图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>empty</td>
+                    <td>空状态提示</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>

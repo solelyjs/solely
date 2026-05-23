@@ -1,30 +1,34 @@
 <div
+    part="base"
     class="progress"
     :class="this.getProgressClasses()"
 >
     <!-- 线性进度条 -->
     <If test="$data.type === 'line'">
-        <div class="progress__outer" :style="'height: ' + ($data.strokeWidth || 8) + 'px'">
+        <div part="outer" class="progress__outer" :style="'height: ' + ($data.strokeWidth || 8) + 'px'">
             <div
+                part="inner"
                 class="progress__inner"
                 :class="this.getInnerClasses()"
                 :style="'width: ' + this.clampedPercent + '%'"
             ></div>
         </div>
         <If test="$data.showInfo">
-            <span class="progress__text">{{this.getText()}}</span>
+            <span part="text" class="progress__text">{{this.getText()}}</span>
         </If>
     </If>
 
     <!-- 圆形进度条 -->
     <If test="$data.type === 'circle'">
         <svg
+            part="circle"
             class="progress__circle"
             :width="$data.width || 120"
             :height="$data.width || 120"
             :viewBox="'0 0 ' + ($data.width || 120) + ' ' + ($data.width || 120)"
         >
             <circle
+                part="circle-track"
                 class="progress__circle-track"
                 :cx="($data.width || 120) / 2"
                 :cy="($data.width || 120) / 2"
@@ -32,6 +36,7 @@
                 :stroke-width="$data.strokeWidth || 6"
             />
             <circle
+                part="circle-path"
                 class="progress__circle-path"
                 :class="this.getCirclePathClasses()"
                 :cx="($data.width || 120) / 2"
@@ -43,7 +48,7 @@
             />
         </svg>
         <If test="$data.showInfo">
-            <span class="progress__circle-text">{{this.getText()}}</span>
+            <span part="circle-text" class="progress__circle-text">{{this.getText()}}</span>
         </If>
     </If>
 </div>

@@ -157,6 +157,63 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义上传组件内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="upload-part-demo">
+                <style>
+                    #upload-part-demo solely-upload::part(button) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: #fff;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 8px 20px;
+                        font-weight: 600;
+                        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    }
+                    #upload-part-demo solely-upload::part(list) {
+                        border: 1px dashed #d9d9d9;
+                        border-radius: 8px;
+                        padding: 8px;
+                        margin-top: 12px;
+                    }
+                    #upload-part-demo solely-upload::part(list-item) {
+                        background: #f0f5ff;
+                        border-radius: 4px;
+                        margin-bottom: 4px;
+                    }
+                </style>
+                <solely-upload button-text="自定义样式上传"></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">button-text</span>=<span class="code-value">"自定义样式上传"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-upload</span>::part(<span class="code-attr">button</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">border</span>: <span class="code-value">none</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-upload</span>::part(<span class="code-attr">list</span>) {
+    <span class="code-attr">border</span>: <span class="code-value">1px dashed #d9d9d9</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">8px</span>;
+  }
+  <span class="code-tag">solely-upload</span>::part(<span class="code-attr">list-item</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#f0f5ff</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">4px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件处理 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件处理</h3>
@@ -334,6 +391,101 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
                     <td>remove</td>
                     <td>移除文件时触发</td>
                     <td>CustomEvent&lt;{ file: UploadFile; fileList: UploadFile[] }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>上传组件根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drag</td>
+                    <td>拖拽上传区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drag-icon</td>
+                    <td>拖拽区域图标</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drag-text</td>
+                    <td>拖拽区域主文本</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>drag-hint</td>
+                    <td>拖拽区域提示文本</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>button</td>
+                    <td>普通上传按钮</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>list</td>
+                    <td>文件列表容器</td>
+                    <td>&lt;ul&gt;</td>
+                </tr>
+                <tr>
+                    <td>list-item</td>
+                    <td>单个文件项</td>
+                    <td>&lt;li&gt;</td>
+                </tr>
+                <tr>
+                    <td>thumb</td>
+                    <td>文件缩略图</td>
+                    <td>&lt;img&gt;</td>
+                </tr>
+                <tr>
+                    <td>info</td>
+                    <td>文件信息容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td>文件名</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>size</td>
+                    <td>文件大小</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>progress</td>
+                    <td>上传进度条容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>progress-bar</td>
+                    <td>上传进度条</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>status</td>
+                    <td>文件状态文本</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>remove</td>
+                    <td>移除按钮</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

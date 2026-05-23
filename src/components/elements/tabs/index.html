@@ -1,12 +1,14 @@
 <div
+    part="base"
     class="tabs"
     :class="this.getTabsClasses()"
     role="tablist"
 >
     <!-- 标签栏 -->
-    <div class="tabs__nav">
+    <div part="nav" class="tabs__nav">
         <For each="this.getParsedItems()" item="item">
             <div
+                part="tab"
                 class="tabs__tab"
                 :class="this.getTabClasses(item)"
                 role="tab"
@@ -18,6 +20,7 @@
                 {{item.label}}
                 <If test="$data.closable && this.getParsedItems().length > 1">
                     <span
+                        part="close"
                         class="tabs__close"
                         @click="this.handleClose(item, event)"
                         role="button"
@@ -29,6 +32,7 @@
         </For>
         <If test="$data.addable">
             <span
+                part="add"
                 class="tabs__add"
                 @click="this.handleAdd(event)"
                 role="button"
@@ -39,9 +43,10 @@
     </div>
 
     <!-- 内容区 -->
-    <div class="tabs__content">
+    <div part="content" class="tabs__content">
         <For each="this.getParsedItems()" item="item">
             <div
+                part="pane"
                 class="tabs__pane"
                 :class="this.getPaneClasses(item)"
                 :id="'panel-' + item.key"

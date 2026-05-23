@@ -1,5 +1,6 @@
-<div class="slider" :class="this.getSliderClasses()">
+<div part="base" class="slider" :class="this.getSliderClasses()">
     <div
+        part="rail"
         class="slider__rail"
         ref="rail"
         role="slider"
@@ -13,21 +14,21 @@
         @mousedown="this.handleMouseDown(event)"
         @touchstart="this.handleTouchStart(event)"
     >
-        <div class="slider__track" :style="this.getTrackStyle()"></div>
-        <div class="slider__handle" :class="this.getHandleClasses()" :style="this.getHandleStyle()">
+        <div part="track" class="slider__track" :style="this.getTrackStyle()"></div>
+        <div part="handle" class="slider__handle" :class="this.getHandleClasses()" :style="this.getHandleStyle()">
             <If test="$data.tooltipVisible !== false">
-                <span class="slider__tooltip">{{$data.value}}</span>
+                <span part="tooltip" class="slider__tooltip">{{$data.value}}</span>
             </If>
         </div>
 
         <!-- 刻度标记 -->
         <If test="$data.marks">
-            <div class="slider__marks" aria-hidden="true">
+            <div part="marks" class="slider__marks" aria-hidden="true">
                 <For each="this.getParsedMarks()" item="mark">
-                    <span class="slider__mark" :style="this.getMarkStyle(mark.value)">
-                        <span class="slider__mark-dot"
+                    <span part="mark" class="slider__mark" :style="this.getMarkStyle(mark.value)">
+                        <span part="mark-dot" class="slider__mark-dot"
                             :class="{ 'slider__mark-dot--active': (mark.value <= ($data.value ?? ($data.min ?? 0))) }"></span>
-                        <span class="slider__mark-label">{{mark.label}}</span>
+                        <span part="mark-label" class="slider__mark-label">{{mark.label}}</span>
                     </span>
                 </For>
             </div>

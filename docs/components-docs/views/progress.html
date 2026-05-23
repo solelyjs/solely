@@ -149,6 +149,77 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义进度条内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="progress-part-demo">
+                <style>
+                    #progress-part-demo solely-progress::part(base) {
+                        background: #f0f0f0;
+                        border-radius: 100px;
+                        overflow: hidden;
+                    }
+                    #progress-part-demo solely-progress::part(bar) {
+                        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 100px;
+                        transition: width 0.4s ease;
+                    }
+                    #progress-part-demo solely-progress::part(text) {
+                        color: #667eea;
+                        font-weight: 600;
+                        font-size: 14px;
+                    }
+                    #progress-part-demo solely-progress[type="circle"]::part(circle-track) {
+                        stroke: #f0f0f0;
+                        stroke-width: 8;
+                    }
+                    #progress-part-demo solely-progress[type="circle"]::part(circle-bar) {
+                        stroke: url(#gradient);
+                        stroke-width: 8;
+                        stroke-linecap: round;
+                    }
+                </style>
+                <svg width="0" height="0">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <solely-progress percent="65"></solely-progress>
+                <solely-progress type="circle" percent="65" width="100"></solely-progress>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">percent</span>=<span class="code-value">"65"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-progress</span> <span class="code-attr">type</span>=<span class="code-value">"circle"</span> <span class="code-attr">percent</span>=<span class="code-value">"65"</span> <span class="code-attr">width</span>=<span class="code-value">"100"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-progress</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-progress</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#f0f0f0</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">100px</span>;
+  }
+  <span class="code-tag">solely-progress</span>::part(<span class="code-attr">bar</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(90deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">100px</span>;
+  }
+  <span class="code-tag">solely-progress</span>::part(<span class="code-attr">text</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-progress</span>[type=<span class="code-value">"circle"</span>]::part(<span class="code-attr">circle-bar</span>) {
+    <span class="code-attr">stroke</span>: <span class="code-value">#667eea</span>;
+    <span class="code-attr">stroke-linecap</span>: <span class="code-value">round</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 动态圆形进度 -->
     <div class="demo-block">
         <h3 class="demo-block-title">动态圆形进度</h3>
@@ -244,6 +315,61 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
                     <td>内容的模板函数（仅在 type="line" 时有效）</td>
                     <td>string</td>
                     <td>''</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>进度条根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>outer</td>
+                    <td>线性进度条外层轨道</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>inner</td>
+                    <td>线性进度条已填充部分</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>text</td>
+                    <td>线性进度条文本</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>circle</td>
+                    <td>圆形进度条 SVG</td>
+                    <td>&lt;svg&gt;</td>
+                </tr>
+                <tr>
+                    <td>circle-track</td>
+                    <td>圆形进度条背景轨道</td>
+                    <td>&lt;circle&gt;</td>
+                </tr>
+                <tr>
+                    <td>circle-path</td>
+                    <td>圆形进度条前景路径</td>
+                    <td>&lt;circle&gt;</td>
+                </tr>
+                <tr>
+                    <td>circle-text</td>
+                    <td>圆形进度条中心文本</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

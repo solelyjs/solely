@@ -1,8 +1,9 @@
-<nav class="breadcrumb">
+<nav part="base" class="breadcrumb">
     <For each="$data.items" item="item" index="index">
-        <span class="breadcrumb__item">
+        <span part="item" class="breadcrumb__item">
             <If test="item.href && index < $data.items.length - 1">
                 <a
+                    part="link"
                     class="breadcrumb__link"
                     :href="item.href"
                     @click="this.handleClick(item, event)"
@@ -12,6 +13,7 @@
             </If>
             <If test="!item.href && index < $data.items.length - 1">
                 <span
+                    part="link"
                     class="breadcrumb__link"
                     @click="this.handleClick(item, event)"
                 >
@@ -19,12 +21,12 @@
                 </span>
             </If>
             <If test="index === $data.items.length - 1">
-                <span class="breadcrumb__current">
+                <span part="current" class="breadcrumb__current">
                     {{item.title}}
                 </span>
             </If>
             <If test="index < $data.items.length - 1">
-                <span class="breadcrumb__separator">
+                <span part="separator" class="breadcrumb__separator">
                     {{$data.separator}}
                 </span>
             </If>

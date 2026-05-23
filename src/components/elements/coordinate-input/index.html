@@ -1,12 +1,13 @@
-<div :class="this.getContainerClasses()">
+<div part="base" :class="this.getContainerClasses()">
     <If condition="$data.type === 'latitude' || $data.type === 'both'">
-        <div class="coordinate-group">
+        <div part="group" class="coordinate-group">
             <If condition="$data.type === 'both'">
-                <span class="coordinate-group__label">纬度</span>
+                <span part="label" class="coordinate-group__label">纬度</span>
             </If>
-            <div class="dms-input" :class="this.getDmsInputClasses('latitude')">
-                <div class="dms-input__fields">
+            <div part="input" class="dms-input" :class="this.getDmsInputClasses('latitude')">
+                <div part="fields" class="dms-input__fields">
                     <input
+                        part="field"
                         class="dms-input__field dms-input__field--degrees"
                         type="number"
                         min="0"
@@ -21,8 +22,9 @@
                         @blur="this.handleBlur('latitude', event)"
                         ref="latitudeDegreesInput"
                     />
-                    <span class="dms-input__unit">°</span>
+                    <span part="unit" class="dms-input__unit">°</span>
                     <input
+                        part="field"
                         class="dms-input__field"
                         type="number"
                         min="0"
@@ -37,8 +39,9 @@
                         @blur="this.handleBlur('latitude', event)"
                         ref="latitudeMinutesInput"
                     />
-                    <span class="dms-input__unit">′</span>
+                    <span part="unit" class="dms-input__unit">′</span>
                     <input
+                        part="field"
                         class="dms-input__field dms-input__field--seconds"
                         type="text"
                         inputmode="decimal"
@@ -50,10 +53,11 @@
                         @keydown="this.handleSecondsKeyDown('latitude', event)"
                         ref="latitudeSecondsInput"
                     />
-                    <span class="dms-input__unit">″</span>
+                    <span part="unit" class="dms-input__unit">″</span>
                 </div>
                 <If test="$data.showDirection">
                     <div
+                        part="direction"
                         :class="this.getDirectionClasses('latitude')"
                         :disabled="$data.disabled"
                         @click="this.toggleDirection('latitude')"
@@ -77,19 +81,20 @@
                 </If>
             </div>
             <If condition="$data.showDecimal">
-                <span class="coordinate-decimal">{{this.getDecimalDisplayValue('latitude')}}</span>
+                <span part="decimal" class="coordinate-decimal">{{this.getDecimalDisplayValue('latitude')}}</span>
             </If>
         </div>
     </If>
 
     <If condition="$data.type === 'longitude' || $data.type === 'both'">
-        <div class="coordinate-group">
+        <div part="group" class="coordinate-group">
             <If condition="$data.type === 'both'">
-                <span class="coordinate-group__label">经度</span>
+                <span part="label" class="coordinate-group__label">经度</span>
             </If>
-            <div class="dms-input" :class="this.getDmsInputClasses('longitude')">
-                <div class="dms-input__fields">
+            <div part="input" class="dms-input" :class="this.getDmsInputClasses('longitude')">
+                <div part="fields" class="dms-input__fields">
                     <input
+                        part="field"
                         class="dms-input__field dms-input__field--degrees"
                         type="number"
                         min="0"
@@ -104,8 +109,9 @@
                         @blur="this.handleBlur('longitude', event)"
                         ref="longitudeDegreesInput"
                     />
-                    <span class="dms-input__unit">°</span>
+                    <span part="unit" class="dms-input__unit">°</span>
                     <input
+                        part="field"
                         class="dms-input__field"
                         type="number"
                         min="0"
@@ -120,8 +126,9 @@
                         @blur="this.handleBlur('longitude', event)"
                         ref="longitudeMinutesInput"
                     />
-                    <span class="dms-input__unit">′</span>
+                    <span part="unit" class="dms-input__unit">′</span>
                     <input
+                        part="field"
                         class="dms-input__field dms-input__field--seconds"
                         type="text"
                         inputmode="decimal"
@@ -133,10 +140,11 @@
                         @keydown="this.handleSecondsKeyDown('longitude', event)"
                         ref="longitudeSecondsInput"
                     />
-                    <span class="dms-input__unit">″</span>
+                    <span part="unit" class="dms-input__unit">″</span>
                 </div>
                 <If test="$data.showDirection">
                     <div
+                        part="direction"
                         :class="this.getDirectionClasses('longitude')"
                         :disabled="$data.disabled"
                         @click="this.toggleDirection('longitude')"
@@ -160,7 +168,7 @@
                 </If>
             </div>
             <If condition="$data.showDecimal">
-                <span class="coordinate-decimal">{{this.getDecimalDisplayValue('longitude')}}</span>
+                <span part="decimal" class="coordinate-decimal">{{this.getDecimalDisplayValue('longitude')}}</span>
             </If>
         </div>
     </If>

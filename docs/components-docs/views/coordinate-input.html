@@ -215,6 +215,60 @@
     </div>
 
     <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义输入框内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="coordinate-part-demo">
+                <style>
+                    #coordinate-part-demo solely-coordinate-input::part(base) {
+                        background: #f0f5ff;
+                        border-radius: 8px;
+                        padding: 12px;
+                    }
+                    #coordinate-part-demo solely-coordinate-input::part(label) {
+                        color: #1890ff;
+                        font-weight: 600;
+                    }
+                    #coordinate-part-demo solely-coordinate-input::part(field) {
+                        border-color: #1890ff;
+                        border-radius: 4px;
+                    }
+                    #coordinate-part-demo solely-coordinate-input::part(unit) {
+                        color: #1890ff;
+                        font-weight: 500;
+                    }
+                </style>
+                <solely-coordinate-input type="latitude" latitude="39.9042"></solely-coordinate-input>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">type</span>=<span class="code-value">"latitude"</span> <span class="code-attr">latitude</span>=<span class="code-value">"39.9042"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-coordinate-input</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#f0f5ff</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">12px</span>;
+  }
+  <span class="code-tag">solely-coordinate-input</span>::part(<span class="code-attr">label</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#1890ff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">600</span>;
+  }
+  <span class="code-tag">solely-coordinate-input</span>::part(<span class="code-attr">field</span>) {
+    <span class="code-attr">border-color</span>: <span class="code-value">#1890ff</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">4px</span>;
+  }
+  <span class="code-tag">solely-coordinate-input</span>::part(<span class="code-attr">unit</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#1890ff</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">500</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-block">
         <h3 class="demo-block-title">事件监听</h3>
         <p class="demo-block-desc">监听 input、change、focus、blur、keydown、clear 等事件来响应经纬度输入的交互。</p>
         <div class="demo-box">
@@ -508,6 +562,66 @@
                         <td>清空所有值</td>
                         <td>-</td>
                         <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">CSS Part</h4>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>Part 名称</th>
+                        <th>说明</th>
+                        <th>对应元素</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>base</td>
+                        <td>组件根容器</td>
+                        <td>&lt;div&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>group</td>
+                        <td>坐标组（纬度/经度）容器</td>
+                        <td>&lt;div&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>label</td>
+                        <td>坐标类型标签（纬度/经度）</td>
+                        <td>&lt;span&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>input</td>
+                        <td>DMS 输入框容器</td>
+                        <td>&lt;div&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>fields</td>
+                        <td>输入字段区域</td>
+                        <td>&lt;div&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>field</td>
+                        <td>单个输入框（度/分/秒）</td>
+                        <td>&lt;input&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>unit</td>
+                        <td>单位符号（°/′/″）</td>
+                        <td>&lt;span&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>direction</td>
+                        <td>方向选择器容器</td>
+                        <td>&lt;div&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>decimal</td>
+                        <td>十进制值显示文本</td>
+                        <td>&lt;span&gt;</td>
                     </tr>
                 </tbody>
             </table>

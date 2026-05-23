@@ -150,6 +150,75 @@
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部分页组件内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="pagination-part-demo">
+                <style>
+                    #pagination-part-demo solely-pagination::part(base) {
+                        gap: 8px;
+                    }
+                    #pagination-part-demo solely-pagination::part(item) {
+                        border-radius: 8px;
+                        border: 1px solid #d9d9d9;
+                        transition: all 0.2s;
+                        min-width: 36px;
+                        height: 36px;
+                    }
+                    #pagination-part-demo solely-pagination::part(item):hover {
+                        border-color: #1890ff;
+                        color: #1890ff;
+                    }
+                    #pagination-part-demo solely-pagination::part(item-active) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-color: transparent;
+                        color: #fff;
+                        font-weight: 600;
+                        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    }
+                    #pagination-part-demo solely-pagination::part(prev),
+                    #pagination-part-demo solely-pagination::part(next) {
+                        border-radius: 8px;
+                        border: 1px solid #d9d9d9;
+                    }
+                    #pagination-part-demo solely-pagination::part(total) {
+                        color: #666;
+                        font-weight: 500;
+                    }
+                </style>
+                <solely-pagination current="3" total="100" show-total></solely-pagination>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-pagination</span> <span class="code-attr">current</span>=<span class="code-value">"3"</span> <span class="code-attr">total</span>=<span class="code-value">"100"</span> <span class="code-attr">show-total</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-pagination</span>::part(<span class="code-attr">item</span>) {
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">border</span>: <span class="code-value">1px solid #d9d9d9</span>;
+    <span class="code-attr">transition</span>: <span class="code-value">all 0.2s</span>;
+  }
+  <span class="code-tag">solely-pagination</span>::part(<span class="code-attr">item</span>):hover {
+    <span class="code-attr">border-color</span>: <span class="code-value">#1890ff</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#1890ff</span>;
+  }
+  <span class="code-tag">solely-pagination</span>::part(<span class="code-attr">item-active</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">color</span>: <span class="code-value">#fff</span>;
+    <span class="code-attr">box-shadow</span>: <span class="code-value">0 4px 12px rgba(102, 126, 234, 0.4)</span>;
+  }
+  <span class="code-tag">solely-pagination</span>::part(<span class="code-attr">total</span>) {
+    <span class="code-attr">color</span>: <span class="code-value">#666</span>;
+    <span class="code-attr">font-weight</span>: <span class="code-value">500</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 事件演示 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件演示</h3>
@@ -290,6 +359,86 @@ pagination.addEventListener(<span class="code-value">'sizeChange'</span>, (e) =>
                     <td>sizeChange</td>
                     <td>每页条数改变时触发（兼容旧名称 showSizeChange）</td>
                     <td>CustomEvent&lt;{ current: number; pageSize: number }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>分页组件根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>total</td>
+                    <td>总数文本</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>prev</td>
+                    <td>上一页按钮</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>item</td>
+                    <td>页码按钮</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>ellipsis</td>
+                    <td>省略号</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>next</td>
+                    <td>下一页按钮</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>size-changer</td>
+                    <td>每页条数选择器</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>jumper</td>
+                    <td>快速跳转区域</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>jumper-input-wrapper</td>
+                    <td>跳转输入框包装器</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>jumper-input</td>
+                    <td>跳转输入框</td>
+                    <td>&lt;input&gt;</td>
+                </tr>
+                <tr>
+                    <td>jumper-controls</td>
+                    <td>跳转控制按钮容器</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>jumper-up</td>
+                    <td>跳转增加按钮</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>jumper-down</td>
+                    <td>跳转减少按钮</td>
+                    <td>&lt;span&gt;</td>
                 </tr>
             </tbody>
         </table>

@@ -1,17 +1,17 @@
-<div class="empty">
-    <div class="empty__image">
+<div part="base" class="empty">
+    <div part="image" class="empty__image">
         <If test="this.hasImageSlot()">
             <slot name="image"></slot>
         </If>
         <ElseIf test="$data.image">
-            <img :src="$data.image" alt="empty" />
+            <img part="img" :src="$data.image" alt="empty" />
         </ElseIf>
         <Else>
-            <span class="empty__icon">📭</span>
+            <span part="icon" class="empty__icon">📭</span>
         </Else>
     </div>
-    <p class="empty__description">{{$data.description || '暂无数据'}}</p>
-    <div class="empty__footer">
+    <p part="description" class="empty__description">{{$data.description || '暂无数据'}}</p>
+    <div part="footer" class="empty__footer">
         <slot></slot>
     </div>
 </div>

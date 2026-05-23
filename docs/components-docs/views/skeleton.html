@@ -161,6 +161,65 @@ skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">
         </div>
     </div>
 
+    <!-- CSS Part 自定义样式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">CSS Part 自定义样式</h3>
+        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义骨架屏内部样式，无需修改组件源码。</p>
+        <div class="demo-box">
+            <div class="demo-preview" id="skeleton-part-demo">
+                <style>
+                    #skeleton-part-demo solely-skeleton::part(base) {
+                        background: #fafafa;
+                        border-radius: 8px;
+                        padding: 16px;
+                        border: 1px solid #e8e8e8;
+                    }
+                    #skeleton-part-demo solely-skeleton::part(avatar) {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        opacity: 0.6;
+                    }
+                    #skeleton-part-demo solely-skeleton::part(title) {
+                        background: linear-gradient(90deg, #e6f7ff 0%, #1890ff 100%);
+                        border-radius: 4px;
+                    }
+                    #skeleton-part-demo solely-skeleton::part(row) {
+                        background: linear-gradient(90deg, #f0f5ff 0%, #91d5ff 100%);
+                        border-radius: 4px;
+                    }
+                    #skeleton-part-demo solely-skeleton::part(row):last-child {
+                        width: 60%;
+                    }
+                </style>
+                <solely-skeleton active avatar title paragraph-rows="3"></solely-skeleton>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-skeleton</span> <span class="code-attr">active</span> <span class="code-attr">avatar</span> <span class="code-attr">title</span> <span class="code-attr">paragraph-rows</span>=<span class="code-value">"3"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-skeleton</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- CSS：通过 ::part() 自定义样式 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span>
+  <span class="code-tag">solely-skeleton</span>::part(<span class="code-attr">base</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">#fafafa</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">8px</span>;
+    <span class="code-attr">padding</span>: <span class="code-value">16px</span>;
+  }
+  <span class="code-tag">solely-skeleton</span>::part(<span class="code-attr">avatar</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(135deg, #667eea 0%, #764ba2 100%)</span>;
+    <span class="code-attr">opacity</span>: <span class="code-value">0.6</span>;
+  }
+  <span class="code-tag">solely-skeleton</span>::part(<span class="code-attr">title</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(90deg, #e6f7ff 0%, #1890ff 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">4px</span>;
+  }
+  <span class="code-tag">solely-skeleton</span>::part(<span class="code-attr">row</span>) {
+    <span class="code-attr">background</span>: <span class="code-value">linear-gradient(90deg, #f0f5ff 0%, #91d5ff 100%)</span>;
+    <span class="code-attr">border-radius</span>: <span class="code-value">4px</span>;
+  }
+<span class="code-bracket">&lt;/</span><span class="code-tag">style</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 列表加载示例 -->
     <div class="demo-block">
         <h3 class="demo-block-title">列表加载示例</h3>
@@ -301,6 +360,61 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
                 <tr>
                     <td>默认插槽</td>
                     <td>加载完成后显示的真实内容</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">CSS Part</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Part 名称</th>
+                    <th>说明</th>
+                    <th>对应元素</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>base</td>
+                    <td>骨架屏根容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>header</td>
+                    <td>头部区域（含头像和标题）</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>avatar</td>
+                    <td>头像占位图</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>content</td>
+                    <td>内容区域</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>标题占位图</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>paragraph</td>
+                    <td>段落占位图容器</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>row</td>
+                    <td>段落行占位图</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
+                    <td>real-content</td>
+                    <td>加载完成后的真实内容容器</td>
+                    <td>&lt;div&gt;</td>
                 </tr>
             </tbody>
         </table>
