@@ -1,7 +1,13 @@
 import { defineConfig } from 'vite'
 import path from 'path'
+import { solelyVitePlugin } from './src/plugins/solely-vite-plugin'
 
 export default defineConfig({
+  plugins: [
+    solelyVitePlugin({
+      precompile: true,
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

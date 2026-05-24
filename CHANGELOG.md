@@ -7,6 +7,28 @@
 
 ## [Unreleased]
 
+## [0.4.13] - 2026-05-24
+
+### Added
+
+- **feat(csp)**: 组件库全面支持 CSP 严格模式
+    - 所有组件模板从 `?raw` 运行时编译迁移至 `?solely` 预编译，npm 包原生兼容 CSP 严格模式（无需 `unsafe-eval`）
+    - 路由组件 `router-link` 从内联模板迁移至 `?solely` 预编译导入
+    - 新增 `isCSPBlocked()` 函数，检测当前环境是否受 CSP 限制
+    - `createFunction` 增加 CSP 检测，当 `new Function()` 被 CSP 阻止时输出友好错误提示及解决方案
+    - 新增 `examples/csp-demo/` CSP 对比示例，展示 `?solely` 与 `?raw` 在严格 CSP 下的差异
+
+### Changed
+
+- **refactor**: 统一日志前缀为 `[Solely]`
+    - `templateError.ts` 中 `Template Error` → `[Solely]`，`[Template Error]` → `[Solely]`
+    - `buildIR.ts` 中 `[IR Compile Error]` → `[Solely]`，`[IR]` → `[Solely]`
+    - `decorators.ts` 中 `[Style Warning]` → `[Solely]`
+
+- **refactor(buildIR)**: 提取 IR 版本号为顶部常量 `IR_VERSION`，替代硬编码值
+
+- **chore(package)**: 在 `files` 字段中添加 `!dist/icons` 排除规则，避免 Bootstrap Icons 打入 npm 包
+
 ## [0.4.12] - 2026-05-23
 
 ### Added
@@ -481,7 +503,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.12...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.13...HEAD
+[0.4.13]: https://github.com/solelyjs/solely/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/solelyjs/solely/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/solelyjs/solely/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/solelyjs/solely/compare/v0.4.9...v0.4.10
