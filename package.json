@@ -131,6 +131,7 @@
     },
     "files": [
         "dist",
+        "!dist/icons",
         "README.md",
         "LICENSE"
     ],

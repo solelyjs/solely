@@ -12,6 +12,8 @@ import {
 } from '../../types';
 
 // ==================== 全局常量与环境 ====================
+const IR_VERSION = '1.2.0'; // IR 格式版本，当 IR 结构有破坏性变更时升级
+
 const INTERPOLATION_RE = /\{\{[\s\S]*?\}\}/; // 移除 /g，使用 .test() 时无需重置 lastIndex，且更安全
 
 // ==================== s-model 组件配置 ====================
@@ -89,7 +91,7 @@ class FunctionCompiler {
             fn = genFunction(trimmed, type, locals);
         } catch (e) {
             if (IS_DEV) {
-                console.error(`[IR Compile Error] Type: ${type}, Expr: "${trimmed}"`, e);
+                console.error(`[Solely] IR Compile Error - Type: ${type}, Expr: "${trimmed}"`, e);
             }
             fn = () => ''; // 安全回退
         }
@@ -431,7 +433,7 @@ function transformNode(node: ASTNode, locals: IRLocal[], compiler: FunctionCompi
         case ASTType.If:
         case ASTType.ElseIf:
         case ASTType.Else: {
-            if (IS_DEV) console.warn(`[IR] Orphaned conditional node found: ${ASTType[node.type]}`);
+            if (IS_DEV) console.warn(`[Solely] Orphaned conditional node found: ${ASTType[node.type]}`);
             ir.a = processAttributes(node, locals, compiler);
             if (node.children) {
                 ir.c = transformList(node.children, locals, compiler);
@@ -576,7 +578,7 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
 
     const root: IRRoot = {
         t: 'root',
-        v: '1.2.0', // Bump version - static hoisting support
+        v: IR_VERSION,
         fns: compiler.getFunctions(),
         n: irNodes,
         s: {

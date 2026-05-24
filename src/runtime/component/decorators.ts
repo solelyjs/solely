@@ -176,7 +176,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
                 }
             } catch {
                 if (IS_DEV) {
-                    console.warn(`[Style Warning] <${tagName}>: CSSStyleSheet 不可用，将使用 style 标签回退方案`);
+                    console.warn(`[Solely] <${tagName}>: CSSStyleSheet 不可用，将使用 style 标签回退方案`);
                 }
             }
         }

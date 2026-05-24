@@ -99,7 +99,7 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
     const errorMessage = (error as Error)?.message ?? String(error);
 
     // 构建错误徽章和样式
-    const badge = `%cTemplate Error%c in <${componentName}> → ${errorMessage}`;
+    const badge = `%c[Solely]%c Template Error in <${componentName}> → ${errorMessage}`;
     const badgeCss = [
         `color:${theme.badgeFg};background:${theme.badgeBg};padding:4px 10px;border-radius:6px;font-weight:bold;`,
         `color:${theme.arrow};font-weight:bold;`,
@@ -139,7 +139,7 @@ export function showTemplateError(error: unknown, source = '', meta?: Meta, comp
 
     // 检查行号是否超出范围
     if (lineNum > lines.length) {
-        console.error(`[Template Error] 行号 ${lineNum} 超出范围`);
+        console.error(`[Solely] 行号 ${lineNum} 超出范围`);
         return;
     }
 
