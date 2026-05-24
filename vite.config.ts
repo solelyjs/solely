@@ -75,6 +75,7 @@ export default defineConfig(({ command, mode }) => {
                     input: {
                         main: path.resolve(__dirname, 'examples/index.html'),
                         'security-demo': path.resolve(__dirname, 'examples/security-demo/index.html'),
+                        'csp-demo': path.resolve(__dirname, 'examples/csp-demo/index.html'),
                     },
                     output: {
                         entryFileNames: `assets/[name]-[hash].js`,

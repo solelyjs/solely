@@ -5,7 +5,7 @@
 import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { BackTopProps } from './types';
 import styles from './style.css?inline';
-import template from './index.html?raw';
+import template from './index.html?solely';
 import { throttle } from '../utils/helpers';
 
 @CustomElement({

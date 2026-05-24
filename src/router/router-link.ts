@@ -1,15 +1,10 @@
 import { BaseElement, CustomElement } from '../runtime/component';
 import { getRouter, routerReady } from './core';
+import template from './router-link.html?solely';
 
 @CustomElement({
     tagName: 'router-link',
-    // template 中 slot 包裹 label 作为 fallback：
-    // 如果有子节点，显示子节点；如果没有，显示 label 属性的内容。
-    template: `
-    <a part="link" :href="$data.href" :class="{active: $data.isActive}">
-      <slot>{{$data.label || ''}}</slot>
-    </a>
-  `,
+    template,
     styles: `
     :host {
     }

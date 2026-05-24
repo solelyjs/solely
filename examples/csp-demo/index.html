@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>Solely CSP 模式演示</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .back-link {
+      margin-bottom: 16px;
+    }
+
+    .back-link a {
+      color: #666;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back-link a:hover {
+      color: #333;
+    }
+
+    h1 {
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .csp-badge {
+      display: inline-block;
+      background: #4caf50;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .section h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section p {
+      color: #555;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .code-block {
+      background: #263238;
+      color: #aed581;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.6;
+    }
+
+    .code-block .comment {
+      color: #546e7a;
+    }
+
+    .code-block .string {
+      color: #c3e88d;
+    }
+
+    .code-block .keyword {
+      color: #c792ea;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .comparison-box {
+      padding: 16px;
+      border-radius: 8px;
+    }
+
+    .comparison-box.safe {
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+    }
+
+    .comparison-box.danger {
+      background: #ffebee;
+      border: 1px solid #ef9a9a;
+    }
+
+    .comparison-box h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .comparison-box ul {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 13px;
+    }
+
+    .comparison-box li {
+      margin: 4px 0;
+    }
+
+    .demo-area {
+      margin: 16px 0;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .status-bar.ok {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
+    .status-bar.blocked {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .status-bar .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-bar.ok .dot {
+      background: #4caf50;
+    }
+
+    .status-bar.blocked .dot {
+      background: #f44336;
+    }
+
+    #cspErrors {
+      margin-top: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .error-item {
+      padding: 8px 12px;
+      background: #ffebee;
+      border-left: 3px solid #f44336;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #c62828;
+      margin-bottom: 4px;
+      font-family: monospace;
+    }
+
+    .side-by-side {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 16px 0;
+    }
+
+    .side-label {
+      text-align: center;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .safe-label {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
+    .danger-label {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="back-link">
+      <a href="../index.html">← 返回示例首页</a>
+    </div>
+
+    <h1>Solely CSP 模式演示</h1>
+    <p class="subtitle">展示 Solely 框架在严格 Content Security Policy 下的行为</p>
+
+    <div class="csp-badge">CSP 已启用: script-src 'self'</div>
+
+    <!-- CSP 策略说明 -->
+    <div class="section">
+      <h2>当前 CSP 策略</h2>
+      <div class="code-block"><span class="keyword">Content-Security-Policy</span>:
+  <span class="string">default-src 'self'</span>;
+  <span class="string">script-src 'self'</span>;        <span class="comment">// 不允许 'unsafe-eval'</span>
+  <span class="string">style-src 'self' 'unsafe-inline'</span>; <span class="comment">// Shadow DOM 内联样式需要</span>
+  <span class="string">img-src 'self' data:</span>;</div>
+    </div>
+
+    <!-- 两种模式对比 -->
+    <div class="section">
+      <h2>两种编译模式对比</h2>
+      <p>组件代码本身不会调用 <code>new Function()</code>，是框架内部的<strong>模板编译器</strong>在解析 <code>{{ }}</code>、<code>:attr</code>、<code>onclick</code> 等模板语法时需要动态生成函数。两种模式的区别在于这个编译过程发生的时机不同。</p>
+      <div class="comparison">
+        <div class="comparison-box safe">
+          <h4>?solely 预编译模式</h4>
+          <ul>
+            <li><strong>构建时</strong>：Vite 插件将模板编译为 JS 函数</li>
+            <li>生成的函数代码直接打包进产物</li>
+            <li><strong>运行时</strong>：直接执行已编译的函数</li>
+            <li>不需要 <code>new Function()</code>，兼容 CSP</li>
+          </ul>
+        </div>
+        <div class="comparison-box danger">
+          <h4>?raw 运行时编译模式</h4>
+          <ul>
+            <li><strong>运行时</strong>：浏览器中解析模板 AST</li>
+            <li>遇到 <code>{{ $data.count }}</code> 等表达式时调用 <code>new Function()</code> 生成求值函数</li>
+            <li>CSP 阻止 <code>new Function()</code> → 表达式求值失败</li>
+            <li>静态 DOM 结构可渲染，动态内容为空</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 实时对比 -->
+    <div class="section">
+      <h2>实时对比</h2>
+      <p>左右两个计数器功能完全相同，区别仅在于模板导入方式。<code>?raw</code> 模式下，组件的静态 HTML 骨架能渲染，但 <code>{{ $data.count }}</code> 等动态表达式因 CSP 阻止 <code>new Function()</code> 而无法求值。</p>
+      <div class="side-by-side">
+        <div class="side">
+          <div class="side-label safe-label">?solely 预编译</div>
+          <div class="demo-area">
+            <csp-counter></csp-counter>
+          </div>
+          <div class="status-bar ok">
+            <span class="dot"></span>
+            <span>构建时编译，运行时无需 new Function()</span>
+          </div>
+        </div>
+        <div class="side">
+          <div class="side-label danger-label">?raw 运行时编译</div>
+          <div class="demo-area" id="rawDemoArea">
+            <raw-counter></raw-counter>
+          </div>
+          <div id="rawStatus" class="status-bar blocked">
+            <span class="dot"></span>
+            <span>静态骨架渲染成功，但动态表达式（{{ }}、:attr 等）因 CSP 阻止 new Function() 而求值失败</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSP 违规日志 -->
+    <div class="section">
+      <h2>CSP 违规日志</h2>
+      <p>如果页面中有代码尝试使用 <code>eval()</code> 或 <code>new Function()</code>，浏览器会阻止并在此显示违规报告。</p>
+      <div id="cspErrors">
+        <div class="status-bar ok">
+          <span class="dot"></span>
+          <span>暂无 CSP 违规，所有代码均在 CSP 策略允许范围内执行</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 使用说明 -->
+    <div class="section">
+      <h2>如何在 CSP 环境中使用 Solely</h2>
+      <div class="code-block"><span class="comment">// 1. 使用 ?solely 导入模板（预编译）</span>
+<span class="keyword">import</span> template <span class="keyword">from</span> <span class="string">'./component.html?solely'</span>
+
+<span class="comment">// 2. 在 Vite 插件中启用预编译</span>
+solelyVitePlugin({
+  precompile: <span class="keyword">true</span>  <span class="comment">// 默认已开启</span>
+})
+
+<span class="comment">// 3. 配置 CSP（不需要 unsafe-eval）</span>
+Content-Security-Policy:
+  script-src <span class="string">'self'</span>;
+  style-src <span class="string">'self'</span> <span class="string">'unsafe-inline'</span>;
+
+<span class="comment">// 注意：Shadow DOM 内的样式需要 'unsafe-inline'</span>
+<span class="comment">// 如果不使用 Shadow DOM，可以移除 'unsafe-inline'</span></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as counter from './counter.ts';
+    import * as rawCounter from './raw-counter.ts';
+
+    // 防止 tree-shaking
+    console.log('CSP demo loaded:', counter, rawCounter);
+
+    let cspViolationDetected = false;
+
+    // 监听 CSP 违规
+    document.addEventListener('securitypolicyviolation', (e) => {
+      cspViolationDetected = true;
+
+      const container = document.getElementById('cspErrors');
+      // 清除"暂无违规"提示
+      container.innerHTML = '';
+
+      const item = document.createElement('div');
+      item.className = 'error-item';
+      item.textContent = `[CSP 违规] ${e.violatedDirective}: ${e.blockedURI || e.sourceFile || 'unknown'}`;
+      container.appendChild(item);
+
+      // 更新 ?raw 组件状态
+      const rawStatus = document.getElementById('rawStatus');
+      if (rawStatus && e.violatedDirective === 'script-src') {
+        rawStatus.className = 'status-bar blocked';
+        rawStatus.innerHTML = '<span class="dot"></span><span>静态骨架渲染成功，但动态表达式（{{ }}、:attr 等）因 CSP 阻止 new Function() 而求值失败</span>';
+      }
+    });
+
+    // 延迟检测 ?raw 组件渲染状态
+    setTimeout(() => {
+      const rawEl = document.querySelector('raw-counter');
+      const rawStatus = document.getElementById('rawStatus');
+      if (!rawStatus) return;
+
+      if (cspViolationDetected) {
+        // 已有 CSP 违规，状态已由事件监听器更新
+        return;
+      }
+
+      const hasShadowContent = rawEl && rawEl.shadowRoot && rawEl.shadowRoot.children.length > 0;
+      if (hasShadowContent) {
+        rawStatus.className = 'status-bar ok';
+        rawStatus.innerHTML = '<span class="dot"></span><span>?raw 组件渲染成功（当前环境未启用严格 CSP，new Function() 可正常执行）</span>';
+      } else {
+        rawStatus.className = 'status-bar blocked';
+        rawStatus.innerHTML = '<span class="dot"></span><span>?raw 组件渲染失败：CSP 阻止了 new Function() 执行</span>';
+      }
+    }, 500);
+  </script>
+</body>
+
+</html>

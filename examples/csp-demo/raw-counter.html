@@ -1,0 +1,17 @@
+<div class="raw-counter">
+  <h2>?raw 运行时编译计数器</h2>
+  <p class="hint">此组件使用 <code>?raw</code> 运行时编译，需要 <code>new Function()</code>，严格 CSP 下会被阻止</p>
+
+  <div class="display">
+    <span class="value">{{ $data.count }}</span>
+  </div>
+
+  <div class="controls">
+    <button class="btn minus" onclick="this.decrement()" :disabled="$data.count <= 0">-</button>
+    <button class="btn plus" onclick="this.increment()">+</button>
+  </div>
+
+  <If test="$data.count > 10">
+    <p class="info">计数已超过 10</p>
+  </If>
+</div>

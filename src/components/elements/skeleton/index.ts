@@ -6,7 +6,7 @@
 import { BaseElement, CustomElement } from '../../../runtime/component';
 import type { SkeletonProps } from './types';
 import styles from './style.css?inline';
-import template from './index.html?raw';
+import template from './index.html?solely';
 
 @CustomElement({
     tagName: 'solely-skeleton',
