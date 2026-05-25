@@ -4,6 +4,17 @@ import * as fs from 'fs';
 
 const SOLELY_CONTROL_TAGS = new Set(['if', 'elseif', 'else', 'for']);
 
+// Cache for HTML → TS file mapping
+const tsFileCache = new Map<string, string | null>();
+
+export function clearTsFileCache(htmlPath?: string): void {
+    if (htmlPath) {
+        tsFileCache.delete(htmlPath);
+    } else {
+        tsFileCache.clear();
+    }
+}
+
 export type ReferenceKind = 'method' | 'dataProp' | 'ref' | 'chainedMethod' | 'dataKeyword';
 
 export interface TemplateReference {
@@ -26,10 +37,21 @@ export interface MethodSignature {
 }
 
 export function findCorrespondingTsFile(htmlPath: string): string | null {
+    // Check cache first
+    const cached = tsFileCache.get(htmlPath);
+    if (cached !== undefined) {
+        // Verify the cached file still exists
+        if (cached === null || fs.existsSync(cached)) {
+            return cached;
+        }
+        tsFileCache.delete(htmlPath);
+    }
+
     const dir = path.dirname(htmlPath);
     const htmlBaseName = path.basename(htmlPath);
 
     if (!fs.existsSync(dir)) {
+        tsFileCache.set(htmlPath, null);
         return null;
     }
 
@@ -41,6 +63,7 @@ export function findCorrespondingTsFile(htmlPath: string): string | null {
         try {
             const content = fs.readFileSync(tsPath, 'utf-8');
             if (isTemplateImport(content, htmlBaseName)) {
+                tsFileCache.set(htmlPath, tsPath);
                 return tsPath;
             }
         } catch {
@@ -50,9 +73,11 @@ export function findCorrespondingTsFile(htmlPath: string): string | null {
 
     const sameNameTs = path.join(dir, path.basename(htmlPath, '.html') + '.ts');
     if (fs.existsSync(sameNameTs)) {
+        tsFileCache.set(htmlPath, sameNameTs);
         return sameNameTs;
     }
 
+    tsFileCache.set(htmlPath, null);
     return null;
 }
 
@@ -90,14 +115,19 @@ export function extractReferenceAtPosition(
     const line = document.lineAt(position.line).text;
     const charIndex = position.character;
 
-    const ref = extractDataPropAtPosition(line, position.line, charIndex);
-    if (ref) return ref;
+    // Try all patterns on the current line (works for both {{ }} interpolation and attribute values)
+    const refAttr = extractRefAtPosition(line, position.line, charIndex);
+    if (refAttr) return refAttr;
+
+    // s-model bare prop (e.g. s-model="step" → $data.step)
+    const sModelProp = extractSModelPropAtPosition(line, position.line, charIndex);
+    if (sModelProp) return sModelProp;
+
+    const dataProp = extractDataPropAtPosition(line, position.line, charIndex);
+    if (dataProp) return dataProp;
 
     const dataKw = extractDataKeywordAtPosition(line, position.line, charIndex);
     if (dataKw) return dataKw;
-
-    const refAttr = extractRefAtPosition(line, position.line, charIndex);
-    if (refAttr) return refAttr;
 
     const chained = extractChainedMethodAtPosition(line, position.line, charIndex);
     if (chained) return chained;
@@ -193,6 +223,41 @@ function extractRefAtPosition(line: string, lineNum: number, charIndex: number):
     return null;
 }
 
+function extractSModelPropAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
+    // Match s-model="..." and extract bare property names (without $data. or this. prefix)
+    const regex = /\bs-model\s*=\s*"([^"]*)"/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(line)) !== null) {
+        const valueStart = line.indexOf('"', match.index) + 1;
+        const value = match[1];
+
+        // Find bare identifiers: strip $data. and this. prefixes, then match the remaining name
+        // e.g. "step" → step, "$data.step" → step, "this.step" → step
+        const bareName = value
+            .replace(/^\$data\./, '')
+            .replace(/^this\./, '')
+            .trim();
+        if (!bareName || !/^\w+$/.test(bareName)) continue;
+
+        // Calculate position of the bare name within the value
+        const prefixLen = value.length - bareName.length;
+        const nameStart = valueStart + prefixLen;
+        const nameEnd = nameStart + bareName.length;
+
+        if (charIndex >= nameStart && charIndex <= nameEnd) {
+            return {
+                kind: 'dataProp',
+                name: bareName,
+                range: new vscode.Range(lineNum, nameStart, lineNum, nameEnd),
+                fullExpression: match[0],
+            };
+        }
+    }
+
+    return null;
+}
+
 function extractChainedMethodAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
     const regex = /\bthis\.(\w+)\.(\w+)\s*\(/g;
     let match: RegExpExecArray | null;
@@ -214,8 +279,8 @@ function extractChainedMethodAtPosition(line: string, lineNum: number, charIndex
 
         if (charIndex >= secondStart && charIndex <= secondEnd) {
             return {
-                kind: 'chainedMethod',
-                name: match[1],
+                kind: 'method',
+                name: match[2],
                 range: new vscode.Range(lineNum, secondStart, lineNum, secondEnd),
                 fullExpression: match[0],
             };
@@ -250,20 +315,16 @@ function findMethodInTsFile(tsPath: string, methodName: string): vscode.Location
     const lines = content.split('\n');
 
     const escaped = escapeRegex(methodName);
-    const patterns = [
-        new RegExp(`^\\s*(async\\s+)?${escaped}\\s*\\(`),
-        new RegExp(`^\\s*(public\\s+|private\\s+|protected\\s+)?(static\\s+)?(async\\s+)?${escaped}\\s*\\(`),
-        new RegExp(`^\\s*(get\\s+|set\\s+)?${escaped}\\s*\\(`),
-        new RegExp(`^\\s*(public\\s+|private\\s+|protected\\s+)?(static\\s+)?(async\\s+)?${escaped}\\s*[=:(]`),
-    ];
+    // Combined pattern: optional modifiers, then method name, then ( or = or :
+    const pattern = new RegExp(
+        `^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?(?:async\\s+)?(?:get\\s+|set\\s+)?${escaped}\\s*[\\(=:]`,
+    );
 
     for (let i = 0; i < lines.length; i++) {
-        for (const pattern of patterns) {
-            if (pattern.test(lines[i])) {
-                const methodIdx = lines[i].indexOf(methodName);
-                const pos = new vscode.Position(i, methodIdx >= 0 ? methodIdx : 0);
-                return new vscode.Location(vscode.Uri.file(tsPath), pos);
-            }
+        if (pattern.test(lines[i])) {
+            const methodIdx = lines[i].indexOf(methodName);
+            const pos = new vscode.Position(i, methodIdx >= 0 ? methodIdx : 0);
+            return new vscode.Location(vscode.Uri.file(tsPath), pos);
         }
     }
 
@@ -399,6 +460,36 @@ export function getMethodSignatures(tsPath: string): MethodSignature[] {
     return signatures;
 }
 
+export function getPropTypeFromTsFile(tsPath: string, propName: string): string | null {
+    if (!fs.existsSync(tsPath)) {
+        return null;
+    }
+
+    const content = fs.readFileSync(tsPath, 'utf-8');
+    const lines = content.split('\n');
+    const escaped = escapeRegex(propName);
+
+    // Try to find type in interface: propName: Type
+    const interfacePattern = new RegExp(`\\b${escaped}\\s*[?:]\\s*(\\w+(?:<[^>]+>)?(?:\\[\\])?)`);
+    for (const line of lines) {
+        const match = interfacePattern.exec(line);
+        if (match && !line.includes('(') && !line.includes('function')) {
+            return match[1];
+        }
+    }
+
+    // Try to find type in super({ propName: defaultValue as Type })
+    const superPattern = new RegExp(`${escaped}\\s*:\\s*[^,}]+as\\s+(\\w+)`);
+    for (const line of lines) {
+        const match = superPattern.exec(line);
+        if (match) {
+            return match[1];
+        }
+    }
+
+    return null;
+}
+
 export function validateTemplate(document: vscode.TextDocument): TemplateDiagnostic[] {
     const diagnostics: TemplateDiagnostic[] = [];
     const text = document.getText();
@@ -415,6 +506,10 @@ function validateControlFlowTags(text: string, lines: string[], diagnostics: Tem
     const tagStack: { tag: string; line: number; col: number }[] = [];
     const tagRegex = /<\/?([A-Za-z][A-Za-z0-9\-]*)/g;
     let match: RegExpExecArray | null;
+
+    // Track the last closed control tag at each nesting depth for ElseIf/Else validation
+    // Key: nesting depth (tagStack.length at close time), Value: the tag that was closed
+    const lastClosedAtDepth = new Map<number, string>();
 
     while ((match = tagRegex.exec(text)) !== null) {
         const fullMatch = match[0];
@@ -433,8 +528,9 @@ function validateControlFlowTags(text: string, lines: string[], diagnostics: Tem
                 });
             } else {
                 const last = tagStack[tagStack.length - 1];
-                const validClose = getValidClosingTag(last.tag);
-                if (tagName === last.tag || tagName === validClose) {
+                if (tagName === last.tag) {
+                    // Record what was closed at this depth before popping
+                    lastClosedAtDepth.set(tagStack.length - 1, tagName);
                     tagStack.pop();
                 } else {
                     diagnostics.push({
@@ -445,6 +541,21 @@ function validateControlFlowTags(text: string, lines: string[], diagnostics: Tem
                 }
             }
         } else {
+            // Opening tags
+            // Validate ElseIf/Else: must follow If or ElseIf at the same nesting level
+            if (tagName === 'elseif' || tagName === 'else') {
+                const currentDepth = tagStack.length;
+                const lastClosed = lastClosedAtDepth.get(currentDepth);
+                if (lastClosed !== 'if' && lastClosed !== 'elseif') {
+                    diagnostics.push({
+                        message: `<${match[1]}> 必须在 <If> 或 <ElseIf> 之后`,
+                        range: new vscode.Range(pos.line, pos.col, pos.line, pos.col + fullMatch.length),
+                        severity: vscode.DiagnosticSeverity.Error,
+                    });
+                }
+                // Clear the record so a second Else at the same depth is flagged
+                lastClosedAtDepth.delete(currentDepth);
+            }
             tagStack.push({ tag: tagName, line: pos.line, col: pos.col });
         }
     }
@@ -458,74 +569,64 @@ function validateControlFlowTags(text: string, lines: string[], diagnostics: Tem
     }
 }
 
-function getValidClosingTag(tag: string): string {
-    const hierarchy: Record<string, string> = {
-        if: 'if',
-        elseif: 'if',
-        else: 'if',
-        for: 'for',
-    };
-    return hierarchy[tag] || tag;
-}
-
 function validateInterpolations(lines: string[], diagnostics: TemplateDiagnostic[]): void {
-    let inInterpolation = false;
-    let interpolationStartLine = 0;
-    let interpolationStartCol = 0;
+    const text = lines.join('\n');
 
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+    // Track matched {{ and }} positions to detect stray }}
+    const matchedClosePositions = new Set<number>();
 
-        if (inInterpolation) {
-            const closeIdx = line.indexOf('}}');
-            if (closeIdx >= 0) {
-                inInterpolation = false;
-            }
-            continue;
-        }
+    // Find all {{ ... }} pairs (including multiline) and check for issues
+    const openRegex = /\{\{/g;
+    let openMatch: RegExpExecArray | null;
 
-        let searchFrom = 0;
-        while (searchFrom < line.length) {
-            const openIdx = line.indexOf('{{', searchFrom);
-            if (openIdx === -1) break;
+    while ((openMatch = openRegex.exec(text)) !== null) {
+        const openPos = openMatch.index;
+        const afterOpen = openPos + 2;
 
-            const closeIdx = line.indexOf('}}', openIdx + 2);
-            if (closeIdx === -1) {
-                inInterpolation = true;
-                interpolationStartLine = i;
-                interpolationStartCol = openIdx;
-                diagnostics.push({
-                    message: '插值表达式未闭合，缺少 }}',
-                    range: new vscode.Range(i, openIdx, i, line.length),
-                    severity: vscode.DiagnosticSeverity.Error,
-                });
-                break;
-            }
-
-            searchFrom = closeIdx + 2;
-        }
-
-        const strayClose = /(?<!\{)\}\}(?!\})/.exec(line);
-        if (strayClose && !line.includes('{{')) {
+        // Find the matching }}
+        const closeIdx = text.indexOf('}}', afterOpen);
+        if (closeIdx === -1) {
+            const startPos = getLineCol(lines, openPos);
+            const endPos = getLineCol(lines, text.length - 1);
             diagnostics.push({
-                message: '意外的 }} ，缺少 {{',
-                range: new vscode.Range(i, strayClose.index, i, strayClose.index + 2),
+                message: '插值表达式未闭合，缺少 }}',
+                range: new vscode.Range(startPos.line, startPos.col, endPos.line, lines[endPos.line].length),
+                severity: vscode.DiagnosticSeverity.Error,
+            });
+            break;
+        }
+
+        // Mark this }} as matched
+        matchedClosePositions.add(closeIdx);
+
+        // Check if the content between {{ and }} is empty
+        const content = text.substring(afterOpen, closeIdx).trim();
+        if (content.length === 0) {
+            const startPos = getLineCol(lines, openPos);
+            const endPos = getLineCol(lines, closeIdx + 2);
+            diagnostics.push({
+                message: '插值表达式内容为空',
+                range: new vscode.Range(startPos.line, startPos.col, endPos.line, endPos.col),
                 severity: vscode.DiagnosticSeverity.Warning,
             });
         }
+
+        // Skip past this closing }}
+        openRegex.lastIndex = closeIdx + 2;
     }
 
-    if (inInterpolation) {
-        diagnostics.push({
-            message: `插值表达式从第 ${interpolationStartLine + 1} 行开始未闭合`,
-            range: new vscode.Range(
-                interpolationStartLine,
-                interpolationStartCol,
-                lines.length - 1,
-                lines[lines.length - 1].length,
-            ),
-            severity: vscode.DiagnosticSeverity.Error,
-        });
+    // Check for stray }} without matching {{
+    const closeRegex = /\}\}/g;
+    let closeMatch: RegExpExecArray | null;
+    while ((closeMatch = closeRegex.exec(text)) !== null) {
+        if (!matchedClosePositions.has(closeMatch.index)) {
+            const pos = getLineCol(lines, closeMatch.index);
+            diagnostics.push({
+                message: '意外的 }} ，缺少 {{',
+                range: new vscode.Range(pos.line, pos.col, pos.line, pos.col + 2),
+                severity: vscode.DiagnosticSeverity.Warning,
+            });
+        }
     }
 }
 
@@ -533,27 +634,25 @@ function validateAttributeSyntax(lines: string[], diagnostics: TemplateDiagnosti
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        const unquotedAt = /@(\w+)\s*=\s*([^\s"'][^\s>]*)/g;
+        // Check for unquoted event binding values: @click=foo (should be @click="foo")
+        const unquotedAt = /@(\w+(?:-\w+)*)\s*=\s*(?!"|')([^\s>]+)/g;
         let m: RegExpExecArray | null;
         while ((m = unquotedAt.exec(line)) !== null) {
-            if (!line.includes(`@${m[1]}="${m[2]}"`) && !line.includes(`@${m[1]}='${m[2]}'`)) {
-                diagnostics.push({
-                    message: `事件绑定 @${m[1]} 的值建议使用引号包裹`,
-                    range: new vscode.Range(i, m.index, i, m.index + m[0].length),
-                    severity: vscode.DiagnosticSeverity.Warning,
-                });
-            }
+            diagnostics.push({
+                message: `事件绑定 @${m[1]} 的值建议使用引号包裹`,
+                range: new vscode.Range(i, m.index, i, m.index + m[0].length),
+                severity: vscode.DiagnosticSeverity.Warning,
+            });
         }
 
-        const unquotedBind = /:(?!class\b|style\b)(\w+(?:-\w+)*)\s*=\s*([^\s"'][^\s>]*)/g;
+        // Check for unquoted property binding values: :src=foo (should be :src="foo")
+        const unquotedBind = /:(\w+(?:-\w+)*)\s*=\s*(?!"|')([^\s>]+)/g;
         while ((m = unquotedBind.exec(line)) !== null) {
-            if (!line.includes(`:${m[1]}="${m[2]}"`) && !line.includes(`:${m[1]}='${m[2]}'`)) {
-                diagnostics.push({
-                    message: `属性绑定 :${m[1]} 的值建议使用引号包裹`,
-                    range: new vscode.Range(i, m.index, i, m.index + m[0].length),
-                    severity: vscode.DiagnosticSeverity.Warning,
-                });
-            }
+            diagnostics.push({
+                message: `属性绑定 :${m[1]} 的值建议使用引号包裹`,
+                range: new vscode.Range(i, m.index, i, m.index + m[0].length),
+                severity: vscode.DiagnosticSeverity.Warning,
+            });
         }
     }
 }

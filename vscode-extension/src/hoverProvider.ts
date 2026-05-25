@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
-import { extractReferenceAtPosition, findCorrespondingTsFile, getMethodSignatures } from './templateParser';
+import {
+    extractReferenceAtPosition,
+    findCorrespondingTsFile,
+    getMethodSignatures,
+    getPropTypeFromTsFile,
+} from './templateParser';
 
 export class SolelyHoverProvider implements vscode.HoverProvider {
     async provideHover(
@@ -32,10 +37,15 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
         }
 
         if (ref.kind === 'dataProp') {
+            const propType = getPropTypeFromTsFile(tsPath, ref.name);
             const contents = new vscode.MarkdownString();
-            contents.appendMarkdown(`**Solely 组件属性** \`$data.${ref.name}\`\n\n`);
-            contents.appendMarkdown(`在 \`@CustomElement\` 装饰器的 \`props\` 数组或 \`interface\` 中定义。\n\n`);
-            contents.appendMarkdown(`*Ctrl+点击跳转到属性定义*`);
+            if (propType) {
+                contents.appendCodeblock(`$data.${ref.name}: ${propType}`, 'typescript');
+            } else {
+                contents.appendMarkdown(`**Solely 组件属性** \`$data.${ref.name}\`\n\n`);
+            }
+            contents.appendMarkdown(`\n\n在 \`@CustomElement\` 装饰器的 \`props\` 数组或 \`interface\` 中定义。`);
+            contents.appendMarkdown(`\n\n*Ctrl+点击跳转到属性定义*`);
             return new vscode.Hover(contents);
         }
 

@@ -6,7 +6,18 @@
     "patterns": [
         {
             "name": "meta.embedded.solely.expression",
-            "match": "\\{\\{[^}]*\\}\\}",
+            "begin": "\\{\\{",
+            "end": "\\}\\}",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.template-expression.begin.solely"
+                }
+            },
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.template-expression.end.solely"
+                }
+            },
             "patterns": [
                 {
                     "name": "keyword.other.solely.data",
@@ -58,12 +69,106 @@
                             "match": "\\bevent\\b"
                         },
                         {
+                            "name": "variable.parameter.solely",
+                            "match": "\\bel\\b"
+                        },
+                        {
                             "name": "keyword.other.solely.data",
                             "match": "\\$data\\b"
                         },
                         {
                             "name": "variable.other.property",
                             "match": "(?<=\\$data\\.)(\\w+)"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.bind-class",
+            "match": ":class\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "0": {
+                    "name": "entity.other.attribute-name.bind-class.solely"
+                },
+                "1": {
+                    "name": "meta.embedded.solely.class-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.bind-style",
+            "match": ":style\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "0": {
+                    "name": "entity.other.attribute-name.bind-style.solely"
+                },
+                "1": {
+                    "name": "meta.embedded.solely.style-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.bind-boolean",
+            "match": ":(visible|disabled|checked|readonly|required|hidden|selected)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "entity.other.attribute-name.bind-boolean.solely"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.boolean-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
                         }
                     ]
                 }
@@ -116,6 +221,104 @@
                         {
                             "name": "variable.other.property",
                             "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "variable.other.property.solely.model-prop",
+                            "match": "\\b(?!this\\b|\\$data\\b)(\\w+)"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.s-class",
+            "match": "s-class\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "0": {
+                    "name": "entity.other.attribute-name.s-class.solely"
+                },
+                "1": {
+                    "name": "meta.embedded.solely.s-class-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.s-boolean",
+            "match": "s-(visible|disabled|checked|readonly|required|hidden|selected)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "entity.other.attribute-name.s-boolean.solely"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.s-boolean-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.s-bind",
+            "match": "s-(\\w+(?:-\\w+)*)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "1": {
+                    "name": "entity.other.attribute-name.s-bind.solely"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.s-bind-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
                         }
                     ]
                 }
@@ -136,6 +339,32 @@
             "captures": {
                 "1": {
                     "name": "string.quoted.double"
+                }
+            }
+        },
+        {
+            "name": "meta.attribute.solely.bind-name",
+            "match": ":name\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "0": {
+                    "name": "entity.other.attribute-name.bind-name.solely"
+                },
+                "1": {
+                    "name": "meta.embedded.solely.name-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        }
+                    ]
                 }
             }
         },
@@ -191,6 +420,10 @@
                         {
                             "name": "variable.language.solely.this",
                             "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "variable.parameter.solely",
+                            "match": "\\bel\\b"
                         },
                         {
                             "name": "entity.name.function",

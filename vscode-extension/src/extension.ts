@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { SolelyDefinitionProvider } from './definitionProvider';
 import { SolelyDiagnosticProvider } from './diagnosticProvider';
 import { SolelyHoverProvider } from './hoverProvider';
+import { clearTsFileCache } from './templateParser';
 
 export function activate(context: vscode.ExtensionContext) {
     const diagnosticProvider = new SolelyDiagnosticProvider();
@@ -28,6 +29,11 @@ export function activate(context: vscode.ExtensionContext) {
         diagnosticProvider.clearDiagnostics(document);
     });
 
+    // Clear TS file cache when files are created/deleted to stay in sync
+    const didCreateListener = vscode.workspace.onDidCreateFiles(() => clearTsFileCache());
+    const didDeleteListener = vscode.workspace.onDidDeleteFiles(() => clearTsFileCache());
+    const didRenameListener = vscode.workspace.onDidRenameFiles(() => clearTsFileCache());
+
     if (vscode.window.activeTextEditor) {
         diagnosticProvider.updateDiagnostics(vscode.window.activeTextEditor.document);
     }
@@ -38,10 +44,9 @@ export function activate(context: vscode.ExtensionContext) {
         changeListener,
         openListener,
         closeListener,
+        didCreateListener,
+        didDeleteListener,
+        didRenameListener,
         diagnosticProvider,
     );
-
-    vscode.window.showInformationMessage('Solely Framework Support 已激活');
 }
-
-export function deactivate() {}
