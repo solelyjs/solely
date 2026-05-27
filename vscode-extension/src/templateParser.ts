@@ -6,6 +6,8 @@ const SOLELY_CONTROL_TAGS = new Set(['if', 'elseif', 'else', 'for']);
 
 // Cache for HTML → TS file mapping
 const tsFileCache = new Map<string, string | null>();
+// Cache for TS → BaseElement file mapping
+const baseElementCache = new Map<string, string | null>();
 
 export function clearTsFileCache(htmlPath?: string): void {
     if (htmlPath) {
@@ -15,7 +17,7 @@ export function clearTsFileCache(htmlPath?: string): void {
     }
 }
 
-export type ReferenceKind = 'method' | 'dataProp' | 'ref' | 'chainedMethod' | 'dataKeyword';
+export type ReferenceKind = 'method' | 'dataProp' | 'ref' | 'chainedMethod' | 'dataKeyword' | 'getter';
 
 export interface TemplateReference {
     kind: ReferenceKind;
@@ -71,12 +73,6 @@ export function findCorrespondingTsFile(htmlPath: string): string | null {
         }
     }
 
-    const sameNameTs = path.join(dir, path.basename(htmlPath, '.html') + '.ts');
-    if (fs.existsSync(sameNameTs)) {
-        tsFileCache.set(htmlPath, sameNameTs);
-        return sameNameTs;
-    }
-
     tsFileCache.set(htmlPath, null);
     return null;
 }
@@ -123,6 +119,10 @@ export function extractReferenceAtPosition(
     const sModelProp = extractSModelPropAtPosition(line, position.line, charIndex);
     if (sModelProp) return sModelProp;
 
+    // this.xxx without () — getter or class property (e.g. this.filteredTodos)
+    const thisProp = extractThisPropAtPosition(line, position.line, charIndex);
+    if (thisProp) return thisProp;
+
     const dataProp = extractDataPropAtPosition(line, position.line, charIndex);
     if (dataProp) return dataProp;
 
@@ -149,6 +149,29 @@ function extractMethodCallAtPosition(line: string, lineNum: number, charIndex: n
         if (charIndex >= startChar && charIndex <= endChar) {
             return {
                 kind: 'method',
+                name: match[1],
+                range: new vscode.Range(lineNum, startChar, lineNum, endChar),
+                fullExpression: match[0],
+            };
+        }
+    }
+
+    return null;
+}
+
+function extractThisPropAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
+    // Match this.xxx that is NOT a method call (not followed by ()
+    // Use \b word boundary after \w+ to prevent backtracking into the word
+    const regex = /\bthis\.(\w+)\b(?!\s*\()/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(line)) !== null) {
+        const startChar = match.index + 'this.'.length;
+        const endChar = startChar + match[1].length;
+
+        if (charIndex >= startChar && charIndex <= endChar) {
+            return {
+                kind: 'getter',
                 name: match[1],
                 range: new vscode.Range(lineNum, startChar, lineNum, endChar),
                 fullExpression: match[0],
@@ -295,10 +318,41 @@ export function findDefinitionInTsFile(tsPath: string, ref: TemplateReference): 
         return null;
     }
 
+    // First try to find in the component's own TS file
+    const localResult = findDefinitionLocally(tsPath, ref);
+    if (localResult) return localResult;
+
+    // Fallback: walk up the inheritance chain (extends A → A extends B → ...)
+    if (ref.kind === 'method' || ref.kind === 'chainedMethod' || ref.kind === 'getter') {
+        const ancestorPaths = findAncestorFiles(tsPath);
+        for (const ancestorPath of ancestorPaths) {
+            const result = findDefinitionLocally(ancestorPath, ref);
+            if (result) return result;
+        }
+    }
+
+    // Fallback for chained method: try to find the method in the class of the first-level property
+    // e.g. this.router.push() → find 'router' property type → search 'push' in that class
+    if (ref.kind === 'method' && ref.fullExpression) {
+        const chainedMatch = ref.fullExpression.match(/\bthis\.(\w+)\.\w+\s*\(/);
+        if (chainedMatch) {
+            const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1]);
+            if (propClassPath) {
+                return findMethodInTsFile(propClassPath, ref.name);
+            }
+        }
+    }
+
+    return null;
+}
+
+function findDefinitionLocally(tsPath: string, ref: TemplateReference): vscode.Location | null {
     switch (ref.kind) {
         case 'method':
         case 'chainedMethod':
             return findMethodInTsFile(tsPath, ref.name);
+        case 'getter':
+            return findGetterInTsFile(tsPath, ref.name);
         case 'dataProp':
             return findPropInTsFile(tsPath, ref.name);
         case 'dataKeyword':
@@ -307,6 +361,200 @@ export function findDefinitionInTsFile(tsPath: string, ref: TemplateReference): 
             return findRefInTsFile(tsPath, ref.name);
         default:
             return null;
+    }
+}
+
+/**
+ * Walk up the inheritance chain and return all ancestor class file paths in order.
+ * e.g. MyComponent extends MyBaseComponent extends BaseElement → [MyBaseComponent.ts, base-element.ts]
+ */
+export function findAncestorFiles(tsPath: string): string[] {
+    const result: string[] = [];
+    const visited = new Set<string>();
+    visited.add(tsPath);
+
+    let currentPath = tsPath;
+    while (currentPath) {
+        const parentPath = findParentClassFile(currentPath);
+        if (!parentPath || visited.has(parentPath)) break;
+        visited.add(parentPath);
+        result.push(parentPath);
+        currentPath = parentPath;
+    }
+
+    return result;
+}
+
+/**
+ * Find the file path of the parent class that the class in tsPath extends.
+ * e.g. class MyComponent extends BaseElement → find BaseElement's source file
+ */
+function findParentClassFile(tsPath: string): string | null {
+    const cached = baseElementCache.get(tsPath);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    try {
+        const content = fs.readFileSync(tsPath, 'utf-8');
+        const dir = path.dirname(tsPath);
+
+        // Find the extends clause: class Foo extends Bar
+        const extendsMatch = content.match(/\bclass\s+\w+\s+extends\s+(\w+)/);
+        if (!extendsMatch) {
+            baseElementCache.set(tsPath, null);
+            return null;
+        }
+
+        const parentClassName = extendsMatch[1];
+
+        // Find import of the parent class
+        const importPattern = new RegExp(
+            `import\\s+\\{[^}]*\\b${escapeRegex(parentClassName)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
+        );
+        const importMatch = content.match(importPattern);
+        if (!importMatch) {
+            baseElementCache.set(tsPath, null);
+            return null;
+        }
+
+        const importPath = importMatch[1];
+        const resolvedPath = resolveImportPath(dir, importPath, parentClassName);
+        baseElementCache.set(tsPath, resolvedPath);
+        return resolvedPath;
+    } catch {
+        baseElementCache.set(tsPath, null);
+        return null;
+    }
+}
+
+/**
+ * Resolve an import path to an actual .ts file, following re-exports.
+ */
+function resolveImportPath(fromDir: string, importPath: string, className: string): string | null {
+    let resolvedPath = path.resolve(fromDir, importPath);
+
+    // If it points to a directory, try index.ts
+    if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isDirectory()) {
+        resolvedPath = path.join(resolvedPath, 'index.ts');
+    }
+
+    // Add .ts extension if missing
+    if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.tsx')) {
+        if (fs.existsSync(resolvedPath + '.ts')) {
+            resolvedPath += '.ts';
+        } else if (fs.existsSync(resolvedPath + '.tsx')) {
+            resolvedPath += '.tsx';
+        } else {
+            return null;
+        }
+    }
+
+    if (!fs.existsSync(resolvedPath)) return null;
+
+    // If the resolved path is an index.ts, try to find the actual class file via re-export
+    if (resolvedPath.endsWith('index.ts') || resolvedPath.endsWith('index.tsx')) {
+        const indexDir = path.dirname(resolvedPath);
+
+        // Try kebab-case naming: BaseElement → base-element.ts
+        const kebabName = className
+            .replace(/([A-Z])/g, '-$1')
+            .toLowerCase()
+            .replace(/^-/, '');
+        const directPath = path.join(indexDir, kebabName + '.ts');
+        if (fs.existsSync(directPath)) return directPath;
+
+        // Try reading the index to find the re-export
+        try {
+            const indexContent = fs.readFileSync(resolvedPath, 'utf-8');
+            const reExportPattern = new RegExp(
+                `export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
+            );
+            const reExportMatch = indexContent.match(reExportPattern);
+            if (reExportMatch) {
+                const classPath = path.resolve(indexDir, reExportMatch[1]);
+                const finalPath = classPath.endsWith('.ts') ? classPath : classPath + '.ts';
+                if (fs.existsSync(finalPath)) return finalPath;
+            }
+        } catch {
+            /* ignore */
+        }
+    }
+
+    return resolvedPath;
+}
+
+/** Keep backward compatibility alias */
+export function findBaseElementFile(tsPath: string): string | null {
+    const ancestors = findAncestorFiles(tsPath);
+    return ancestors.length > 0 ? ancestors[ancestors.length - 1] : null;
+}
+
+export function findPropertyClassFile(tsPath: string, propName: string): string | null {
+    try {
+        const content = fs.readFileSync(tsPath, 'utf-8');
+        const lines = content.split('\n');
+        const dir = path.dirname(tsPath);
+        const escaped = escapeRegex(propName);
+
+        // Find property declaration: private router = createRouter(...) or router: Router = ...
+        const propPattern = new RegExp(
+            `^\\s*(?:(?:public|private|protected)\\s+)?(?:readonly\\s+)?${escaped}\\s*[=:]\\s*(?:new\\s+)?(\\w+)`,
+        );
+        for (const line of lines) {
+            const match = propPattern.exec(line);
+            if (match) {
+                const className = match[1];
+                // Find import of this class/function
+                const importPattern = new RegExp(
+                    `import\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
+                );
+                const importMatch = content.match(importPattern);
+                if (importMatch) {
+                    const importPath = importMatch[1];
+                    let resolvedPath = path.resolve(dir, importPath);
+                    if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.tsx')) {
+                        if (fs.existsSync(resolvedPath + '.ts')) resolvedPath += '.ts';
+                        else if (fs.existsSync(resolvedPath + '.tsx')) resolvedPath += '.tsx';
+                    }
+
+                    // If it's an index file, try to find the actual class file
+                    if (resolvedPath.endsWith('index.ts') || resolvedPath.endsWith('index.tsx')) {
+                        const indexDir = path.dirname(resolvedPath);
+                        // Try common naming patterns: class-name.ts
+                        const kebabName = className
+                            .replace(/([A-Z])/g, '-$1')
+                            .toLowerCase()
+                            .replace(/^-/, '');
+                        const directPath = path.join(indexDir, kebabName + '.ts');
+                        if (fs.existsSync(directPath)) return directPath;
+
+                        // Try reading the index to find the re-export
+                        try {
+                            const indexContent = fs.readFileSync(resolvedPath, 'utf-8');
+                            const reExportMatch = indexContent.match(
+                                new RegExp(
+                                    `export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
+                                ),
+                            );
+                            if (reExportMatch) {
+                                const classPath = path.resolve(indexDir, reExportMatch[1]);
+                                const finalPath = classPath.endsWith('.ts') ? classPath : classPath + '.ts';
+                                if (fs.existsSync(finalPath)) return finalPath;
+                            }
+                        } catch {
+                            /* ignore */
+                        }
+                    }
+
+                    if (fs.existsSync(resolvedPath)) return resolvedPath;
+                }
+            }
+        }
+
+        return null;
+    } catch {
+        return null;
     }
 }
 
@@ -357,6 +605,32 @@ function findPropInTsFile(tsPath: string, propName: string): vscode.Location | n
         if (lines[i].includes(`this.$data.${propName}`)) {
             const idx = lines[i].indexOf(propName);
             return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx));
+        }
+    }
+
+    return null;
+}
+
+function findGetterInTsFile(tsPath: string, propName: string): vscode.Location | null {
+    const content = fs.readFileSync(tsPath, 'utf-8');
+    const lines = content.split('\n');
+    const escaped = escapeRegex(propName);
+
+    // Match: get propName() or get propName ():
+    const getterPattern = new RegExp(`^\\s*(?:public\\s+)?get\\s+${escaped}\\s*\\(`);
+    for (let i = 0; i < lines.length; i++) {
+        if (getterPattern.test(lines[i])) {
+            const idx = lines[i].indexOf(propName);
+            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx >= 0 ? idx : 0));
+        }
+    }
+
+    // Fallback: class property (not in super({}) or interface)
+    const propPattern = new RegExp(`^\\s*(?:public\\s+)?(?:readonly\\s+)?${escaped}\\s*[=:]`);
+    for (let i = 0; i < lines.length; i++) {
+        if (propPattern.test(lines[i]) && !lines[i].includes('name:') && !lines[i].includes('super(')) {
+            const idx = lines[i].indexOf(propName);
+            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx >= 0 ? idx : 0));
         }
     }
 
@@ -482,6 +756,17 @@ export function getPropTypeFromTsFile(tsPath: string, propName: string): string 
     const superPattern = new RegExp(`${escaped}\\s*:\\s*[^,}]+as\\s+(\\w+)`);
     for (const line of lines) {
         const match = superPattern.exec(line);
+        if (match) {
+            return match[1];
+        }
+    }
+
+    // Try to find return type of getter: get propName(): Type
+    const getterPattern = new RegExp(
+        `^\\s*(?:public\\s+)?get\\s+${escaped}\\s*\\(\\s*\\)\\s*:\\s*(\\w+(?:<[^>]+>)?(?:\\[\\])?)`,
+    );
+    for (const line of lines) {
+        const match = getterPattern.exec(line);
         if (match) {
             return match[1];
         }

@@ -85,6 +85,40 @@
             }
         },
         {
+            "name": "meta.attribute.solely.html-event",
+            "match": "\\bon(click|change|input|keydown|keyup|keypress|submit|focus|blur|dblclick|mouseenter|mouseleave|mouseover|mouseout|mousedown|mouseup|scroll|resize|drag|dragstart|dragend|dragover|dragenter|dragleave|drop|contextmenu|wheel|load|error|invalid|reset|select)\\s*=\\s*\"([^\"]*)\"",
+            "captures": {
+                "0": {
+                    "name": "entity.other.attribute-name.html-event.solely"
+                },
+                "2": {
+                    "name": "meta.embedded.solely.event-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        },
+                        {
+                            "name": "variable.parameter.solely",
+                            "match": "\\bevent\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        }
+                    ]
+                }
+            }
+        },
+        {
             "name": "meta.attribute.solely.bind-class",
             "match": ":class\\s*=\\s*\"([^\"]*)\"",
             "captures": {
@@ -409,7 +443,7 @@
         },
         {
             "name": "meta.attribute.solely.lifecycle",
-            "match": "\\b(s-init|s-mounted|s-beforeUpdate|s-updated|s-unmounted|init|mounted|beforeUpdate|updated|unmounted)\\s*=\\s*\"([^\"]*)\"",
+            "match": "\\b(mounted|updated|unmounted|onMounted|onUpdated|onUnmounted)\\s*=\\s*\"([^\"]*)\"",
             "captures": {
                 "1": {
                     "name": "entity.other.attribute-name.lifecycle.solely"

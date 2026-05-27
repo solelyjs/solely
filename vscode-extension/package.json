@@ -2,7 +2,7 @@
     "name": "solely-vscode",
     "displayName": "Solely Framework Support",
     "description": "VS Code extension for Solely framework - provides syntax highlighting, go-to-definition, hover hints, and diagnostics for Solely HTML templates",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "publisher": "solely",
     "license": "MIT",
     "icon": "icons/solely.png",

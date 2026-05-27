@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import {
     extractReferenceAtPosition,
     findCorrespondingTsFile,
+    findAncestorFiles,
+    findPropertyClassFile,
     getMethodSignatures,
     getPropTypeFromTsFile,
 } from './templateParser';
@@ -23,15 +25,42 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
         }
 
         if (ref.kind === 'method' || ref.kind === 'chainedMethod') {
-            const signatures = getMethodSignatures(tsPath);
-            const sig = signatures.find(s => s.name === ref.name);
+            let signatures = getMethodSignatures(tsPath);
+            let sig = signatures.find(s => s.name === ref.name);
+            let source = '组件类';
+
+            // Walk up the inheritance chain
+            if (!sig) {
+                const ancestorPaths = findAncestorFiles(tsPath);
+                for (const ancestorPath of ancestorPaths) {
+                    signatures = getMethodSignatures(ancestorPath);
+                    sig = signatures.find(s => s.name === ref.name);
+                    if (sig) {
+                        // Use the class name from the file path as source label
+                        source = ancestorPath.split(/[/\\]/).pop()?.replace(/\.ts$/, '') ?? '父类';
+                        break;
+                    }
+                }
+            }
+
+            // Fallback for chained method: find in the class of the first-level property
+            if (!sig && ref.kind === 'method' && ref.fullExpression) {
+                const chainedMatch = ref.fullExpression.match(/\bthis\.(\w+)\.\w+\s*\(/);
+                if (chainedMatch) {
+                    const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1]);
+                    if (propClassPath) {
+                        signatures = getMethodSignatures(propClassPath);
+                        sig = signatures.find(s => s.name === ref.name);
+                        source = chainedMatch[1];
+                    }
+                }
+            }
+
             if (sig) {
                 const kindLabel = ref.kind === 'chainedMethod' ? '链式调用 → ' : '';
                 const contents = new vscode.MarkdownString();
                 contents.appendCodeblock(`${kindLabel}${sig.signature}`, 'typescript');
-                contents.appendMarkdown(
-                    `\n\n*在 \`${ref.name}\` 上 ${ref.kind === 'chainedMethod' ? '（链式调用）' : ''}Ctrl+点击跳转到定义*`,
-                );
+                contents.appendMarkdown(`\n\n*来自 ${source} — Ctrl+点击跳转到定义*`);
                 return new vscode.Hover(contents);
             }
         }
@@ -46,6 +75,32 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
             }
             contents.appendMarkdown(`\n\n在 \`@CustomElement\` 装饰器的 \`props\` 数组或 \`interface\` 中定义。`);
             contents.appendMarkdown(`\n\n*Ctrl+点击跳转到属性定义*`);
+            return new vscode.Hover(contents);
+        }
+
+        if (ref.kind === 'getter') {
+            let propType = getPropTypeFromTsFile(tsPath, ref.name);
+            let source = '组件类';
+
+            // Walk up the inheritance chain
+            if (!propType) {
+                const ancestorPaths = findAncestorFiles(tsPath);
+                for (const ancestorPath of ancestorPaths) {
+                    propType = getPropTypeFromTsFile(ancestorPath, ref.name);
+                    if (propType) {
+                        source = ancestorPath.split(/[/\\]/).pop()?.replace(/\.ts$/, '') ?? '父类';
+                        break;
+                    }
+                }
+            }
+
+            const contents = new vscode.MarkdownString();
+            if (propType) {
+                contents.appendCodeblock(`get ${ref.name}(): ${propType}`, 'typescript');
+            } else {
+                contents.appendMarkdown(`**Solely 属性** \`this.${ref.name}\`\n\n`);
+            }
+            contents.appendMarkdown(`\n\n*来自 ${source} — Ctrl+点击跳转到定义*`);
             return new vscode.Hover(contents);
         }
 
