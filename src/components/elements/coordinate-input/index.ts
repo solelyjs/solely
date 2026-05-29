@@ -52,7 +52,7 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
     /**
      * 组件卸载前
      */
-    beforeUnmount(): void {
+    unmounted(): void {
         if (this.#closeHandler) {
             document.removeEventListener('click', this.#closeHandler);
             this.#closeHandler = null;
@@ -97,13 +97,13 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
     /**
      * 属性变化时
      */
-    onPropChange(prop: string, value: unknown): void {
-        if (prop === 'latitude' && typeof value === 'number') {
-            this.#latitudeDms = this.decimalToDms(value, 'latitude');
+    attributeChanged(name: string, _oldValue: unknown, newValue: unknown): void {
+        if (name === 'latitude' && typeof newValue === 'number') {
+            this.#latitudeDms = this.decimalToDms(newValue, 'latitude');
             this.refresh();
             this.updateSecondsInputs();
-        } else if (prop === 'longitude' && typeof value === 'number') {
-            this.#longitudeDms = this.decimalToDms(value, 'longitude');
+        } else if (name === 'longitude' && typeof newValue === 'number') {
+            this.#longitudeDms = this.decimalToDms(newValue, 'longitude');
             this.refresh();
             this.updateSecondsInputs();
         }

@@ -75,9 +75,6 @@ class SolelySlider extends BaseElement<
         if (this.$data.value === undefined) this.$data.value = this.$data.min;
 
         this.refresh();
-    }
-
-    protected afterMount(): void {
         this.railElement = this.shadowRoot?.querySelector('.slider__rail') as HTMLElement;
     }
 
