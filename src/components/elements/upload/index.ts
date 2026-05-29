@@ -30,6 +30,8 @@ import { safeJsonParse } from '../utils/helpers';
     ],
 })
 class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFile[]; isDragging: boolean }> {
+    private activeXhrs: XMLHttpRequest[] = [];
+    private objectURLs: string[] = [];
     /**
      * 获取 upload class 对象
      */
@@ -67,6 +69,17 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
         this.refresh();
         this.parseFileList();
         this.$data.isDragging = false;
+    }
+
+    unmounted(): void {
+        for (const xhr of this.activeXhrs) {
+            xhr.abort();
+        }
+        this.activeXhrs = [];
+        for (const url of this.objectURLs) {
+            URL.revokeObjectURL(url);
+        }
+        this.objectURLs = [];
     }
 
     /**
@@ -164,6 +177,7 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
             uploadFile.status = 'done';
             uploadFile.percent = 100;
             uploadFile.url = URL.createObjectURL(file);
+            this.objectURLs.push(uploadFile.url);
 
             // 触发响应式更新
             this.refresh();
@@ -186,6 +200,7 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
 
         // 使用 XMLHttpRequest 上传文件
         const xhr = new XMLHttpRequest();
+        this.activeXhrs.push(xhr);
         const formData = new FormData();
         formData.append('file', file);
 
@@ -198,6 +213,7 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
         });
 
         xhr.addEventListener('load', () => {
+            this.activeXhrs = this.activeXhrs.filter(x => x !== xhr);
             if (xhr.status >= 200 && xhr.status < 300) {
                 uploadFile.status = 'done';
                 uploadFile.percent = 100;
@@ -243,6 +259,7 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
         });
 
         xhr.addEventListener('error', () => {
+            this.activeXhrs = this.activeXhrs.filter(x => x !== xhr);
             uploadFile.status = 'error';
             uploadFile.error = '网络错误';
 

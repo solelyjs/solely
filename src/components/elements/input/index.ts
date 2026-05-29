@@ -70,6 +70,13 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
         }
     }
 
+    unmounted(): void {
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+            this.searchDebounceTimer = undefined;
+        }
+    }
+
     /**
      * 检查是否有 prefix 插槽
      */

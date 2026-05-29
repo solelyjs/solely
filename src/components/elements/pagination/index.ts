@@ -42,9 +42,10 @@ class SolelyPagination extends BaseElement<
     set current(value: number) {
         this.$data.current = value;
         this.dispatchEvent(
-            new Event('change', {
+            new CustomEvent('change', {
                 bubbles: true,
                 composed: true,
+                detail: { current: value, pageSize: this.$data.pageSize },
             }),
         );
     }
@@ -59,9 +60,10 @@ class SolelyPagination extends BaseElement<
     set pageSize(value: number) {
         this.$data.pageSize = value;
         this.dispatchEvent(
-            new Event('change', {
+            new CustomEvent('change', {
                 bubbles: true,
                 composed: true,
+                detail: { current: this.$data.current, pageSize: value },
             }),
         );
     }

@@ -67,6 +67,21 @@ class SolelyRate extends BaseElement<RateProps & { hoverValue: number | undefine
         this.generateStarCount();
     }
 
+    updated(): void {
+        this.updateAriaAttributes();
+    }
+
+    private updateAriaAttributes(): void {
+        const rateEl = this.shadowRoot?.querySelector('.rate') as HTMLElement;
+        if (rateEl) {
+            rateEl.setAttribute('aria-valuenow', String(this.$data.value || 0));
+            rateEl.setAttribute('aria-valuemin', '0');
+            rateEl.setAttribute('aria-valuemax', String(this.$data.count || 5));
+            rateEl.setAttribute('aria-disabled', this.$data.disabled ? 'true' : 'false');
+            rateEl.setAttribute('aria-readonly', this.$data.readonly ? 'true' : 'false');
+        }
+    }
+
     /**
      * 生成星星数量数组
      */
@@ -117,6 +132,36 @@ class SolelyRate extends BaseElement<RateProps & { hoverValue: number | undefine
         if (this.$data.disabled || this.$data.readonly) return;
 
         this.$data.hoverValue = undefined;
+    }
+
+    handleKeyDown(event: KeyboardEvent): void {
+        if (this.$data.disabled || this.$data.readonly) return;
+
+        const count = this.$data.count || 5;
+        const currentValue = this.$data.value || 0;
+
+        if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            const step = this.$data.allowHalf ? 0.5 : 1;
+            const newValue = Math.min(count, currentValue + step);
+            this.$data.value = newValue;
+            this.dispatchChangeEvent();
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            const step = this.$data.allowHalf ? 0.5 : 1;
+            const newValue = Math.max(0, currentValue - step);
+            this.$data.value = newValue;
+            this.dispatchChangeEvent();
+        }
+    }
+
+    private dispatchChangeEvent(): void {
+        this.dispatchEvent(
+            new Event('change', {
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     /**

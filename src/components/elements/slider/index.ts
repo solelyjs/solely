@@ -33,6 +33,10 @@ class SolelySlider extends BaseElement<
     }
 > {
     railElement?: HTMLElement;
+    private dragMoveHandler?: (e: MouseEvent) => void;
+    private dragUpHandler?: () => void;
+    private touchMoveHandler?: (e: TouchEvent) => void;
+    private touchEndHandler?: () => void;
 
     /**
      * 获取 slider class 对象
@@ -76,6 +80,43 @@ class SolelySlider extends BaseElement<
 
         this.refresh();
         this.railElement = this.shadowRoot?.querySelector('.slider__rail') as HTMLElement;
+    }
+
+    unmounted(): void {
+        this.cleanupDragListeners();
+    }
+
+    private cleanupDragListeners(): void {
+        if (this.dragMoveHandler) {
+            document.removeEventListener('mousemove', this.dragMoveHandler);
+            this.dragMoveHandler = undefined;
+        }
+        if (this.dragUpHandler) {
+            document.removeEventListener('mouseup', this.dragUpHandler);
+            this.dragUpHandler = undefined;
+        }
+        if (this.touchMoveHandler) {
+            document.removeEventListener('touchmove', this.touchMoveHandler);
+            this.touchMoveHandler = undefined;
+        }
+        if (this.touchEndHandler) {
+            document.removeEventListener('touchend', this.touchEndHandler);
+            this.touchEndHandler = undefined;
+        }
+    }
+
+    updated(): void {
+        this.updateAriaAttributes();
+    }
+
+    private updateAriaAttributes(): void {
+        const handleEl = this.shadowRoot?.querySelector('.slider__handle') as HTMLElement;
+        if (handleEl) {
+            handleEl.setAttribute('aria-valuenow', String(this.$data.value ?? this.$data.min ?? 0));
+            handleEl.setAttribute('aria-valuemin', String(this.$data.min ?? 0));
+            handleEl.setAttribute('aria-valuemax', String(this.$data.max ?? 100));
+            handleEl.setAttribute('aria-disabled', this.$data.disabled ? 'true' : 'false');
+        }
     }
 
     /**
@@ -153,26 +194,25 @@ class SolelySlider extends BaseElement<
         event.preventDefault();
         this.$data.isDragging = true;
 
-        // 缓存轨道位置，避免每次移动都重新计算
         if (this.railElement) {
             this.railRect = this.railElement.getBoundingClientRect();
         }
 
         this.updateValueFromRect(event);
 
-        const handleMouseMove = (e: MouseEvent) => {
+        this.cleanupDragListeners();
+
+        this.dragMoveHandler = (e: MouseEvent) => {
             if (this.$data.isDragging) {
                 this.updateValueFromRect(e);
             }
         };
 
-        const handleMouseUp = () => {
+        this.dragUpHandler = () => {
             this.$data.isDragging = false;
             this.railRect = undefined;
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
+            this.cleanupDragListeners();
 
-            // 拖拽结束时派发 change 事件
             this.dispatchEvent(
                 new Event('change', {
                     bubbles: true,
@@ -181,8 +221,8 @@ class SolelySlider extends BaseElement<
             );
         };
 
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('mousemove', this.dragMoveHandler);
+        document.addEventListener('mouseup', this.dragUpHandler);
     }
 
     /**
@@ -195,26 +235,25 @@ class SolelySlider extends BaseElement<
         event.preventDefault();
         this.$data.isDragging = true;
 
-        // 缓存轨道位置
         if (this.railElement) {
             this.railRect = this.railElement.getBoundingClientRect();
         }
 
         this.updateValueFromRect(event.touches[0]);
 
-        const handleTouchMove = (e: TouchEvent) => {
+        this.cleanupDragListeners();
+
+        this.touchMoveHandler = (e: TouchEvent) => {
             if (this.$data.isDragging && e.touches.length > 0) {
                 this.updateValueFromRect(e.touches[0]);
             }
         };
 
-        const handleTouchEnd = () => {
+        this.touchEndHandler = () => {
             this.$data.isDragging = false;
             this.railRect = undefined;
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('touchend', handleTouchEnd);
+            this.cleanupDragListeners();
 
-            // 拖拽结束时派发 change 事件
             this.dispatchEvent(
                 new Event('change', {
                     bubbles: true,
@@ -223,8 +262,8 @@ class SolelySlider extends BaseElement<
             );
         };
 
-        document.addEventListener('touchmove', handleTouchMove);
-        document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('touchmove', this.touchMoveHandler);
+        document.addEventListener('touchend', this.touchEndHandler);
     }
 
     /**

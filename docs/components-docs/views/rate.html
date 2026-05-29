@@ -300,6 +300,68 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
     </div>
 
     <div class="api-block">
+        <h4 class="api-block-title">键盘支持</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>按键</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ArrowRight / ArrowUp</td>
+                    <td>增加评分</td>
+                </tr>
+                <tr>
+                    <td>ArrowLeft / ArrowDown</td>
+                    <td>减少评分</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">ARIA 属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>动态更新</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>aria-valuenow</td>
+                    <td>当前评分值</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-valuemin</td>
+                    <td>最小评分值（0）</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>aria-valuemax</td>
+                    <td>最大评分值（count）</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>aria-disabled</td>
+                    <td>表示禁用状态</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-readonly</td>
+                    <td>表示只读状态</td>
+                    <td>是</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
         <h4 class="api-block-title">CSS Part</h4>
         <table class="api-table">
             <thead>

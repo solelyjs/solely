@@ -35,9 +35,10 @@ class SolelyTabs extends BaseElement<TabsProps> {
     set activeKey(value: string) {
         this.$data.activeKey = value;
         this.dispatchEvent(
-            new Event('change', {
+            new CustomEvent('change', {
                 bubbles: true,
                 composed: true,
+                detail: { activeKey: value },
             }),
         );
     }

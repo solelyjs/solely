@@ -33,6 +33,9 @@ import template from './index.html?solely';
 })
 class SolelyTooltip extends BaseElement<TooltipProps> {
     private _clickOutsideHandler?: (event: MouseEvent) => void;
+    private _boundFocusHandler?: (event: Event) => void;
+    private _boundBlurHandler?: (event: Event) => void;
+    private _boundFocusable?: Element;
 
     /**
      * 获取 tooltip class 对象
@@ -107,14 +110,33 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
         const slot = this.shadowRoot?.querySelector('slot');
         if (!slot) return;
 
+        this.unbindSlotEvents();
+
         const assignedElements = slot.assignedElements();
         assignedElements.forEach(el => {
             const focusable = el.querySelector('input, textarea, select, button, a, [tabindex]') || el;
             if (focusable) {
-                focusable.addEventListener('focus', this.handleFocus.bind(this));
-                focusable.addEventListener('blur', this.handleBlur.bind(this));
+                this._boundFocusHandler = this.handleFocus.bind(this);
+                this._boundBlurHandler = this.handleBlur.bind(this);
+                this._boundFocusable = focusable;
+                focusable.addEventListener('focus', this._boundFocusHandler);
+                focusable.addEventListener('blur', this._boundBlurHandler);
             }
         });
+    }
+
+    private unbindSlotEvents(): void {
+        if (this._boundFocusable) {
+            if (this._boundFocusHandler) {
+                this._boundFocusable.removeEventListener('focus', this._boundFocusHandler);
+            }
+            if (this._boundBlurHandler) {
+                this._boundFocusable.removeEventListener('blur', this._boundBlurHandler);
+            }
+            this._boundFocusable = undefined;
+            this._boundFocusHandler = undefined;
+            this._boundBlurHandler = undefined;
+        }
     }
 
     /**
@@ -173,6 +195,7 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
      */
     unmounted(): void {
         this.unbindClickOutside();
+        this.unbindSlotEvents();
     }
 }
 

@@ -70,6 +70,19 @@ class SolelyRadio extends BaseElement<RadioProps> {
      */
     mounted(): void {
         this.refresh();
+        this.updateAriaAttributes();
+    }
+
+    updated(): void {
+        this.updateAriaAttributes();
+    }
+
+    private updateAriaAttributes(): void {
+        const radioEl = this.shadowRoot?.querySelector('.radio') as HTMLElement;
+        if (radioEl) {
+            radioEl.setAttribute('aria-checked', this.$data.checked ? 'true' : 'false');
+            radioEl.setAttribute('aria-disabled', this.$data.disabled ? 'true' : 'false');
+        }
     }
 
     /**
@@ -78,20 +91,27 @@ class SolelyRadio extends BaseElement<RadioProps> {
     handleClick(_event: Event): void {
         if (this.$data.disabled || this.$data.checked) return;
 
-        // 取消同组其他单选框的选中状态
         if (this.$data.name) {
             this.uncheckSameNameRadios();
         }
 
         this.$data.checked = true;
 
-        // 派发原生 change 事件
         this.dispatchEvent(
             new Event('change', {
                 bubbles: true,
                 composed: true,
             }),
         );
+    }
+
+    handleKeyDown(event: KeyboardEvent): void {
+        if (this.$data.disabled) return;
+
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.handleClick(event);
+        }
     }
 
     /**

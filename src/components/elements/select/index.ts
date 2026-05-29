@@ -40,6 +40,7 @@ class SolelySelect extends BaseElement<
 > {
     clickOutsideHandler?: (event: MouseEvent) => void;
     slotObserver?: MutationObserver;
+    private closeTimer?: number;
 
     /**
      * 暴露 value 属性，使外部可通过 event.target.value 访问
@@ -202,6 +203,10 @@ class SolelySelect extends BaseElement<
         if (this.slotObserver) {
             this.slotObserver.disconnect();
         }
+        if (this.closeTimer) {
+            clearTimeout(this.closeTimer);
+            this.closeTimer = undefined;
+        }
     }
 
     /**
@@ -214,6 +219,16 @@ class SolelySelect extends BaseElement<
 
         if (currentLabel !== expectedLabel) {
             this.$data.selectedLabel = expectedLabel;
+        }
+
+        this.updateAriaAttributes();
+    }
+
+    private updateAriaAttributes(): void {
+        const triggerEl = this.shadowRoot?.querySelector('.select__trigger') as HTMLElement;
+        if (triggerEl) {
+            triggerEl.setAttribute('aria-expanded', this.$data.isOpen ? 'true' : 'false');
+            triggerEl.setAttribute('aria-disabled', this.$data.disabled ? 'true' : 'false');
         }
     }
 
@@ -358,11 +373,12 @@ class SolelySelect extends BaseElement<
         if (!this.$data.isOpen) return;
 
         this.$data.closing = true;
-        setTimeout(() => {
+        this.closeTimer = setTimeout(() => {
             this.$data.isOpen = false;
             this.$data.closing = false;
             this.$data.focused = false;
-        }, 200);
+            this.closeTimer = undefined;
+        }, 200) as unknown as number;
     }
 
     /**

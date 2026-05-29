@@ -23,6 +23,8 @@ import template from './index.html?solely';
     ],
 })
 class SolelyAlert extends BaseElement<AlertProps & { closing: boolean }> {
+    private closeTimer?: number;
+
     /**
      * 获取 alert class 对象
      */
@@ -54,6 +56,13 @@ class SolelyAlert extends BaseElement<AlertProps & { closing: boolean }> {
         this.refresh();
     }
 
+    unmounted(): void {
+        if (this.closeTimer) {
+            clearTimeout(this.closeTimer);
+            this.closeTimer = undefined;
+        }
+    }
+
     /**
      * 关闭事件处理
      */
@@ -63,10 +72,9 @@ class SolelyAlert extends BaseElement<AlertProps & { closing: boolean }> {
         // 触发关闭回调
         this.emit('close');
 
-        // 动画结束后从 DOM 移除
-        setTimeout(() => {
+        this.closeTimer = setTimeout(() => {
             this.remove();
-        }, 300);
+        }, 300) as unknown as number;
     }
 
     /**

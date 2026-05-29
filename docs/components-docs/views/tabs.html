@@ -310,10 +310,10 @@
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-tabs</span><span class="code-bracket">&gt;</span>
 
 <span class="code-comment">&lt;!-- JavaScript --&gt;</span>
-<span class="code-comment">// change 事件 - 通过 event.target.activeKey 获取当前激活的标签</span>
+<span class="code-comment">// change 事件 - 通过 e.detail.activeKey 获取当前激活的标签</span>
 <span class="code-keyword">const</span> tabs = document.querySelector(<span class="code-value">'solely-tabs'</span>);
 tabs.addEventListener(<span class="code-value">'change'</span>, (e) => {
-  console.log(<span class="code-value">'当前激活标签:'</span>, e.target.activeKey);
+  console.log(<span class="code-value">'当前激活标签:'</span>, e.detail.activeKey);
 });
 
 <span class="code-comment">// close 事件 - 通过 event.detail 获取关闭的标签信息</span>
@@ -406,7 +406,7 @@ tabs.addEventListener(<span class="code-value">'add'</span>, () => {
                 <tr>
                     <td>change</td>
                     <td>切换标签时触发（自定义事件）</td>
-                    <td>CustomEvent&lt;{ key: string; label: string }&gt;</td>
+                    <td>CustomEvent&lt;{ activeKey: string }&gt;</td>
                 </tr>
                 <tr>
                     <td>close</td>

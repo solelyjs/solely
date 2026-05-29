@@ -85,8 +85,8 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
 breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'items'</span>, JSON.<span class="code-method">stringify</span>(items));
 
 <span class="code-comment">// 监听点击事件</span>
-breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, () => {
-    <span class="code-keyword">const</span> item = breadcrumb.<span class="code-attr">clickedItem</span>;
+breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, (e) => {
+    <span class="code-keyword">const</span> item = e.detail.item;
     <span class="code-method">console</span>.<span class="code-method">log</span>(<span class="code-value">'点击了:'</span>, item?.title);
 });</code></pre>
             </div>
@@ -227,8 +227,8 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
             <tbody>
                 <tr>
                     <td>click</td>
-                    <td>点击面包屑项时触发（无 href 时）</td>
-                    <td>通过 breadcrumb.clickedItem 获取</td>
+                    <td>点击面包屑项时触发（自定义事件，无 href 时）</td>
+                    <td>CustomEvent&lt;{ item: BreadcrumbItem }&gt;</td>
                 </tr>
             </tbody>
         </table>

@@ -33,14 +33,13 @@ class SolelyBreadcrumb extends BaseElement<BreadcrumbProps> {
 
         event.preventDefault();
 
-        // 记录点击的项
         this.clickedItem = item;
 
-        // 触发自定义事件
         this.dispatchEvent(
-            new Event('click', {
+            new CustomEvent('click', {
                 bubbles: true,
                 composed: true,
+                detail: { item },
             }),
         );
     }

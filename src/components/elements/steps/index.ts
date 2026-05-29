@@ -26,6 +26,7 @@ class SolelySteps extends BaseElement<
     // 预设颜色列表（与 CSS 修饰类对应）
     private static readonly PRESET_COLORS = ['blue', 'green', 'red', 'orange', 'gray'];
     slotObserver?: MutationObserver;
+    private slotInitTimer?: number;
 
     get current(): number {
         return this.$data.current;
@@ -34,9 +35,10 @@ class SolelySteps extends BaseElement<
     set current(value: number) {
         this.$data.current = value;
         this.dispatchEvent(
-            new Event('change', {
+            new CustomEvent('change', {
                 bubbles: true,
                 composed: true,
+                detail: { current: value },
             }),
         );
     }
@@ -151,9 +153,10 @@ class SolelySteps extends BaseElement<
      * 设置插槽观察器
      */
     setupSlotObserver(): void {
-        setTimeout(() => {
+        this.slotInitTimer = setTimeout(() => {
             this.collectSlotItems();
-        }, 0);
+            this.slotInitTimer = undefined;
+        }, 0) as unknown as number;
 
         this.slotObserver = new MutationObserver(() => {
             this.collectSlotItems();
@@ -170,6 +173,10 @@ class SolelySteps extends BaseElement<
     unmounted(): void {
         if (this.slotObserver) {
             this.slotObserver.disconnect();
+        }
+        if (this.slotInitTimer) {
+            clearTimeout(this.slotInitTimer);
+            this.slotInitTimer = undefined;
         }
     }
 
