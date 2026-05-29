@@ -304,6 +304,9 @@
                 <solely-button type="primary" ref="modalTriggerBtn" @click="this.openElementModal()">Element 触发</solely-button>
                 <solely-button type="default" @click="this.openModalWithElementContent()">Element 作为内容</solely-button>
                 <solely-button type="primary" @click="this.openCustomDomModal()">自定义 DOM 无图标</solely-button>
+                <solely-button type="success" @click="this.openModalWithFormData()">表单数据返回</solely-button>
+                <solely-button type="warning" @click="this.openModalWithCloneElement()">克隆元素</solely-button>
+                <div ref="clonePreview" style="margin-top: 12px; min-height: 40px;"></div>
                 <div ref="elementModalLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.elementModalLog.length > 0 ? $data.elementModalLog.join('\n') : '等待交互...'}}</div>
             </div>
             <div class="demo-code">
@@ -344,6 +347,33 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
     <span class="code-attr">title</span>: <span class="code-value">'自定义标题'</span>,
     <span class="code-attr">content</span>: customContent,
     <span class="code-attr">showIcon</span>: <span class="code-value">false</span>,  <span class="code-comment">// 去掉默认图标</span>
+    <span class="code-attr">onOk</span>: () => {}
+});
+
+<span class="code-comment">// onOk 返回表单数据</span>
+<span class="code-keyword">const</span> form = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'form'</span>);
+form.<span class="code-attr">innerHTML</span> = <span class="code-value">'&lt;input name="username" /&gt;&lt;input name="email" /&gt;'</span>;
+
+<span class="code-type">Modal</span>.<span class="code-attr">confirm</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'填写信息'</span>,
+    <span class="code-attr">content</span>: form,
+    <span class="code-attr">onOk</span>: () => {
+        <span class="code-keyword">const</span> formData = <span class="code-keyword">new</span> <span class="code-type">FormData</span>(form);
+        <span class="code-keyword">return</span> {
+            username: formData.<span class="code-attr">get</span>(<span class="code-value">'username'</span>),
+            email: formData.<span class="code-attr">get</span>(<span class="code-value">'email'</span>)
+        };
+    }
+});
+
+<span class="code-comment">// 克隆元素（保留原始元素）</span>
+<span class="code-keyword">const</span> content = <span class="code-type">document</span>.<span class="code-attr">createElement</span>(<span class="code-value">'div'</span>);
+content.<span class="code-attr">textContent</span> = <span class="code-value">'内容'</span>;
+
+<span class="code-type">Modal</span>.<span class="code-attr">open</span>({
+    <span class="code-attr">title</span>: <span class="code-value">'克隆元素'</span>,
+    <span class="code-attr">content</span>: content,
+    <span class="code-attr">cloneElement</span>: <span class="code-value">true</span>,  <span class="code-comment">// 克隆元素</span>
     <span class="code-attr">onOk</span>: () => {}
 });</code></pre>
             </div>
@@ -455,9 +485,15 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>-</td>
                 </tr>
                 <tr>
+                    <td>cloneElement</td>
+                    <td>是否克隆传入的 HTMLElement（title/content/okText/cancelText），默认不克隆以支持双向数据绑定</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
                     <td>onOk</td>
-                    <td>确定按钮回调（支持异步）。回调执行后默认关闭对话框，若返回 <code>false</code> 则不关闭</td>
-                    <td>() => void | Promise&lt;void | false&gt;</td>
+                    <td>确定按钮回调（支持异步）。返回 <code>false</code> 阻止关闭，返回其他值作为结果数据</td>
+                    <td>() => void | false | any | Promise&lt;void | false | any&gt;</td>
                     <td>-</td>
                 </tr>
                 <tr>

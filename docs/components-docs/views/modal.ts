@@ -375,4 +375,58 @@ export class DocsModal extends BaseElement<DocsData> {
         });
         this.addLog('打开自定义样式对话框');
     }
+
+    openModalWithFormData(): void {
+        const form = document.createElement('form');
+        form.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <label>
+                    用户名:
+                    <input type="text" name="username" style="width: 100%; padding: 8px; margin-top: 4px;" />
+                </label>
+                <label>
+                    邮箱:
+                    <input type="email" name="email" style="width: 100%; padding: 8px; margin-top: 4px;" />
+                </label>
+            </div>
+        `;
+
+        Modal.confirm({
+            title: '填写信息',
+            content: form,
+            okText: '提交',
+            onOk: () => {
+                const formData = new FormData(form);
+                const data = {
+                    username: formData.get('username'),
+                    email: formData.get('email'),
+                };
+                this.addElementLog(`提交数据: ${JSON.stringify(data)}`);
+                return data;
+            },
+        });
+        this.addElementLog('打开带表单数据的对话框');
+    }
+
+    openModalWithCloneElement(): void {
+        const content = document.createElement('div');
+        content.innerHTML = '<p>这个元素会被克隆，原始元素保留在原处</p>';
+        content.style.padding = '12px';
+        content.style.background = '#f0f0f0';
+
+        // 先添加到页面显示
+        const preview = this.$refs.clonePreview as HTMLElement;
+        preview.innerHTML = '';
+        preview.appendChild(content);
+
+        Modal.open({
+            title: '克隆元素示例',
+            content: content,
+            cloneElement: true, // 克隆元素，保留原始元素
+            onOk: () => {
+                this.addElementLog('克隆元素对话框：确定');
+            },
+        });
+        this.addElementLog('打开克隆元素对话框（原始元素保留在下方）');
+    }
 }

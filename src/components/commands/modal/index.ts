@@ -151,6 +151,7 @@ function createButton(
     text: string | HTMLElement,
     type: string,
     onClick: () => void | Promise<void>,
+    cloneElement = false,
 ): HTMLButtonElement {
     const button = createElement('button', {
         className: `modal__btn modal__btn--${type === 'default' ? 'default' : type}`,
@@ -161,7 +162,7 @@ function createButton(
     if (typeof text === 'string') {
         button.textContent = text;
     } else if (text instanceof HTMLElement) {
-        button.appendChild(text.cloneNode(true));
+        button.appendChild(cloneElement ? text.cloneNode(true) : text);
     }
 
     button.onclick = () => safeAsyncCallback(onClick);
@@ -221,7 +222,8 @@ function open(options: ModalOptions): ModalInstance {
     if (typeof options.title === 'string') {
         title.textContent = options.title || '';
     } else if (options.title instanceof HTMLElement) {
-        title.appendChild(options.title.cloneNode(true));
+        const shouldClone = options.cloneElement ?? false;
+        title.appendChild(shouldClone ? options.title.cloneNode(true) : options.title);
     }
 
     header.appendChild(title);
@@ -257,13 +259,15 @@ function open(options: ModalOptions): ModalInstance {
         contentWrapper.appendChild(icon);
     }
 
-    const content = createElement('div');
+    const content = createElement('div', { className: 'modal__content' });
 
     // 支持字符串和 DOM 元素作为内容
     if (typeof options.content === 'string') {
         content.textContent = options.content || '';
     } else if (options.content instanceof HTMLElement) {
-        content.appendChild(options.content.cloneNode(true));
+        // 根据 cloneElement 选项决定是否克隆，默认不克隆以支持双向数据操作
+        const shouldClone = options.cloneElement ?? false;
+        content.appendChild(shouldClone ? options.content.cloneNode(true) : options.content);
     }
 
     contentWrapper.appendChild(content);
@@ -274,9 +278,14 @@ function open(options: ModalOptions): ModalInstance {
 
     if (options.buttons && options.buttons.length > 0) {
         options.buttons.forEach((buttonConfig: ModalButton) => {
-            const btn = createButton(buttonConfig.text, buttonConfig.type || 'default', async () => {
-                await safeAsyncCallback(() => buttonConfig.onClick());
-            });
+            const btn = createButton(
+                buttonConfig.text,
+                buttonConfig.type || 'default',
+                async () => {
+                    await safeAsyncCallback(() => buttonConfig.onClick());
+                },
+                options.cloneElement,
+            );
             if (buttonConfig.style) {
                 Object.assign(btn.style, buttonConfig.style);
             }
@@ -284,24 +293,34 @@ function open(options: ModalOptions): ModalInstance {
         });
     } else {
         if (showCancel) {
-            const cancelBtn = createButton(options.cancelText || globalConfig.cancelText, 'default', () => {
-                closeModalById(id);
-                options.onCancel?.();
-            });
+            const cancelBtn = createButton(
+                options.cancelText || globalConfig.cancelText,
+                'default',
+                () => {
+                    closeModalById(id);
+                    options.onCancel?.();
+                },
+                options.cloneElement,
+            );
             footer.appendChild(cancelBtn);
         }
 
-        const okBtn = createButton(options.okText || globalConfig.okText, options.okType || 'primary', async () => {
-            if (options.onOk) {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                const result = await safeAsyncCallback(() => options.onOk!());
-                // 只有当回调不返回 false 时才关闭对话框
-                if ((result as unknown as false | undefined) === false) {
-                    return; // 不关闭对话框
+        const okBtn = createButton(
+            options.okText || globalConfig.okText,
+            options.okType || 'primary',
+            async () => {
+                if (options.onOk) {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    const result = await safeAsyncCallback(() => options.onOk!());
+                    // 只有当回调不返回 false 时才关闭对话框
+                    if (result === false) {
+                        return; // 不关闭对话框
+                    }
                 }
-            }
-            closeModalById(id);
-        });
+                closeModalById(id);
+            },
+            options.cloneElement,
+        );
         footer.appendChild(okBtn);
     }
 
@@ -338,7 +357,9 @@ function open(options: ModalOptions): ModalInstance {
                     if (typeof newOptions.title === 'string') {
                         titleEl.textContent = newOptions.title;
                     } else if (newOptions.title instanceof HTMLElement) {
-                        titleEl.appendChild(newOptions.title.cloneNode(true));
+                        // 根据 cloneElement 选项决定是否克隆，默认不克隆
+                        const shouldClone = newOptions.cloneElement ?? false;
+                        titleEl.appendChild(shouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
                     }
                 }
             }
@@ -354,7 +375,9 @@ function open(options: ModalOptions): ModalInstance {
                     if (typeof newOptions.content === 'string') {
                         contentEl.textContent = newOptions.content;
                     } else if (newOptions.content instanceof HTMLElement) {
-                        contentEl.appendChild(newOptions.content.cloneNode(true));
+                        // 根据 cloneElement 选项决定是否克隆，默认不克隆
+                        const shouldClone = newOptions.cloneElement ?? false;
+                        contentEl.appendChild(shouldClone ? newOptions.content.cloneNode(true) : newOptions.content);
                     }
                 }
             }

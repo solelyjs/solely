@@ -42,8 +42,13 @@ export interface ModalOptions {
     showCancel?: boolean;
     /** 自定义按钮数组（如果提供，将忽略 okText/cancelText/showCancel） */
     buttons?: ModalButton[];
-    /** 确定按钮回调 */
-    onOk?: () => void | Promise<void>;
+    /** 确定按钮回调 - 返回 false 阻止关闭，返回 HTMLElement 或数据作为结果 */
+    onOk?: () =>
+        | void
+        | false
+        | HTMLElement
+        | Record<string, unknown>
+        | Promise<void | false | HTMLElement | Record<string, unknown>>;
     /** 取消按钮回调 */
     onCancel?: () => void;
     /** 关闭后回调 */
@@ -52,6 +57,8 @@ export interface ModalOptions {
     className?: string;
     /** 自定义样式 */
     style?: Partial<CSSStyleDeclaration>;
+    /** 是否克隆传入的 HTMLElement，默认 false（不克隆） */
+    cloneElement?: boolean;
 }
 
 export interface ModalInstance {

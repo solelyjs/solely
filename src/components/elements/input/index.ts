@@ -61,7 +61,10 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      */
     mounted(): void {
         this.refresh();
-        // 自动聚焦
+        this.inputElement = this.shadowRoot?.querySelector('input, textarea') as
+            | HTMLInputElement
+            | HTMLTextAreaElement
+            | null;
         if (this.$data.autofocus) {
             this.focus();
         }
@@ -79,14 +82,6 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      */
     hasSuffixSlot(): boolean {
         return this.querySelector('[slot="suffix"]') !== null;
-    }
-
-    protected afterMount(): void {
-        // 缓存输入框 DOM 引用
-        this.inputElement = this.shadowRoot?.querySelector('input, textarea') as
-            | HTMLInputElement
-            | HTMLTextAreaElement
-            | null;
     }
 
     /**
@@ -322,7 +317,8 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 聚焦输入框
      */
     public focus(): void {
-        this.inputElement?.focus();
+        const el = this.inputElement || this.shadowRoot?.querySelector('input, textarea');
+        el?.focus();
         this.$data.focused = true;
     }
 
@@ -330,7 +326,8 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 失焦输入框
      */
     public blur(): void {
-        this.inputElement?.blur();
+        const el = this.inputElement || this.shadowRoot?.querySelector('input, textarea');
+        el?.blur();
         this.$data.focused = false;
     }
 
@@ -366,7 +363,8 @@ class SolelyInput extends BaseElement<InputProps, InputRefs> {
      * 选择文本
      */
     public select(): void {
-        this.inputElement?.select();
+        const el = this.inputElement || this.shadowRoot?.querySelector('input, textarea');
+        el?.select();
     }
 }
 
