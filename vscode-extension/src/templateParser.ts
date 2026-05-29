@@ -534,7 +534,8 @@ export function findPropertyClassFile(tsPath: string, propName: string): string 
                             const indexContent = fs.readFileSync(resolvedPath, 'utf-8');
                             const reExportMatch = indexContent.match(
                                 new RegExp(
-                                    `export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
+                                    `export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b` +
+                                        `[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
                                 ),
                             );
                             if (reExportMatch) {
@@ -565,7 +566,8 @@ function findMethodInTsFile(tsPath: string, methodName: string): vscode.Location
     const escaped = escapeRegex(methodName);
     // Combined pattern: optional modifiers, then method name, then ( or = or :
     const pattern = new RegExp(
-        `^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?(?:async\\s+)?(?:get\\s+|set\\s+)?${escaped}\\s*[\\(=:]`,
+        `^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?` +
+            `(?:async\\s+)?(?:get\\s+|set\\s+)?${escaped}\\s*[\\(=:]`,
     );
 
     for (let i = 0; i < lines.length; i++) {
