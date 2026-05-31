@@ -21,6 +21,7 @@ const voidElements = new Set([
 const attrRE = /\s*([^\s"'/>=]+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gs;
 
 function parseAttributes(tag: string, tagLoc: SourceLocation): Attribute[] {
+    attrRE.lastIndex = 0;
     const attributes: Attribute[] = [];
     let match: RegExpExecArray | null;
 
@@ -179,15 +180,20 @@ export function parseHtml(html: string): ASTNode[] {
 
     // 构建 index -> line/col 映射
     const lineStarts: number[] = [0];
-    for (let i = 0; i < length; i++) if (html[i] === '\n') lineStarts.push(i + 1);
+    let linePos = 0;
+    while ((linePos = html.indexOf('\n', linePos)) !== -1) {
+        lineStarts.push(++linePos);
+    }
 
     function getLoc(idx: number): SourceLocation {
-        let line = 0;
-        for (let i = 1; i < lineStarts.length; i++) {
-            if (lineStarts[i] > idx) break;
-            line = i;
+        let lo = 0,
+            hi = lineStarts.length - 1;
+        while (lo <= hi) {
+            const mid = (lo + hi) >>> 1;
+            if (lineStarts[mid] <= idx) lo = mid + 1;
+            else hi = mid - 1;
         }
-        return [line + 1, idx - lineStarts[line] + 1];
+        return [hi + 1, idx - lineStarts[hi] + 1];
     }
 
     while (index < length) {
@@ -320,16 +326,19 @@ export function parseHtml(html: string): ASTNode[] {
 
         // -------- 闭合标签 --------
         if (tag.startsWith('</')) {
-            const lastOpeningTag = openingTags.pop();
-            while (stack.length > 0) {
-                const top = stack[stack.length - 1];
-                // 找 tag 名匹配
-                const topTag = top.tag || '';
-                if (topTag.toLowerCase() === lastOpeningTag?.toLowerCase()) {
-                    stack.pop();
-                    break;
+            const closeName = (tag.match(tagNameRE) || [])[1]?.toLowerCase();
+            if (closeName) {
+                let found = -1;
+                for (let si = stack.length - 1; si >= 0; si--) {
+                    if (stack[si].tag?.toLowerCase() === closeName) {
+                        found = si;
+                        break;
+                    }
                 }
-                stack.pop();
+                if (found !== -1) {
+                    stack.length = found;
+                    openingTags.length = found;
+                }
             }
             index = tagEnd + 1;
             continue;

@@ -71,10 +71,7 @@ class FunctionCompiler {
     private makeCacheKey(type: GenType, expr: string, locals: IRLocal[]): string {
         if (locals.length === 0) return `${type}:${expr}`;
 
-        // 只有在有 locals 时才进行复杂的 key 生成
-        // 假设 locals 顺序在 AST 遍历中是稳定的，可以简化处理
-        // 如果需要严格唯一性，保持原来的 map+sort 逻辑
-        const localKey = locals.map(l => Object.keys(l).sort().join(',')).join(';');
+        const localKey = locals.map(l => `${l.i}:${l.x}`).join(';');
         return `${type}:${expr}:${localKey}`;
     }
 
@@ -148,7 +145,8 @@ export function transformModel(node: ASTNode) {
     const modelAttr = node.attrs.find(a => a.key === 's-model');
     if (!modelAttr) return;
 
-    const model = '$data.' + modelAttr.value.replace('this.', '').replace('$data.', ''); // e.g. "foo"
+    const raw = modelAttr.value.trim();
+    const model = raw.startsWith('$data.') ? raw : `$data.${raw.replace(/^this\./, '')}`;
     const loc = modelAttr.loc;
 
     const tag = (node.tag || '').toLowerCase();
@@ -302,61 +300,35 @@ function processAttributes(
 /**
  * 检查节点是否是静态的（本身及所有后代都是静态）
  */
-function isStaticNode(ir: IRNode): boolean {
-    // 如果节点本身是动态的，则不是静态节点
-    if (ir.d === 1) return false;
-
-    // 检查子节点
-    if (ir.c && ir.c.length > 0) {
-        for (const child of ir.c) {
-            if (!isStaticNode(child)) return false;
-        }
-    }
-
-    // 检查条件分支
-    if (ir.b && ir.b.length > 0) {
-        for (const branch of ir.b) {
-            if (branch.c && branch.c.length > 0) {
-                for (const child of branch.c) {
-                    if (!isStaticNode(child)) return false;
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 /**
- * 标记静态子树
+ * 标记静态子树（单次遍历）
  * 后序遍历：先处理子节点，再判断自身是否为静态子树
+ * 返回该节点是否为完全静态
  */
-function markStaticSubtrees(ir: IRNode): void {
-    // 1. 先递归处理子节点
+function markStaticSubtrees(ir: IRNode): boolean {
+    let isStatic = ir.d === 0;
+
     if (ir.c && ir.c.length > 0) {
         for (const child of ir.c) {
-            markStaticSubtrees(child);
+            if (!markStaticSubtrees(child)) isStatic = false;
         }
     }
 
-    // 2. 处理条件分支
     if (ir.b && ir.b.length > 0) {
         for (const branch of ir.b) {
             if (branch.c && branch.c.length > 0) {
                 for (const child of branch.c) {
-                    markStaticSubtrees(child);
+                    if (!markStaticSubtrees(child)) isStatic = false;
                 }
             }
         }
     }
 
-    // 3. 判断自身是否为完全静态子树
-    // 只有 Element 和 Text 类型可以被标记为静态子树
-    if (ir.t === ASTType.Element || ir.t === ASTType.Text) {
-        if (ir.d === 0 && isStaticNode(ir)) {
-            ir.s = 1;
-        }
+    if (isStatic && (ir.t === ASTType.Element || ir.t === ASTType.Text)) {
+        ir.s = 1;
     }
+
+    return isStatic;
 }
 
 /**
