@@ -7,6 +7,53 @@
 
 ## [Unreleased]
 
+## [0.4.15] - 2026-05-31
+
+### Changed
+
+- **refactor**: 重构代码结构并修复若干细节问题
+    - 抽离 `camelToKebab` 工具函数到独立文件并全局导出
+    - 优化 `isObject` 实现，使用 `Set` 替代数组提升查询性能
+    - 重构 `htmlDecode` 工具，简化闭包结构并修复换行问题
+    - 为 `setProperty` 添加 SVG 处理参数和类型注释
+    - 为 `evalIR` 添加开发环境错误捕获
+    - 修复 weather 示例中的 `$event` 引用问题
+    - 重构响应式系统，添加深度限制防止栈溢出，优化路径计算逻辑，添加开发环境告警
+    - 优化 `BaseElement` 的属性升级逻辑和样式处理
+
+- **docs(tooltip)**: 替换示例按钮为自定义演示元素
+    - 将原有的 small 尺寸 solely-button 替换为带样式的 span 元素，统一演示示例的视觉样式
+    - 添加方向箭头标注更清晰
+
+## [0.4.14] - 2026-05-29
+
+### Added
+
+- **feat(modal, input)**: 完善弹窗与输入框功能，新增克隆元素与回调增强
+    - 弹窗 Modal 新增 `cloneElement` 配置项，支持是否克隆传入的 DOM 元素
+    - 重构 `onOk` 回调类型，支持返回元素/数据并精准控制弹窗关闭
+    - 调整输入框 DOM 引用获取时机，优化挂载逻辑避免潜在空引用问题
+    - 新增表单弹窗示例与克隆元素弹窗示例文档
+
+- **feat(vscode-extension)**: VS Code 扩展版本更新与功能增强
+    - v0.1.2：新增事件绑定语法高亮支持，更新生命周期钩子匹配规则，新增 getter 属性悬停提示与定义跳转支持，完善继承链查找与链式调用方法解析逻辑
+    - v0.1.1：完善语法高亮支持（插值标点、绑定语法），优化 hover 提示显示属性类型，添加诊断防抖与文件缓存机制，修复控制流标签校验和插值校验逻辑
+
+### Changed
+
+- **refactor(templateParser)**: 拆分过长的正则表达式字符串
+    - 将两行过长的正则字面量拆分为多行拼接，提升代码可读性和可维护性
+
+- **refactor**: 优化组件事件与无障碍支持，修复内存泄漏
+    - 统一组件自定义事件为 `CustomEvent` 并携带数据
+    - 为多个组件添加 ARIA 属性支持与键盘交互
+    - 新增组件卸载时的资源清理逻辑，修复定时器与请求泄漏
+    - 更新文档中事件使用方式与 API 说明
+
+- **refactor(slider, coordinate-input)**: 调整组件生命周期和属性变更钩子
+    - 移除 `SolelySlider` 的 `afterMount` 钩子，调整元素获取时机
+    - 将 `coordinate-input` 的 `beforeUnmount` 改为 `unmounted`，`onPropChange` 改为 `attributeChanged`
+
 ## [0.4.13] - 2026-05-24
 
 ### Added
@@ -503,7 +550,9 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.13...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.15...HEAD
+[0.4.15]: https://github.com/solelyjs/solely/compare/v0.4.14...v0.4.15
+[0.4.14]: https://github.com/solelyjs/solely/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/solelyjs/solely/compare/v0.4.12...v0.4.13
 [0.4.12]: https://github.com/solelyjs/solely/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/solelyjs/solely/compare/v0.4.10...v0.4.11
