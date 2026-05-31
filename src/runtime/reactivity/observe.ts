@@ -1,4 +1,5 @@
 import { isObject } from '../../shared/is-object';
+import { IS_DEV } from '../../shared/env';
 
 /* ======================= Consts & Types ======================= */
 
@@ -117,10 +118,11 @@ export function isProxy(value: any): boolean {
     return !!(value && value[RAW_SYMBOL]);
 }
 
-/** 深度比较 - 支持循环引用检测 */
+/** 深度比较 - 支持循环引用检测，限制最大深度防止栈溢出 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const deepEqual = (a: any, b: any, seen = new WeakMap<object, object>()): boolean => {
-    // 同一引用
+const deepEqual = (a: any, b: any, seen = new WeakMap<object, object>(), depth = 0): boolean => {
+    if (depth > 10) return a === b;
+
     if (a === b) return true;
 
     // null 检查
@@ -144,7 +146,7 @@ const deepEqual = (a: any, b: any, seen = new WeakMap<object, object>()): boolea
     if (Array.isArray(a) && Array.isArray(b)) {
         if (a.length !== b.length) return false;
         for (let i = 0; i < a.length; i++) {
-            if (!deepEqual(a[i], b[i], seen)) return false;
+            if (!deepEqual(a[i], b[i], seen, depth + 1)) return false;
         }
         return true;
     }
@@ -157,7 +159,7 @@ const deepEqual = (a: any, b: any, seen = new WeakMap<object, object>()): boolea
         if (!Reflect.has(b, key)) return false;
         const aVal = (a as Record<PropertyKey, unknown>)[key];
         const bVal = (b as Record<PropertyKey, unknown>)[key];
-        if (!deepEqual(aVal, bVal, seen)) return false;
+        if (!deepEqual(aVal, bVal, seen, depth + 1)) return false;
     }
 
     return true;
@@ -200,27 +202,20 @@ const isPathMatched = (path: PathKey[], filterRegexes: RegExp[]): boolean => {
 const globalEmit = (targetProxy: object, payload: ChangePayload) => {
     const basePath = resolvePathGlobal(targetProxy);
 
-    // 直接遍历每个代理的观察者，无需 Set 去重
-    // 一个观察者只会注册到它监听的根代理上，不会重复
     let current: object | null = targetProxy;
+    let depth = 0;
     while (current) {
         const observers = globalObservers.get(current);
         if (observers) {
+            const relativePath = basePath.slice(basePath.length - depth);
             observers.forEach(entry => {
-                // 检查观察者是否活跃
                 if (!entry.active) return;
 
-                // 计算相对于该观察者的路径
-                // observerBasePath 是观察者根代理到当前代理的路径
-                const observerBasePath = current ? resolvePathGlobal(current) : [];
-                const observerFullPath = [...observerBasePath, ...basePath.slice(observerBasePath.length)];
+                if (!isPathMatched(relativePath, entry.filterRegexes)) return;
 
-                if (!isPathMatched(observerFullPath, entry.filterRegexes)) return;
-
-                const change: ChangeItem = { ...payload, path: observerFullPath };
+                const change: ChangeItem = { ...payload, path: relativePath };
 
                 if (entry.throttle > 0) {
-                    // 对于节流的情况，每个观察者自己管理 pending 和 timer
                     entry.pending.push(change);
                     if (!entry.timer) {
                         entry.timer = setTimeout(() => {
@@ -229,23 +224,97 @@ const globalEmit = (targetProxy: object, payload: ChangePayload) => {
                             entry.pending = [];
                             entry.timer = null;
                             if (batch.length > 0) {
-                                entry.onBatch?.(batch);
-                                batch.forEach(cb => entry.callback(cb));
+                                if (entry.onBatch) {
+                                    entry.onBatch(batch);
+                                } else {
+                                    entry.callback(batch[batch.length - 1]);
+                                }
                             }
                         }, entry.throttle);
                     }
                 } else {
-                    entry.onBatch?.([change]);
-                    entry.callback(change);
+                    if (entry.onBatch) {
+                        entry.onBatch([change]);
+                    } else {
+                        entry.callback(change);
+                    }
                 }
             });
         }
         const parentInfo = globalParentMap.get(current);
         current = parentInfo?.parent || null;
+        depth++;
     }
 };
 
 /* ======================= observe 主函数 ======================= */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createArrayInstrumentations = (
+    target: unknown[],
+    proxy: object,
+    emitFn: (proxy: object, payload: ChangePayload) => void,
+): Record<string, Function> => {
+    const instrumentations: Record<string, Function> = {};
+    // 1. 变异方法 (Mutation)
+    (['push', 'pop', 'shift', 'unshift', 'splice'] as const).forEach(key => {
+        instrumentations[key] = function (this: unknown[], ...args: unknown[]) {
+            if (!proxy) return;
+
+            const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
+            globalArrayMutationDepth.set(proxy, currentDepth + 1);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const res = (target as any)[key].apply(target, args);
+            globalArrayMutationDepth.set(proxy, currentDepth);
+
+            if (key === 'push') {
+                emitFn(proxy, { type: 'array-push', index: target.length - args.length, values: args });
+            } else if (key === 'unshift') {
+                emitFn(proxy, { type: 'array-push', index: 0, values: args });
+            } else if (key === 'pop') {
+                emitFn(proxy, { type: 'array-splice', index: target.length, deleteCount: 1, insert: [] });
+            } else if (key === 'shift') {
+                emitFn(proxy, { type: 'array-splice', index: 0, deleteCount: 1, insert: [] });
+            } else if (key === 'splice') {
+                const [start, deleteCount, ...insert] = args as [number, number, ...unknown[]];
+                emitFn(proxy, { type: 'array-splice', index: start, deleteCount, insert });
+            }
+            return res;
+        };
+    });
+
+    // 2. 结构重置方法 (Reset)
+    (['sort', 'reverse', 'fill', 'copyWithin'] as const).forEach(key => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        instrumentations[key] = function (this: unknown[], ...args: any[]) {
+            if (!proxy) return;
+
+            const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
+            globalArrayMutationDepth.set(proxy, currentDepth + 1);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const res = (target as any)[key].apply(target, args);
+            globalArrayMutationDepth.set(proxy, currentDepth);
+            emitFn(proxy, { type: 'array-reset', method: key });
+            return res;
+        };
+    });
+
+    // 3. 身份感知查找方法 (Search)
+    (['indexOf', 'lastIndexOf', 'includes'] as const).forEach(key => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        instrumentations[key] = function (this: unknown[], searchElement: unknown, ...args: any[]) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let res = (target as any)[key].apply(target, [searchElement, ...args]);
+            if ((res === -1 || res === false) && isProxy(searchElement)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                res = (target as any)[key].apply(target, [toRaw(searchElement), ...args]);
+            }
+            return res;
+        };
+    });
+
+    return instrumentations;
+};
 
 /**
  * 创建响应式观察对象
@@ -274,71 +343,6 @@ export function observe<T extends object>(
         pending: [],
         timer: null,
         active: true,
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const createArrayInstrumentations = (target: unknown[], proxy: object): Record<string, Function> => {
-        const instrumentations: Record<string, Function> = {};
-        // 1. 变异方法 (Mutation)
-        (['push', 'pop', 'shift', 'unshift', 'splice'] as const).forEach(key => {
-            instrumentations[key] = function (this: unknown[], ...args: unknown[]) {
-                if (!proxy) return;
-
-                const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
-                globalArrayMutationDepth.set(proxy, currentDepth + 1);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const res = (target as any)[key].apply(target, args);
-                globalArrayMutationDepth.set(proxy, currentDepth);
-
-                // 计算触发事件的参数
-                if (key === 'push') {
-                    globalEmit(proxy, { type: 'array-push', index: target.length - args.length, values: args });
-                } else if (key === 'unshift') {
-                    globalEmit(proxy, { type: 'array-push', index: 0, values: args });
-                } else if (key === 'pop') {
-                    globalEmit(proxy, { type: 'array-splice', index: target.length, deleteCount: 1, insert: [] });
-                } else if (key === 'shift') {
-                    globalEmit(proxy, { type: 'array-splice', index: 0, deleteCount: 1, insert: [] });
-                } else if (key === 'splice') {
-                    const [start, deleteCount, ...insert] = args as [number, number, ...unknown[]];
-                    globalEmit(proxy, { type: 'array-splice', index: start, deleteCount, insert });
-                }
-                return res;
-            };
-        });
-
-        // 2. 结构重置方法 (Reset)
-        (['sort', 'reverse', 'fill', 'copyWithin'] as const).forEach(key => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            instrumentations[key] = function (this: unknown[], ...args: any[]) {
-                if (!proxy) return;
-
-                const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
-                globalArrayMutationDepth.set(proxy, currentDepth + 1);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const res = (target as any)[key].apply(target, args);
-                globalArrayMutationDepth.set(proxy, currentDepth);
-                globalEmit(proxy, { type: 'array-reset', method: key });
-                return res;
-            };
-        });
-
-        // 3. 身份感知查找方法 (Search)
-        (['indexOf', 'lastIndexOf', 'includes'] as const).forEach(key => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            instrumentations[key] = function (this: unknown[], searchElement: unknown, ...args: any[]) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let res = (target as any)[key].apply(target, [searchElement, ...args]);
-                // 如果没找到且搜索的是 Proxy，尝试用原始值找
-                if ((res === -1 || res === false) && isProxy(searchElement)) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    res = (target as any)[key].apply(target, [toRaw(searchElement), ...args]);
-                }
-                return res;
-            };
-        });
-
-        return instrumentations;
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -385,6 +389,10 @@ export function observe<T extends object>(
             },
 
             set(t, p, newVal, r) {
+                if (!observerEntry.active) {
+                    if (IS_DEV) console.warn('[Solely] Cannot set property on a disposed reactive object');
+                    return true;
+                }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const oldVal = (t as any)[p];
                 // 深度比较或引用比较
@@ -405,6 +413,10 @@ export function observe<T extends object>(
             },
 
             deleteProperty(t, p) {
+                if (!observerEntry.active) {
+                    if (IS_DEV) console.warn('[Solely] Cannot delete property on a disposed reactive object');
+                    return true;
+                }
                 if (!Reflect.has(t, p)) return false;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const oldVal = (t as any)[p];
@@ -423,7 +435,7 @@ export function observe<T extends object>(
         globalParentMap.set(proxy, { parent, key });
 
         if (Array.isArray(target)) {
-            globalArrayInstrumentations.set(proxy, createArrayInstrumentations(target, proxy));
+            globalArrayInstrumentations.set(proxy, createArrayInstrumentations(target, proxy, globalEmit));
         }
 
         return proxy;

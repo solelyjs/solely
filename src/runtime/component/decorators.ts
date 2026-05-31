@@ -1,5 +1,5 @@
 import { buildIR, parseHtml } from '../../compiler';
-import { IS_DEV } from '../../shared';
+import { camelToKebab, IS_DEV } from '../../shared';
 import { IRRoot } from '../../types';
 
 const MANIFEST_SYMBOL = Symbol.for('solely.manifest');
@@ -69,16 +69,6 @@ export interface InternalManifest extends Manifest {
     attributeMap?: Map<string, PropDescriptor>;
     /** prop 原始名索引：prop name -> PropDescriptor */
     propMap?: Map<string, PropDescriptor>;
-}
-
-/**
- * 将 camelCase 转换为 kebab-case（修复连续大写字母问题）
- */
-function camelToKebab(str: string): string {
-    return str
-        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-        .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
-        .toLowerCase();
 }
 
 /**

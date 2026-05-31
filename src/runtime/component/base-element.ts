@@ -1,4 +1,4 @@
-import { IS_DEV, isObject } from '../../shared';
+import { camelToKebab, IS_DEV, isObject } from '../../shared';
 import { InternalManifest, Manifest, PropDescriptor, PropType } from './decorators';
 import { createRender, IRRenderInstance } from '../renderer';
 import { observe } from '../reactivity';
@@ -50,6 +50,7 @@ class BaseElement<
     #createdCalled = false;
     #isActive = false;
     #needsRefresh = false;
+    #propsInstalled = false;
 
     // 非 Shadow DOM 样式引用计数（用于组件卸载时清理）
     static #styleRefCount = new Map<string, number>();
@@ -82,10 +83,8 @@ class BaseElement<
 
     // 升级属性（Upgrade Property）, 保障在元素被定义前设置的属性能正确触发响应式更新
     #upgradeAllOwnDataProperties() {
-        // 1. 获取实例所有自有属性键（包括不可枚举）
         const ownKeys = Object.getOwnPropertyNames(this);
 
-        // 可选的过滤规则：跳过内部属性（以 #、_、$ 开头的内部保留字段）
         const internalPrefixes = ['#', '_'];
         const internalFields = new Set([
             '$data',
@@ -104,28 +103,29 @@ class BaseElement<
             'refresh',
         ]);
 
+        const setterMap = new Map<string, PropertyDescriptor>();
+        let proto = Object.getPrototypeOf(this);
+        while (proto && proto !== HTMLElement.prototype) {
+            const descriptors = Object.getOwnPropertyDescriptors(proto);
+            for (const [key, desc] of Object.entries(descriptors)) {
+                if (desc.set && !setterMap.has(key)) {
+                    setterMap.set(key, desc);
+                }
+            }
+            proto = Object.getPrototypeOf(proto);
+        }
+
         for (const key of ownKeys) {
-            // 过滤内部字段
             if (internalFields.has(key)) continue;
             if (internalPrefixes.some(p => key.startsWith(p))) continue;
 
-            // 只处理自有数据属性（value 描述符），不处理访问器属性
             const desc = Object.getOwnPropertyDescriptor(this, key);
             if (!desc || !('value' in desc)) continue;
 
             const value = desc.value;
-
-            // 沿原型链查找是否存在 setter（可能是用户自定义的或 @Prop 生成的）
-            let protoTarget: object = this as object;
-            let setterDesc: PropertyDescriptor | undefined;
-            while (protoTarget) {
-                setterDesc = Object.getOwnPropertyDescriptor(protoTarget, key);
-                if (setterDesc?.set) break;
-                protoTarget = Object.getPrototypeOf(protoTarget);
-            }
+            const setterDesc = setterMap.get(key);
 
             if (setterDesc?.set) {
-                // 删除自有数据属性，触发 setter
                 delete this[key as keyof this];
                 (this as DataRecord)[key] = value;
             }
@@ -162,7 +162,7 @@ class BaseElement<
     }
 
     #reflectToAttribute(desc: PropDescriptor, value: unknown) {
-        const attrName = desc.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        const attrName = camelToKebab(desc.name);
 
         if (desc.type === 'boolean') {
             if (value) {
@@ -218,6 +218,12 @@ class BaseElement<
         }
     }
 
+    #installReactivePropsOnce() {
+        if (this.#propsInstalled) return;
+        this.#propsInstalled = true;
+        this.#installReactiveProps();
+    }
+
     /* -------------------- $data -------------------- */
     get $data(): TData {
         return this.#data;
@@ -229,6 +235,7 @@ class BaseElement<
 
         this.#dispose?.();
         this.#initData(value);
+        this.#installReactivePropsOnce();
         this.#scheduleRefresh();
     }
 
@@ -324,7 +331,9 @@ class BaseElement<
         if (manifest.sheet && root instanceof ShadowRoot && 'adoptedStyleSheets' in root) {
             // 避免重复添加
             if (!root.adoptedStyleSheets.includes(manifest.sheet)) {
-                root.adoptedStyleSheets = [...root.adoptedStyleSheets, manifest.sheet];
+                const sheets = Array.from(root.adoptedStyleSheets);
+                sheets.push(manifest.sheet);
+                root.adoptedStyleSheets = sheets;
             }
             return;
         }
@@ -366,7 +375,7 @@ class BaseElement<
 
         if (manifest.attributeMap && isObject(this.$data)) {
             // 安装响应式属性访问器（如果用户没有自定义 getter/setter）
-            this.#installReactiveProps();
+            this.#installReactivePropsOnce();
 
             // 遍历预设好的属性映射
             for (const [attrName, desc] of manifest.attributeMap) {

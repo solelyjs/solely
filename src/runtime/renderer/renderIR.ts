@@ -301,9 +301,11 @@ function setAttribute(el: Element, key: string, value: any): void {
  * @param el - 目标 DOM 元素
  * @param propKey - 原始属性名（如 'data-id', 'class', 'value'）
  * @param value - 要设置的值，可以是任意类型
+ * @param isSVGHint - 是否为 SVG 元素，用于特殊处理（如 xlink:href）
+ * @returns - 无返回值
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function setProperty(el: Element, propKey: string, value: any): void {
+function setProperty(el: Element, propKey: string, value: any, isSVGHint?: boolean): void {
     // 1. 将 propKey 映射为 DOM property 的键名（驼峰形式）
     const camelKey = HTML_PROP_MAP[propKey] || propKey;
 
@@ -373,7 +375,7 @@ function setProperty(el: Element, propKey: string, value: any): void {
 
     // 7. 通用赋值：如果是 SVG 元素，很多时候 property 赋值是不生效的
     // 比如 <circle cx="50">，在 JS 里 el.cx = 50 往往没用，必须 setAttribute
-    const isSVG = el instanceof SVGElement || anyEl.ownerSVGElement !== undefined;
+    const isSVG = isSVGHint ?? (el instanceof SVGElement || anyEl.ownerSVGElement !== undefined);
     if (isSVG && !HTML_PROP_MAP[propKey]) {
         setAttribute(el, propKey, value);
     } else if (anyEl[camelKey] !== value) {
@@ -409,13 +411,16 @@ export class IRRenderer {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     evalIR(fid: number, args: any[], meta?: Meta) {
         const fn = this.ir.fns[fid - 1];
-        try {
-            return fn ? fn.apply(this.scope, args) : '';
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-            showTemplateError(e.message || e.toString(), this.ir.m?.src || '', meta, this.scope.tagName);
-            return '';
+        if (IS_DEV) {
+            try {
+                return fn ? fn.apply(this.scope, args) : '';
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } catch (e: any) {
+                showTemplateError(e.message || e.toString(), this.ir.m?.src || '', meta, this.scope.tagName);
+                return '';
+            }
         }
+        return fn ? fn.apply(this.scope, args) : '';
     }
 
     // ================ 创建节点 ================
@@ -445,10 +450,11 @@ export class IRRenderer {
         const postTasks: (() => void)[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const anyEl = el as any;
+        const isSVG = el instanceof SVGElement || anyEl.ownerSVGElement !== undefined;
 
         /** =============================
          *  Runtime Context（关键）
-         *  永远保存“最新 loops”
+         *  永远保存"最新 loops"
          * ============================= */
         if (!anyEl[IRCTX_SYMBOL]) {
             anyEl[IRCTX_SYMBOL] = {
@@ -571,9 +577,9 @@ export class IRRenderer {
 
                 if (el.tagName === 'SELECT' && POST_CHILD_PROPS.has(prop)) {
                     // select.value 等需等待 children ready
-                    postTasks.push(() => setProperty(el, prop, val));
+                    postTasks.push(() => setProperty(el, prop, val, isSVG));
                 } else {
-                    setProperty(el, prop, val);
+                    setProperty(el, prop, val, isSVG);
                 }
             } else if (!isUpdate) {
                 // 普通 HTML Attribute（如 href, src, title）

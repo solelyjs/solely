@@ -3,7 +3,7 @@
   <div class="search-section">
     <div class="search-box">
       <input type="text" class="search-input" placeholder="搜索城市天气..." s-model="$data.city"
-        onkeypress="if($event.key === 'Enter') this.searchWeather()">
+        onkeypress="if(event.key === 'Enter') this.searchWeather()">
       <button class="search-btn" onclick="this.searchWeather()" s-disabled="$data.isLoading || !$data.city.trim()">
         <If condition="$data.isLoading">
           <span class="loading-spinner"></span>
