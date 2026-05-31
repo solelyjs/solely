@@ -7,6 +7,18 @@
 
 ## [Unreleased]
 
+## [0.4.16] - 2026-05-31
+
+### Changed
+
+- **refactor(compiler)**: 优化解析与 IR 处理逻辑
+    - 修复正则表达式 `lastIndex` 未重置导致的解析异常
+    - 重构行号计算为 `indexOf` 循环替代低效遍历，改用二分法快速计算位置
+    - 重写闭合标签匹配逻辑，精准匹配并截断栈到正确位置
+    - 简化缓存 key 生成逻辑，直接使用 local 索引和标识拼接
+    - 优化 model 属性处理，支持 trim 输入并修正路径拼接逻辑
+    - 重构静态子树标记函数，改为单次后序遍历并返回静态状态，移除冗余 `isStaticNode` 函数
+
 ## [0.4.15] - 2026-05-31
 
 ### Changed
@@ -550,7 +562,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.15...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.16...HEAD
+[0.4.16]: https://github.com/solelyjs/solely/compare/v0.4.15...v0.4.16
 [0.4.15]: https://github.com/solelyjs/solely/compare/v0.4.14...v0.4.15
 [0.4.14]: https://github.com/solelyjs/solely/compare/v0.4.13...v0.4.14
 [0.4.13]: https://github.com/solelyjs/solely/compare/v0.4.12...v0.4.13
