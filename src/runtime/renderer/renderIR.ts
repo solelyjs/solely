@@ -389,16 +389,12 @@ interface NodeEntry {
     irNode: IRNode;
     node: Node;
     loops: runtimeLoop[];
-    marker: boolean;
 }
 
-/**
- * IR 渲染器类 - 负责将 IR（中间表示）渲染到 DOM
- */
 export class IRRenderer {
     private nodeMap = new Map<string, NodeEntry>();
-    private marker: boolean = false;
-    /** 静态子树缓存：key -> DOM节点模板 */
+    private prevNodeMap = new Map<string, NodeEntry>();
+    private pathStack: number[] = [];
     private staticSubtreeCache = new Map<string, Node>();
 
     constructor(
@@ -646,8 +642,8 @@ export class IRRenderer {
      * 处理静态子树
      * 首次渲染创建并缓存，后续直接克隆
      */
-    private handleStaticSubtree(irNode: IRNode, id: string, parentNode: Node, loops: runtimeLoop[]): Node {
-        const cached = this.staticSubtreeCache.get(id);
+    private handleStaticSubtree(irNode: IRNode, key: string, parentNode: Node, loops: runtimeLoop[]): Node {
+        const cached = this.staticSubtreeCache.get(key);
         if (cached) {
             // 克隆缓存的静态子树
             const clone = cached.cloneNode(true);
@@ -660,108 +656,122 @@ export class IRRenderer {
         const node = this.createStaticSubtree(irNode, parentNode, loops);
         parentNode.appendChild(node);
         // 缓存模板（用于后续克隆）
-        this.staticSubtreeCache.set(id, node.cloneNode(true));
+        this.staticSubtreeCache.set(key, node.cloneNode(true));
         return node;
     }
 
-    private irToNode(irNode: IRNode, index: number | string, pid: string, parentNode: Node, loops: runtimeLoop[]) {
-        const id = pid + '-' + index;
-        const existing = this.nodeMap.get(id);
+    private currentKey(): string {
+        return this.pathStack.join('.');
+    }
+
+    private findEntry(key: string): NodeEntry | undefined {
+        let entry = this.nodeMap.get(key);
+        if (!entry) {
+            entry = this.prevNodeMap.get(key);
+            if (entry) {
+                this.prevNodeMap.delete(key);
+                this.nodeMap.set(key, entry);
+            }
+        }
+        return entry;
+    }
+
+    private irToNode(irNode: IRNode, index: number, parentNode: Node, loops: runtimeLoop[]) {
+        this.pathStack.push(index);
+        this.processNode(irNode, parentNode, loops);
+        this.pathStack.pop();
+    }
+
+    private processNode(irNode: IRNode, parentNode: Node, loops: runtimeLoop[]) {
+        const key = this.currentKey();
+        const existing = this.findEntry(key);
+
         let node: Node | undefined = undefined;
 
-        // ========== 静态子树优化 ==========
-        // 如果是完全静态子树，使用克隆优化
         if (irNode.s === 1) {
-            // 静态子树不走 nodeMap，直接处理
             if (existing) {
-                // 已存在，标记为活跃
-                existing.marker = this.marker;
                 node = existing.node;
             } else {
-                // 创建或克隆
-                node = this.handleStaticSubtree(irNode, id, parentNode, loops);
-                // 记录到 nodeMap 用于清理，但内部节点不记录
-                this.nodeMap.set(id, { irNode, node, loops, marker: this.marker });
+                node = this.handleStaticSubtree(irNode, key, parentNode, loops);
+                this.nodeMap.set(key, { irNode, node, loops });
             }
             return;
         }
 
         if (existing) {
             node = existing.node;
-            existing.marker = this.marker;
 
             let postTasks: (() => void)[] = [];
 
             if (irNode.d) {
                 if (irNode.t === ASTType.Element) {
-                    // 只有 dynamic Element 才需要更新属性
                     postTasks = this.applyAttrs(node as Element, irNode.a ?? [], loops, true);
                 } else {
-                    // dynamic Text / Comment
                     this.updateNode(node, irNode, loops);
                 }
             }
 
-            // children 始终递归（结构变化由 IR 保证）
             irNode.c?.forEach((child, childIdx) => {
-                this.irToNode(child, childIdx, id, node as Node, loops);
+                this.pathStack.push(childIdx);
+                this.processNode(child, node as Node, loops);
+                this.pathStack.pop();
             });
 
-            // post-children 属性
             postTasks.forEach(fn => fn());
         } else {
-            // 创建新节点
             switch (irNode.t) {
                 case ASTType.Element:
                     node = this.createElement(irNode, parentNode);
-                    // 初始化静态 class / style
                     initStaticClass(node as HTMLElement, irNode);
                     initStaticStyle(node as HTMLElement, irNode);
 
                     const postTasks = this.applyAttrs(node as HTMLElement, irNode.a ?? [], loops);
                     parentNode.appendChild(node);
-                    this.nodeMap.set(id, { irNode, node, loops, marker: this.marker });
-                    // 递归子节点
+                    this.nodeMap.set(key, { irNode, node, loops });
                     irNode.c?.forEach((child, childIdx) => {
-                        this.irToNode(child, childIdx, id, node as Node, loops);
+                        this.pathStack.push(childIdx);
+                        this.processNode(child, node as Node, loops);
+                        this.pathStack.pop();
                     });
                     postTasks.forEach((fn: () => void) => fn());
                     break;
                 case ASTType.Text:
                     node = this.createText(irNode, loops);
                     parentNode.appendChild(node);
-                    this.nodeMap.set(id, { irNode, node, loops, marker: this.marker });
+                    this.nodeMap.set(key, { irNode, node, loops });
                     break;
                 case ASTType.Comment:
                     node = this.createComment(irNode, loops);
                     parentNode.appendChild(node);
-                    this.nodeMap.set(id, { irNode, node, loops, marker: this.marker });
+                    this.nodeMap.set(key, { irNode, node, loops });
                     break;
                 case ASTType.For: {
-                    const anchorId = `${id}-end`;
-                    let anchor = this.nodeMap.get(anchorId)?.node as Comment | undefined;
+                    this.pathStack.push(-1);
+                    const anchorKey = this.currentKey();
+                    this.pathStack.pop();
+
+                    let anchor = this.findEntry(anchorKey)?.node as Comment | undefined;
 
                     if (!anchor) {
-                        anchor = document.createComment(`for:${id}`);
+                        anchor = document.createComment('for');
                         parentNode.appendChild(anchor);
-                        this.nodeMap.set(anchorId, {
+                        this.nodeMap.set(anchorKey, {
                             irNode: { t: ASTType.Comment } as IRNode,
                             node: anchor,
                             loops,
-                            marker: this.marker,
                         });
-                    } else {
-                        (this.nodeMap.get(anchorId) as NodeEntry).marker = this.marker;
                     }
 
-                    // 清空旧内容（简单方式：等会 cleanup 会处理）
                     const list = this.evalIR(irNode.f ?? -1, [loops], irNode.__m) || [];
                     const fragment = document.createDocumentFragment();
 
                     list.forEach((item: unknown, i: number) => {
                         const childLoops = [...loops, { itmVal: item, idxVal: i }];
                         irNode.c?.forEach((child, childIdx) => {
-                            this.irToNode(child, childIdx, `${id}-for-${i}`, fragment as Node, childLoops);
+                            this.pathStack.push(i, childIdx);
+                            this.processNode(child, fragment as Node, childLoops);
+                            this.pathStack.pop();
+                            this.pathStack.pop();
                         });
                     });
 
@@ -769,18 +779,18 @@ export class IRRenderer {
                     break;
                 }
                 case ASTType.Conditional: {
-                    const anchorId = `${id}-end`;
-                    let anchor = this.nodeMap.get(anchorId)?.node as Comment | undefined;
+                    this.pathStack.push(-1);
+                    const anchorKey = this.currentKey();
+                    this.pathStack.pop();
+
+                    let anchor = this.findEntry(anchorKey)?.node as Comment | undefined;
 
                     if (!anchor) {
-                        anchor = document.createComment(`if:${id}`);
+                        anchor = document.createComment('if');
                         parentNode.appendChild(anchor);
-                        this.nodeMap.set(anchorId, { irNode: {} as IRNode, node: anchor, loops, marker: this.marker });
-                    } else {
-                        (this.nodeMap.get(anchorId) as NodeEntry).marker = this.marker;
+                        this.nodeMap.set(anchorKey, { irNode: {} as IRNode, node: anchor, loops });
                     }
 
-                    // 找到第一个真的分支
                     for (let ifIdx = 0; ifIdx < (irNode.b || []).length; ifIdx++) {
                         const branch = irNode.b?.[ifIdx] as IRBranch;
                         const matched = branch.f === null || this.evalIR(branch.f, [loops], branch.__m);
@@ -788,7 +798,10 @@ export class IRRenderer {
                         if (matched) {
                             const fragment = document.createDocumentFragment();
                             branch.c.forEach((child, childIdx) => {
-                                this.irToNode(child, childIdx, `${id}-if-${ifIdx}`, fragment as Node, loops);
+                                this.pathStack.push(ifIdx, childIdx);
+                                this.processNode(child, fragment as Node, loops);
+                                this.pathStack.pop();
+                                this.pathStack.pop();
                             });
                             anchor.parentNode?.insertBefore(fragment, anchor);
                             break;
@@ -802,51 +815,49 @@ export class IRRenderer {
         }
     }
 
-    // ================ 清理被删除的节点 ================
     private cleanupOldNodes() {
-        for (const [id, entry] of this.nodeMap.entries()) {
-            if (entry.marker !== this.marker) {
-                const { irNode, node, loops } = entry;
+        const oldMap = this.prevNodeMap;
+        for (const [, entry] of oldMap.entries()) {
+            const { irNode, node, loops } = entry;
 
-                if (irNode.a) {
-                    // 调用 unmounted 生命周期
-                    const unmountedAttr = irNode.a.find(a => a.k === 'unmounted');
-                    if (unmountedAttr) {
-                        requestAnimationFrame(() => {
-                            this.evalIR(unmountedAttr.f ?? -1, [node, loops], unmountedAttr.__m);
-                        });
-                    }
-
-                    // 移除 ref 节点
-                    const refAttr = irNode.a.find(a => a.k === 'ref');
-                    if (refAttr && refAttr.v) {
-                        delete this.scope.$refs[refAttr.v];
-                    }
+            if (irNode.a) {
+                const unmountedAttr = irNode.a.find(a => a.k === 'unmounted');
+                if (unmountedAttr) {
+                    requestAnimationFrame(() => {
+                        this.evalIR(unmountedAttr.f ?? -1, [node, loops], unmountedAttr.__m);
+                    });
                 }
 
-                // 删除真实节点
-                (node as HTMLElement | null)?.remove();
-
-                // 从映射删除
-                this.nodeMap.delete(id);
+                const refAttr = irNode.a.find(a => a.k === 'ref');
+                if (refAttr && refAttr.v) {
+                    delete this.scope.$refs[refAttr.v];
+                }
             }
+
+            (node as HTMLElement | null)?.remove();
         }
+        oldMap.clear();
     }
 
-    // ================ 公共 API ================
     mount() {
-        this.marker = !this.marker;
+        this.prevNodeMap = this.nodeMap;
+        this.nodeMap = new Map<string, NodeEntry>();
+        this.pathStack.length = 0;
+
         this.ir.n.forEach((node, idx) => {
-            this.irToNode(node, idx, 'root', this.container, []);
+            this.irToNode(node, idx, this.container, []);
         });
 
         this.cleanupOldNodes();
     }
 
     update() {
-        this.marker = !this.marker;
+        this.prevNodeMap = this.nodeMap;
+        this.nodeMap = new Map<string, NodeEntry>();
+        this.pathStack.length = 0;
+
         this.ir.n.forEach((node, idx) => {
-            this.irToNode(node, idx, 'root', this.container, []);
+            this.irToNode(node, idx, this.container, []);
         });
 
         this.cleanupOldNodes();
@@ -855,6 +866,7 @@ export class IRRenderer {
     destroy() {
         this.container.innerHTML = '';
         this.nodeMap.clear();
+        this.prevNodeMap.clear();
         this.staticSubtreeCache.clear();
     }
 }
