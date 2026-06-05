@@ -31,6 +31,7 @@ export { SolelyRate } from './rate';
 export { SolelySlider } from './slider';
 export { SolelyTree } from './tree';
 export { SolelyCoordinateInput } from './coordinate-input';
+export { SolelyTooltip } from './tooltip';
 export { SolelyNotFound } from './not-found';
 
 // 导出类型
@@ -62,4 +63,5 @@ export type { RateProps } from './rate/types';
 export type { SliderProps } from './slider/types';
 export type { TreeProps, TreeNode } from './tree/types';
 export type { CoordinateInputProps, CoordinateType, DMS, Coordinate, DMSCoordinate } from './coordinate-input/types';
+export type { TooltipProps, TooltipPlacement, TooltipTrigger } from './tooltip/types';
 export type { NotFoundProps } from './not-found/types';
