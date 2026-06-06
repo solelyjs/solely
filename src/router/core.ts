@@ -305,20 +305,22 @@ export class Router {
     }
 
     private isStarted = false;
+    private handleRouteChange: (() => void) | null = null;
+
     public setupListeners(): void {
         if (this.isStarted) return; // 已经启动过了，直接返回
         this.isStarted = true;
 
-        const handleRouteChange = () => {
+        this.handleRouteChange = () => {
             // 传入 true，告知 navigate 此次导航来自系统事件
             this.navigate(this.getPath(), true, true);
         };
 
         // hash 模式监听 hashchange，history 模式监听 popstate
         if (this.mode === 'hash') {
-            window.addEventListener('hashchange', handleRouteChange);
+            window.addEventListener('hashchange', this.handleRouteChange);
         } else {
-            window.addEventListener('popstate', handleRouteChange);
+            window.addEventListener('popstate', this.handleRouteChange);
         }
 
         if (this.mode === 'hash' && !window.location.hash) {
@@ -327,6 +329,26 @@ export class Router {
 
         // 初次启动导航
         this.navigate(this.getPath(), true);
+    }
+
+    /**
+     * 销毁路由器，清理事件监听和缓存
+     */
+    public destroy(): void {
+        if (this.handleRouteChange) {
+            if (this.mode === 'hash') {
+                window.removeEventListener('hashchange', this.handleRouteChange);
+            } else {
+                window.removeEventListener('popstate', this.handleRouteChange);
+            }
+            this.handleRouteChange = null;
+        }
+        this.isStarted = false;
+        this.listeners.clear();
+        this.componentCache.clear();
+        this.loadingComponents.clear();
+        this.currentRoute = null;
+        globalRouterInstance = null;
     }
 
     public getCurrentRoute(): RouteMatch | null {

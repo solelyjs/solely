@@ -266,15 +266,18 @@ class RouterView extends BaseElement<{
     }
 
     private clear() {
-        // 如果当前有元素，且我们需要缓存它，则通过 removeChild 移出 DOM 但保留内存引用
+        // 如果当前有元素，且需要缓存它，则通过 removeChild 移出 DOM 但保留内存引用
         if (this.currentElement) {
             if (this.contains(this.currentElement)) {
                 this.removeChild(this.currentElement);
             }
         }
 
-        // 总是清空内容（包括 Loading、Error 等临时状态）
-        this.innerHTML = '';
+        // 清空剩余子节点（Loading、Error 等临时状态）
+        // 使用逐个移除代替 innerHTML = ''，避免触发不必要的 MutationObserver 和重排
+        while (this.firstChild) {
+            this.removeChild(this.firstChild);
+        }
 
         this.currentElement = null;
         this.currentTagName = null;
