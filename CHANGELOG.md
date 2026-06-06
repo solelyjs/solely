@@ -7,6 +7,29 @@
 
 ## [Unreleased]
 
+## [0.4.19] - 2026-06-06
+
+### Fixed
+
+- **fix(components)**: 修复类型导出冲突
+    - `TooltipPlacement` 和 `TooltipTrigger` 在 `elements` 和 `commands` 模块中定义不同，不能同时通过 `export *` 导出
+    - 将 `src/components/index.ts` 中 `commands` 的 `export *` 改为显式具名导出，避免类型命名冲突
+    - `elements` 的 `TooltipTrigger` 为 `'hover' | 'click' | 'focus'`，`commands` 的 `TooltipTrigger` 额外支持 `'manual'`
+
+## [0.4.18] - 2026-06-06
+
+### Added
+
+- **feat(components)**: 新增 SolelyTooltip 组件及其类型导出
+    - 在组件统一导出文件中补充 Tooltip 组件和对应类型的导出项
+
+### Changed
+
+- **refactor(router)**: 优化清理逻辑并添加路由销毁方法
+    - 优化路由核心清理逻辑
+    - 为路由实例添加 `destroy` 方法
+    - 调整 router-view 相关实现
+
 ## [0.4.17] - 2026-06-04
 
 ### Changed
@@ -571,7 +594,10 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.16...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.19...HEAD
+[0.4.19]: https://github.com/solelyjs/solely/compare/v0.4.18...v0.4.19
+[0.4.18]: https://github.com/solelyjs/solely/compare/v0.4.17...v0.4.18
+[0.4.17]: https://github.com/solelyjs/solely/compare/v0.4.16...v0.4.17
 [0.4.16]: https://github.com/solelyjs/solely/compare/v0.4.15...v0.4.16
 [0.4.15]: https://github.com/solelyjs/solely/compare/v0.4.14...v0.4.15
 [0.4.14]: https://github.com/solelyjs/solely/compare/v0.4.13...v0.4.14
