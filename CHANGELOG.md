@@ -7,14 +7,31 @@
 
 ## [Unreleased]
 
+## [0.4.20] - 2026-06-06
+
+### Changed
+
+- **refactor(tooltip)**: 提取 Tooltip 共享类型并统一类型定义
+    - 新增 `src/components/tooltip-types.ts` 公共类型文件，统一定义 `TooltipPlacement` 和 `TooltipTrigger`
+    - `elements/tooltip/types.ts` 和 `commands/tooltip/types.ts` 均从公共文件导入并重新导出，消除重复定义
+    - `elements` 的 `TooltipTrigger` 统一支持 `'manual'`，与 `commands` 保持一致
+
+- **feat(tooltip)**: 声明式 Tooltip 支持 `manual` 触发方式
+    - `trigger="manual"` 时不自动绑定 hover/click/focus 事件，完全由 `show()` / `hide()` 方法控制
+    - 更新组件文档，补充 `manual` 触发方式的说明和示例
+
+### Fixed
+
+- **fix(components)**: 修复 `TooltipPlacement` 和 `TooltipTrigger` 类型导出冲突
+    - 统一入口 `src/components/index.ts` 恢复简洁的 `export *` 语法，无命名冲突
+
 ## [0.4.19] - 2026-06-06
 
 ### Fixed
 
-- **fix(components)**: 修复类型导出冲突
+- **fix(components)**: 修复类型导出冲突（临时方案）
     - `TooltipPlacement` 和 `TooltipTrigger` 在 `elements` 和 `commands` 模块中定义不同，不能同时通过 `export *` 导出
     - 将 `src/components/index.ts` 中 `commands` 的 `export *` 改为显式具名导出，避免类型命名冲突
-    - `elements` 的 `TooltipTrigger` 为 `'hover' | 'click' | 'focus'`，`commands` 的 `TooltipTrigger` 额外支持 `'manual'`
 
 ## [0.4.18] - 2026-06-06
 
@@ -594,7 +611,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.19...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.20...HEAD
+[0.4.20]: https://github.com/solelyjs/solely/compare/v0.4.19...v0.4.20
 [0.4.19]: https://github.com/solelyjs/solely/compare/v0.4.18...v0.4.19
 [0.4.18]: https://github.com/solelyjs/solely/compare/v0.4.17...v0.4.18
 [0.4.17]: https://github.com/solelyjs/solely/compare/v0.4.16...v0.4.17
