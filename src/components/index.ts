@@ -23,8 +23,32 @@ export * from './theme';
 // 导出自定义元素组件
 export * from './elements';
 
-// 导出命令式组件
-export * from './commands';
+// 导出命令式组件（排除与 elements 重复的类型）
+export { Message, Modal, Tooltip, Drawer, Popconfirm } from './commands';
+
+export type {
+    MessageOptions,
+    MessageInstance,
+    MessageConfig,
+    MessageType,
+    MessagePlacement,
+    ModalOptions,
+    ModalInstance,
+    ModalConfig,
+    ModalType,
+    ModalButton,
+    TooltipOptions,
+    TooltipInstance,
+    TooltipConfig,
+    DrawerOptions,
+    DrawerInstance,
+    DrawerConfig,
+    DrawerPlacement,
+    PopconfirmOptions,
+    PopconfirmInstance,
+    PopconfirmConfig,
+    PopconfirmPlacement,
+} from './commands';
 
 // 自动注册所有组件（如果需要在导入时自动注册）
 // import './elements/button';
