@@ -2,21 +2,8 @@
  * Tooltip 组件类型定义
  */
 
-export type TooltipPlacement =
-    | 'top'
-    | 'bottom'
-    | 'left'
-    | 'right'
-    | 'topLeft'
-    | 'topRight'
-    | 'bottomLeft'
-    | 'bottomRight'
-    | 'leftTop'
-    | 'leftBottom'
-    | 'rightTop'
-    | 'rightBottom';
-
-export type TooltipTrigger = 'hover' | 'click' | 'focus';
+import type { TooltipPlacement, TooltipTrigger } from '../../tooltip-types';
+export type { TooltipPlacement, TooltipTrigger };
 
 export interface TooltipProps {
     /** 提示内容 */

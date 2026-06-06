@@ -105,6 +105,7 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
      * 绑定事件到 slot 内容元素
      */
     private bindSlotEvents(): void {
+        if (this.$data.trigger === 'manual') return;
         if (this.$data.trigger !== 'focus') return;
 
         const slot = this.shadowRoot?.querySelector('slot');
@@ -143,6 +144,7 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
      * 点击处理
      */
     handleClick(event: Event): void {
+        if (this.$data.trigger === 'manual') return;
         if (this.$data.trigger !== 'click') return;
         event.stopPropagation();
 
