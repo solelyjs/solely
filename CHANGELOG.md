@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+## [0.4.21] - 2026-06-10
+
+### Changed
+
+- **refactor(select)**: 统一选中标签更新逻辑并优化初始化流程
+    - 将多处分散的选中标签更新逻辑（`updateSelectedLabel` 和 `updateSelectedLabelFromSlot`）合并为统一的 `syncSelectedLabel` 方法
+    - 移除 `setupSlotObserver` 中不必要的 `setTimeout` 延迟收集插槽选项，改为 `mounted` 时同步收集
+    - 调整初始化顺序：先同步收集插槽选项，仅在未使用插槽时才走 props options 逻辑
+
 ## [0.4.20] - 2026-06-06
 
 ### Changed
