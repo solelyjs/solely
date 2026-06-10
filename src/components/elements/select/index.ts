@@ -144,30 +144,25 @@ class SolelySelect extends BaseElement<
         });
 
         // 更新选中的标签
-        this.updateSelectedLabelFromSlot();
-    }
-
-    /**
-     * 从插槽更新选中的标签
-     */
-    updateSelectedLabelFromSlot(): void {
-        if (!this.$data.slotOptions.length) return;
-        const selectedOption = this.$data.slotOptions.find(opt => opt.value === this.$data.value);
-        this.$data.selectedLabel = selectedOption?.label || '';
+        this.syncSelectedLabel();
     }
 
     mounted(): void {
-        this.refresh();
-        this.parseOptions();
+        // 先同步尝试收集插槽（如果子元素已存在）
+        this.collectSlotOptions();
 
-        // 监听插槽变化
+        // 如果插槽没有提供选项，才走 props options 逻辑
+        if (!this.$data.useSlot) {
+            this.parseOptions();
+        }
+
+        // 监听插槽变化（后续动态增删）
         this.setupSlotObserver();
 
-        // 点击外部关闭下拉菜单
+        // 点击外部关闭
         this.clickOutsideHandler = (event: MouseEvent) => {
             const path = event.composedPath();
-            const isInside = path.some(el => el === this);
-            if (!isInside) {
+            if (!path.some(el => el === this)) {
                 this.closeDropdown();
             }
         };
@@ -178,16 +173,10 @@ class SolelySelect extends BaseElement<
      * 设置插槽观察器
      */
     setupSlotObserver(): void {
-        // 延迟收集插槽选项，确保子元素已渲染
-        setTimeout(() => {
-            this.collectSlotOptions();
-        }, 0);
-
-        // 监听子元素变化
+        // 不再需要 setTimeout，因为 mounted 里已经同步收集过了
         this.slotObserver = new MutationObserver(() => {
             this.collectSlotOptions();
         });
-
         this.slotObserver.observe(this, {
             childList: true,
             subtree: false,
@@ -250,18 +239,20 @@ class SolelySelect extends BaseElement<
      */
     parseOptions(): void {
         this.$data.parsedOptions = Array.isArray(this.$data.options) ? this.$data.options : [];
-        if (!this.$data.useSlot) {
-            this.updateSelectedLabel();
-        }
+        this.syncSelectedLabel(); // 直接更新选中的标签
     }
 
     /**
      * 更新选中的标签
      */
-    updateSelectedLabel(): void {
-        if (!this.$data.parsedOptions.length) return;
-        const option = this.$data.parsedOptions.find((opt: SelectOptionType) => opt.value === this.$data.value);
-        this.$data.selectedLabel = option?.label || '';
+    syncSelectedLabel(): void {
+        if (this.$data.useSlot) {
+            const selected = this.$data.slotOptions?.find(opt => opt.value === this.$data.value);
+            this.$data.selectedLabel = selected?.label || '';
+        } else {
+            const selected = this.$data.parsedOptions?.find(opt => opt.value === this.$data.value);
+            this.$data.selectedLabel = selected?.label || '';
+        }
     }
 
     /**
@@ -287,7 +278,7 @@ class SolelySelect extends BaseElement<
         if (option.disabled) return;
 
         this.$data.value = option.value;
-        this.updateSelectedLabel();
+        this.syncSelectedLabel();
         this.closeDropdown();
 
         // 派发原生 change 事件
@@ -387,11 +378,7 @@ class SolelySelect extends BaseElement<
     public setValue(value: string, silent = false): void {
         this.$data.value = value;
 
-        if (this.$data.useSlot) {
-            this.updateSelectedLabelFromSlot();
-        } else {
-            this.updateSelectedLabel();
-        }
+        this.syncSelectedLabel();
 
         // 非静默模式下派发 change 事件
         if (!silent) {
