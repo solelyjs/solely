@@ -1,0 +1,167 @@
+<div class="audit-container">
+  <h2>Solely 审查测试</h2>
+  <p class="section-desc">针对 base-element-audit.md 中发现的问题进行验证（已同步 base-element.ts 最新实现）</p>
+
+  <!-- 1. :prop 透传 -->
+  <div class="test-block">
+    <h3>1. :prop 透传测试</h3>
+    <p class="test-desc">验证 <code>:message</code> <code>:count</code> <code>:active</code> <code>:items</code> 能否正确透传到子组件 $data</p>
+    <div class="controls">
+      <button onclick="this.changeMessage()">父改 message</button>
+      <button onclick="this.changeCount()">父改 count</button>
+      <button onclick="this.toggleActive()">父改 active</button>
+    </div>
+    <div class="parent-state">
+      <p>message: "{{ $data.parentMessage }}"</p>
+      <p>count: {{ $data.parentCount }}</p>
+      <p>active: {{ $data.parentActive }}</p>
+      <p>items: {{ this.json($data.parentItems) }}</p>
+    </div>
+    <prop-display :message="$data.parentMessage" :count="$data.parentCount" :active="$data.parentActive" :items="$data.parentItems"></prop-display>
+  </div>
+
+  <!-- 2. 静态属性（不带 :） -->
+  <div class="test-block">
+    <h3>2. 静态属性设置（不带 : 前缀）</h3>
+    <p class="test-desc">验证不带 <code>:</code> 的属性值需由 Upgrade Property 转换类型。<strong>2.2 已修复</strong>：移除了 <code>replace(/'/g, '"')</code>，非标准 JSON 会直接报错而非静默损坏。</p>
+    <div class="parent-state">
+      <p>① message="静态字符串" — 普通字符串</p>
+      <p>② count="5" — 数字类型需从字符串 "5" 转换</p>
+      <p>③ active — boolean 属性（存在即 true）</p>
+      <p>④ items='["x","y"]' — 标准JSON数组</p>
+    </div>
+    <prop-display message="静态字符串" count="5" active items='["x","y"]'></prop-display>
+
+    <div class="parent-state" style="margin-top:8px">
+      <p>⑤ message="it's a test" — 值含单引号（字符串类型，不经过 JSON 解析，正常）</p>
+      <p>⑥ items='["it&#39;s ok","hello"]' — 数组值含单引号（2.2 修复后 JSON.parse 会报错，使用默认值 []）</p>
+    </div>
+    <prop-display message="it's a test" count="0" items='["it&#39;s ok","hello"]'></prop-display>
+
+    <p class="test-note">修复后行为：标准 JSON 正常解析；含单引号的非标准 JSON 会 console.error 并回退到默认值，而非静默损坏数据。</p>
+  </div>
+
+  <!-- 3. reflect 回环 -->
+  <div class="test-block">
+    <h3>3. reflect ↔ attribute 回环测试</h3>
+    <p class="test-desc">验证 <code>reflect: true</code> 的 prop 修改后是否同步到 HTML attribute。<strong>2.1 已修复</strong>：添加了 <code>#reflectingAttrs</code> 循环保护。</p>
+    <div class="controls">
+      <button onclick="this.incrementReflect()">父改 reflectValue</button>
+      <button onclick="this.changeReflectLabel()">父改 reflectLabel</button>
+    </div>
+    <div class="parent-state">
+      <p>reflectValue: {{ $data.reflectValue }}</p>
+      <p>reflectLabel: "{{ $data.reflectLabel }}"</p>
+    </div>
+    <reflect-child :value="$data.reflectValue" :label="$data.reflectLabel"></reflect-child>
+  </div>
+
+  <!-- 3-A. object + reflect（2.1 防御性缺口验证） -->
+  <div class="test-block">
+    <h3>3-A. object + reflect 防御性验证</h3>
+    <p class="test-desc">验证 <code>type: 'object'</code> 配合 <code>reflect: true</code> 时，<code>#reflectingAttrs</code> 能否防止 <code>attribute ↔ state ↔ reflect</code> 非幂等循环</p>
+    <reflect-object></reflect-object>
+    <p class="test-note">点击"子改 config"后观察：attribute 是否正确同步，是否出现无限循环（页面卡死）。#reflectingAttrs 应在 reflect 写入 attribute 时跳过 attributeChangedCallback。</p>
+  </div>
+
+  <!-- 4. array prop -->
+  <div class="test-block">
+    <h3>4. array 类型 prop 测试</h3>
+    <p class="test-desc">验证 array 类型 prop 的动态绑定传递（动态绑定不经过 JSON 解析，不受 2.2 影响）</p>
+    <div class="controls">
+      <button onclick="this.setValidArray()">设置普通数组</button>
+      <button onclick="this.setArrayWithQuote()">设置含单引号数组</button>
+    </div>
+    <div class="parent-state">
+      <p>items: {{ this.json($data.parentItems) }}</p>
+    </div>
+    <prop-display :items="$data.parentItems"></prop-display>
+    <p class="test-note">动态 <code>:items</code> 直接赋值 JS 对象，不经过 JSON 序列化/反序列化，含单引号的数据完全正常。</p>
+  </div>
+
+  <!-- 5. :$data 透传 -->
+  <div class="test-block">
+    <h3>5. :$data 整体透传测试</h3>
+    <p class="test-desc">验证 <code>:$data</code> 整体替换子组件数据的可行性</p>
+    <div class="controls">
+      <button onclick="this.changeChildData()">父更新 childData</button>
+    </div>
+    <div class="parent-state">
+      <p>childData: {{ this.json($data.childData) }}</p>
+    </div>
+    <prop-display :$data="$data.childData"></prop-display>
+  </div>
+
+  <!-- 5-A. 对象/数组子属性透传 -->
+  <div class="test-block">
+    <h3>5-A. 对象/数组子属性透传</h3>
+    <p class="test-desc">验证父组件 <code>$data</code> 的子对象/子数组通过 <code>:prop</code> 传递到子组件的 object/array 属性</p>
+    <div class="controls">
+      <button onclick="this.changeInfoName()">父改 info.name</button>
+      <button onclick="this.changeInfoAge()">父改 info.age</button>
+      <button onclick="this.addTag()">父加 tag</button>
+      <button onclick="this.removeTag()">父删 tag</button>
+    </div>
+    <div class="parent-state">
+      <p>parentInfo: {{ this.json($data.parentInfo) }}</p>
+      <p>parentTags: {{ this.json($data.parentTags) }}</p>
+    </div>
+    <prop-display :info="$data.parentInfo" :items="$data.parentTags"></prop-display>
+    <p class="test-note">父组件修改 <code>$data.parentInfo</code>（对象）和 <code>$data.parentTags</code>（数组）后，观察子组件的 <code>info</code> 和 <code>items</code> 是否同步更新。注意：对象/数组通过 <code>:prop</code> 传递的是引用，子组件直接修改会影响父组件。</p>
+  </div>
+
+  <!-- 6. attributeChanged 生命周期 -->
+  <div class="test-block">
+    <h3>6. attributeChanged 生命周期测试</h3>
+    <p class="test-desc">验证 <code>attributeChanged(name, oldValue, newValue)</code> 回调是否正确触发</p>
+    <div class="controls">
+      <button onclick="this.incrementAttrChange()">父改 attrChangeValue</button>
+    </div>
+    <div class="parent-state">
+      <p>attrChangeValue: {{ $data.attrChangeValue }}</p>
+    </div>
+    <attr-change-child :value="$data.attrChangeValue"></attr-change-child>
+  </div>
+
+  <!-- 7. 兄弟组件时序 -->
+  <div class="test-block">
+    <h3>7. 同步嵌套渲染时序（生命周期语义）</h3>
+    <p class="test-desc">验证兄弟组件 mounted 时能否互相访问（非 Bug，属生命周期语义）</p>
+    <div class="sibling-container">
+      <sibling-a></sibling-a>
+      <sibling-b></sibling-b>
+    </div>
+    <p class="test-note">Sibling A 显示"未找到"是正常行为（深度优先 mounted 顺序），Vue/React/Lit 均如此。</p>
+  </div>
+
+  <!-- 8. dispose 显式销毁 -->
+  <div class="test-block">
+    <h3>8. dispose() 显式销毁测试</h3>
+    <p class="test-desc">验证 <code>dispose()</code> 显式销毁后不可 reconnect（审查报告 2.8）</p>
+    <div class="controls">
+      <button onclick="this.testDetach()">Detach（可重连）</button>
+      <button onclick="this.testReattach()">Reattach</button>
+      <button onclick="this.testDispose()" class="danger-btn">Dispose（不可重连）</button>
+    </div>
+    <div class="parent-state">
+      <p>状态: {{ $data.disposeStatus }}</p>
+    </div>
+    <div class="dispose-container">
+      <dispose-child></dispose-child>
+    </div>
+    <p class="test-note">Detach 后可 Reattach（状态保留）；Dispose 后尝试 Reattach 会抛错。dispose() 清理 renderer 等资源，适用于确认不再需要组件的场景。</p>
+  </div>
+
+  <!-- 日志 -->
+  <div class="test-block log-block">
+    <h3>操作日志 <button class="small-btn" onclick="this.clearLogs()">清空</button></h3>
+    <div class="log-list">
+      <For each="$data.logs" item="item">
+        <p class="log-item">{{ item }}</p>
+      </For>
+      <If test="$data.logs.length === 0">
+        <p class="log-empty">暂无日志</p>
+      </If>
+    </div>
+  </div>
+</div>

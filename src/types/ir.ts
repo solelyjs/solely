@@ -43,6 +43,8 @@ export interface IRBranch {
     c: IRNode[];
     /** attributes 属性数组，支持 <if class="red" cond={...}> */
     a?: IRAttr[];
+    /** keepalive 是否缓存分支（条件不满足时隐藏而非销毁） */
+    ka?: 1;
     /** __meta 调试元信息 */
     __m?: Meta;
 }

@@ -404,7 +404,8 @@ function transformNode(node: ASTNode, locals: IRLocal[], compiler: FunctionCompi
         // 但如果 AST 结构异常（如单独的 Else），这里作为 Fallback 处理为普通节点
         case ASTType.If:
         case ASTType.ElseIf:
-        case ASTType.Else: {
+        case ASTType.Else:
+        case ASTType.Show: {
             if (IS_DEV) console.warn(`[Solely] Orphaned conditional node found: ${ASTType[node.type]}`);
             ir.a = processAttributes(node, locals, compiler);
             if (node.children) {
@@ -432,8 +433,8 @@ function transformList(nodes: ASTNode[], locals: IRLocal[], compiler: FunctionCo
     while (i < nodes.length) {
         const node = nodes[i];
 
-        // 遇到 If 块，开始吞噬后续兄弟节点
-        if (node.type === ASTType.If) {
+        // 遇到 If 或 Show 块，开始吞噬后续兄弟节点
+        if (node.type === ASTType.If || node.type === ASTType.Show) {
             const branches: IRBranch[] = [];
             let currentIdx = i;
 
@@ -443,13 +444,13 @@ function transformList(nodes: ASTNode[], locals: IRLocal[], compiler: FunctionCo
                 const type = currentNode.type;
 
                 // 如果当前不是条件节点，跳出
-                if (type !== ASTType.If && type !== ASTType.ElseIf && type !== ASTType.Else) {
+                if (type !== ASTType.If && type !== ASTType.ElseIf && type !== ASTType.Else && type !== ASTType.Show) {
                     break;
                 }
 
-                // 如果当前是 If，但它不是这一组的"领头羊"（即 branches 已经有东西了）
-                // 说明遇到了下一个独立的 If 块，必须跳出，留给外层循环处理
-                if (type === ASTType.If && branches.length > 0) {
+                // 如果当前是 If/Show，但它不是这一组的"领头羊"（即 branches 已经有东西了）
+                // 说明遇到了下一个独立的 If/Show 块，必须跳出，留给外层循环处理
+                if ((type === ASTType.If || type === ASTType.Show) && branches.length > 0) {
                     break;
                 }
 
@@ -470,21 +471,25 @@ function transformList(nodes: ASTNode[], locals: IRLocal[], compiler: FunctionCo
                 // 除非 If 上同时有 For (AST 层面通常已拆分，若未拆分需注意优先级)
                 const children = currentNode.children ? transformList(currentNode.children, locals, compiler) : [];
 
-                // 处理属性 (排除 test、condition)
-                const exclude = new Set(['test', 'condition']);
+                // 处理属性 (排除 test、condition、keepalive)
+                const exclude = new Set(['test', 'condition', 'keepalive']);
                 const attrs = processAttributes(currentNode, locals, compiler, exclude);
+
+                // 检测 keepalive 属性（Show 自动带 keepalive）
+                const hasKeepalive = type === ASTType.Show || currentNode.attrs?.some(a => a.key === 'keepalive');
 
                 branches.push({
                     f: condFid,
                     c: children,
                     a: attrs.length > 0 ? attrs : undefined,
+                    ka: hasKeepalive ? 1 : undefined,
                     __m: { expr, loc },
                 });
 
                 currentIdx++;
 
-                // 如果是 Else，链条结束
-                if (type === ASTType.Else) break;
+                // 如果是 Else 或 Show，链条结束（Show 是单分支，不接 ElseIf/Else）
+                if (type === ASTType.Else || type === ASTType.Show) break;
             }
 
             // 生成 Conditional 节点

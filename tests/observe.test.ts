@@ -19,24 +19,22 @@ function safeStringify(obj: any) {
 
 // 辅助函数：从 ChangeItem 提取信息
 function formatChange(change: ChangeItem): string {
-    const path = change.path.join('.');
-    const key = change.type === 'set' || change.type === 'delete' ? String(change.key) : '';
-    const fullPath = path ? `${path}.${key}` : key;
+    const fullPath = change.path.map(String).join('.');
 
     if (change.type === 'set') {
         return `Change at ${fullPath}: ${safeStringify(change.oldValue)} -> ${safeStringify(change.newValue)}`;
     } else if (change.type === 'delete') {
         return `Change at ${fullPath}: ${safeStringify(change.oldValue)} -> undefined`;
     } else if (change.type === 'array-push') {
-        return `Change at ${path}: ${safeStringify(change.values)} pushed at index ${change.index}`;
+        return `Change at ${fullPath}: ${safeStringify(change.values)} pushed at index ${change.index}`;
     } else if (change.type === 'array-splice') {
-        return `Change at ${path}: spliced ${change.deleteCount} items at ${change.index}`;
+        return `Change at ${fullPath}: spliced ${change.deleteCount} items at ${change.index}`;
     } else if (change.type === 'array-replace') {
-        return `Change at ${path}: array replaced`;
+        return `Change at ${fullPath}: array replaced`;
     } else if (change.type === 'array-reset') {
-        return `Change at ${path}: array reset by ${change.method}`;
+        return `Change at ${fullPath}: array reset by ${change.method}`;
     }
-    return `Change at ${path}`;
+    return `Change at ${fullPath}`;
 }
 
 describe('observe function', () => {
@@ -55,10 +53,10 @@ describe('observe function', () => {
         const obj = { a: 1 };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.a = 10;
@@ -74,10 +72,10 @@ describe('observe function', () => {
         const obj = { b: { c: 2 } };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.b.c = 20;
@@ -91,10 +89,10 @@ describe('observe function', () => {
         const obj = { arr: [1, 2, 3] };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.arr.push(4);
@@ -108,10 +106,10 @@ describe('observe function', () => {
         const obj = { a: 1 };
         const { proxy, unobserve, resume } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.a = 10;
@@ -132,10 +130,10 @@ describe('observe function', () => {
         const obj = { a: 1 };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 100 }
+            { throttle: 100 },
         );
 
         proxy.a = 10;
@@ -155,16 +153,12 @@ describe('observe function', () => {
         const obj = { a: 1, b: 2 };
         const batchChanges: string[][] = [];
 
-        const { proxy, unobserve } = observe(
-            obj,
-            () => {},
-            {
-                throttle: 100,
-                onBatch: (batch) => {
-                    batchChanges.push(batch.map(c => formatChange(c)));
-                },
-            }
-        );
+        const { proxy, unobserve } = observe(obj, () => {}, {
+            throttle: 100,
+            onBatch: batch => {
+                batchChanges.push(batch.map(c => formatChange(c)));
+            },
+        });
 
         proxy.a = 10;
         proxy.b = 20;
@@ -181,10 +175,10 @@ describe('observe function', () => {
         const obj = { a: 1, b: 2 } as any;
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         delete proxy.a;
@@ -198,10 +192,10 @@ describe('observe function', () => {
         const obj = { arr: [1, 2, 3] };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.arr.splice(1, 1, 99);
@@ -215,10 +209,10 @@ describe('observe function', () => {
         const obj = { nested: { a: 1 } };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0, deepCompare: true }
+            { throttle: 0, deepCompare: true },
         );
 
         proxy.nested = { a: 1 }; // 相同值，不应该触发
@@ -235,10 +229,10 @@ describe('observe function', () => {
         const obj = { a: 1, b: { c: 2 } };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0, filter: ['b'] }  // 匹配父路径 b
+            { throttle: 0, filter: ['b'] }, // 匹配父路径 b
         );
 
         proxy.a = 10; // 不应该触发
@@ -254,10 +248,10 @@ describe('observe function', () => {
         const obj = { a: 1, b: { c: 2 } };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0, immediate: true }
+            { throttle: 0, immediate: true },
         );
 
         // immediate 应该触发初始值的回调
@@ -274,10 +268,10 @@ describe('observe function', () => {
 
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.a = 10;
@@ -293,10 +287,10 @@ describe('observe function', () => {
 
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         // Symbol 作为 key 时，路径解析可能不同
@@ -312,10 +306,7 @@ describe('observe function', () => {
 
     it('should reuse proxy for same object', () => {
         const obj = { nested: { a: 1 } };
-        const { proxy, unobserve } = observe(
-            obj,
-            () => {}
-        );
+        const { proxy, unobserve } = observe(obj, () => {});
 
         expect(proxy.nested).toBe(proxy.nested);
 
@@ -326,10 +317,10 @@ describe('observe function', () => {
         const obj: any = {};
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.newProp = 1;
@@ -344,10 +335,10 @@ describe('observe function', () => {
         const obj: any = { arr: [] };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.arr.push(1);
@@ -361,10 +352,10 @@ describe('observe function', () => {
         const obj = { arr: [3, 1, 2] };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.arr.sort();
@@ -381,10 +372,10 @@ describe('observe function', () => {
         const obj = { arr: [1, 2, 3] };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.arr.unshift(0);
@@ -401,10 +392,10 @@ describe('observe function', () => {
         const obj = { a: { b: { c: { d: 1 } } } };
         const { proxy, unobserve } = observe(
             obj,
-            (change) => {
+            change => {
                 changes.push(formatChange(change));
             },
-            { throttle: 0 }
+            { throttle: 0 },
         );
 
         proxy.a.b.c.d = 100;

@@ -1,4 +1,4 @@
-import { camelToKebab, IS_DEV, isObject } from '../../shared';
+import { camelToKebab, IS_DEV, isObject, SOLELY_VERSION } from '../../shared';
 import { InternalManifest, Manifest, PropDescriptor, PropType } from './decorators';
 import { createRender, IRRenderInstance } from '../renderer';
 import { observe } from '../reactivity';
@@ -37,7 +37,7 @@ class BaseElement<
 {
     $refs: TRefs = {} as TRefs;
     #manifest: Manifest;
-    #render!: IRRenderInstance;
+    #render?: IRRenderInstance;
     #ir!: IRRoot;
     #data!: TData;
     #root!: Element | ShadowRoot;
@@ -52,8 +52,38 @@ class BaseElement<
     #needsRefresh = false;
     #propsInstalled = false;
 
+    // reflect ↔ attributeChangedCallback 循环保护
+    #reflectingAttrs = new Set<string>();
+
+    // dispose 后禁止 reconnect
+    #disposed = false;
+
+    // 样式注入标记（防止 connect → disconnect → dispose 重复释放）
+    #styleAttached = false;
+
     // 非 Shadow DOM 样式引用计数（用于组件卸载时清理）
     static #styleRefCount = new Map<string, number>();
+
+    // 内部字段白名单（单例，避免每次 upgradeReactiveProperties 重建）
+    static readonly #internalFields = new Set([
+        '$data',
+        '$refs',
+        'constructor',
+        'created',
+        'mounted',
+        'beforeUpdate',
+        'updated',
+        'unmounted',
+        'attributeChanged',
+        'beforeAttributesUpdate',
+        'afterAttributesUpdate',
+        'emit',
+        'emitNative',
+        'refresh',
+        'dispose',
+        'warn',
+        'error',
+    ]);
 
     /* -------------------- observedAttributes -------------------- */
     static get observedAttributes(): string[] {
@@ -82,26 +112,11 @@ class BaseElement<
     }
 
     // 升级属性（Upgrade Property）, 保障在元素被定义前设置的属性能正确触发响应式更新
-    #upgradeAllOwnDataProperties() {
+    #upgradeReactiveProperties() {
         const ownKeys = Object.getOwnPropertyNames(this);
 
         const internalPrefixes = ['#', '_'];
-        const internalFields = new Set([
-            '$data',
-            '$refs',
-            'constructor',
-            'onInit',
-            'created',
-            'mounted',
-            'beforeUpdate',
-            'updated',
-            'unmounted',
-            'attributeChanged',
-            'beforeAttributesUpdate',
-            'afterAttributesUpdate',
-            'emit',
-            'refresh',
-        ]);
+        const internalFields = BaseElement.#internalFields;
 
         const setterMap = new Map<string, PropertyDescriptor>();
         let proto = Object.getPrototypeOf(this);
@@ -164,16 +179,26 @@ class BaseElement<
     #reflectToAttribute(desc: PropDescriptor, value: unknown) {
         const attrName = camelToKebab(desc.name);
 
-        if (desc.type === 'boolean') {
-            if (value) {
-                this.setAttribute(attrName, '');
-            } else {
+        this.#reflectingAttrs.add(attrName);
+        try {
+            // null/undefined → 移除属性
+            if (value == null) {
                 this.removeAttribute(attrName);
+                return;
             }
-        } else {
-            // 对象类型转 JSON，其他转字符串
-            const strValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
-            this.setAttribute(attrName, strValue);
+            if (desc.type === 'boolean') {
+                if (value) {
+                    this.setAttribute(attrName, '');
+                } else {
+                    this.removeAttribute(attrName);
+                }
+            } else {
+                // 对象类型转 JSON，其他转字符串
+                const strValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+                this.setAttribute(attrName, strValue);
+            }
+        } finally {
+            this.#reflectingAttrs.delete(attrName);
         }
     }
 
@@ -192,7 +217,14 @@ class BaseElement<
             // 跳过非响应式
             if (desc.reactive === false) continue;
 
-            const protoDesc = Object.getOwnPropertyDescriptor(this.constructor.prototype, desc.name);
+            // 沿原型链向上查找用户自定义的 getter/setter，支持继承链
+            let protoDesc: PropertyDescriptor | undefined;
+            let proto = Object.getPrototypeOf(this);
+            while (proto && proto !== HTMLElement.prototype) {
+                protoDesc = Object.getOwnPropertyDescriptor(proto, desc.name);
+                if (protoDesc) break;
+                proto = Object.getPrototypeOf(proto);
+            }
 
             if (protoDesc?.get || protoDesc?.set) {
                 continue;
@@ -267,9 +299,7 @@ class BaseElement<
 
             case 'array':
                 try {
-                    // 处理单引号格式的数组字符串，如 "['a', 'b']" 转换为 '["a", "b"]'
-                    const normalizedValue = value.replace(/'/g, '"');
-                    const parsed = JSON.parse(normalizedValue);
+                    const parsed = JSON.parse(value);
                     return Array.isArray(parsed) ? parsed : defaultValue;
                 } catch (e) {
                     console.error(`[Solely] Failed to parse array value: "${value}", using default value.`, e);
@@ -283,6 +313,7 @@ class BaseElement<
 
     /* -------------------- 刷新调度 -------------------- */
     #scheduleRefresh() {
+        if (this.#disposed) return;
         if (!this.#isActive) {
             // 元素未连接，不刷新
             this.#needsRefresh = true; // defer refresh
@@ -293,20 +324,21 @@ class BaseElement<
         this.#updateScheduled = true;
 
         queueMicrotask(() => {
+            if (this.#disposed) return;
             this.#updateScheduled = false;
             this.#doRefresh();
         });
     }
 
     #doRefresh() {
-        if (this.#isRefreshing || !this.#isActive) return;
+        if (this.#disposed || this.#isRefreshing || !this.#isActive) return;
 
         this.#isRefreshing = true;
 
         try {
             if (this.#isAttributeUpdate) this.beforeAttributesUpdate();
             this.beforeUpdate();
-            this.#render.update();
+            this.#render?.update();
             this.updated();
             if (this.#isAttributeUpdate) {
                 this.afterAttributesUpdate();
@@ -335,15 +367,19 @@ class BaseElement<
                 sheets.push(manifest.sheet);
                 root.adoptedStyleSheets = sheets;
             }
+            this.#styleAttached = true;
             return;
         }
 
         // 场景 B: 回退方案 (无 Shadow DOM 或 不支持 adoptedStyleSheets)
         const target = root instanceof ShadowRoot ? root : document.head;
-        const styleId = `solely-style-${manifest.tagName}`;
+        const styleId = `solely-style-${SOLELY_VERSION}-${manifest.tagName}`;
         const isNonSD = !manifest.shadowDOM?.use;
 
-        if (!target.querySelector(`#${styleId}`)) {
+        // 注意：styleId 含版本号中的 "."，不能直接用于 querySelector，需转义
+        const escapedId =
+            typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(styleId) : styleId.replace(/([.#:[\]()!])/g, '\\$1');
+        if (!target.querySelector(`#${escapedId}`)) {
             const styleEl = document.createElement('style');
             styleEl.id = styleId;
             styleEl.textContent = manifest.styles;
@@ -354,11 +390,33 @@ class BaseElement<
         if (isNonSD) {
             const count = BaseElement.#styleRefCount.get(styleId) || 0;
             BaseElement.#styleRefCount.set(styleId, count + 1);
+            this.#styleAttached = true;
+        }
+    }
+
+    #cleanupStyles() {
+        if (!this.#styleAttached) return;
+        this.#styleAttached = false;
+
+        const manifest = this.#manifest as InternalManifest;
+        if (!manifest.shadowDOM?.use && manifest.styles) {
+            const styleId = `solely-style-${SOLELY_VERSION}-${manifest.tagName}`;
+            const count = BaseElement.#styleRefCount.get(styleId) || 0;
+            if (count <= 1) {
+                const escapedId = CSS.escape(styleId);
+                document.head.querySelector(`#${escapedId}`)?.remove();
+                BaseElement.#styleRefCount.delete(styleId);
+            } else {
+                BaseElement.#styleRefCount.set(styleId, count - 1);
+            }
         }
     }
 
     /* -------------------- 生命周期 -------------------- */
     connectedCallback(): void {
+        if (this.#disposed) {
+            throw new Error(`[Solely] <${this.tagName.toLowerCase()}> has been disposed and cannot be reconnected.`);
+        }
         this.#isActive = true;
 
         const manifest = this.#manifest as InternalManifest;
@@ -400,8 +458,8 @@ class BaseElement<
             }
         }
 
-        // 自动升级所有自有数据属性（不需要手动声明 upgradeProps）
-        this.#upgradeAllOwnDataProperties();
+        // 自动升级所有响应式属性（不需要手动声明 upgradeProps）
+        this.#upgradeReactiveProperties();
 
         if (this.#ir && !this.#render) this.#render = createRender(this.#ir, this.#root as HTMLElement, this);
 
@@ -412,29 +470,20 @@ class BaseElement<
         }
 
         this.mounted();
-        this.onInit?.();
     }
 
     disconnectedCallback(): void {
         this.#isActive = false;
 
-        // 非 Shadow DOM 模式：清理样式引用
-        const manifest = this.#manifest as InternalManifest;
-        if (!manifest.shadowDOM?.use && manifest.styles) {
-            const styleId = `solely-style-${manifest.tagName}`;
-            const count = BaseElement.#styleRefCount.get(styleId) || 0;
-            if (count <= 1) {
-                document.head.querySelector(`#${styleId}`)?.remove();
-                BaseElement.#styleRefCount.delete(styleId);
-            } else {
-                BaseElement.#styleRefCount.set(styleId, count - 1);
-            }
+        if (!this.#disposed) {
+            this.#cleanupStyles();
         }
 
         this.unmounted();
     }
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
-        if (oldValue === newValue || !isObject(this.$data)) return;
+        if (this.#disposed || oldValue === newValue || !isObject(this.$data)) return;
+        if (this.#reflectingAttrs.has(name)) return;
 
         const manifest = this.#manifest as InternalManifest;
         // 1. 直接从 Map 拿到描述符，无需正则转换
@@ -447,10 +496,12 @@ class BaseElement<
         // 2. 转换值
         const next = this.#convertAttrValue(newValue, desc.default ?? oldDataValue, desc.type);
 
-        // 3. 更新数据（触发响应式）
-        (this.$data as DataRecord)[propName] = next;
+        // 3. 避免 primitive 类型的无意义更新（object/array 不适用 deep comparison）
+        if (oldDataValue === next) return;
 
+        // 4. 标记 attribute 更新（必须在赋值前设置，避免 observe → scheduleRefresh 先于标记执行）
         this.#isAttributeUpdate = true;
+        (this.$data as DataRecord)[propName] = next;
         this.attributeChanged(name, oldDataValue, next);
     }
 
@@ -465,6 +516,7 @@ class BaseElement<
 
     /* -------------------- 事件派发 -------------------- */
     public emit(eventName: string, detail?: unknown, options?: Partial<CustomEventInit>) {
+        if (this.#disposed) return;
         this.dispatchEvent(
             new CustomEvent(eventName, {
                 bubbles: true,
@@ -476,6 +528,7 @@ class BaseElement<
     }
 
     public emitNative(eventName: string, options?: EventInit) {
+        if (this.#disposed) return;
         this.dispatchEvent(
             new Event(eventName, {
                 bubbles: true,
@@ -510,9 +563,24 @@ class BaseElement<
         }
     }
 
-    /* -------------------- 钩子 -------------------- */
-    public onInit(): void | Promise<void> {}
+    /* -------------------- 显式销毁 -------------------- */
+    /**
+     * 显式销毁组件，清理 renderer 等资源。
+     * 适用于确认组件不再 reconnect 的场景。
+     * 调用后如需重新使用组件，需重新创建实例。
+     */
+    public dispose(): void {
+        if (this.#disposed) return;
+        this.#disposed = true;
+        this.#isActive = false;
+        this.#cleanupStyles();
+        this.#render?.destroy();
+        this.#render = undefined;
+        this.#dispose?.();
+        this.#dispose = undefined;
+    }
 
+    /* -------------------- 钩子 -------------------- */
     public created(): void {}
 
     public mounted(): void {}
@@ -528,35 +596,6 @@ class BaseElement<
     public beforeAttributesUpdate(): void {}
 
     public afterAttributesUpdate(): void {}
-
-    /* -------------------- DEV define 保护 -------------------- */
-    static {
-        if (IS_DEV && typeof customElements !== 'undefined') {
-            const original = customElements.define;
-            const checkedCtors = new WeakSet<CustomElementConstructor>();
-
-            customElements.define = function (name, ctor, options) {
-                if (BaseElement.isPrototypeOf(ctor) && !checkedCtors.has(ctor)) {
-                    checkedCtors.add(ctor);
-                    const proto = ctor.prototype;
-
-                    const forbidden = [
-                        'connectedCallback',
-                        'disconnectedCallback',
-                        'attributeChangedCallback',
-                    ] as const;
-
-                    for (const key of forbidden) {
-                        if (proto[key] !== BaseElement.prototype[key]) {
-                            console.error(`[${name}] 禁止重写 ${key}()，请使用框架钩子`);
-                        }
-                    }
-                }
-
-                return original.call(this, name, ctor, options);
-            };
-        }
-    }
 }
 
 export default BaseElement;

@@ -113,6 +113,8 @@
       <button class="tab-btn" data-tab="weather">🌤️ 天气应用</button>
       <button class="tab-btn" data-tab="ref">🔗 元素引用</button>
       <button class="tab-btn" data-tab="router">🧭 路由测试</button>
+      <button class="tab-btn" data-tab="control-flow">🎛️ 控制流</button>
+      <button class="tab-btn" data-tab="audit">🧪 审查测试</button>
       <a href="./security-demo/index.html" class="tab-btn security-link">🛡️ 安全机制</a>
       <a href="./csp-demo/index.html" class="tab-btn security-link">🔒 CSP 模式</a>
     </div>
@@ -147,6 +149,16 @@
         <h2 class="section-title">路由测试示例</h2>
         <router-test></router-test>
       </div>
+
+      <div class="example-container" id="control-flow-example">
+        <h2 class="section-title">控制流与状态演示</h2>
+        <control-flow-demo></control-flow-demo>
+      </div>
+
+      <div class="example-container" id="audit-example">
+        <h2 class="section-title">审查测试</h2>
+        <audit-test></audit-test>
+      </div>
     </div>
   </div>
 
@@ -158,9 +170,11 @@
     import * as weather from './weather/index.ts';
     import * as refExample from './ref-example/index.ts';
     import * as routerTest from './router-test/index.ts';
+    import * as controlFlow from './control-flow/index.ts';
+    import * as auditTest from './audit-test/index.ts';
 
     // 防止 tree-shaking
-    console.log('Loaded:', counter, todo, form, weather, refExample, routerTest);
+    console.log('Loaded:', counter, todo, form, weather, refExample, routerTest, controlFlow, auditTest);
 
     // Tab switching logic
     document.querySelectorAll('.tab-btn').forEach(btn => {

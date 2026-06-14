@@ -138,6 +138,7 @@ function serializeIR(irRoot: IRRoot, originalCode: string, id: string, minify: b
                     d: attr.d,
                     r: attr.r,
                 })),
+                ...(branch.ka !== undefined && { ka: branch.ka }),
                 ...(!minify && branch.__m && { __m: { ...branch.__m } }),
             }));
         }

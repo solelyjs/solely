@@ -101,6 +101,7 @@ function parseTag(tag: string, tagLoc: SourceLocation): ASTNode {
         if: ASTType.If,
         elseif: ASTType.ElseIf,
         else: ASTType.Else,
+        show: ASTType.Show,
     };
     const type = typeMap[tagName] ?? ASTType.Element;
     return {

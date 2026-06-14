@@ -1,5 +1,5 @@
 /** 生命周期类型 */
-export type LifecycleKind = 'mounted' | 'updated' | 'unmounted';
+export type LifecycleKind = 'mounted' | 'updated' | 'unmounted' | 'activated' | 'deactivated';
 
 /** 生命周期属性映射表 */
 export const LIFECYCLE_ATTRS_MAP: Record<string, LifecycleKind> = {
@@ -7,6 +7,8 @@ export const LIFECYCLE_ATTRS_MAP: Record<string, LifecycleKind> = {
     onMounted: 'mounted',
     onUpdated: 'updated',
     onUnmounted: 'unmounted',
+    onActivated: 'activated',
+    onDeactivated: 'deactivated',
 };
 
 /**
@@ -24,5 +26,11 @@ export function mapAttrKeyToLifecycleKind(key: string): LifecycleKind | null {
  * @returns 是否为有效的生命周期类型
  */
 export function isLifecycleKind(value: string): value is LifecycleKind {
-    return value === 'mounted' || value === 'updated' || value === 'unmounted';
+    return (
+        value === 'mounted' ||
+        value === 'updated' ||
+        value === 'unmounted' ||
+        value === 'activated' ||
+        value === 'deactivated'
+    );
 }

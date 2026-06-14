@@ -1,0 +1,227 @@
+<div class="demo">
+  <h2>控制流与状态演示</h2>
+
+  <!-- Show 显隐控制 -->
+  <div class="section">
+    <h3>Show 显隐控制</h3>
+    <p class="desc">Show 隐藏时 DOM 被缓存而非销毁，显示时从缓存恢复，输入内容不会丢失</p>
+    <button @click="$data.showVisible = !$data.showVisible">
+      {{ $data.showVisible ? '隐藏' : '显示' }}面板
+    </button>
+    <Show test="$data.showVisible">
+      <div class="panel">
+        <p>此面板隐藏时 DOM 保留，输入内容不会丢失</p>
+        <input type="text" placeholder="输入文字后切换显隐试试" />
+      </div>
+    </Show>
+  </div>
+
+  <!-- If 条件渲染 -->
+  <div class="section">
+    <h3>If / ElseIf / Else 条件渲染</h3>
+    <p class="desc">If 根据条件渲染对应分支，切换时销毁/重建 DOM</p>
+    <div class="btn-group">
+      <button @click="$data.status = 'loading'" :class="{ active: $data.status === 'loading' }">加载中</button>
+      <button @click="$data.status = 'success'" :class="{ active: $data.status === 'success' }">成功</button>
+      <button @click="$data.status = 'error'" :class="{ active: $data.status === 'error' }">失败</button>
+    </div>
+    <If test="$data.status === 'loading'">
+      <div class="panel loading">
+        <p>正在加载数据...（输入内容，切换后再回来会丢失）</p>
+        <input type="text" placeholder="在此输入，切换分支后内容丢失" />
+      </div>
+    </If>
+    <ElseIf test="$data.status === 'success'">
+      <div class="panel success">
+        <p>数据加载成功！</p>
+        <p>当前状态: {{ $data.status }}</p>
+      </div>
+    </ElseIf>
+    <Else>
+      <div class="panel error">
+        <p>加载失败，请重试</p>
+        <button @click="$data.status = 'loading'">重新加载</button>
+      </div>
+    </Else>
+  </div>
+
+  <!-- For 列表渲染 -->
+  <div class="section">
+    <h3>For 列表渲染</h3>
+    <p class="desc">基于数组动态渲染列表，支持索引访问</p>
+    <div class="btn-group">
+      <button @click="this.addItem()">添加项</button>
+      <button @click="$data.items.reverse()">反转列表</button>
+      <button @click="$data.items = []">清空</button>
+    </div>
+    <ul class="list-panel">
+      <For each="$data.items" item="item" index="i">
+        <li class="list-item">
+          <span>{{ i + 1 }}. {{ item }}</span>
+          <button class="btn-small" @click="this.removeItem(i)">删除</button>
+        </li>
+      </For>
+    </ul>
+    <If test="$data.items.length === 0">
+      <p class="hint">列表为空，点击"添加项"试试</p>
+    </If>
+  </div>
+
+  <!-- Show 显隐控制（对比 If 的 DOM 重建） -->
+  <div class="section">
+    <h3>Show 显隐控制（对比 If）</h3>
+    <p class="desc">Show 隐藏时 DOM 被缓存而非销毁，显示时从缓存恢复。切换标签页，输入内容不会丢失。</p>
+    <div class="btn-group">
+      <button @click="$data.activeTab = 'a'" :class="{ active: $data.activeTab === 'a' }">标签 A</button>
+      <button @click="$data.activeTab = 'b'" :class="{ active: $data.activeTab === 'b' }">标签 B</button>
+      <button @click="$data.activeTab = 'c'" :class="{ active: $data.activeTab === 'c' }">标签 C</button>
+    </div>
+    <Show test="$data.activeTab === 'a'">
+      <div class="panel tab-panel">
+        <p>标签 A 内容（DOM 始终保留）</p>
+        <input type="text" placeholder="切换标签页，内容不会丢失" />
+      </div>
+    </Show>
+    <Show test="$data.activeTab === 'b'">
+      <div class="panel tab-panel">
+        <p>标签 B 内容（DOM 始终保留）</p>
+        <input type="number" s-model="$data.tabBCount" />
+        <button @click="$data.tabBCount++">+1</button>
+        <p class="hint">计数: {{ $data.tabBCount }}</p>
+      </div>
+    </Show>
+    <Show test="$data.activeTab === 'c'">
+      <div class="panel tab-panel">
+        <p>标签 C 内容（DOM 始终保留）</p>
+        <p class="hint">这是一个纯展示标签</p>
+      </div>
+    </Show>
+  </div>
+
+  <!-- If keepalive 组件缓存 -->
+  <div class="section">
+    <h3>If keepalive 组件缓存</h3>
+    <p class="desc">If 加 keepalive 属性，条件不满足时隐藏而非销毁 DOM，切换回来输入内容不会丢失</p>
+    <div class="btn-group">
+      <button @click="$data.keepAliveTab = 'x'" :class="{ active: $data.keepAliveTab === 'x' }">标签 X</button>
+      <button @click="$data.keepAliveTab = 'y'" :class="{ active: $data.keepAliveTab === 'y' }">标签 Y</button>
+    </div>
+    <If test="$data.keepAliveTab === 'x'" keepalive>
+      <div class="panel tab-panel">
+        <p>标签 X 内容（keepalive 缓存，DOM 保留）</p>
+        <input type="text" placeholder="切换标签页，内容不会丢失" />
+      </div>
+    </If>
+    <ElseIf test="$data.keepAliveTab === 'y'" keepalive>
+      <div class="panel tab-panel">
+        <p>标签 Y 内容（keepalive 缓存，DOM 保留）</p>
+        <input type="text" placeholder="切换标签页，内容不会丢失" />
+      </div>
+    </ElseIf>
+  </div>
+
+  <!-- Keepalive + 动态文本恢复 -->
+  <div class="section">
+    <h3>Keepalive + 动态文本恢复</h3>
+    <p class="desc">keepalive 恢复时动态文本会重新求值，隐藏期间的数据变化在恢复后可见</p>
+    <div class="btn-group">
+      <button @click="$data.kaCounter++">计数 +1</button>
+      <button @click="$data.kaVisible = !$data.kaVisible">
+        {{ $data.kaVisible ? '隐藏' : '显示' }}面板
+      </button>
+    </div>
+    <p>当前计数: <strong>{{ $data.kaCounter }}</strong></p>
+    <Show test="$data.kaVisible">
+      <div class="panel">
+        <p>面板内的计数: <strong class="highlight">{{ $data.kaCounter }}</strong></p>
+        <p class="hint">隐藏面板后点击 +1，再显示面板，数值会同步更新</p>
+      </div>
+    </Show>
+  </div>
+
+  <!-- Keepalive + 内部 For 列表 -->
+  <div class="section">
+    <h3>Keepalive + 内部 For 列表</h3>
+    <p class="desc">keepalive 恢复时内部 For 会根据当前数据重新 reconciliation</p>
+    <div class="btn-group">
+      <button @click="this.addKaItem()">添加列表项</button>
+      <button @click="$data.kaListVisible = !$data.kaListVisible">
+        {{ $data.kaListVisible ? '隐藏' : '显示' }}列表
+      </button>
+    </div>
+    <Show test="$data.kaListVisible">
+      <div class="panel">
+        <ul class="list-panel">
+          <For each="$data.kaItems" item="item" index="i">
+            <li class="list-item">
+              <span>{{ i + 1 }}. {{ item }}</span>
+            </li>
+          </For>
+        </ul>
+        <p class="hint">隐藏列表后添加项，再显示列表，新项会出现</p>
+      </div>
+    </Show>
+  </div>
+
+  <!-- Keepalive 生命周期 -->
+  <div class="section">
+    <h3>Keepalive 生命周期</h3>
+    <p class="desc">keepalive 分支失活时触发 deactivated，恢复时触发 activated，LRU 淘汰时触发 unmounted</p>
+    <div class="btn-group">
+      <button @click="$data.lcTab = 'home'" :class="{ active: $data.lcTab === 'home' }">首页</button>
+      <button @click="$data.lcTab = 'settings'" :class="{ active: $data.lcTab === 'settings' }">设置</button>
+      <button @click="$data.lcTab = 'profile'" :class="{ active: $data.lcTab === 'profile' }">个人</button>
+    </div>
+    <If test="$data.lcTab === 'home'" keepalive>
+      <div class="panel" mounted="this.addLifecycleLog('首页 mounted')" activated="this.addLifecycleLog('首页 activated')" deactivated="this.addLifecycleLog('首页 deactivated')">
+        <p>首页内容</p>
+      </div>
+    </If>
+    <ElseIf test="$data.lcTab === 'settings'" keepalive>
+      <div class="panel" mounted="this.addLifecycleLog('设置 mounted')" activated="this.addLifecycleLog('设置 activated')" deactivated="this.addLifecycleLog('设置 deactivated')">
+        <p>设置内容</p>
+      </div>
+    </ElseIf>
+    <ElseIf test="$data.lcTab === 'profile'" keepalive>
+      <div class="panel" mounted="this.addLifecycleLog('个人 mounted')" activated="this.addLifecycleLog('个人 activated')" deactivated="this.addLifecycleLog('个人 deactivated')">
+        <p>个人内容</p>
+      </div>
+    </ElseIf>
+    <div class="log-panel">
+      <p class="log-title">生命周期日志：</p>
+      <For each="$data.lifecycleLogs" item="log" index="i">
+        <p class="log-item">{{ log }}</p>
+      </For>
+    </div>
+  </div>
+
+  <!-- Watch 侦听 -->
+  <div class="section">
+    <h3>Watch 侦听</h3>
+    <p class="desc">侦听响应式数据变化，执行副作用（日志、网络请求等）</p>
+    <div class="btn-group">
+      <button @click="$data.watchCount++">计数 +1</button>
+      <button @click="$data.watchCount = 0">重置</button>
+    </div>
+    <p>当前计数: <strong>{{ $data.watchCount }}</strong></p>
+    <div class="log-panel">
+      <p class="log-title">变更日志（最近 5 条）：</p>
+      <For each="$data.watchLogs" item="log" index="i">
+        <p class="log-item">{{ log }}</p>
+      </For>
+    </div>
+  </div>
+
+  <!-- Computed 计算属性 -->
+  <div class="section">
+    <h3>Computed 计算属性</h3>
+    <p class="desc">基于响应式数据派生计算值，惰性求值，依赖变化时自动更新</p>
+    <div class="btn-group">
+      <button @click="$data.price += 10">价格 +10</button>
+      <button @click="$data.quantity++">数量 +1</button>
+      <button @click="$data.price = 50; $data.quantity = 1">重置</button>
+    </div>
+    <p>单价: <strong>{{ $data.price }}</strong> 元 × 数量: <strong>{{ $data.quantity }}</strong></p>
+    <p>总价: <strong class="highlight">{{ $data.total }}</strong> 元</p>
+  </div>
+</div>

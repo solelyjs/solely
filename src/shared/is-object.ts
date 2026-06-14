@@ -13,7 +13,7 @@ const EXCLUDED_TAGS = new Set([
     '[object WeakSet]',
 ]);
 
-export const isObject = (value: unknown): boolean => {
+export const isObject = (value: unknown): value is object => {
     if (value === null) return false;
     if (typeof value !== 'object') return false;
 

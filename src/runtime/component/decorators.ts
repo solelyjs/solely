@@ -194,6 +194,17 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
 
         // 注册自定义元素（仅浏览器环境）
         if (isBrowser) {
+            // DEV: 检测用户是否重写了受保护的基类方法
+            if (IS_DEV) {
+                const proto = OriginalClass.prototype;
+                const forbidden = ['connectedCallback', 'disconnectedCallback', 'attributeChangedCallback'] as const;
+                for (const key of forbidden) {
+                    if (Object.prototype.hasOwnProperty.call(proto, key)) {
+                        console.error(`[${tagName}] 禁止重写 ${key}()，请使用框架钩子`);
+                    }
+                }
+            }
+
             customElements.define(tagName, CE as CustomElementConstructor);
         }
 

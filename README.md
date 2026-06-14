@@ -151,7 +151,9 @@ class MyCounter extends BaseElement<{ count: number }> {
 | **双向绑定** | `s-model="字段路径"`              | `s-model="字段路径"`              | `<input s-model="$data.username">`                |
 | **原始事件** | `@事件名="语句"`                  | `on-事件名="语句"`                | `<button @click="$data.count++">增加</button>`    |
 | **条件渲染** | `<If test="表达式">`              | `<If condition="表达式">`         | `<If test="$data.ok"><p>成功</p></If>`            |
+| **显隐控制** | `<Show test="表达式">`            | `<Show condition="表达式">`       | `<Show test="$data.visible">内容</Show>`          |
 | **列表渲染** | `<For each="数组" item="项变量">` | `<For each="数组" item="项变量">` | `<For each="$data.list" item="it">{{ it }}</For>` |
+| **组件缓存** | `<If keepalive>`                  | -                                 | `<If test="$data.ok" keepalive>...</If>`          |
 | **动态类**   | `:class="对象/数组/字符串"`       | `s-class="对象/数组/字符串"`      | `<div :class="{ active: $data.isActive }">`       |
 | **动态样式** | `:style="对象"`                   | `s-style="对象"`                  | `<div :style="{ color: $data.c }">`               |
 
@@ -267,7 +269,29 @@ class MyCounter extends BaseElement<{ count: number }> {
 </Else>
 ```
 
-#### 7. 列表渲染
+#### 7. 显隐控制
+
+使用 `<Show>` 控制元素显隐（隐藏时缓存 DOM 而非销毁，显示时从缓存恢复）：
+
+```html
+<Show test="$data.isVisible">
+    <p>隐藏时 DOM 被缓存，显示时恢复，状态不丢失</p>
+</Show>
+```
+
+> **`<Show>` 是 `<If keepalive>` 的语法糖**，编译时自动转换为单分支 Conditional + keepalive。适合频繁切换且需要保持状态的场景。
+>
+> **`<Show>` vs `<If>`**：`<Show>` 隐藏时将 DOM 移入缓存，显示时从缓存恢复，状态保留；`<If>` 根据条件渲染对应分支，切换时销毁/重建 DOM，适合条件稳定或需要完整生命周期控制的场景。
+
+兼容语法：
+
+```html
+<Show condition="$data.isVisible">
+    <p>隐藏时 DOM 被缓存，显示时恢复，状态不丢失</p>
+</Show>
+```
+
+#### 8. 列表渲染
 
 使用 `<For>` 渲染列表：
 
@@ -289,7 +313,26 @@ class MyCounter extends BaseElement<{ count: number }> {
 </ul>
 ```
 
-#### 8. 动态类
+#### 9. 组件缓存
+
+在 `<If>` / `<ElseIf>` / `<Else>` 上添加 `keepalive` 属性，条件不满足时将 DOM 移入缓存而非销毁，切换回来时从缓存恢复：
+
+```html
+<If test="$data.tab === 'list'" keepalive>
+    <my-heavy-list />
+</If>
+<ElseIf test="$data.tab === 'detail'" keepalive>
+    <my-detail-view />
+</ElseIf>
+```
+
+> **`keepalive` vs 普通 `If`**：普通 `If` 切换时会销毁/重建 DOM，状态丢失；`keepalive` 切换时将 DOM 移入缓存，状态保留。适合标签页切换等需要保持组件状态的场景。
+>
+> **keepalive 生命周期**：keepalive 分支失活时触发 `deactivated`（而非 `unmounted`），恢复时触发 `activated`（而非 `mounted`）。LRU 缓存淘汰时触发 `unmounted`（永久销毁）。嵌套 keepalive 不受支持。
+>
+> **keepalive 语义说明**：恢复时执行完整的 Reconciliation——内部 `<If>`/`<For>` 会根据当前数据重新求值，动态属性和动态文本也会同步更新。分支内部因条件/列表变化产生的多余节点会触发 `unmounted` 并清理事件，而非错误地进入 keepalive 缓存。
+
+#### 10. 动态类
 
 使用 `:class` 动态控制 CSS 类（推荐）：
 
@@ -307,7 +350,7 @@ class MyCounter extends BaseElement<{ count: number }> {
 <div s-class="[$data.class1, $data.class2]">内容</div>
 ```
 
-#### 9. 动态样式
+#### 11. 动态样式
 
 使用 `:style` 动态设置样式（推荐）：
 
@@ -345,7 +388,7 @@ solely/
 
 1. **编译器**：将模板转换为高效的渲染函数，支持 AST 解析和中间表示优化
 2. **运行时**：包含组件系统、响应式系统、渲染器和路由系统
-3. **响应式系统**：基于 Proxy 的响应式数据绑定，自动追踪依赖
+3. **响应式系统**：基于 Proxy 的响应式数据绑定，采用 DAG 弱引用双向图和全局代理生成器自动追踪依赖，支持路径过滤、批量防抖与深度比较
 4. **路由系统**：支持单页应用的路由管理，包括路由定义、导航和组件挂载
 5. **插件系统**：提供扩展机制，支持自定义功能
 
@@ -710,33 +753,39 @@ document.body.appendChild(element);
 
 Solely 提供了完整的生命周期钩子函数，用于在组件的不同阶段执行自定义逻辑：
 
-| 钩子函数                                     | 调用时机          | 说明                                                                  |
-| -------------------------------------------- | ----------------- | --------------------------------------------------------------------- |
-| `created()`                                  | 组件实例创建后    | 在组件构造函数执行完成后调用，此时组件尚未挂载到 DOM                  |
-| `mounted()`                                  | 组件挂载到 DOM 后 | 组件首次渲染完成后调用，可在此进行 DOM 操作                           |
-| `onInit()`                                   | 组件初始化后      | 在 `mounted()` 之后调用，支持返回 Promise，适用于需要异步初始化的场景 |
-| `beforeUpdate()`                             | 数据更新前        | 在组件数据更新导致重新渲染前调用                                      |
-| `updated()`                                  | 数据更新后        | 在组件数据更新导致重新渲染后调用                                      |
-| `beforeAttributesUpdate()`                   | 属性更新前        | 在属性更新导致重新渲染前调用                                          |
-| `afterAttributesUpdate()`                    | 属性更新后        | 在属性更新导致重新渲染后调用                                          |
-| `attributeChanged(name, oldValue, newValue)` | 属性变化时        | 当组件的观察属性发生变化时调用，参数分别为属性名、旧值和新值          |
-| `unmounted()`                                | 组件从 DOM 移除后 | 组件被销毁时调用，可在此清理资源                                      |
+| 钩子函数                                     | 调用时机          | 说明                                                              |
+| -------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
+| `created()`                                  | 组件实例创建后    | 在组件构造函数执行完成后调用，此时组件尚未挂载到 DOM              |
+| `mounted()`                                  | 组件挂载到 DOM 后 | 组件首次渲染完成后调用，可在此进行 DOM 操作                       |
+| `beforeUpdate()`                             | 数据更新前        | 在组件数据更新导致重新渲染前调用                                  |
+| `updated()`                                  | 数据更新后        | 在组件数据更新导致重新渲染后调用                                  |
+| `beforeAttributesUpdate()`                   | 属性更新前        | 在属性更新导致重新渲染前调用                                      |
+| `afterAttributesUpdate()`                    | 属性更新后        | 在属性更新导致重新渲染后调用                                      |
+| `attributeChanged(name, oldValue, newValue)` | 属性变化时        | 当组件的观察属性发生变化时调用，参数分别为属性名、旧值和新值      |
+| `unmounted()`                                | 组件从 DOM 移除后 | 组件被永久销毁时调用（keepalive 缓存时不触发），可在此清理资源    |
+| `activated()`                                | keepalive 恢复后  | keepalive 缓存的组件从缓存恢复到 DOM 时调用                       |
+| `deactivated()`                              | keepalive 缓存时  | keepalive 缓存的组件从 DOM 移入缓存时调用（临时失活，非永久销毁） |
 
 #### 生命周期调用顺序
 
-1. **组件创建阶段**：`created()` → `mounted()` → `onInit()`
+1. **组件创建阶段**：`created()` → `mounted()`
 2. **数据更新阶段**：`beforeUpdate()` → 渲染更新 → `updated()`
 3. **属性更新阶段**：`attributeChanged()` → `beforeAttributesUpdate()` → 渲染更新 → `updated()` → `afterAttributesUpdate()`
-4. **组件销毁阶段**：`unmounted()`
+4. **组件销毁阶段**：`unmounted()`（普通销毁）或 `deactivated()`（keepalive 缓存）
+5. **keepalive 恢复阶段**：`activated()` → `beforeUpdate()` → 渲染更新 → `updated()`
+
+> **迁移提示**：`onInit()` 生命周期钩子已移除，原有的异步初始化逻辑请迁移到 `mounted()` 中执行。
 
 #### 模板级生命周期钩子
 
 Solely 支持在组件模板的普通元素上定义生命周期钩子，用于在元素的挂载和更新时执行自定义逻辑：
 
-| 钩子属性  | 调用时机   | 说明                                                                   |
-| --------- | ---------- | ---------------------------------------------------------------------- |
-| `mounted` | 元素挂载后 | 在元素首次渲染完成后调用，可调用组件方法并接收元素本身作为参数         |
-| `updated` | 元素更新后 | 在元素数据更新导致重新渲染后调用，可调用组件方法并接收元素本身作为参数 |
+| 钩子属性      | 调用时机         | 说明                                                                   |
+| ------------- | ---------------- | ---------------------------------------------------------------------- |
+| `mounted`     | 元素挂载后       | 在元素首次渲染完成后调用，可调用组件方法并接收元素本身作为参数         |
+| `updated`     | 元素更新后       | 在元素数据更新导致重新渲染后调用，可调用组件方法并接收元素本身作为参数 |
+| `activated`   | keepalive 恢复后 | keepalive 缓存的元素从缓存恢复到 DOM 时调用                            |
+| `deactivated` | keepalive 缓存时 | keepalive 缓存的元素从 DOM 移入缓存时调用                              |
 
 **示例**：
 
@@ -843,8 +892,8 @@ class MyComponent extends BaseElement<MyData> {
         console.log(`属性 ${name} 从 ${oldValue} 变为 ${newValue}`);
     }
 
-    // 组件初始化后调用，支持异步操作
-    async onInit() {
+    // 组件挂载后调用，支持异步初始化
+    async mounted() {
         console.log('组件初始化中');
         // 可在此进行异步操作，如数据获取
         await fetchData();
@@ -869,13 +918,13 @@ class MyComponent extends BaseElement<MyData> {
 ```typescript
 import { observe } from 'solely';
 
-const state = observe(
+const { proxy: state } = observe(
     {
         name: 'Solely',
         items: [1, 2, 3],
     },
-    (path, newValue, oldValue) => {
-        console.log('数据变化:', path, oldValue, '->', newValue);
+    change => {
+        console.log('数据变化:', change);
     },
 );
 
@@ -886,21 +935,20 @@ state.name = 'New Name'; // 触发回调
 
 响应式系统会自动处理以下特殊情况：
 
-| 对象类型               | 处理方式 | 说明                                   |
-| ---------------------- | -------- | -------------------------------------- |
-| `Object.freeze()`      | 跳过代理 | 被冻结的对象不会被代理，直接返回原对象 |
-| `Object.seal()`        | 跳过代理 | 被密封的对象不会被代理，直接返回原对象 |
-| `File` / `Blob`        | 跳过代理 | 浏览器原生文件对象不会被代理           |
-| `FormData`             | 跳过代理 | 表单数据对象不会被代理                 |
-| `ArrayBuffer`          | 跳过代理 | 二进制数据缓冲区不会被代理             |
-| `Response` / `Request` | 跳过代理 | Fetch API 对象不会被代理               |
+| 对象类型               | 处理方式 | 说明                                                                           |
+| ---------------------- | -------- | ------------------------------------------------------------------------------ |
+| 不可扩展对象           | 跳过代理 | `Object.freeze()` / `Object.seal()` 等不可扩展的对象不会被代理，直接返回原对象 |
+| `File` / `Blob`        | 跳过代理 | 浏览器原生文件对象不会被代理                                                   |
+| `FormData`             | 跳过代理 | 表单数据对象不会被代理                                                         |
+| `ArrayBuffer`          | 跳过代理 | 二进制数据缓冲区不会被代理                                                     |
+| `Response` / `Request` | 跳过代理 | Fetch API 对象不会被代理                                                       |
 
 **示例**：
 
 ```typescript
 // 冻结对象不会被代理
 const frozen = Object.freeze({ count: 0 });
-const state = observe({ frozen }, change => {
+const { proxy: state } = observe({ frozen }, change => {
     console.log('变化:', change);
 });
 
@@ -909,12 +957,62 @@ state.frozen.count = 1; // 静默失败，无回调
 
 // File 对象不会被代理
 const file = new File(['content'], 'test.txt');
-const state2 = observe({ file }, change => {
+const { proxy: state2 } = observe({ file }, change => {
     console.log('变化:', change);
 });
 
 // File 对象保持原样
 console.log(state2.file instanceof File); // true
+```
+
+#### 配置选项
+
+`observe` 支持通过第三个参数传入配置选项：
+
+| 选项          | 类型                              | 默认值  | 说明                                                                       |
+| ------------- | --------------------------------- | ------- | -------------------------------------------------------------------------- |
+| `throttle`    | `number`                          | `0`     | 变更回调的防抖间隔（毫秒），`0` 表示不防抖                                 |
+| `immediate`   | `boolean`                         | `false` | 是否在初始化时立即触发一次所有属性的 `set` 回调                            |
+| `filter`      | `string \| string[]`              | `[]`    | 路径过滤规则，支持完整路径或父路径匹配（如 `'user'` 可匹配 `'user.name'`） |
+| `deepCompare` | `boolean`                         | `false` | 是否对新旧值进行深度比较，避免无意义更新                                   |
+| `onBatch`     | `(changes: ChangeItem[]) => void` | -       | 批量回调，在 `throttle` 间隔结束后一次性接收所有变更                       |
+
+#### 返回值
+
+| 属性/方法     | 说明                                 |
+| ------------- | ------------------------------------ |
+| `proxy`       | 响应式代理对象，修改其属性会触发回调 |
+| `unobserve()` | 暂停观察，后续变更不再触发回调       |
+| `resume()`    | 恢复观察                             |
+| `dispose()`   | 彻底销毁观察器，清理所有引用         |
+
+#### 变更对象结构
+
+回调接收的 `ChangeItem` 对象包含以下字段：
+
+| 字段                    | 说明                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `type`                  | 变更类型：`set`、`delete`、`array-push`、`array-splice`、`array-replace`、`array-reset` |
+| `key`                   | 发生变更的属性键（数组变更类型除外）                                                    |
+| `path`                  | 完整路径数组，从根对象到变更属性的全路径（**包含 `key`**）                              |
+| `newValue` / `oldValue` | 新值与旧值（依变更类型而异）                                                            |
+
+**示例**：
+
+```typescript
+const { proxy, unobserve, resume, dispose } = observe(
+    { user: { name: 'Solely' } },
+    change => {
+        console.log(`Change at ${change.path.join('.')}:`, change);
+    },
+    { filter: 'user', throttle: 16 },
+);
+
+proxy.user.name = 'New Name'; // 触发回调，path 为 ['user', 'name']
+unobserve(); // 暂停
+proxy.user.name = 'Another'; // 不触发
+resume(); // 恢复
+dispose(); // 彻底销毁
 ```
 
 ### 路由系统
@@ -1022,7 +1120,7 @@ const router = createRouter({
         }
 
         // 阻止导航
-        if (to.path === '/admin' && !isAdmin) {
+        if (to.fullPath === '/admin' && !isAdmin) {
             return false;
         }
 
@@ -1031,7 +1129,7 @@ const router = createRouter({
     },
     afterEach: (to, from) => {
         // 导航完成后执行
-        console.log('从', from.fullPath, '导航到', to.fullPath);
+        console.log('从', from?.fullPath ?? '初始', '导航到', to.fullPath);
         document.title = to.meta.title || 'Solely App';
     },
 });
@@ -1301,6 +1399,8 @@ npm run test:ui
 # 生成测试覆盖率报告
 npm run test:coverage
 ```
+
+> 当前测试套件包含 270+ 个单元测试，覆盖编译器、运行时、响应式系统、路由系统和组件接口等模块。
 
 ## 🔧 构建和开发
 

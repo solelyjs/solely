@@ -32,3 +32,6 @@ export const IS_DEV = /* @__PURE__ */ (() => {
 
 /** 是否为生产环境 */
 export const IS_PROD = !IS_DEV;
+
+/** Solely 框架版本号（编译时从 package.json 注入） */
+export const SOLELY_VERSION: string = typeof __SOLELY_VERSION__ !== 'undefined' ? __SOLELY_VERSION__ : '0.0.0';

@@ -1,14 +1,11 @@
 import { isObject } from '../../shared/is-object';
-import { IS_DEV } from '../../shared/env';
 
 /* ======================= Consts & Types ======================= */
 
 const RAW_SYMBOL = Symbol('solely.raw');
 
-/** 路径键类型 - 用于表示对象路径的字符串或符号 */
 export type PathKey = string | symbol;
 
-/** 变更项的原始载荷 */
 export type ChangePayload =
     | { type: 'set'; key: PathKey; newValue: unknown; oldValue: unknown }
     | { type: 'delete'; key: PathKey; oldValue: unknown }
@@ -17,71 +14,116 @@ export type ChangePayload =
     | { type: 'array-replace'; oldValue: unknown[]; newValue: unknown[] }
     | { type: 'array-reset'; method: string };
 
-/** 完整的变更对象 */
 export type ChangeItem = ChangePayload & { path: PathKey[] };
 
-/** 观察选项配置 */
 export interface ObserveOptions {
-    /** 节流延迟时间（毫秒），默认 0 表示不节流 */
     throttle?: number;
-    /** 批量变更回调，在 throttle 触发时调用 */
     onBatch?: (changes: ChangeItem[]) => void;
-    /** 是否立即触发一次所有属性的变更通知 */
     immediate?: boolean;
-    /** 路径过滤器，支持通配符 * 和 ** */
     filter?: string | string[];
-    /** 是否启用深度比较 */
+    /** 是否启用深度比较，默认 false */
     deepCompare?: boolean;
 }
 
-/** 观察返回值 */
 export interface ObserveReturn<T> {
-    /** 响应式代理对象 */
     proxy: T;
-    /** 暂停观察，可以调用 resume 恢复 */
     unobserve: () => void;
-    /** 恢复观察 */
     resume: () => void;
-    /** 彻底销毁，释放所有资源，不可恢复 */
     dispose: () => void;
 }
 
-/* ======================= 全局订阅系统 ======================= */
+/* ======================= 全局状态管理 ======================= */
 
 type ObserverEntry = {
     callback: (change: ChangeItem) => void;
     onBatch?: (changes: ChangeItem[]) => void;
     throttle: number;
-    // 预编译的正则表达式数组
     filterRegexes: RegExp[];
     pending: ChangeItem[];
     timer: ReturnType<typeof setTimeout> | null;
     active: boolean;
+    deepCompare?: boolean;
 };
 
-// 全局 WeakMap：Proxy -> 所有订阅该对象的观察者集合
-const globalObservers = new WeakMap<object, Set<ObserverEntry>>();
-
-// 全局 Proxy 缓存：原始对象 -> Proxy
+// 代理对象缓存 (Raw -> Proxy)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalProxyCache = new WeakMap<object, any>();
+const globalObservers = new WeakMap<object, Set<ObserverEntry>>();
 
-// 全局父子关系映射
-const globalParentMap = new WeakMap<object, { parent: object | null; key: PathKey | null }>();
-
-// 全局数组方法映射
-const globalArrayInstrumentations = new WeakMap<object, Record<string, Function>>();
-
-// 全局数组变异深度计数器（每个代理一个）
+// 数组突变深度
 const globalArrayMutationDepth = new WeakMap<object, number>();
+
+/* ======================= DAG 双向图与弱引用系统 ======================= */
+
+const globalChildrenMap = new WeakMap<object, Map<PathKey, object>>();
+
+type ParentLink = { parentRef: WeakRef<object>; key: PathKey };
+const globalParentMap = new WeakMap<object, ParentLink[]>();
+
+function link(parentProxy: object, key: PathKey, childProxy: object) {
+    unlink(parentProxy, key);
+
+    let childrenMap = globalChildrenMap.get(parentProxy);
+    if (!childrenMap) {
+        childrenMap = new Map();
+        globalChildrenMap.set(parentProxy, childrenMap);
+    }
+    childrenMap.set(key, childProxy);
+
+    let parentLinks = globalParentMap.get(childProxy);
+    if (!parentLinks) {
+        parentLinks = [];
+        globalParentMap.set(childProxy, parentLinks);
+    }
+
+    const exists = parentLinks.some(link => link.parentRef.deref() === parentProxy && link.key === key);
+    if (!exists) {
+        parentLinks.push({ parentRef: new WeakRef(parentProxy), key });
+    }
+}
+
+function unlink(parentProxy: object, key: PathKey) {
+    const childrenMap = globalChildrenMap.get(parentProxy);
+    if (!childrenMap) return;
+
+    const childProxy = childrenMap.get(key);
+    if (!childProxy) return;
+
+    childrenMap.delete(key);
+
+    const parentLinks = globalParentMap.get(childProxy);
+    if (parentLinks) {
+        const newLinks = parentLinks.filter(pLink => {
+            const parent = pLink.parentRef.deref();
+            return parent !== undefined && !(parent === parentProxy && pLink.key === key);
+        });
+        if (newLinks.length === 0) {
+            globalParentMap.delete(childProxy);
+        } else {
+            globalParentMap.set(childProxy, newLinks);
+        }
+    }
+}
+
+function syncArrayLinks(target: unknown[], arrayProxy: object) {
+    const childrenMap = globalChildrenMap.get(arrayProxy);
+    if (childrenMap) {
+        // 使用迭代器减少数组中间变量开销
+        for (const key of childrenMap.keys()) {
+            unlink(arrayProxy, key);
+        }
+    }
+
+    for (let i = 0; i < target.length; i++) {
+        const item = target[i];
+        if (isObject(item) && !isNativeSkippable(item)) {
+            link(arrayProxy, String(i), getOrCreateProxy(item));
+        }
+    }
+}
 
 /* ======================= 核心 Helpers ======================= */
 
-/**
- * 将 Proxy 还原为原始对象
- * @param observed 观察对象
- * @returns 原始对象
- */
 export function toRaw<T>(observed: T): T {
     if (observed && typeof observed === 'object') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,13 +133,14 @@ export function toRaw<T>(observed: T): T {
     return observed;
 }
 
-// ======================= Native Object Guard =======================
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isNativeSkippable = (obj: any): boolean => {
+const objectToString = Object.prototype.toString;
+const isNativeSkippable = (obj: unknown): boolean => {
     if (!obj || typeof obj !== 'object') return false;
+    // 拦截高频且不应响应式的原生类型
+    const tag = objectToString.call(obj);
+    if (tag === '[object Date]' || tag === '[object RegExp]' || tag === '[object Map]' || tag === '[object Set]')
+        return true;
 
-    // 浏览器原生类型，不能被 Proxy，否则会 Illegal invocation
     return (
         obj instanceof File ||
         obj instanceof Blob ||
@@ -108,233 +151,381 @@ const isNativeSkippable = (obj: any): boolean => {
     );
 };
 
-/**
- * 检查一个值是否为响应式代理对象
- * @param value 要检查的值
- * @returns 如果是代理对象返回 true，否则返回 false
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isProxy(value: any): boolean {
-    return !!(value && value[RAW_SYMBOL]);
+export function isProxy(value: unknown): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(value && (value as any)[RAW_SYMBOL]);
 }
 
-/** 深度比较 - 支持循环引用检测，限制最大深度防止栈溢出 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const deepEqual = (a: any, b: any, seen = new WeakMap<object, object>(), depth = 0): boolean => {
-    if (depth > 10) return a === b;
+export type ReactiveSource<T extends object = object> = T | ObserveReturn<T>;
 
-    if (a === b) return true;
-
-    // null 检查
-    if (a == null || b == null) return a === b;
-
-    // 基本类型
-    if (typeof a !== 'object' || typeof b !== 'object') return a === b;
-
-    // 类型不同（数组 vs 对象）
-    if (Array.isArray(a) !== Array.isArray(b)) return false;
-
-    // 循环引用检测
-    if (seen.has(a)) {
-        return seen.get(a) === b;
+export function toProxy<T extends object = object>(source: ReactiveSource<T>): T {
+    if (source && typeof source === 'object' && 'proxy' in source) {
+        return (source as ObserveReturn<T>).proxy;
     }
+    return source as T;
+}
 
-    // 记录当前比较对，防止循环引用
-    seen.set(a, b);
+// 缓存正则编译结果，提升过滤性能
+const regexCache = new Map<string, RegExp>();
+const compileFilters = (filters: string[]): RegExp[] => {
+    return filters.map(pattern => {
+        if (pattern === '') return /^.*$/;
+        const cached = regexCache.get(pattern);
+        if (cached) return cached;
 
-    // 数组比较
+        let escaped = '';
+        for (let i = 0; i < pattern.length; i++) {
+            const ch = pattern[i];
+            if (ch === '*' && pattern[i + 1] === '*') {
+                escaped += '**';
+                i++;
+            } else if (ch === '*') {
+                escaped += '*';
+            } else if (ch === '.') {
+                escaped += '.';
+            } else if (/[.*+?^${}()|[\]\\]/.test(ch)) {
+                escaped += '\\' + ch;
+            } else {
+                escaped += ch;
+            }
+        }
+
+        const segments = escaped.split('.');
+        const parts: string[] = [];
+
+        for (let i = 0; i < segments.length; i++) {
+            const seg = segments[i];
+            if (seg === '**') {
+                if (segments.length === 1) parts.push('.*');
+                else if (i === 0) parts.push('(?:[^.]+\\.)*');
+                else parts.push('(?:\\.[^.]+)*');
+            } else if (seg === '*') {
+                parts.push('[^.]+');
+            } else {
+                parts.push(seg);
+            }
+        }
+
+        let regexStr = '^';
+        for (let i = 0; i < parts.length; i++) {
+            regexStr += parts[i];
+            if (i < parts.length - 1) {
+                const current = parts[i];
+                const next = parts[i + 1];
+                if (current.endsWith('\\.)*')) continue;
+                if (next.startsWith('(?:\\.')) continue;
+                regexStr += '\\.';
+            }
+        }
+        regexStr += '$';
+
+        const compiled = new RegExp(regexStr);
+        regexCache.set(pattern, compiled);
+        return compiled;
+    });
+};
+
+const isPathMatched = (path: PathKey[], filterRegexes: RegExp[]): boolean => {
+    if (filterRegexes.length === 0) return true;
+    const parts = path.map(String);
+    for (let i = parts.length; i > 0; i--) {
+        const pathStr = parts.slice(0, i).join('.');
+        if (filterRegexes.some(regex => regex.test(pathStr))) return true;
+    }
+    return false;
+};
+
+const deepEqual = (a: unknown, b: unknown): boolean => {
+    if (Object.is(a, b)) return true;
+    if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+
     if (Array.isArray(a) && Array.isArray(b)) {
         if (a.length !== b.length) return false;
         for (let i = 0; i < a.length; i++) {
-            if (!deepEqual(a[i], b[i], seen, depth + 1)) return false;
+            if (!deepEqual(a[i], b[i])) return false;
         }
         return true;
     }
 
-    // 对象比较
-    const keys = Reflect.ownKeys(a);
-    if (keys.length !== Reflect.ownKeys(b).length) return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
 
-    for (const key of keys) {
+    const keysA = Reflect.ownKeys(a);
+    const keysB = Reflect.ownKeys(b);
+    if (keysA.length !== keysB.length) return false;
+
+    for (const key of keysA) {
         if (!Reflect.has(b, key)) return false;
-        const aVal = (a as Record<PropertyKey, unknown>)[key];
-        const bVal = (b as Record<PropertyKey, unknown>)[key];
-        if (!deepEqual(aVal, bVal, seen, depth + 1)) return false;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!deepEqual((a as any)[key], (b as any)[key])) return false;
     }
-
     return true;
 };
 
-/** 全局路径解析 */
-const resolvePathGlobal = (proxy: object): PathKey[] => {
-    const path: PathKey[] = [];
-    let cur: object | null = proxy;
-    while (cur) {
-        const info = globalParentMap.get(cur);
-        if (!info || info.key == null) break;
-        path.unshift(info.key);
-        cur = info.parent;
+/* ======================= 事件派发 ======================= */
+
+const dispatchToEntry = (entry: ObserverEntry, change: ChangeItem) => {
+    if (!entry.active) return;
+
+    if (entry.deepCompare && change.type === 'set') {
+        if (deepEqual(change.oldValue, change.newValue)) return;
     }
-    return path;
+
+    if (entry.throttle > 0) {
+        entry.pending.push(change);
+        if (!entry.timer) {
+            entry.timer = setTimeout(() => {
+                if (!entry.active) return;
+                const batch = [...entry.pending];
+                entry.pending = [];
+                entry.timer = null;
+                if (batch.length > 0) {
+                    if (entry.onBatch) entry.onBatch(batch);
+                    else entry.callback(batch[batch.length - 1]);
+                }
+            }, entry.throttle);
+        }
+    } else {
+        if (entry.onBatch) entry.onBatch([change]);
+        else entry.callback(change);
+    }
 };
 
-/** 预编译过滤器正则表达式 */
-const compileFilters = (filters: string[]): RegExp[] => {
-    return filters.map(pattern => {
-        if (pattern === '') return /^.*$/;
-        const regexStr = pattern
-            .replace(/\./g, '\\.')
-            .replace(/\*\*/g, '(.+)')
-            .replace(/\*/g, '[^.]+')
-            .replace(/\[\d+\]/g, '\\[\\d+\\]');
-        return new RegExp(`^${regexStr}$`);
-    });
-};
-
-/** 检查路径是否匹配预编译的正则 */
-const isPathMatched = (path: PathKey[], filterRegexes: RegExp[]): boolean => {
-    if (filterRegexes.length === 0) return true;
-    const pathStr = path.map(String).join('.');
-    return filterRegexes.some(regex => regex.test(pathStr));
-};
-
-/** 全局事件分发 */
 const globalEmit = (targetProxy: object, payload: ChangePayload) => {
-    const basePath = resolvePathGlobal(targetProxy);
+    const queue: { node: object; relativePath: PathKey[]; visited: Set<object> }[] = [
+        { node: targetProxy, relativePath: [], visited: new Set([targetProxy]) },
+    ];
 
-    let current: object | null = targetProxy;
-    let depth = 0;
-    while (current) {
-        const observers = globalObservers.get(current);
+    let head = 0;
+    while (head < queue.length) {
+        const { node, relativePath, visited } = queue[head++];
+
+        const observers = globalObservers.get(node);
         if (observers) {
-            const relativePath = basePath.slice(basePath.length - depth);
             observers.forEach(entry => {
                 if (!entry.active) return;
 
-                if (!isPathMatched(relativePath, entry.filterRegexes)) return;
-
-                const change: ChangeItem = { ...payload, path: relativePath };
-
-                if (entry.throttle > 0) {
-                    entry.pending.push(change);
-                    if (!entry.timer) {
-                        entry.timer = setTimeout(() => {
-                            if (!entry.active) return;
-                            const batch = [...entry.pending];
-                            entry.pending = [];
-                            entry.timer = null;
-                            if (batch.length > 0) {
-                                if (entry.onBatch) {
-                                    entry.onBatch(batch);
-                                } else {
-                                    entry.callback(batch[batch.length - 1]);
-                                }
-                            }
-                        }, entry.throttle);
-                    }
-                } else {
-                    if (entry.onBatch) {
-                        entry.onBatch([change]);
-                    } else {
-                        entry.callback(change);
-                    }
+                let finalPath = relativePath;
+                if (payload.type === 'set' || payload.type === 'delete') {
+                    finalPath = [...relativePath, payload.key];
+                } else if (payload.type === 'array-push' || payload.type === 'array-splice') {
+                    finalPath = [...relativePath, String(payload.index)];
                 }
+
+                if (!isPathMatched(finalPath, entry.filterRegexes)) return;
+
+                const change: ChangeItem = { ...payload, path: finalPath };
+                dispatchToEntry(entry, change);
             });
         }
-        const parentInfo = globalParentMap.get(current);
-        current = parentInfo?.parent || null;
-        depth++;
+
+        const parentLinks = globalParentMap.get(node);
+        if (parentLinks) {
+            for (let i = parentLinks.length - 1; i >= 0; i--) {
+                const pLink = parentLinks[i];
+                const parentNode = pLink.parentRef.deref();
+
+                if (!parentNode) {
+                    parentLinks.splice(i, 1);
+                    continue;
+                }
+
+                if (visited.has(parentNode)) continue;
+
+                const newVisited = new Set(visited);
+                newVisited.add(parentNode);
+
+                queue.push({
+                    node: parentNode,
+                    relativePath: [pLink.key, ...relativePath],
+                    visited: newVisited,
+                });
+            }
+        }
     }
 };
 
-/* ======================= observe 主函数 ======================= */
+/* ======================= 全局代理生成器与静态拦截器 ======================= */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const createArrayInstrumentations = (
-    target: unknown[],
-    proxy: object,
-    emitFn: (proxy: object, payload: ChangePayload) => void,
-): Record<string, Function> => {
-    const instrumentations: Record<string, Function> = {};
-    // 1. 变异方法 (Mutation)
-    (['push', 'pop', 'shift', 'unshift', 'splice'] as const).forEach(key => {
-        instrumentations[key] = function (this: unknown[], ...args: unknown[]) {
-            if (!proxy) return;
+// 全局静态的数组仪器（解耦于具体 proxy 实例，依靠 this 绑定获取）
+const arrayInstrumentations: Record<string, Function> = {};
 
-            const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
-            globalArrayMutationDepth.set(proxy, currentDepth + 1);
+(['push', 'pop', 'shift', 'unshift', 'splice'] as const).forEach(key => {
+    arrayInstrumentations[key] = function (this: unknown[], ...args: unknown[]) {
+        const proxy = this as object;
+        const target = toRaw(proxy) as unknown[];
+        const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
+        globalArrayMutationDepth.set(proxy, currentDepth + 1);
+
+        try {
+            const oldLength = target.length;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const res = (target as any)[key].apply(target, args);
-            globalArrayMutationDepth.set(proxy, currentDepth);
 
             if (key === 'push') {
-                emitFn(proxy, { type: 'array-push', index: target.length - args.length, values: args });
-            } else if (key === 'unshift') {
-                emitFn(proxy, { type: 'array-push', index: 0, values: args });
+                const startIndex = target.length - args.length;
+                for (let i = 0; i < args.length; i++) {
+                    const item = target[startIndex + i];
+                    if (isObject(item) && !isNativeSkippable(item)) {
+                        link(proxy, String(startIndex + i), getOrCreateProxy(item));
+                    }
+                }
+                globalEmit(proxy, { type: 'array-push', index: startIndex, values: args });
             } else if (key === 'pop') {
-                emitFn(proxy, { type: 'array-splice', index: target.length, deleteCount: 1, insert: [] });
-            } else if (key === 'shift') {
-                emitFn(proxy, { type: 'array-splice', index: 0, deleteCount: 1, insert: [] });
-            } else if (key === 'splice') {
-                const [start, deleteCount, ...insert] = args as [number, number, ...unknown[]];
-                emitFn(proxy, { type: 'array-splice', index: start, deleteCount, insert });
+                unlink(proxy, String(oldLength - 1));
+                globalEmit(proxy, { type: 'array-splice', index: oldLength - 1, deleteCount: 1, insert: [] });
+            } else {
+                syncArrayLinks(target, proxy);
+
+                if (key === 'unshift') {
+                    globalEmit(proxy, { type: 'array-push', index: 0, values: args });
+                } else if (key === 'shift') {
+                    globalEmit(proxy, { type: 'array-splice', index: 0, deleteCount: 1, insert: [] });
+                } else if (key === 'splice') {
+                    const [start, deleteCount, ...insert] = args as [number, number, ...unknown[]];
+                    globalEmit(proxy, { type: 'array-splice', index: start, deleteCount, insert });
+                }
             }
             return res;
-        };
-    });
+        } finally {
+            globalArrayMutationDepth.set(proxy, currentDepth);
+        }
+    };
+});
 
-    // 2. 结构重置方法 (Reset)
-    (['sort', 'reverse', 'fill', 'copyWithin'] as const).forEach(key => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        instrumentations[key] = function (this: unknown[], ...args: any[]) {
-            if (!proxy) return;
+(['sort', 'reverse', 'fill', 'copyWithin'] as const).forEach(key => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    arrayInstrumentations[key] = function (this: unknown[], ...args: any[]) {
+        const proxy = this as object;
+        const target = toRaw(proxy) as unknown[];
+        const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
+        globalArrayMutationDepth.set(proxy, currentDepth + 1);
 
-            const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
-            globalArrayMutationDepth.set(proxy, currentDepth + 1);
+        try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const res = (target as any)[key].apply(target, args);
+            syncArrayLinks(target, proxy);
+            globalEmit(proxy, { type: 'array-reset', method: key });
+            return res;
+        } finally {
             globalArrayMutationDepth.set(proxy, currentDepth);
-            emitFn(proxy, { type: 'array-reset', method: key });
-            return res;
-        };
-    });
+        }
+    };
+});
 
-    // 3. 身份感知查找方法 (Search)
-    (['indexOf', 'lastIndexOf', 'includes'] as const).forEach(key => {
+(['indexOf', 'lastIndexOf', 'includes'] as const).forEach(key => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    arrayInstrumentations[key] = function (this: unknown[], searchElement: unknown, ...args: any[]) {
+        const target = toRaw(this) as unknown[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        instrumentations[key] = function (this: unknown[], searchElement: unknown, ...args: any[]) {
+        let res = (target as any)[key].apply(target, [searchElement, ...args]);
+        if ((res === -1 || res === false) && isProxy(searchElement)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let res = (target as any)[key].apply(target, [searchElement, ...args]);
-            if ((res === -1 || res === false) && isProxy(searchElement)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                res = (target as any)[key].apply(target, [toRaw(searchElement), ...args]);
-            }
-            return res;
-        };
-    });
+            res = (target as any)[key].apply(target, [toRaw(searchElement), ...args]);
+        }
+        return res;
+    };
+});
 
-    return instrumentations;
+// 全局静态 Proxy Handler (彻底消除高频闭包开销)
+const reactiveHandler: ProxyHandler<object> = {
+    get(target, key, receiver) {
+        if (key === RAW_SYMBOL) return target;
+
+        if (Array.isArray(target) && Object.prototype.hasOwnProperty.call(arrayInstrumentations, key)) {
+            return Reflect.get(arrayInstrumentations, key, receiver);
+        }
+
+        const val = Reflect.get(target, key, receiver);
+        if (typeof key === 'symbol') return val;
+
+        if (isObject(val) && !isNativeSkippable(val)) {
+            const childProxy = getOrCreateProxy(val);
+            // receiver 就是当前的 Proxy 实例
+            const current = globalChildrenMap.get(receiver)?.get(key);
+            if (current !== childProxy) {
+                link(receiver, key, childProxy);
+            }
+            return childProxy;
+        }
+
+        return val;
+    },
+
+    set(target, key, newVal, receiver) {
+        const oldVal = Reflect.get(target, key, receiver);
+        if (Object.is(oldVal, newVal)) return true;
+
+        const res = Reflect.set(target, key, newVal, receiver);
+        if (!res) return false;
+
+        if (isObject(newVal) && !isNativeSkippable(newVal)) {
+            const childProxy = getOrCreateProxy(newVal);
+            link(receiver, key, childProxy);
+        } else {
+            unlink(receiver, key);
+        }
+
+        const arrayDepth = globalArrayMutationDepth.get(receiver) || 0;
+        if (arrayDepth === 0) {
+            if (!Array.isArray(target) && Array.isArray(oldVal) && Array.isArray(newVal)) {
+                globalEmit(receiver, { type: 'array-replace', oldValue: oldVal, newValue: newVal });
+            } else {
+                globalEmit(receiver, { type: 'set', key, newValue: newVal, oldValue: oldVal });
+            }
+        }
+        return res;
+    },
+
+    deleteProperty(target, key) {
+        if (!Reflect.has(target, key)) return false;
+
+        const oldVal = Reflect.get(target, key);
+        const res = Reflect.deleteProperty(target, key);
+
+        if (res) {
+            // deleteProperty 没有 receiver 参数，从全局缓存获取当前 proxy 实例
+            const proxy = globalProxyCache.get(target);
+            if (proxy) {
+                unlink(proxy, key);
+                const arrayDepth = globalArrayMutationDepth.get(proxy) || 0;
+                if (arrayDepth === 0) {
+                    globalEmit(proxy, { type: 'delete', key, oldValue: oldVal });
+                }
+            }
+        }
+        return res;
+    },
 };
 
-/**
- * 创建响应式观察对象
- * @param value 要观察的目标对象
- * @param callback 变更回调函数
- * @param options 观察选项配置
- * @returns 观察控制对象，包含代理对象和控制方法
- */
+function getOrCreateProxy<T extends object>(target: T): T {
+    if (!Object.isExtensible(target)) return target;
+    if (isNativeSkippable(target)) return target;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((target as any)[RAW_SYMBOL]) return target;
+
+    const cached = globalProxyCache.get(target);
+    if (cached) return cached;
+
+    // 直接复用全局单例 Handler
+    const proxy = new Proxy(target, reactiveHandler) as T;
+    globalProxyCache.set(target, proxy);
+
+    return proxy;
+}
+
+/* ======================= observe 观察函数 ======================= */
+
 export function observe<T extends object>(
     value: T,
     callback: (change: ChangeItem) => void,
     options: ObserveOptions = {},
 ): ObserveReturn<T> {
-    const { throttle = 0, onBatch, immediate = false, deepCompare = false } = options;
+    const { throttle = 0, onBatch, immediate = false, deepCompare } = options;
 
-    // 路径过滤正则缓存 - 预编译
     const filterPatterns = Array.isArray(options.filter) ? options.filter : options.filter ? [options.filter] : [];
     const filterRegexes = compileFilters(filterPatterns);
 
-    // 当前观察者的入口
     const observerEntry: ObserverEntry = {
         callback,
         onBatch,
@@ -343,107 +534,11 @@ export function observe<T extends object>(
         pending: [],
         timer: null,
         active: true,
+        deepCompare,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const createProxy = (target: object, parent: object | null, key: PathKey | null): any => {
-        // 如果是不可扩展的对象（如 Object.freeze 过的），不进行代理，防止报错
-        if (!Object.isExtensible(target)) {
-            return target;
-        }
+    const rootProxy = getOrCreateProxy(value);
 
-        // 跳过浏览器原生对象（File / Blob 等）
-        if (isNativeSkippable(target)) {
-            return target;
-        }
-
-        // 如果 target 本身就是一个代理对象（即能响应 RAW_SYMBOL），直接返回它
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((target as any)[RAW_SYMBOL]) {
-            return target;
-        }
-
-        // 使用全局缓存
-        const cached = globalProxyCache.get(target);
-        if (cached) {
-            // 不覆盖父子关系，允许多个父对象
-            return cached;
-        }
-
-        const handler: ProxyHandler<object> = {
-            get(t, p, r) {
-                if (p === RAW_SYMBOL) return t;
-
-                if (Array.isArray(t)) {
-                    const ins = globalArrayInstrumentations.get(proxy);
-                    if (ins && Object.prototype.hasOwnProperty.call(ins, p)) {
-                        return Reflect.get(ins, p, r);
-                    }
-                }
-
-                const val = Reflect.get(t, p, r);
-                // 排除 Symbol.iterator 等内置属性
-                if (typeof p === 'symbol') return val;
-
-                return isObject(val) && !isNativeSkippable(val) ? createProxy(val, proxy, p) : val;
-            },
-
-            set(t, p, newVal, r) {
-                if (!observerEntry.active) {
-                    if (IS_DEV) console.warn('[Solely] Cannot set property on a disposed reactive object');
-                    return true;
-                }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const oldVal = (t as any)[p];
-                // 深度比较或引用比较
-                if (deepCompare ? deepEqual(oldVal, newVal) : oldVal === newVal) return true;
-
-                const res = Reflect.set(t, p, newVal, r);
-
-                // 只有非数组内部变异时才触发普通的 set
-                const arrayDepth = globalArrayMutationDepth.get(proxy) || 0;
-                if (arrayDepth === 0) {
-                    if (Array.isArray(oldVal) && Array.isArray(newVal)) {
-                        globalEmit(proxy, { type: 'array-replace', oldValue: oldVal, newValue: newVal });
-                    } else {
-                        globalEmit(proxy, { type: 'set', key: p, newValue: newVal, oldValue: oldVal });
-                    }
-                }
-                return res;
-            },
-
-            deleteProperty(t, p) {
-                if (!observerEntry.active) {
-                    if (IS_DEV) console.warn('[Solely] Cannot delete property on a disposed reactive object');
-                    return true;
-                }
-                if (!Reflect.has(t, p)) return false;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const oldVal = (t as any)[p];
-                const res = Reflect.deleteProperty(t, p);
-
-                const arrayDepth = globalArrayMutationDepth.get(proxy) || 0;
-                if (res && arrayDepth === 0) {
-                    globalEmit(proxy, { type: 'delete', key: p, oldValue: oldVal });
-                }
-                return res;
-            },
-        };
-
-        const proxy = new Proxy(target, handler);
-        globalProxyCache.set(target, proxy);
-        globalParentMap.set(proxy, { parent, key });
-
-        if (Array.isArray(target)) {
-            globalArrayInstrumentations.set(proxy, createArrayInstrumentations(target, proxy, globalEmit));
-        }
-
-        return proxy;
-    };
-
-    const rootProxy = createProxy(value, null, null) as T;
-
-    // 注册到全局观察者
     let observers = globalObservers.get(rootProxy);
     if (!observers) {
         observers = new Set();
@@ -451,73 +546,87 @@ export function observe<T extends object>(
     }
     observers.add(observerEntry);
 
-    // immediate 处理
     if (immediate) {
+        const rootObservers = observers;
+        // 将快照提取到循环外部，防止大规模树遍历时重复解构产生 GC
+        const snapshot = [...rootObservers];
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const walk = (obj: any, currentProxy: any, seen = new WeakSet<object>()) => {
+        const walk = (obj: any, currentProxy: any, path: PathKey[] = [], seen = new WeakSet<object>()) => {
             if (!isObject(obj) || seen.has(obj)) return;
             seen.add(obj);
 
             Reflect.ownKeys(obj).forEach(k => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const val = obj[k];
-                // 跳过循环引用
+                const val = Reflect.get(obj, k);
                 if (isObject(val) && seen.has(val)) return;
-                globalEmit(currentProxy, { type: 'set', key: k, newValue: val, oldValue: undefined });
-                if (isObject(val)) {
-                    walk(val, createProxy(val, currentProxy, k), seen);
+
+                const childProxy = Reflect.get(currentProxy, k);
+                const childPath = [...path, k];
+
+                snapshot.forEach(entry => {
+                    if (!isPathMatched(childPath, entry.filterRegexes)) return;
+                    const change: ChangeItem = {
+                        type: 'set',
+                        key: k,
+                        newValue: val,
+                        oldValue: undefined,
+                        path: childPath,
+                    };
+                    dispatchToEntry(entry, change);
+                });
+
+                if (isObject(val) && !isNativeSkippable(val)) {
+                    walk(val, childProxy, childPath, seen);
                 }
             });
         };
-        walk(value, rootProxy);
+        walk(toRaw(value), rootProxy);
     }
+
+    const removeObserver = () => {
+        const obs = globalObservers.get(rootProxy);
+        if (obs) {
+            obs.delete(observerEntry);
+            if (obs.size === 0) {
+                globalObservers.delete(rootProxy);
+            }
+        }
+        observerEntry.pending = [];
+        if (observerEntry.timer) {
+            clearTimeout(observerEntry.timer);
+            observerEntry.timer = null;
+        }
+    };
+
+    const addObserver = () => {
+        let obs = globalObservers.get(rootProxy);
+        if (!obs) {
+            obs = new Set();
+            globalObservers.set(rootProxy, obs);
+        }
+        obs.add(observerEntry);
+    };
 
     return {
         proxy: rootProxy,
         unobserve: () => {
-            // 标记观察者为非活跃状态（暂停观察）
+            if (!observerEntry.active) return;
             observerEntry.active = false;
-            // 清理 pending 和 timer
-            observerEntry.pending = [];
-            if (observerEntry.timer) {
-                clearTimeout(observerEntry.timer);
-                observerEntry.timer = null;
-            }
-            // 从全局观察者中移除
-            const obs = globalObservers.get(rootProxy);
-            if (obs) {
-                obs.delete(observerEntry);
-            }
+            removeObserver();
         },
         resume: () => {
-            if (observerEntry.active) return; // 已经活跃，避免重复添加
-            // 重新标记为活跃
+            if (observerEntry.active) return;
             observerEntry.active = true;
-            // 重新添加到全局观察者集合
-            let obs = globalObservers.get(rootProxy);
-            if (!obs) {
-                obs = new Set();
-                globalObservers.set(rootProxy, obs);
-            }
-            // 防止重复添加
-            if (!obs.has(observerEntry)) {
-                obs.add(observerEntry);
-            }
+            addObserver();
         },
         dispose: () => {
-            // 彻底销毁，不可恢复
+            if (!observerEntry.active) {
+                observerEntry.callback = () => {};
+                observerEntry.onBatch = undefined;
+                return;
+            }
             observerEntry.active = false;
-            observerEntry.pending = [];
-            if (observerEntry.timer) {
-                clearTimeout(observerEntry.timer);
-                observerEntry.timer = null;
-            }
-            // 从全局观察者中移除
-            const obs = globalObservers.get(rootProxy);
-            if (obs) {
-                obs.delete(observerEntry);
-            }
-            // 清空回调，防止内存泄漏
+            removeObserver();
             observerEntry.callback = () => {};
             observerEntry.onBatch = undefined;
         },

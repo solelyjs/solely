@@ -31,6 +31,7 @@ export enum ASTType {
     Else = 5,
     For = 6,
     Conditional = 7, // if-elseif-else 结构
+    Show = 8, // show 显隐控制（不销毁 DOM，仅切换 display）
     Other = 99,
 }
 

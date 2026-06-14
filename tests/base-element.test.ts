@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import BaseElement from '../src/runtime/component/base-element';
 import { CustomElement } from '../src/runtime/component/decorators';
+import { SOLELY_VERSION } from '../src/shared';
 
 type TestData = {
     initCount: number;
@@ -109,8 +110,8 @@ describe('base/BaseElement public interface tests', () => {
 
         // 样式可能通过 adoptedStyleSheets 或 style 元素注入
         // jsdom 不支持 CSSStyleSheet.replaceSync，所以走回退方案（style 元素）
-        const styleId = 'solely-style-test-el-attrs';
-        const style = el.shadowRoot?.querySelector(`#${styleId}`) || document.head.querySelector(`#${styleId}`);
+        const styleId = `solely-style-${SOLELY_VERSION}-test-el-attrs`;
+        const style = el.shadowRoot?.getElementById(styleId) || document.getElementById(styleId);
         expect(style).not.toBeNull(); // 样式是否注入
         expect(style?.textContent).toContain(':host'); // 样式内容
     });

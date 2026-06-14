@@ -3,6 +3,7 @@ import dtsPlugin from 'vite-plugin-dts';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { solelyVitePlugin } from './src/plugins/solely-vite-plugin.ts';
+import pkg from './package.json';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -91,6 +92,10 @@ export default defineConfig(({ command, mode }) => {
     return {
         root: process.cwd(),
         base: '',
+
+        define: {
+            __SOLELY_VERSION__: JSON.stringify(pkg.version),
+        },
 
         plugins: [
             solelyVitePlugin({
