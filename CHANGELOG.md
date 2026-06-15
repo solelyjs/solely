@@ -7,6 +7,58 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-06-14
+
+### Changed
+
+- **refactor(base-element)**: 优化销毁与重连逻辑
+    - `dispose()` 后设置 `#disposed` 标记，阻止组件 reconnect
+    - `connectedCallback` 检测到 disposed 状态时自动 `remove()`，防止已销毁组件重新挂载
+    - 修复 `CSS.escape` 在 jsdom 等测试环境中的兼容性，添加正则回退实现
+- **refactor(audit-test)**: 升级审查测试页面样式与结构
+    - 采用现代卡片式布局、紫靛渐变标题栏、阴影动效
+    - 测试按"核心验证"与"生命周期与边界"分组，重点更清晰
+    - 子组件操作按钮默认折叠（`details/summary`），避免喧宾夺主
+- **docs**: 移除 `onInit()` 生命周期文档，异步初始化统一迁移到 `mounted()`
+
+### Fixed
+
+- **fix(observe)**: 路径过滤支持父路径匹配（如 `'user'` 可匹配 `'user.name'`）
+- **fix(observe)**: `ChangeItem.path` 包含完整路径（含 key），修正路径格式化逻辑
+
+## [0.5.0] - 2026-06-14
+
+### Added
+
+- **feat(compiler)**: 添加 Show 显隐控制 AST 类型与编译支持
+    - 新增 `Show` 控制流节点，支持条件显隐渲染（保留 DOM，切换 `display`）
+    - 条件分支处理逻辑调整以支持 Show 与 If 共存
+- **feat(renderer)**: 新增 keepalive 分支缓存 IR 支持
+    - 条件分支切换时缓存已渲染子树，避免重复创建和销毁
+- **feat(reactivity)**: 新增 computed、watch、watchGetter 响应式工具
+    - `computed`：依赖追踪的计算属性，支持懒计算和缓存
+    - `watch`：监听特定路径变化，支持深度监听和立即执行
+    - `watchGetter`：基于 getter 函数的通用监听
+- **feat(component)**: 新增 activated / deactivated 生命周期
+    - 配合 keepalive 使用，组件被缓存/激活时触发对应钩子
+- **feat(build)**: 新增版本号编译注入与环境变量
+    - 构建时自动注入 `SOLELY_VERSION`，组件样式 ID 包含版本信息
+    - 新增 `src/shared/env.ts` 管理环境变量
+
+### Changed
+
+- **refactor(shared)**: 优化 `isObject` 类型推导，使用更精确的类型守卫
+- **refactor(build)**: 升级 `tsconfig.json` 编译目标到 ES2021
+- **refactor(renderer)**: 重写 IR 渲染器节点追踪逻辑，优化静态子树和条件分支的节点 key 生成
+- **examples**: 新增控制流演示示例（`examples/control-flow/`），展示 Show / If / For 用法
+- **examples**: 新增审查测试示例（`examples/audit-test/`），覆盖 prop 透传、reflect、生命周期、dispose 等场景
+- **docs**: 大幅更新 README、API 文档和指南，补充响应式系统、生命周期、Show 控制流等说明
+
+### Fixed
+
+- **fix(tests)**: 修复测试用例样式 ID 生成，适配版本号注入后的新格式
+- **fix(base-element)**: 修复布尔类型属性不存在时的默认值处理逻辑
+
 ## [0.4.21] - 2026-06-10
 
 ### Changed
@@ -620,7 +672,10 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.4.20...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/solelyjs/solely/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/solelyjs/solely/compare/v0.4.21...v0.5.0
+[0.4.21]: https://github.com/solelyjs/solely/compare/v0.4.20...v0.4.21
 [0.4.20]: https://github.com/solelyjs/solely/compare/v0.4.19...v0.4.20
 [0.4.19]: https://github.com/solelyjs/solely/compare/v0.4.18...v0.4.19
 [0.4.18]: https://github.com/solelyjs/solely/compare/v0.4.17...v0.4.18
