@@ -21,13 +21,16 @@ interface PropDisplayData {
     <p>active: <strong>{{ $data.active }}</strong></p>
     <p>items: <strong>{{ this.json($data.items) }}</strong></p>
     <p>info: <strong>{{ this.json($data.info) }}</strong></p>
-    <div class="child-controls">
-        <button onclick="this.selfChangeMessage()">子改 message</button>
-        <button onclick="this.selfChangeCount()">子改 count</button>
-        <button onclick="this.selfToggleActive()">子改 active</button>
-        <button onclick="this.selfChangeInfo()">子改 info</button>
-        <button onclick="this.selfPushItem()">子加 item</button>
-    </div>
+    <details class="child-controls-wrap">
+        <summary>子组件操作</summary>
+        <div class="child-controls">
+            <button onclick="this.selfChangeMessage()">子改 message</button>
+            <button onclick="this.selfChangeCount()">子改 count</button>
+            <button onclick="this.selfToggleActive()">子改 active</button>
+            <button onclick="this.selfChangeInfo()">子改 info</button>
+            <button onclick="this.selfPushItem()">子加 item</button>
+        </div>
+    </details>
 </div>
     `,
     styles,
@@ -95,10 +98,13 @@ interface ReflectChildData {
     <p>value: <strong>{{ $data.value }}</strong></p>
     <p>label: <strong>{{ $data.label }}</strong></p>
     <p>attribute: <strong id="attr-display"></strong></p>
-    <div class="child-controls">
-        <button onclick="this.selfIncrementValue()">子改 value</button>
-        <button onclick="this.selfChangeLabel()">子改 label</button>
-    </div>
+    <details class="child-controls-wrap">
+        <summary>子组件操作</summary>
+        <div class="child-controls">
+            <button onclick="this.selfIncrementValue()">子改 value</button>
+            <button onclick="this.selfChangeLabel()">子改 label</button>
+        </div>
+    </details>
 </div>
     `,
     styles,
@@ -150,9 +156,12 @@ interface ReflectObjectData {
     <h4>reflect-object (object + reflect)</h4>
     <p>config: <strong>{{ this.json($data.config) }}</strong></p>
     <p>attribute: <strong id="attr-obj-display"></strong></p>
-    <div class="child-controls">
-        <button onclick="this.selfChangeConfig()">子改 config</button>
-    </div>
+    <details class="child-controls-wrap">
+        <summary>子组件操作</summary>
+        <div class="child-controls">
+            <button onclick="this.selfChangeConfig()">子改 config</button>
+        </div>
+    </details>
 </div>
     `,
     styles,
@@ -234,13 +243,13 @@ export class AttrChangeChild extends BaseElement<AttrChangeChildData> {
 })
 export class SiblingA extends BaseElement<{ siblingBFound: string }> {
     constructor() {
-        super({ siblingBFound: '未检测' });
+        super({ siblingBFound: '检测中...' });
     }
 
     mounted() {
-        // 尝试在 mounted 中查找兄弟组件
+        // Solely 使用 DocumentFragment 批量插入，兄弟节点已同时存在于 DOM 中
         const sibling = this.parentElement?.querySelector('sibling-b');
-        this.$data.siblingBFound = sibling ? '已找到' : '未找到（时序问题）';
+        this.$data.siblingBFound = sibling ? '已找到' : '未找到';
     }
 }
 
@@ -347,6 +356,8 @@ interface AuditTestData {
     shadowDOM: { use: true },
 })
 export class AuditTest extends BaseElement<AuditTestData> {
+    #lastChildRef: DisposeChild | null = null;
+
     constructor() {
         super({
             parentMessage: 'Hello from parent',
@@ -456,6 +467,7 @@ export class AuditTest extends BaseElement<AuditTestData> {
     testDispose() {
         const child = this.shadowRoot?.querySelector('dispose-child') as DisposeChild | null;
         if (child) {
+            this.#lastChildRef = child;
             child.dispose();
             this.$data.disposeStatus = '已 dispose（不可 reconnect）';
             this._log('dispose', `dispose-child 已销毁`);
@@ -465,6 +477,7 @@ export class AuditTest extends BaseElement<AuditTestData> {
     testDetach() {
         const child = this.shadowRoot?.querySelector('dispose-child') as DisposeChild | null;
         if (child && child.parentElement) {
+            this.#lastChildRef = child;
             child.remove();
             this.$data.disposeStatus = '已 detach（可 reconnect）';
             this._log('dispose', `dispose-child 已 detach`);
@@ -473,15 +486,15 @@ export class AuditTest extends BaseElement<AuditTestData> {
 
     testReattach() {
         const container = this.shadowRoot?.querySelector('.dispose-container');
-        const child = this.shadowRoot?.querySelector('dispose-child') as DisposeChild | null;
+        const child = (this.shadowRoot?.querySelector('dispose-child') as DisposeChild | null) || this.#lastChildRef;
         if (container && child) {
-            try {
-                container.appendChild(child);
+            container.appendChild(child);
+            if (!child.isConnected) {
+                this.$data.disposeStatus = 'reconnect 失败: 组件已被 dispose，不可重新连接';
+                this._log('dispose', `reconnect 失败`);
+            } else {
                 this.$data.disposeStatus = '已重新 attach';
                 this._log('dispose', `dispose-child 已重新 attach`);
-            } catch (e) {
-                this.$data.disposeStatus = `reconnect 失败: ${(e as Error).message}`;
-                this._log('dispose', `reconnect 失败`);
             }
         }
     }

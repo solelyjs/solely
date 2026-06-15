@@ -415,6 +415,7 @@ class BaseElement<
     /* -------------------- 生命周期 -------------------- */
     connectedCallback(): void {
         if (this.#disposed) {
+            this.remove();
             throw new Error(`[Solely] <${this.tagName.toLowerCase()}> has been disposed and cannot be reconnected.`);
         }
         this.#isActive = true;
@@ -565,7 +566,7 @@ class BaseElement<
 
     /* -------------------- 显式销毁 -------------------- */
     /**
-     * 显式销毁组件，清理 renderer 等资源。
+     * 显式销毁组件，清理 renderer 等资源，并从 DOM 中移除。
      * 适用于确认组件不再 reconnect 的场景。
      * 调用后如需重新使用组件，需重新创建实例。
      */
@@ -578,6 +579,7 @@ class BaseElement<
         this.#render = undefined;
         this.#dispose?.();
         this.#dispose = undefined;
+        this.remove();
     }
 
     /* -------------------- 钩子 -------------------- */
