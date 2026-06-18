@@ -4,7 +4,17 @@
     "version": "0.5.1",
     "description": "A lightweight TypeScript framework for building web components with compile-time optimizations",
     "type": "module",
-    "sideEffects": false,
+    "sideEffects": [
+        "*.css",
+        "**/*.css?inline",
+        "**/*.css?raw",
+        "src/components/elements/*/index.ts",
+        "dist/components/elements/*/index.js",
+        "dist/components/elements/*/index.cjs",
+        "src/components/commands/*/index.ts",
+        "dist/components/commands/*/index.js",
+        "dist/components/commands/*/index.cjs"
+    ],
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -99,6 +109,16 @@
                 "default": "./dist/components/elements/index.cjs"
             }
         },
+        "./components/elements/*": {
+            "import": {
+                "types": "./dist/components/elements/*/index.d.ts",
+                "default": "./dist/components/elements/*/index.js"
+            },
+            "require": {
+                "types": "./dist/components/elements/*/index.d.ts",
+                "default": "./dist/components/elements/*/index.cjs"
+            }
+        },
         "./components/commands": {
             "import": {
                 "types": "./dist/components/commands/index.d.ts",
@@ -107,6 +127,16 @@
             "require": {
                 "types": "./dist/components/commands/index.d.ts",
                 "default": "./dist/components/commands/index.cjs"
+            }
+        },
+        "./components/commands/*": {
+            "import": {
+                "types": "./dist/components/commands/*/index.d.ts",
+                "default": "./dist/components/commands/*/index.js"
+            },
+            "require": {
+                "types": "./dist/components/commands/*/index.d.ts",
+                "default": "./dist/components/commands/*/index.cjs"
             }
         },
         "./components/theme": {

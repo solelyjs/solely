@@ -9,7 +9,14 @@ vi.mock('../src/router/core', async () => {
     return {
         ...actual,
         get routerReady() {
-            return Promise.resolve(mockContainer.router!);
+            const router = mockContainer.router!;
+            const callable = () => Promise.resolve(router);
+            return Object.assign(callable, {
+                then: (onfulfilled?: any, onrejected?: any) => Promise.resolve(router).then(onfulfilled, onrejected),
+                catch: (onrejected?: any) => Promise.resolve(router).catch(onrejected),
+                finally: (onfinally?: any) => Promise.resolve(router).finally(onfinally),
+                [Symbol.toStringTag]: 'Promise',
+            });
         },
         getRouter() {
             return mockContainer.router;

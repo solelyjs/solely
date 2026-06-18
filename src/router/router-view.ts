@@ -2,99 +2,91 @@ import { BaseElement, CustomElement } from '../runtime/component';
 import type { RouteConfig, RouteMatch } from './types';
 import { Router, routerReady } from './core';
 
-// 全局缓存，所有 router-view 实例共享，支持跨实例 keepAlive
-const globalKeepAliveCache = new Map<string, HTMLElement>();
+interface ComponentState {
+    routerAttrs: Set<string>;
+    propKeys: Set<string>;
+}
+
+const componentStateMap = new WeakMap<HTMLElement, ComponentState>();
+
+function getComponentState(el: HTMLElement): ComponentState {
+    let state = componentStateMap.get(el);
+    if (!state) {
+        state = { routerAttrs: new Set(), propKeys: new Set() };
+        componentStateMap.set(el, state);
+    }
+    return state;
+}
 
 @CustomElement({
     tagName: 'router-view',
-    // 注意：删除了 shadowDOM 配置，默认为 false
     props: [{ name: 'notFound', type: 'string', default: '' }],
 })
-class RouterView extends BaseElement<{
-    notFound: string;
-}> {
+class RouterView extends BaseElement<{ notFound: string }> {
     private unsubscribe?: () => void;
     private level = 0;
     private currentElement: HTMLElement | null = null;
     private currentTagName: string | null = null;
 
-    private routerAttrs = new Set<string>();
-    private prevPropKeys = new Set<string>();
+    // 使用 Set 细粒度管理托管的节点，避免使用 replaceChildren 导致 Slot 丢失
+    private managedNodes = new Set<Node>();
 
     private scheduled = false;
     private latestLoadId = 0;
     private abortController: AbortController | null = null;
-
-    /* -------------------- 生命周期 -------------------- */
-
+    private disposed = false;
     private router: Router | null = null;
 
     async mounted() {
+        this.disposed = false;
         this.detectLevel();
-        this.router = await routerReady;
+        this.router = await routerReady();
 
-        this.unsubscribe = this.router.listen(() => {
-            this.scheduleLoad();
-        });
+        if (this.disposed) return;
 
+        this.unsubscribe = this.router.listen(() => this.scheduleLoad());
         this.loadRoute(this.router.getCurrentRoute());
     }
 
     unmounted() {
+        this.disposed = true;
+        this.abortController?.abort();
+        this.abortController = null;
         this.unsubscribe?.();
-        // 注意：不清除全局 keepAlive 缓存，以支持嵌套路由跨实例保活
+        this.clear();
     }
 
-    /* -------------------- 逻辑核心 -------------------- */
-
     private scheduleLoad() {
-        if (!this.router) return;
-        const route = this.router;
-        if (this.scheduled) return;
+        if (!this.router || this.scheduled || this.disposed) return;
         this.scheduled = true;
         queueMicrotask(() => {
             this.scheduled = false;
-            // 重新获取当前路由，确保是最新的
-            this.loadRoute(route.getCurrentRoute());
+            if (this.disposed || !this.router) return;
+            this.loadRoute(this.router.getCurrentRoute());
         });
     }
 
     private detectLevel() {
         let level = 0;
         let node: Element | null = this.parentElement;
-
         while (node) {
-            // 1. 在当前文档流（或当前 ShadowRoot）中直接“瞬移”到最近的 RouterView
             const found = node.closest('router-view');
-
             if (found) {
                 level++;
-                // 找到了一个，从它的父节点继续往上找，避免死循环
                 node = found.parentElement;
-
-                // 如果 found.parentElement 为空，说明 found 已经是 ShadowRoot 的顶层元素
                 if (!node) {
                     const root = found.getRootNode();
                     node = root instanceof ShadowRoot ? root.host : null;
                 }
             } else {
-                // 2. 当前层级找不到了，尝试跨越 Shadow Boundary
                 const root = node.getRootNode();
-                if (root instanceof ShadowRoot) {
-                    // 跳出 Shadow DOM 到宿主元素，继续下一轮 closest 查找
-                    node = root.host;
-                } else {
-                    // 已经到达真正的 document 根部了
-                    node = null;
-                }
+                node = root instanceof ShadowRoot ? root.host : null;
             }
         }
-
         this.level = level;
     }
 
     public async loadRoute(route: RouteMatch | null) {
-        // 立即取消之前的异步加载
         if (this.abortController) {
             this.abortController.abort();
             this.abortController = null;
@@ -104,88 +96,49 @@ class RouterView extends BaseElement<{
         const matched = route?.matched[this.level];
 
         if (!matched) {
-            this.handleEmptyRoute();
+            this.handleEmptyRoute(route);
             return;
         }
 
         const { config } = matched;
         let tagName = config.tagName;
 
-        // 异步组件处理
         if (!tagName && typeof config.component === 'function') {
-            // 先清空，准备显示 Loading
-            this.clear();
             this.renderLoading();
-            // 创建新的 AbortController
-            this.abortController = new AbortController();
-            const signal = this.abortController.signal;
+            const controller = new AbortController();
+            this.abortController = controller;
 
             try {
-                let result: string | { tagName: string };
-
-                // 优先从缓存获取组件（避免重复加载）
                 const cached = this.router?.getComponentFromCache?.(route?.fullPath);
-                if (cached) {
-                    result = await cached;
-                } else {
-                    result = await config.component();
-                }
+                const result = cached ? await cached : await config.component();
 
-                // 检查是否已被取消
-                if (signal.aborted || loadId !== this.latestLoadId) {
-                    return;
-                }
+                if (controller.signal.aborted || loadId !== this.latestLoadId || this.disposed) return;
                 tagName = typeof result === 'string' ? result : result.tagName;
             } catch (err) {
-                // 检查是否已被取消
-                if (signal.aborted || loadId !== this.latestLoadId) {
-                    return;
-                }
+                if (controller.signal.aborted || loadId !== this.latestLoadId || this.disposed) return;
                 this.renderError(`Load Error: ${err}`);
-                // 标记当前显示的是错误状态
-                this.currentElement = null;
-                this.currentTagName = null;
                 return;
             } finally {
-                // 清理 abortController
-                if (this.abortController && !signal.aborted) {
-                    this.abortController = null;
-                }
+                if (this.abortController === controller) this.abortController = null;
             }
         }
 
-        if (loadId !== this.latestLoadId) return;
+        if (loadId !== this.latestLoadId || this.disposed) return;
         if (!tagName) {
             this.clear();
             return;
         }
 
-        // 复用逻辑 - 如果组件类型没变，只更新状态，不清空重新创建
         if (!config.forceReload && this.currentElement && this.currentTagName === tagName.toLowerCase()) {
-            this.syncState(this.currentElement, route?.params, route?.query || {}, config.props);
-            return;
+            this.syncState(this.currentElement, route?.params || {}, route?.query || {}, config.props);
+        } else {
+            this.clear();
+            const el = this.getOrCreateComponent(tagName, config, route);
+            this.syncState(el, route?.params || {}, route?.query || {}, config.props);
+            this.appendManagedNode(el);
+            this.currentElement = el;
+            this.currentTagName = tagName.toLowerCase();
         }
-
-        // 组件类型变化，需要切换 - 先清理旧组件
-        this.clear();
-
-        const el = this.getOrCreateComponent(tagName, config);
-        this.syncState(el, route?.params, route?.query || {}, config.props);
-
-        this.appendChild(el); // 直接 append 到 this (Host) 之下
-        this.currentElement = el;
-        this.currentTagName = tagName.toLowerCase();
-    }
-
-    private getOrCreateComponent(tagName: string, config: RouteConfig): HTMLElement {
-        const key = `${this.level}-${tagName.toLowerCase()}`;
-        if (config.keepAlive && globalKeepAliveCache.has(key)) {
-            const cached = globalKeepAliveCache.get(key);
-            if (cached) return cached;
-        }
-        const el = document.createElement(tagName);
-        if (config.keepAlive) globalKeepAliveCache.set(key, el);
-        return el;
     }
 
     private syncState(
@@ -195,94 +148,104 @@ class RouterView extends BaseElement<{
         props: Record<string, unknown> = {},
     ) {
         const toKebab = (s: string) => s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        const state = getComponentState(el);
         const newAttrs = new Map<string, string>();
 
         Object.entries(params).forEach(([k, v]) => newAttrs.set(toKebab(k), String(v)));
         Object.entries(query).forEach(([k, v]) => newAttrs.set(`query-${toKebab(k)}`, String(v)));
 
-        this.routerAttrs.forEach(attr => {
+        state.routerAttrs.forEach(attr => {
             if (!newAttrs.has(attr)) {
                 el.removeAttribute(attr);
-                this.routerAttrs.delete(attr);
+                state.routerAttrs.delete(attr);
             }
         });
         newAttrs.forEach((val, attr) => {
             if (el.getAttribute(attr) !== val) el.setAttribute(attr, val);
-            this.routerAttrs.add(attr);
+            state.routerAttrs.add(attr);
         });
 
         const newPropKeys = new Set(Object.keys(props));
-        this.prevPropKeys.forEach(k => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (!newPropKeys.has(k)) (el as any)[k] = undefined;
+        const elProps = el as unknown as Record<string, unknown>;
+        state.propKeys.forEach(k => {
+            if (!newPropKeys.has(k)) elProps[k] = undefined;
         });
         Object.entries(props).forEach(([k, v]) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((el as any)[k] !== v) (el as any)[k] = v;
+            if (elProps[k] !== v) elProps[k] = v;
         });
-        this.prevPropKeys = newPropKeys;
+        state.propKeys = newPropKeys;
     }
 
-    private handleEmptyRoute() {
-        this.clear();
-        if (this.level === 0) {
-            // 优先使用路由配置中的 404 组件
-            const currentRoute = this.router?.getCurrentRoute();
-            const matched = currentRoute?.matched?.[0];
-            const notFoundComponent = matched?.config?.notFoundComponent;
+    private getOrCreateComponent(tagName: string, config: RouteConfig, route: RouteMatch | null): HTMLElement {
+        if (!route) {
+            throw new Error('Route is required to create or retrieve component');
+        }
+        const key = config.keepAliveKey
+            ? config.keepAliveKey(route, this.level)
+            : this.buildKeepAliveKey(tagName, route);
+        const cached = config.keepAlive && this.router?.getKeepAlive(key);
+        if (cached) return cached;
 
-            if (notFoundComponent) {
-                const el = document.createElement(notFoundComponent);
-                this.appendChild(el);
+        const el = document.createElement(tagName);
+        if (config.keepAlive) this.router?.setKeepAlive(key, el);
+        return el;
+    }
+
+    private buildKeepAliveKey(tagName: string, route: RouteMatch): string {
+        const matched = route.matched[this.level];
+        const pathPart = matched?.config.path ?? tagName.toLowerCase();
+        const params = Object.values(matched?.params ?? {});
+        return params.length ? `${this.level}:${pathPart}:${params.join('|')}` : `${this.level}:${pathPart}`;
+    }
+
+    private handleEmptyRoute(route: RouteMatch | null) {
+        // 【修复】仅最顶层 RouterView（level === 0）渲染 404 内容，子级保持空白
+        if (this.level === 0) {
+            this.clear();
+            const matched = route?.matched?.[0];
+            const tag = matched?.config?.notFoundComponent || this.$data.notFound;
+            if (tag) {
+                const el = document.createElement(tag);
+                this.appendManagedNode(el);
                 this.currentElement = el;
-                this.currentTagName = notFoundComponent.toLowerCase();
-            } else if (this.$data.notFound) {
-                // 其次使用 RouterView 的 not-found 属性指定的组件
-                const el = document.createElement(this.$data.notFound);
-                this.appendChild(el);
-                this.currentElement = el;
-                this.currentTagName = this.$data.notFound.toLowerCase();
+                this.currentTagName = tag.toLowerCase();
             } else {
-                // 默认 404 提示
                 this.renderError('404 Not Found');
             }
+        } else {
+            // 非顶层仅清空，不渲染任何内容
+            this.clear();
         }
     }
 
-    private renderLoading() {
-        this.textContent = '';
-        const div = document.createElement('div');
-        div.style.cssText = 'padding:20px; color:#999;';
-        div.textContent = 'Loading...';
-        this.appendChild(div);
-    }
-
-    private renderError(msg: string) {
-        this.textContent = '';
-        const div = document.createElement('div');
-        div.style.cssText = 'padding:20px; color:#ff4d4f;';
-        div.textContent = String(msg);
-        this.appendChild(div);
+    private appendManagedNode(node: Node) {
+        if (node.parentNode !== this) this.appendChild(node);
+        this.managedNodes.add(node);
     }
 
     private clear() {
-        // 如果当前有元素，且需要缓存它，则通过 removeChild 移出 DOM 但保留内存引用
-        if (this.currentElement) {
-            if (this.contains(this.currentElement)) {
-                this.removeChild(this.currentElement);
-            }
-        }
-
-        // 清空剩余子节点（Loading、Error 等临时状态）
-        // 使用逐个移除代替 innerHTML = ''，避免触发不必要的 MutationObserver 和重排
-        while (this.firstChild) {
-            this.removeChild(this.firstChild);
-        }
-
+        this.managedNodes.forEach(node => {
+            if (node.parentNode === this) this.removeChild(node);
+        });
+        this.managedNodes.clear();
         this.currentElement = null;
         this.currentTagName = null;
-        this.routerAttrs.clear();
-        this.prevPropKeys.clear();
+    }
+
+    private renderLoading() {
+        this.clear();
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:20px; color:#999;';
+        div.textContent = 'Loading...';
+        this.appendManagedNode(div);
+    }
+
+    private renderError(msg: string) {
+        this.clear();
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:20px; color:#ff4d4f;';
+        div.textContent = msg;
+        this.appendManagedNode(div);
     }
 }
 

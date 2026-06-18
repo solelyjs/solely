@@ -51,7 +51,7 @@ class RouterLink extends BaseElement<{
     #prefetched = false;
 
     async mounted() {
-        const router = await routerReady;
+        const router = await routerReady();
 
         // 监听路由变化，更新 active 状态
         router.listen(() => this.updateState());

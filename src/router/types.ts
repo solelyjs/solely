@@ -20,6 +20,12 @@ export interface RouteConfig {
      */
     keepAlive?: boolean;
 
+    /** * 自定义 keepAlive 缓存 key。
+     * 默认使用 route.fullPath，动态路由如 /article/:id 会按不同 id 分别缓存。
+     * 如果希望同一路由模板共享缓存，可设为 (route) => route.matched[level].config.path
+     */
+    keepAliveKey?: (route: RouteMatch, level: number) => string;
+
     /** * 是否强制重新加载。
      * 即使 tagName 相同，如果为 true，也会销毁重建组件而不是复用。
      */
@@ -73,6 +79,8 @@ export interface RouterOptions {
     mode?: 'hash' | 'history';
     beforeEach?: NavigationGuard;
     afterEach?: (to: RouteMatch, from: RouteMatch | null) => void;
+    /** keepAlive 最大缓存数量，超出后淘汰最久未访问的实例。默认不限制 */
+    maxKeepAlive?: number;
 }
 
 export interface NavigationResult {
