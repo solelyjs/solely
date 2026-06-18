@@ -7,6 +7,27 @@
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-06-18
+
+### Added
+
+- **feat(router)**: 新增自定义 keepAlive 缓存键与 LRU 淘汰机制
+    - `RouteConfig` 新增 `keepAliveKey` 选项，支持自定义缓存键函数，动态路由（如 `/article/:id`）可按不同 id 分别缓存，或配置为同一模板共享缓存
+    - `RouterOptions` 新增 `maxKeepAlive` 选项，限制最大缓存数量，超出后按 LRU 策略淘汰最久未访问的实例
+
+### Changed
+
+- **refactor(router)**: 重构路由核心逻辑
+    - 重构 `routerReady` 为可调用形式，兼容新旧两种用法
+    - 重构 `router-view` 缓存逻辑，适配自定义 `keepAliveKey` 与 `maxKeepAlive` 配置
+    - 优化路由匹配、路径归一化与导航守卫逻辑
+    - 优化组件状态管理与节点清理逻辑
+    - 完善包导出配置与 `sideEffects` 声明
+
+### Fixed
+
+- **fix(router)**: 修复 `router-link` 与 `router-view` 测试用例适配重构后的变更
+
 ## [0.5.1] - 2026-06-14
 
 ### Changed
@@ -672,7 +693,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/solelyjs/solely/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/solelyjs/solely/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/solelyjs/solely/compare/v0.4.21...v0.5.0
 [0.4.21]: https://github.com/solelyjs/solely/compare/v0.4.20...v0.4.21
