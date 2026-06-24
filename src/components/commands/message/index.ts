@@ -31,7 +31,7 @@ const messageList: MessageInfo[] = [];
 
 // 创建 Loading 旋转图标（纯 CSS）
 function createLoadingSpinner(): HTMLElement {
-    return createElement('span', { className: 'message__loading-spinner' });
+    return createElement('span', { className: 'solely-message__loading-spinner' });
 }
 
 const ICON_MAP: Record<MessageType, string | HTMLElement> = {
@@ -72,7 +72,7 @@ function getContainer(placement: MessagePlacement = globalConfig.placement): HTM
     }
 
     const container = createElement('div', {
-        className: 'message-container',
+        className: 'solely-message-container',
     });
 
     // 根据位置设置样式
@@ -170,7 +170,7 @@ function scheduleContainerCleanup(): void {
 // ---------- 创建元素 ----------
 function createIconElement(icon: string | HTMLElement, type: MessageType): HTMLElement {
     const iconEl = createElement('span', {
-        className: `message__icon message__icon--${type}`,
+        className: `solely-message__icon solely-message__icon--${type}`,
     });
 
     if (typeof icon === 'string') {
@@ -187,7 +187,7 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
     const showIcon = options.showIcon !== false;
 
     const element = createElement('div', {
-        className: `message message--${type}${options.className ? ` ${options.className}` : ''}`,
+        className: `solely-message solely-message--${type}${options.className ? ` ${options.className}` : ''}`,
         styles: options.style,
     });
 
@@ -199,10 +199,10 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
         element.appendChild(icon);
     }
 
-    const content = createElement('span', { className: 'message__content' });
+    const content = createElement('span', { className: 'solely-message__content' });
 
     const textEl = createElement('span', {
-        className: 'message__text',
+        className: 'solely-message__text',
     });
 
     // 支持字符串和 DOM 元素作为内容
@@ -216,7 +216,7 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
 
     if (options.description) {
         const descEl = createElement('span', {
-            className: 'message__description',
+            className: 'solely-message__description',
         });
 
         // 支持字符串和 DOM 元素作为描述
@@ -233,7 +233,7 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
 
     if (options.closable) {
         const close = createElement('button', {
-            className: 'message__close',
+            className: 'solely-message__close',
             textContent: '×',
             attrs: { type: 'button', 'aria-label': '关闭' },
         });
@@ -319,7 +319,7 @@ function open(options: MessageOptions): MessageInstance {
         close: () => closeMessage(id),
         update: (newContent: string | HTMLElement | Partial<Pick<MessageOptions, 'content' | 'description'>>) => {
             if (typeof newContent === 'string' || newContent instanceof HTMLElement) {
-                const textEl = element.querySelector('.message__text') as HTMLElement;
+                const textEl = element.querySelector('.solely-message__text') as HTMLElement;
                 if (textEl) {
                     // 清空现有内容
                     textEl.innerHTML = '';
@@ -334,7 +334,7 @@ function open(options: MessageOptions): MessageInstance {
                 return;
             }
             if (newContent.content !== undefined) {
-                const textEl = element.querySelector('.message__text') as HTMLElement;
+                const textEl = element.querySelector('.solely-message__text') as HTMLElement;
                 if (textEl) {
                     // 清空现有内容
                     textEl.innerHTML = '';
@@ -348,10 +348,10 @@ function open(options: MessageOptions): MessageInstance {
                 }
             }
             if (newContent.description !== undefined) {
-                let descEl = element.querySelector('.message__description') as HTMLElement;
+                let descEl = element.querySelector('.solely-message__description') as HTMLElement;
                 if (!descEl && newContent.description) {
                     descEl = createElement('span', {
-                        className: 'message__description',
+                        className: 'solely-message__description',
                     });
 
                     // 支持字符串和 DOM 元素
@@ -361,7 +361,7 @@ function open(options: MessageOptions): MessageInstance {
                         descEl.appendChild(newContent.description.cloneNode(true));
                     }
 
-                    const contentWrapper = element.querySelector('.message__content');
+                    const contentWrapper = element.querySelector('.solely-message__content');
                     contentWrapper?.appendChild(descEl);
                 } else if (descEl) {
                     if (newContent.description) {

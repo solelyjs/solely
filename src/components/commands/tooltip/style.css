@@ -2,10 +2,19 @@
  * Solely Tooltip 组件样式
  * 基于 BEM 命名规范
  * tooltip 元素直接 position:fixed 挂载到 document.body
+ * 类名加 solely- 前缀以避免与宿主文档样式冲突（无 Shadow DOM 隔离）
  */
 
+/* ==================== 作用域重置 ==================== */
+.solely-tooltip,
+.solely-tooltip *,
+.solely-tooltip *::before,
+.solely-tooltip *::after {
+  box-sizing: border-box;
+}
+
 /* ==================== 提示框容器（position:fixed，直接挂 body） ==================== */
-.tooltip {
+.solely-tooltip {
   position: fixed;
   background-color: var(--solely-inverted-bg);
   border-radius: var(--solely-border-radius-md);
@@ -22,15 +31,15 @@
   text-decoration: none;
   z-index: var(--solely-z-index-tooltip);
   pointer-events: auto;
-  animation: tooltip-fade-in var(--solely-transition-duration) var(--solely-transition-timing);
+  animation: solely-tooltip-fade-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
-.tooltip.is-closing {
-  animation: tooltip-fade-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+.solely-tooltip.is-closing {
+  animation: solely-tooltip-fade-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
 }
 
 /* ==================== 内容区域 ==================== */
-.tooltip__content {
+.solely-tooltip__content {
   position: relative;
   z-index: 1;
   word-wrap: break-word;
@@ -38,7 +47,7 @@
 }
 
 /* ==================== 箭头样式 ==================== */
-.tooltip__arrow {
+.solely-tooltip__arrow {
   position: absolute;
   width: var(--solely-tooltip-arrow-size, 8px);
   height: var(--solely-tooltip-arrow-size, 8px);
@@ -48,35 +57,35 @@
 }
 
 /* 上方位置箭头 */
-.tooltip--top .tooltip__arrow,
-.tooltip--topLeft .tooltip__arrow,
-.tooltip--topRight .tooltip__arrow {
+.solely-tooltip--top .solely-tooltip__arrow,
+.solely-tooltip--topLeft .solely-tooltip__arrow,
+.solely-tooltip--topRight .solely-tooltip__arrow {
   bottom: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
 }
 
 /* 下方位置箭头 */
-.tooltip--bottom .tooltip__arrow,
-.tooltip--bottomLeft .tooltip__arrow,
-.tooltip--bottomRight .tooltip__arrow {
+.solely-tooltip--bottom .solely-tooltip__arrow,
+.solely-tooltip--bottomLeft .solely-tooltip__arrow,
+.solely-tooltip--bottomRight .solely-tooltip__arrow {
   top: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
 }
 
 /* 左侧位置箭头 */
-.tooltip--left .tooltip__arrow,
-.tooltip--leftTop .tooltip__arrow,
-.tooltip--leftBottom .tooltip__arrow {
+.solely-tooltip--left .solely-tooltip__arrow,
+.solely-tooltip--leftTop .solely-tooltip__arrow,
+.solely-tooltip--leftBottom .solely-tooltip__arrow {
   right: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
 }
 
 /* 右侧位置箭头 */
-.tooltip--right .tooltip__arrow,
-.tooltip--rightTop .tooltip__arrow,
-.tooltip--rightBottom .tooltip__arrow {
+.solely-tooltip--right .solely-tooltip__arrow,
+.solely-tooltip--rightTop .solely-tooltip__arrow,
+.solely-tooltip--rightBottom .solely-tooltip__arrow {
   left: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
 }
 
 /* ==================== 动画定义 ==================== */
-@keyframes tooltip-fade-in {
+@keyframes solely-tooltip-fade-in {
   from {
     opacity: 0;
     transform: scale(0.8);
@@ -87,7 +96,7 @@
   }
 }
 
-@keyframes tooltip-fade-out {
+@keyframes solely-tooltip-fade-out {
   from {
     opacity: 1;
     transform: scale(1);

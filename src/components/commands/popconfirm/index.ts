@@ -97,7 +97,7 @@ async function destroyCurrent(): Promise<void> {
     if (!currentPopconfirm) return;
 
     const { element } = currentPopconfirm;
-    const popconfirm = element.querySelector('.popconfirm') as HTMLElement;
+    const popconfirm = element.querySelector('.solely-popconfirm') as HTMLElement;
 
     if (popconfirm) {
         popconfirm.classList.add('is-closing');
@@ -127,32 +127,32 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
     const okType = options.okType ?? globalConfig.okType;
     const showCancel = options.showCancel ?? globalConfig.showCancel;
 
-    const overlay = createElement('div', { className: 'popconfirm-overlay' });
+    const overlay = createElement('div', { className: 'solely-popconfirm-overlay' });
 
     // 主题适配
     const cleanupTheme = observeTheme(overlay);
 
     const popconfirm = createElement('div', {
-        className: `popconfirm popconfirm--${placement}${options.className ? ` ${options.className}` : ''}`,
+        className: `solely-popconfirm solely-popconfirm--${placement}${options.className ? ` ${options.className}` : ''}`,
         styles: options.style as Partial<CSSStyleDeclaration>,
     });
 
-    const content = createElement('div', { className: 'popconfirm__content' });
+    const content = createElement('div', { className: 'solely-popconfirm__content' });
 
     // 根据 showIcon 决定是否显示图标，默认为 true
     const showIcon = options.showIcon !== false;
     if (showIcon) {
         const icon = createElement('span', {
-            className: 'popconfirm__icon',
+            className: 'solely-popconfirm__icon',
             textContent: '⚠',
         });
         content.appendChild(icon);
     }
 
-    const textWrapper = createElement('div', { className: 'popconfirm__text' });
+    const textWrapper = createElement('div', { className: 'solely-popconfirm__text' });
 
     const title = createElement('div', {
-        className: 'popconfirm__title',
+        className: 'solely-popconfirm__title',
     });
 
     // 支持字符串和 DOM 元素作为标题
@@ -166,7 +166,7 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
 
     if (options.description) {
         const description = createElement('div', {
-            className: 'popconfirm__description',
+            className: 'solely-popconfirm__description',
         });
 
         // 支持字符串和 DOM 元素作为描述
@@ -181,7 +181,7 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
 
     content.appendChild(textWrapper);
 
-    const buttons = createElement('div', { className: 'popconfirm__buttons' });
+    const buttons = createElement('div', { className: 'solely-popconfirm__buttons' });
 
     const handleConfirm = async () => {
         await destroyCurrent();
@@ -195,7 +195,7 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
 
     if (showCancel) {
         const cancelBtn = createElement('button', {
-            className: 'popconfirm__btn popconfirm__btn--cancel',
+            className: 'solely-popconfirm__btn solely-popconfirm__btn--cancel',
             attrs: { type: 'button' },
         });
 
@@ -212,7 +212,7 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
     }
 
     const okBtn = createElement('button', {
-        className: `popconfirm__btn popconfirm__btn--ok${okType === 'danger' ? ' popconfirm__btn--danger' : ''}`,
+        className: `solely-popconfirm__btn solely-popconfirm__btn--ok${okType === 'danger' ? ' solely-popconfirm__btn--danger' : ''}`,
         attrs: { type: 'button' },
     });
 
@@ -227,7 +227,7 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
     okBtn.onclick = handleConfirm;
     buttons.appendChild(okBtn);
 
-    const arrow = createElement('div', { className: 'popconfirm__arrow' });
+    const arrow = createElement('div', { className: 'solely-popconfirm__arrow' });
 
     popconfirm.appendChild(arrow);
     popconfirm.appendChild(content);

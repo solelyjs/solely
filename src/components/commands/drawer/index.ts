@@ -92,8 +92,8 @@ async function closeDrawerById(id: number): Promise<void> {
         if (index === -1) return;
 
         const drawerInfo = drawerList[index];
-        const mask = drawerInfo.element.querySelector('.drawer-mask') as HTMLElement;
-        const drawer = drawerInfo.element.querySelector('.drawer') as HTMLElement;
+        const mask = drawerInfo.element.querySelector('.solely-drawer-mask') as HTMLElement;
+        const drawer = drawerInfo.element.querySelector('.solely-drawer') as HTMLElement;
 
         if (mask) mask.classList.add('is-closing');
         if (drawer) drawer.classList.add('is-closing');
@@ -131,7 +131,7 @@ function open(options: DrawerOptions): DrawerInstance {
     const maskClosable = options.maskClosable ?? globalConfig.maskClosable;
     const closable = options.closable ?? globalConfig.closable;
 
-    const wrap = createElement('div', { className: 'drawer-wrap' });
+    const wrap = createElement('div', { className: 'solely-drawer-wrap' });
 
     // 主题适配
     const cleanupTheme = observeTheme(wrap);
@@ -140,7 +140,7 @@ function open(options: DrawerOptions): DrawerInstance {
     const handlersToCleanup: Array<{ element: HTMLElement; type: string; handler: EventListener }> = [];
 
     if (mask !== false) {
-        const maskEl = createElement('div', { className: 'drawer-mask' });
+        const maskEl = createElement('div', { className: 'solely-drawer-mask' });
         if (maskClosable) {
             const handleMaskClick = () => {
                 closeDrawerById(id);
@@ -153,7 +153,7 @@ function open(options: DrawerOptions): DrawerInstance {
     }
 
     const drawer = createElement('div', {
-        className: `drawer drawer--${placement}${options.className ? ` ${options.className}` : ''}`,
+        className: `solely-drawer solely-drawer--${placement}${options.className ? ` ${options.className}` : ''}`,
         styles: options.style as Partial<CSSStyleDeclaration>,
     });
 
@@ -164,11 +164,11 @@ function open(options: DrawerOptions): DrawerInstance {
     }
 
     if (options.title || closable !== false) {
-        const header = createElement('div', { className: 'drawer__header' });
+        const header = createElement('div', { className: 'solely-drawer__header' });
 
         if (options.title) {
             const title = createElement('h3', {
-                className: 'drawer__title',
+                className: 'solely-drawer__title',
             });
 
             // 支持字符串和 DOM 元素作为标题
@@ -183,7 +183,7 @@ function open(options: DrawerOptions): DrawerInstance {
 
         if (closable !== false) {
             const close = createElement('button', {
-                className: 'drawer__close',
+                className: 'solely-drawer__close',
                 textContent: '×',
                 attrs: { type: 'button', 'aria-label': '关闭' },
             });
@@ -200,7 +200,7 @@ function open(options: DrawerOptions): DrawerInstance {
     }
 
     const body = createElement('div', {
-        className: 'drawer__body',
+        className: 'solely-drawer__body',
         styles: options.bodyStyle as Partial<CSSStyleDeclaration>,
     });
 
@@ -237,7 +237,7 @@ function open(options: DrawerOptions): DrawerInstance {
         update: (newOptions: Partial<DrawerOptions>) => {
             // 更新标题
             if (newOptions.title !== undefined) {
-                const titleEl = wrap.querySelector('.drawer__title') as HTMLElement;
+                const titleEl = wrap.querySelector('.solely-drawer__title') as HTMLElement;
                 if (titleEl) {
                     // 清空现有内容
                     titleEl.innerHTML = '';
@@ -250,9 +250,9 @@ function open(options: DrawerOptions): DrawerInstance {
                     }
                 } else if (newOptions.title) {
                     // 如果之前没有标题，需要创建 header
-                    const header = createElement('div', { className: 'drawer__header' });
+                    const header = createElement('div', { className: 'solely-drawer__header' });
                     const title = createElement('h3', {
-                        className: 'drawer__title',
+                        className: 'solely-drawer__title',
                     });
 
                     // 支持字符串和 DOM 元素
@@ -263,14 +263,14 @@ function open(options: DrawerOptions): DrawerInstance {
                     }
 
                     header.appendChild(title);
-                    const drawer = wrap.querySelector('.drawer') as HTMLElement;
+                    const drawer = wrap.querySelector('.solely-drawer') as HTMLElement;
                     drawer?.insertBefore(header, drawer.firstChild);
                 }
             }
 
             // 更新内容
             if (newOptions.content !== undefined) {
-                const bodyEl = wrap.querySelector('.drawer__body') as HTMLElement;
+                const bodyEl = wrap.querySelector('.solely-drawer__body') as HTMLElement;
                 if (bodyEl) {
                     // 清空现有内容
                     bodyEl.innerHTML = '';
@@ -285,7 +285,7 @@ function open(options: DrawerOptions): DrawerInstance {
             }
 
             // 更新宽度/高度
-            const drawerEl = wrap.querySelector('.drawer') as HTMLElement;
+            const drawerEl = wrap.querySelector('.solely-drawer') as HTMLElement;
             if (drawerEl) {
                 const currentPlacement = newOptions.placement || options.placement || 'right';
                 if (newOptions.width !== undefined && (currentPlacement === 'left' || currentPlacement === 'right')) {
@@ -302,7 +302,8 @@ function open(options: DrawerOptions): DrawerInstance {
             if (newOptions.className !== undefined) {
                 if (drawerEl) {
                     const currentPlacement = options.placement || 'right';
-                    drawerEl.className = `drawer drawer--${currentPlacement} ${newOptions.className}`.trim();
+                    drawerEl.className =
+                        `solely-drawer solely-drawer--${currentPlacement} ${newOptions.className}`.trim();
                 }
             }
 
@@ -315,7 +316,7 @@ function open(options: DrawerOptions): DrawerInstance {
 
             // 更新 body 样式
             if (newOptions.bodyStyle !== undefined) {
-                const bodyEl = wrap.querySelector('.drawer__body') as HTMLElement;
+                const bodyEl = wrap.querySelector('.solely-drawer__body') as HTMLElement;
                 if (bodyEl) {
                     Object.assign(bodyEl.style, newOptions.bodyStyle);
                 }

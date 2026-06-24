@@ -119,8 +119,8 @@ async function closeModalById(id: number): Promise<void> {
         if (index === -1) return;
 
         const modalInfo = modalList[index];
-        const mask = modalInfo.element.querySelector('.modal-mask') as HTMLElement;
-        const modal = modalInfo.element.querySelector('.modal') as HTMLElement;
+        const mask = modalInfo.element.querySelector('.solely-modal-mask') as HTMLElement;
+        const modal = modalInfo.element.querySelector('.solely-modal') as HTMLElement;
 
         if (mask) mask.classList.add('is-closing');
         if (modal) modal.classList.add('is-closing');
@@ -154,7 +154,7 @@ function createButton(
     cloneElement = false,
 ): HTMLButtonElement {
     const button = createElement('button', {
-        className: `modal__btn modal__btn--${type === 'default' ? 'default' : type}`,
+        className: `solely-modal__btn solely-modal__btn--${type === 'default' ? 'default' : type}`,
         attrs: { type: 'button' },
     }) as HTMLButtonElement;
 
@@ -181,7 +181,7 @@ function open(options: ModalOptions): ModalInstance {
     const maskClosable = options.maskClosable ?? globalConfig.maskClosable;
 
     const wrap = createElement('div', {
-        className: 'modal-wrap',
+        className: 'solely-modal-wrap',
         attrs: { tabIndex: '-1', part: 'wrap' },
     });
 
@@ -192,7 +192,7 @@ function open(options: ModalOptions): ModalInstance {
     const handlersToCleanup: Array<{ element: HTMLElement; type: string; handler: EventListener }> = [];
 
     if (options.mask !== false) {
-        const mask = createElement('div', { className: 'modal-mask' });
+        const mask = createElement('div', { className: 'solely-modal-mask' });
         if (maskClosable) {
             const handleMaskClick = () => {
                 closeModalById(id);
@@ -205,17 +205,17 @@ function open(options: ModalOptions): ModalInstance {
     }
 
     const modal = createElement('div', {
-        className: `modal${options.className ? ` ${options.className}` : ''}`,
+        className: `solely-modal${options.className ? ` ${options.className}` : ''}`,
         styles: {
             ...(options.style as Partial<CSSStyleDeclaration>),
             width: typeof width === 'number' ? `${width}px` : width,
         },
     });
 
-    const header = createElement('div', { className: 'modal__header' });
+    const header = createElement('div', { className: 'solely-modal__header' });
 
     const title = createElement('h3', {
-        className: 'modal__title',
+        className: 'solely-modal__title',
     });
 
     // 支持字符串和 DOM 元素作为标题
@@ -230,7 +230,7 @@ function open(options: ModalOptions): ModalInstance {
 
     if (options.closable !== false) {
         const close = createElement('button', {
-            className: 'modal__close',
+            className: 'solely-modal__close',
             textContent: '×',
             attrs: { type: 'button', 'aria-label': '关闭', part: 'close' },
         });
@@ -245,21 +245,21 @@ function open(options: ModalOptions): ModalInstance {
 
     modal.appendChild(header);
 
-    const body = createElement('div', { className: 'modal__body' });
+    const body = createElement('div', { className: 'solely-modal__body' });
 
-    const contentWrapper = createElement('div', { className: 'modal__content-wrapper' });
+    const contentWrapper = createElement('div', { className: 'solely-modal__content-wrapper' });
 
     // 根据 showIcon 决定是否显示图标，默认为 true
     const showIcon = options.showIcon !== false;
     if (showIcon) {
         const icon = createElement('span', {
-            className: `modal__icon modal__icon--${type}`,
+            className: `solely-modal__icon solely-modal__icon--${type}`,
             textContent: ICON_MAP[type],
         });
         contentWrapper.appendChild(icon);
     }
 
-    const content = createElement('div', { className: 'modal__content' });
+    const content = createElement('div', { className: 'solely-modal__content' });
 
     // 支持字符串和 DOM 元素作为内容
     if (typeof options.content === 'string') {
@@ -274,7 +274,7 @@ function open(options: ModalOptions): ModalInstance {
     body.appendChild(contentWrapper);
     modal.appendChild(body);
 
-    const footer = createElement('div', { className: 'modal__footer' });
+    const footer = createElement('div', { className: 'solely-modal__footer' });
 
     if (options.buttons && options.buttons.length > 0) {
         options.buttons.forEach((buttonConfig: ModalButton) => {
@@ -348,7 +348,7 @@ function open(options: ModalOptions): ModalInstance {
         update: (newOptions: Partial<ModalOptions>) => {
             // 更新标题
             if (newOptions.title !== undefined) {
-                const titleEl = wrap.querySelector('.modal__title') as HTMLElement;
+                const titleEl = wrap.querySelector('.solely-modal__title') as HTMLElement;
                 if (titleEl) {
                     // 清空现有内容
                     titleEl.innerHTML = '';
@@ -366,7 +366,7 @@ function open(options: ModalOptions): ModalInstance {
 
             // 更新内容
             if (newOptions.content !== undefined) {
-                const contentEl = wrap.querySelector('.modal__content') as HTMLElement;
+                const contentEl = wrap.querySelector('.solely-modal__content') as HTMLElement;
                 if (contentEl) {
                     // 清空现有内容
                     contentEl.innerHTML = '';
@@ -384,7 +384,7 @@ function open(options: ModalOptions): ModalInstance {
 
             // 更新宽度
             if (newOptions.width !== undefined) {
-                const modalEl = wrap.querySelector('.modal') as HTMLElement;
+                const modalEl = wrap.querySelector('.solely-modal') as HTMLElement;
                 if (modalEl) {
                     modalEl.style.width =
                         typeof newOptions.width === 'number' ? `${newOptions.width}px` : newOptions.width;
@@ -393,16 +393,16 @@ function open(options: ModalOptions): ModalInstance {
 
             // 更新类名
             if (newOptions.className !== undefined) {
-                const modalEl = wrap.querySelector('.modal') as HTMLElement;
+                const modalEl = wrap.querySelector('.solely-modal') as HTMLElement;
                 if (modalEl) {
-                    // 保留基础类名 'modal'，替换其余类名
-                    modalEl.className = `modal ${newOptions.className}`.trim();
+                    // 保留基础类名 'solely-modal'，替换其余类名
+                    modalEl.className = `solely-modal ${newOptions.className}`.trim();
                 }
             }
 
             // 更新样式
             if (newOptions.style !== undefined) {
-                const modalEl = wrap.querySelector('.modal') as HTMLElement;
+                const modalEl = wrap.querySelector('.solely-modal') as HTMLElement;
                 if (modalEl) {
                     Object.assign(modalEl.style, newOptions.style);
                 }

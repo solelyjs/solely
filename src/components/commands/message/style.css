@@ -1,20 +1,23 @@
 /**
- * Solely Message 组件样式 
+ * Solely Message 组件样式
  * 适配优化后的命令式 API，基于 BEM 命名与公共 CSS 变量
+ * 类名加 solely- 前缀以避免与宿主文档样式冲突（无 Shadow DOM 隔离）
  */
 
-/* ==================== 基础重置 ==================== */
-*,
-*::before,
-*::after {
+/* ==================== 作用域重置 ==================== */
+.solely-message,
+.solely-message *,
+.solely-message *::before,
+.solely-message *::after,
+.solely-message-container {
   box-sizing: border-box;
 }
 
 /* ==================== 消息容器 ==================== */
-/* .message-container 的样式由 JavaScript 动态设置 */
+/* .solely-message-container 的样式由 JavaScript 动态设置 */
 
 /* ==================== 消息项 ==================== */
-.message {
+.solely-message {
   display: inline-flex;
   align-items: center;
   gap: var(--solely-spacing-sm);
@@ -27,41 +30,41 @@
   border-radius: var(--solely-border-radius-md);
   box-shadow: var(--solely-shadow-md);
   pointer-events: auto;
-  animation: message-slide-in var(--solely-transition-duration) var(--solely-transition-timing);
+  animation: solely-message-slide-in var(--solely-transition-duration) var(--solely-transition-timing);
   transition: opacity var(--solely-transition-duration) var(--solely-transition-timing),
     transform var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
 /* 关闭动画状态 */
-.message.is-closing {
+.solely-message.is-closing {
   opacity: 0;
   transform: translateY(-10px);
   pointer-events: none;
 }
 
 /* 类型 - 左侧色条 */
-.message--info {
+.solely-message--info {
   border-left: 4px solid var(--solely-primary);
 }
 
-.message--success {
+.solely-message--success {
   border-left: 4px solid var(--solely-success);
 }
 
-.message--warning {
+.solely-message--warning {
   border-left: 4px solid var(--solely-warning);
 }
 
-.message--error {
+.solely-message--error {
   border-left: 4px solid var(--solely-error);
 }
 
-.message--loading {
+.solely-message--loading {
   border-left: 4px solid var(--solely-primary);
 }
 
 /* ==================== 图标 ==================== */
-.message__icon {
+.solely-message__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -70,49 +73,49 @@
   flex-shrink: 0;
 }
 
-.message__icon--info {
+.solely-message__icon--info {
   color: var(--solely-primary);
 }
 
-.message__icon--success {
+.solely-message__icon--success {
   color: var(--solely-success);
 }
 
-.message__icon--warning {
+.solely-message__icon--warning {
   color: var(--solely-warning);
 }
 
-.message__icon--error {
+.solely-message__icon--error {
   color: var(--solely-error);
 }
 
-.message__icon--loading {
+.solely-message__icon--loading {
   color: var(--solely-primary);
 }
 
 /* Loading 纯 CSS 旋转圆圈 */
-.message__loading-spinner {
+.solely-message__loading-spinner {
   display: inline-block;
   width: 14px;
   height: 14px;
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: message-spin 0.8s linear infinite;
+  animation: solely-message-spin 0.8s linear infinite;
 }
 
 /* ==================== 内容 ==================== */
-.message__content {
+.solely-message__content {
   flex: 1;
   min-width: 0;
 }
 
-.message__text {
+.solely-message__text {
   display: block;
   font-weight: 500;
 }
 
-.message__description {
+.solely-message__description {
   display: block;
   font-size: var(--solely-font-size-sm);
   color: var(--solely-text-secondary);
@@ -121,7 +124,7 @@
 }
 
 /* ==================== 关闭按钮 ==================== */
-.message__close {
+.solely-message__close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -140,17 +143,17 @@
   flex-shrink: 0;
 }
 
-.message__close:hover {
+.solely-message__close:hover {
   color: var(--solely-text-secondary);
   background-color: var(--solely-gray-3);
 }
 
-.message__close:active {
+.solely-message__close:active {
   color: var(--solely-text-primary);
 }
 
 /* ==================== 动画 ==================== */
-@keyframes message-slide-in {
+@keyframes solely-message-slide-in {
   from {
     opacity: 0;
     transform: translateY(-20px);
@@ -162,7 +165,7 @@
   }
 }
 
-@keyframes message-spin {
+@keyframes solely-message-spin {
   from {
     transform: rotate(0deg);
   }

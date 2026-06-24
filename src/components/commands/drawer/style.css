@@ -1,17 +1,21 @@
 /**
  * Solely Drawer 组件样式 (重构版)
  * 基于 BEM 命名规范
+ * 类名加 solely- 前缀以避免与宿主文档样式冲突（无 Shadow DOM 隔离）
  */
 
-/* ==================== 基础重置 ==================== */
-*,
-*::before,
-*::after {
+/* ==================== 作用域重置 ==================== */
+.solely-drawer,
+.solely-drawer *,
+.solely-drawer *::before,
+.solely-drawer *::after,
+.solely-drawer-mask,
+.solely-drawer-wrap {
   box-sizing: border-box;
 }
 
 /* ==================== 遮罩层样式 ==================== */
-.drawer-mask {
+.solely-drawer-mask {
   position: fixed;
   top: 0;
   left: 0;
@@ -20,15 +24,15 @@
   background-color: var(--solely-mask-bg);
   z-index: 1;
   pointer-events: auto;
-  animation: drawer-mask-in var(--solely-transition-duration) var(--solely-transition-timing);
+  animation: solely-drawer-mask-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
-.drawer-mask.is-closing {
-  animation: drawer-mask-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+.solely-drawer-mask.is-closing {
+  animation: solely-drawer-mask-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
 }
 
 /* ==================== 容器包装样式 ==================== */
-.drawer-wrap {
+.solely-drawer-wrap {
   position: fixed;
   top: 0;
   left: 0;
@@ -39,7 +43,7 @@
 }
 
 /* ==================== 抽屉容器样式 ==================== */
-.drawer {
+.solely-drawer {
   position: absolute;
   background-color: var(--solely-component-bg);
   box-shadow: var(--solely-shadow-lg);
@@ -50,53 +54,53 @@
 }
 
 /* 抽屉位置 */
-.drawer--left {
+.solely-drawer--left {
   left: 0;
   top: 0;
   bottom: 0;
-  animation: drawer-left-in var(--solely-transition-duration) var(--solely-transition-timing);
+  animation: solely-drawer-left-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
-.drawer--right {
+.solely-drawer--right {
   right: 0;
   top: 0;
   bottom: 0;
-  animation: drawer-right-in var(--solely-transition-duration) var(--solely-transition-timing);
+  animation: solely-drawer-right-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
-.drawer--top {
+.solely-drawer--top {
   top: 0;
   left: 0;
   right: 0;
-  animation: drawer-top-in var(--solely-transition-duration) var(--solely-transition-timing);
+  animation: solely-drawer-top-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
-.drawer--bottom {
+.solely-drawer--bottom {
   bottom: 0;
   left: 0;
   right: 0;
-  animation: drawer-bottom-in var(--solely-transition-duration) var(--solely-transition-timing);
+  animation: solely-drawer-bottom-in var(--solely-transition-duration) var(--solely-transition-timing);
 }
 
 /* 关闭动画 */
-.drawer.is-closing.drawer--left {
-  animation: drawer-left-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+.solely-drawer.is-closing.solely-drawer--left {
+  animation: solely-drawer-left-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
 }
 
-.drawer.is-closing.drawer--right {
-  animation: drawer-right-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+.solely-drawer.is-closing.solely-drawer--right {
+  animation: solely-drawer-right-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
 }
 
-.drawer.is-closing.drawer--top {
-  animation: drawer-top-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+.solely-drawer.is-closing.solely-drawer--top {
+  animation: solely-drawer-top-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
 }
 
-.drawer.is-closing.drawer--bottom {
-  animation: drawer-bottom-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
+.solely-drawer.is-closing.solely-drawer--bottom {
+  animation: solely-drawer-bottom-out var(--solely-transition-duration) var(--solely-transition-timing) forwards;
 }
 
 /* ==================== 头部样式 ==================== */
-.drawer__header {
+.solely-drawer__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -104,7 +108,7 @@
   border-bottom: 1px solid var(--solely-border-color-split);
 }
 
-.drawer__title {
+.solely-drawer__title {
   margin: 0;
   font-size: var(--solely-font-size-lg);
   font-weight: 500;
@@ -112,7 +116,7 @@
   line-height: var(--solely-line-height-lg);
 }
 
-.drawer__close {
+.solely-drawer__close {
   width: var(--solely-height-sm);
   height: var(--solely-height-sm);
   display: flex;
@@ -128,17 +132,17 @@
   border-radius: var(--solely-border-radius-sm);
 }
 
-.drawer__close:hover {
+.solely-drawer__close:hover {
   color: var(--solely-text-secondary);
   background-color: var(--solely-gray-3);
 }
 
-.drawer__close:active {
+.solely-drawer__close:active {
   color: var(--solely-text-primary);
 }
 
 /* ==================== 内容区域样式 ==================== */
-.drawer__body {
+.solely-drawer__body {
   flex: 1;
   padding: var(--solely-spacing-xl);
   overflow: auto;
@@ -148,7 +152,7 @@
 }
 
 /* ==================== 动画定义 ==================== */
-@keyframes drawer-mask-in {
+@keyframes solely-drawer-mask-in {
   from {
     opacity: 0;
   }
@@ -157,7 +161,7 @@
   }
 }
 
-@keyframes drawer-mask-out {
+@keyframes solely-drawer-mask-out {
   from {
     opacity: 1;
   }
@@ -166,7 +170,7 @@
   }
 }
 
-@keyframes drawer-left-in {
+@keyframes solely-drawer-left-in {
   from {
     transform: translateX(-100%);
   }
@@ -175,7 +179,7 @@
   }
 }
 
-@keyframes drawer-left-out {
+@keyframes solely-drawer-left-out {
   from {
     transform: translateX(0);
   }
@@ -184,7 +188,7 @@
   }
 }
 
-@keyframes drawer-right-in {
+@keyframes solely-drawer-right-in {
   from {
     transform: translateX(100%);
   }
@@ -193,7 +197,7 @@
   }
 }
 
-@keyframes drawer-right-out {
+@keyframes solely-drawer-right-out {
   from {
     transform: translateX(0);
   }
@@ -202,7 +206,7 @@
   }
 }
 
-@keyframes drawer-top-in {
+@keyframes solely-drawer-top-in {
   from {
     transform: translateY(-100%);
   }
@@ -211,7 +215,7 @@
   }
 }
 
-@keyframes drawer-top-out {
+@keyframes solely-drawer-top-out {
   from {
     transform: translateY(0);
   }
@@ -220,7 +224,7 @@
   }
 }
 
-@keyframes drawer-bottom-in {
+@keyframes solely-drawer-bottom-in {
   from {
     transform: translateY(100%);
   }
@@ -229,7 +233,7 @@
   }
 }
 
-@keyframes drawer-bottom-out {
+@keyframes solely-drawer-bottom-out {
   from {
     transform: translateY(0);
   }

@@ -154,7 +154,7 @@ function repositionAllTooltips(): void {
     tooltipList.forEach(info => {
         const el = info.element;
         if (!el || !info.target) return;
-        const arrow = el.querySelector('.tooltip__arrow') as HTMLElement;
+        const arrow = el.querySelector('.solely-tooltip__arrow') as HTMLElement;
         const pos = calcPosition(info.target, el, info.placement);
         el.style.top = `${pos.top}px`;
         el.style.left = `${pos.left}px`;
@@ -290,7 +290,7 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
     }
 
     const tooltip = createElement('div', {
-        className: `tooltip tooltip--${placement}${options.className ? ` ${options.className}` : ''}`,
+        className: `solely-tooltip solely-tooltip--${placement}${options.className ? ` ${options.className}` : ''}`,
         styles: {
             ...(options.style as Partial<CSSStyleDeclaration>),
             ...(options.color ? { backgroundColor: options.color } : {}),
@@ -299,7 +299,7 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
 
     observeTheme(tooltip);
 
-    const contentEl = createElement('div', { className: 'tooltip__content' });
+    const contentEl = createElement('div', { className: 'solely-tooltip__content' });
 
     if (options.content) {
         if (typeof options.content === 'string') {
@@ -311,7 +311,7 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
 
     tooltip.appendChild(contentEl);
 
-    const arrow = createElement('div', { className: 'tooltip__arrow' });
+    const arrow = createElement('div', { className: 'solely-tooltip__arrow' });
     if (options.color) {
         arrow.style.backgroundColor = options.color;
     }
