@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-06-24
+
+### Changed
+
+- **refactor(commands)**: 给所有命令式组件类名添加 `solely-` 前缀避免样式冲突
+    - 为 Drawer、Message、Modal、Popconfirm、Tooltip 等命令式组件的样式类名统一添加 `solely-` 前缀
+    - 防止与使用方项目中同名样式类产生冲突
+
 ## [0.5.2] - 2026-06-18
 
 ### Added
@@ -693,7 +701,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/solelyjs/solely/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/solelyjs/solely/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/solelyjs/solely/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/solelyjs/solely/compare/v0.4.21...v0.5.0
