@@ -129,8 +129,12 @@ function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult
     // 主题适配（使用共享观察者）
     const cleanupTheme = observeTheme(() => overlay);
 
+    const popconfirmClassName = [`solely-popconfirm solely-popconfirm--${placement}`, options.className]
+        .filter(Boolean)
+        .join(' ');
+
     const popconfirm = createElement('div', {
-        className: `solely-popconfirm solely-popconfirm--${placement}${options.className ? ` ${options.className}` : ''}`,
+        className: popconfirmClassName,
         styles: options.style as Partial<CSSStyleDeclaration>,
     });
 
@@ -182,8 +186,15 @@ function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult
         buttons.appendChild(cancelBtn);
     }
 
+    const okBtnClassName = [
+        'solely-popconfirm__btn solely-popconfirm__btn--ok',
+        okType === 'danger' ? 'solely-popconfirm__btn--danger' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
+
     const okBtn = createElement('button', {
-        className: `solely-popconfirm__btn solely-popconfirm__btn--ok${okType === 'danger' ? ' solely-popconfirm__btn--danger' : ''}`,
+        className: okBtnClassName,
         attrs: { type: 'button' },
     });
     appendContent(okBtn, options.okText ?? globalConfig.okText, shouldClone);
