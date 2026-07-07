@@ -43,6 +43,13 @@ export interface ModalOptions {
     /** 自定义按钮数组（如果提供，将忽略 okText/cancelText/showCancel） */
     buttons?: ModalButton[];
     /** 确定按钮回调 - 返回 false 阻止关闭，返回 HTMLElement 或数据作为结果 */
+    onConfirm?: () =>
+        | void
+        | false
+        | HTMLElement
+        | Record<string, unknown>
+        | Promise<void | false | HTMLElement | Record<string, unknown>>;
+    /** @deprecated 请使用 onConfirm，此别名仅为向后兼容保留 */
     onOk?: () =>
         | void
         | false

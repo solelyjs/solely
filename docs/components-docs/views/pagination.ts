@@ -35,13 +35,13 @@ export class DocsPagination extends BaseElement<PaginationDocData> {
     }
 
     /**
-     * 处理 sizeChange 事件
+     * 处理 size-change 事件
      */
     handleSizeChange(event: CustomEvent<{ current: number; pageSize: number }>): void {
         const detail = event.detail;
         this.$data.pageSize = detail.pageSize;
         this.$data.current = detail.current;
-        this.addEventLog(`sizeChange: 第 ${detail.current} 页, 每页 ${detail.pageSize} 条`);
+        this.addEventLog(`size-change: 第 ${detail.current} 页, 每页 ${detail.pageSize} 条`);
     }
 
     /**

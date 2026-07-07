@@ -3,7 +3,7 @@
  */
 
 /** 卡片尺寸 */
-export type CardSize = 'default' | 'small' | 'large';
+export type CardSize = 'small' | 'medium' | 'large';
 
 /** 卡片属性接口 */
 export interface CardProps {

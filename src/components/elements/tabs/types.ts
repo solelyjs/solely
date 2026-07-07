@@ -4,7 +4,7 @@
 
 export type TabsType = 'line' | 'card';
 export type TabsPosition = 'top' | 'right' | 'bottom' | 'left';
-export type TabsSize = 'small' | 'default' | 'large';
+export type TabsSize = 'small' | 'medium' | 'large';
 
 export interface TabItem {
     /** 标签页标题 */

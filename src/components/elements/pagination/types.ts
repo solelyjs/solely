@@ -2,7 +2,7 @@
  * Pagination 组件类型定义
  */
 
-export type PaginationSize = 'small' | 'default' | 'large';
+export type PaginationSize = 'small' | 'medium' | 'large';
 
 export interface PaginationProps {
     /** 当前页码 */

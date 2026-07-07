@@ -202,3 +202,61 @@ export function addClosingAnimation(element: HTMLElement, duration: number = ANI
         setTimeout(() => resolve(), duration);
     });
 }
+
+// ---------- 共享主题观察者 ----------
+// 所有命令式组件共用同一个 MutationObserver，避免重复创建
+
+let sharedThemeObserver: MutationObserver | null = null;
+const themeChangeCallbacks = new Set<() => void>();
+
+function ensureThemeObserver(): void {
+    if (sharedThemeObserver) return;
+    sharedThemeObserver = new MutationObserver(() => {
+        themeChangeCallbacks.forEach(cb => cb());
+    });
+    sharedThemeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
+}
+
+function maybeDisconnectThemeObserver(): void {
+    if (themeChangeCallbacks.size === 0 && sharedThemeObserver) {
+        sharedThemeObserver.disconnect();
+        sharedThemeObserver = null;
+    }
+}
+
+/**
+ * 观察主题变化并同步到指定元素
+ * @param getElements 返回需要同步主题的元素（单个、数组或 null）
+ * @returns 清理函数（取消观察）
+ */
+export function observeTheme(getElements: () => HTMLElement | HTMLElement[] | null): () => void {
+    const syncTheme = () => {
+        const elements = getElements();
+        if (!elements) return;
+        const elArray = Array.isArray(elements) ? elements : [elements];
+        const theme = document.documentElement.getAttribute('data-theme');
+        elArray.forEach(el => {
+            if (theme) {
+                el.setAttribute('data-theme', theme);
+            } else {
+                el.removeAttribute('data-theme');
+            }
+        });
+    };
+
+    // 初始同步
+    syncTheme();
+
+    // 注册回调
+    themeChangeCallbacks.add(syncTheme);
+    ensureThemeObserver();
+
+    // 返回清理函数
+    return () => {
+        themeChangeCallbacks.delete(syncTheme);
+        maybeDisconnectThemeObserver();
+    };
+}

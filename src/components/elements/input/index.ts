@@ -15,7 +15,7 @@ import template from './index.html?solely';
     shadowDOM: { use: true, mode: 'open' },
     props: [
         { name: 'type', type: 'string', default: 'text' },
-        { name: 'size', type: 'string', default: '' },
+        { name: 'size', type: 'string', default: 'medium' },
         { name: 'value', type: 'string', default: '' },
         { name: 'placeholder', type: 'string', default: '' },
         { name: 'disabled', type: 'boolean', default: false },

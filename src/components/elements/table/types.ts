@@ -2,7 +2,7 @@
  * Table 组件类型定义
  */
 
-export type TableSize = 'small' | 'middle' | 'default' | 'large';
+export type TableSize = 'small' | 'medium' | 'large' | 'middle' | 'default';
 
 export interface TableColumn {
     /** 列标题 */

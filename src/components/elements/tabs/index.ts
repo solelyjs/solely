@@ -18,7 +18,7 @@ import { safeJsonParse } from '../utils/helpers';
         { name: 'activeKey', type: 'string', default: '' },
         { name: 'type', type: 'string', default: 'line' },
         { name: 'position', type: 'string', default: 'top' },
-        { name: 'size', type: 'string', default: 'default' },
+        { name: 'size', type: 'string', default: 'medium' },
         { name: 'items', type: 'string', default: '[]' },
         { name: 'closable', type: 'boolean', default: false },
         { name: 'addable', type: 'boolean', default: false },

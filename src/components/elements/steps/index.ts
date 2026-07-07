@@ -12,7 +12,7 @@ import { safeJsonParse } from '../utils/helpers';
     props: [
         { name: 'current', type: 'number', default: 0 },
         { name: 'direction', type: 'string', default: 'horizontal' },
-        { name: 'size', type: 'string', default: 'default' },
+        { name: 'size', type: 'string', default: 'medium' },
         { name: 'items', type: 'string', default: '[]' },
         { name: 'progressDot', type: 'boolean', default: false },
     ],
@@ -53,6 +53,8 @@ class SolelySteps extends BaseElement<
             classes['steps--sm'] = true;
         } else if (this.$data.size === 'large') {
             classes['steps--lg'] = true;
+        } else {
+            classes['steps--md'] = true;
         }
         classes['use-slot'] = this.$data.useSlot;
         return classes;

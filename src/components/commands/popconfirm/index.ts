@@ -7,25 +7,30 @@
  * ```typescript
  * import { Popconfirm } from 'solely/components/commands';
  *
- * Popconfirm.show(target, {
+ * const instance = Popconfirm.show(target, {
  *   title: '确定删除吗？',
- *   onConfirm: () => {
- *     console.log('确认删除');
- *   },
- *   onCancel: () => {
- *     console.log('取消删除');
- *   },
+ *   onConfirm: () => console.log('确认'),
+ *   onCancel: () => console.log('取消'),
  * });
+ * instance.close();   // 关闭（带动画）
+ * instance.destroy(); // 销毁（立即）
  * ```
  */
 
-import type { PopconfirmOptions, PopconfirmInstance, PopconfirmPlacement, PopconfirmConfig } from './types';
+import type {
+    PopconfirmOptions,
+    PopconfirmInstance,
+    PopconfirmResult,
+    PopconfirmPlacement,
+    PopconfirmConfig,
+} from './types';
 import {
     generateId,
     injectStyle,
     createElement,
     calculatePosition,
     addClosingAnimation,
+    observeTheme,
     ANIMATION_DURATION,
 } from '../utils';
 import type { Placement } from '../utils';
@@ -45,10 +50,8 @@ let currentPopconfirm: {
     id: number;
     target: HTMLElement;
     element: HTMLElement;
-    destroy: () => void;
+    cleanup: () => void;
 } | null = null;
-
-let themeObserver: MutationObserver | null = null;
 
 const boundTargets = new WeakSet<HTMLElement>();
 
@@ -56,81 +59,75 @@ function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
 }
 
-function observeTheme(element: HTMLElement): () => void {
-    const updateTheme = () => {
-        const theme = document.documentElement.getAttribute('data-theme');
-        if (theme) {
-            element.setAttribute('data-theme', theme);
-        } else {
-            element.removeAttribute('data-theme');
-        }
-    };
-
-    updateTheme();
-
-    if (!themeObserver) {
-        themeObserver = new MutationObserver(() => {
-            if (currentPopconfirm) {
-                const theme = document.documentElement.getAttribute('data-theme');
-                if (theme) {
-                    currentPopconfirm.element.setAttribute('data-theme', theme);
-                } else {
-                    currentPopconfirm.element.removeAttribute('data-theme');
-                }
-            }
-        });
-        themeObserver.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme'],
-        });
-    }
-
-    return () => {
-        if (themeObserver && !currentPopconfirm) {
-            themeObserver.disconnect();
-            themeObserver = null;
-        }
-    };
-}
-
-async function destroyCurrent(): Promise<void> {
+/** 立即移除当前 Popconfirm（无动画） */
+function destroyCurrentSync(): void {
     if (!currentPopconfirm) return;
-
-    const { element } = currentPopconfirm;
-    const popconfirm = element.querySelector('.solely-popconfirm') as HTMLElement;
-
-    if (popconfirm) {
-        popconfirm.classList.add('is-closing');
-    }
-
-    await addClosingAnimation(element, ANIMATION_DURATION.FAST);
-    element.remove();
-
+    currentPopconfirm.cleanup();
+    currentPopconfirm.element.remove();
     currentPopconfirm = null;
 }
 
-async function show(target: HTMLElement, options: PopconfirmOptions): Promise<PopconfirmInstance> {
-    // 单例模式：如果当前显示的是同一个目标，则关闭；否则关闭旧的再打开新的
+/** 带动画关闭当前 Popconfirm（fire-and-forget） */
+function closeCurrentAnimated(): void {
+    if (!currentPopconfirm) return;
+    const { element, cleanup } = currentPopconfirm;
+    const popconfirm = element.querySelector('.solely-popconfirm') as HTMLElement;
+    if (popconfirm) {
+        popconfirm.classList.add('is-closing');
+    }
+    currentPopconfirm = null;
+    addClosingAnimation(element, ANIMATION_DURATION.FAST).then(() => {
+        cleanup();
+        element.remove();
+    });
+}
+
+function appendContent(parent: HTMLElement, content: string | HTMLElement | undefined, shouldClone: boolean): void {
+    if (content === undefined) return;
+    if (typeof content === 'string') {
+        parent.textContent = content;
+    } else if (content instanceof HTMLElement) {
+        parent.appendChild(shouldClone ? content.cloneNode(true) : content);
+    }
+}
+
+/**
+ * 将 PopconfirmInstance 包装为 thenable，兼容历史版本中 show 返回 Promise 的用法。
+ * - 同步使用：`const inst = Popconfirm.show(...); inst.close();`
+ * - await：`const inst = await Popconfirm.show(...)`
+ * - .then()：`Popconfirm.show(...).then(inst => ...)`
+ */
+function toResult(instance: PopconfirmInstance): PopconfirmResult {
+    return {
+        ...instance,
+        then<T>(resolve: (instance: PopconfirmInstance) => T | PromiseLike<T>): PromiseLike<T> {
+            return Promise.resolve(resolve(instance));
+        },
+    };
+}
+
+function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult {
+    // 单例模式：如果当前显示的是同一个目标，则关闭
     if (currentPopconfirm && currentPopconfirm.target === target) {
-        await destroyCurrent();
-        return { destroy: () => {} };
+        destroyCurrentSync();
+        return toResult({ close: () => {}, destroy: () => {} });
     }
 
-    // 关闭已存在的 Popconfirm
-    await destroyCurrent();
+    // 关闭已存在的 Popconfirm（同步，无动画）
+    destroyCurrentSync();
 
     const id = generateId();
-
     ensureStylesInjected();
 
     const placement = (options.placement ?? globalConfig.placement) as Placement;
     const okType = options.okType ?? globalConfig.okType;
     const showCancel = options.showCancel ?? globalConfig.showCancel;
+    const shouldClone = options.cloneElement ?? true;
 
     const overlay = createElement('div', { className: 'solely-popconfirm-overlay' });
 
-    // 主题适配
-    const cleanupTheme = observeTheme(overlay);
+    // 主题适配（使用共享观察者）
+    const cleanupTheme = observeTheme(() => overlay);
 
     const popconfirm = createElement('div', {
         className: `solely-popconfirm solely-popconfirm--${placement}${options.className ? ` ${options.className}` : ''}`,
@@ -151,31 +148,13 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
 
     const textWrapper = createElement('div', { className: 'solely-popconfirm__text' });
 
-    const title = createElement('div', {
-        className: 'solely-popconfirm__title',
-    });
-
-    // 支持字符串和 DOM 元素作为标题
-    if (typeof options.title === 'string') {
-        title.textContent = options.title;
-    } else if (options.title instanceof HTMLElement) {
-        title.appendChild(options.title.cloneNode(true));
-    }
-
+    const title = createElement('div', { className: 'solely-popconfirm__title' });
+    appendContent(title, options.title, shouldClone);
     textWrapper.appendChild(title);
 
     if (options.description) {
-        const description = createElement('div', {
-            className: 'solely-popconfirm__description',
-        });
-
-        // 支持字符串和 DOM 元素作为描述
-        if (typeof options.description === 'string') {
-            description.textContent = options.description;
-        } else if (options.description instanceof HTMLElement) {
-            description.appendChild(options.description.cloneNode(true));
-        }
-
+        const description = createElement('div', { className: 'solely-popconfirm__description' });
+        appendContent(description, options.description, shouldClone);
         textWrapper.appendChild(description);
     }
 
@@ -183,13 +162,13 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
 
     const buttons = createElement('div', { className: 'solely-popconfirm__buttons' });
 
-    const handleConfirm = async () => {
-        await destroyCurrent();
+    const handleConfirm = () => {
+        closeCurrentAnimated();
         options.onConfirm?.();
     };
 
-    const handleCancel = async () => {
-        await destroyCurrent();
+    const handleCancel = () => {
+        closeCurrentAnimated();
         options.onCancel?.();
     };
 
@@ -198,15 +177,7 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
             className: 'solely-popconfirm__btn solely-popconfirm__btn--cancel',
             attrs: { type: 'button' },
         });
-
-        // 支持字符串和 DOM 元素作为取消按钮文字
-        const cancelText = options.cancelText ?? globalConfig.cancelText;
-        if (typeof cancelText === 'string') {
-            cancelBtn.textContent = cancelText;
-        } else if (cancelText instanceof HTMLElement) {
-            cancelBtn.appendChild(cancelText.cloneNode(true));
-        }
-
+        appendContent(cancelBtn, options.cancelText ?? globalConfig.cancelText, shouldClone);
         cancelBtn.onclick = handleCancel;
         buttons.appendChild(cancelBtn);
     }
@@ -215,15 +186,7 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
         className: `solely-popconfirm__btn solely-popconfirm__btn--ok${okType === 'danger' ? ' solely-popconfirm__btn--danger' : ''}`,
         attrs: { type: 'button' },
     });
-
-    // 支持字符串和 DOM 元素作为确认按钮文字
-    const okText = options.okText ?? globalConfig.okText;
-    if (typeof okText === 'string') {
-        okBtn.textContent = okText;
-    } else if (okText instanceof HTMLElement) {
-        okBtn.appendChild(okText.cloneNode(true));
-    }
-
+    appendContent(okBtn, options.okText ?? globalConfig.okText, shouldClone);
     okBtn.onclick = handleConfirm;
     buttons.appendChild(okBtn);
 
@@ -265,16 +228,27 @@ async function show(target: HTMLElement, options: PopconfirmOptions): Promise<Po
     overlay.addEventListener('click', handleOverlayClick);
     document.addEventListener('keydown', handleKeydown);
 
-    const destroyFn = () => {
+    const cleanup = () => {
         document.removeEventListener('keydown', handleKeydown);
         overlay.removeEventListener('click', handleOverlayClick);
         cleanupTheme();
-        destroyCurrent();
     };
 
-    currentPopconfirm = { id, target, element: overlay, destroy: destroyFn };
+    currentPopconfirm = { id, target, element: overlay, cleanup };
 
-    return { destroy: destroyFn };
+    const close = () => {
+        if (!currentPopconfirm || currentPopconfirm.element !== overlay) return;
+        cleanup();
+        closeCurrentAnimated();
+    };
+
+    const destroy = () => {
+        if (!currentPopconfirm || currentPopconfirm.element !== overlay) return;
+        cleanup();
+        closeCurrentAnimated();
+    };
+
+    return toResult({ close, destroy });
 }
 
 function bind(
@@ -283,28 +257,27 @@ function bind(
 ): PopconfirmInstance {
     // 避免重复绑定到同一元素
     if (boundTargets.has(target)) {
-        return { destroy: () => {} };
+        return { close: () => {}, destroy: () => {} };
     }
 
     boundTargets.add(target);
 
     let instance: PopconfirmInstance | null = null;
 
-    const handleClick = async (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
         e.stopPropagation();
 
         // 如果当前有 Popconfirm，则关闭；否则打开新的
         if (currentPopconfirm) {
-            await destroyCurrent();
+            destroyCurrentSync();
             instance = null;
         } else {
-            instance = await show(target, options as PopconfirmOptions);
+            instance = show(target, options as PopconfirmOptions);
         }
     };
 
     // 点击外部关闭的逻辑
-    const handleOutsideClick = async (e: MouseEvent) => {
-        // 如果当前没有 Popconfirm，直接返回
+    const handleOutsideClick = (e: MouseEvent) => {
         if (!currentPopconfirm) return;
 
         const targetElement = e.target as Node;
@@ -317,7 +290,7 @@ function bind(
         if (target.contains(targetElement)) return;
 
         // 否则关闭 Popconfirm
-        await destroyCurrent();
+        destroyCurrentSync();
         instance = null;
     };
 
@@ -325,6 +298,10 @@ function bind(
     document.addEventListener('mousedown', handleOutsideClick);
 
     return {
+        close: () => {
+            instance?.close();
+            instance = null;
+        },
         destroy: () => {
             boundTargets.delete(target);
             target.removeEventListener('click', handleClick);
@@ -343,7 +320,9 @@ export const Popconfirm = {
     show,
     bind,
     config,
-    destroy: destroyCurrent,
+    destroy: () => {
+        closeCurrentAnimated();
+    },
 };
 
 export default Popconfirm;

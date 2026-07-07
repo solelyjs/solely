@@ -29,6 +29,8 @@ export interface DrawerOptions {
     style?: Partial<CSSStyleDeclaration>;
     /** 抽屉内容的样式 */
     bodyStyle?: Partial<CSSStyleDeclaration>;
+    /** 是否克隆传入的 HTMLElement 内容（默认 true） */
+    cloneElement?: boolean;
 }
 
 export interface DrawerInstance {

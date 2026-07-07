@@ -65,7 +65,7 @@ export class DocsModal extends BaseElement<DocsData> {
         Modal.open({
             title: '基础对话框',
             content: '这是一个基础的对话框示例',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户点击了确定');
             },
             onCancel: () => {
@@ -79,7 +79,7 @@ export class DocsModal extends BaseElement<DocsData> {
         Modal.confirm({
             title: '确认操作',
             content: '您确定要执行此操作吗？',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户确认了操作');
             },
             onCancel: () => {
@@ -96,7 +96,7 @@ export class DocsModal extends BaseElement<DocsData> {
             okText: '删除',
             cancelText: '取消',
             okType: 'danger',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户确认删除');
             },
             onCancel: () => {
@@ -110,7 +110,7 @@ export class DocsModal extends BaseElement<DocsData> {
         Modal.info({
             title: '信息提示',
             content: '这是一条信息提示',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户确认了信息');
             },
         });
@@ -121,7 +121,7 @@ export class DocsModal extends BaseElement<DocsData> {
         Modal.success({
             title: '操作成功',
             content: '您的操作已成功完成',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户确认了成功信息');
             },
         });
@@ -132,7 +132,7 @@ export class DocsModal extends BaseElement<DocsData> {
         Modal.warning({
             title: '警告提示',
             content: '请注意操作风险',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户确认了警告信息');
             },
         });
@@ -143,7 +143,7 @@ export class DocsModal extends BaseElement<DocsData> {
         Modal.error({
             title: '操作失败',
             content: '操作过程中出现错误',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户确认了错误信息');
             },
         });
@@ -156,7 +156,7 @@ export class DocsModal extends BaseElement<DocsData> {
             content: '这是一个自定义内容的对话框，可以包含任意 HTML 内容',
             width: 600,
             maskClosable: false,
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('自定义对话框确定');
             },
             onCancel: () => {
@@ -171,7 +171,7 @@ export class DocsModal extends BaseElement<DocsData> {
             title: '异步操作对话框',
             content: '点击确定将执行异步操作，操作完成后才会关闭',
             okText: '提交',
-            onOk: async () => {
+            onConfirm: async () => {
                 this.addLog('开始异步操作...');
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 this.addLog('异步操作完成，对话框已关闭');
@@ -219,7 +219,7 @@ export class DocsModal extends BaseElement<DocsData> {
             title: '可点击遮罩关闭',
             content: '点击遮罩层可以关闭此对话框',
             maskClosable: true,
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('用户点击了确定');
             },
             onCancel: () => {
@@ -235,7 +235,7 @@ export class DocsModal extends BaseElement<DocsData> {
             content: '这是初始内容，宽度为 400px',
             width: 400,
             okText: '更新内容',
-            onOk: () => {
+            onConfirm: () => {
                 modal.update({
                     title: '已更新',
                     content: '内容已更新，宽度已改为 600px',
@@ -279,7 +279,7 @@ export class DocsModal extends BaseElement<DocsData> {
         Modal.open({
             title: 'Element 触发',
             content: '通过 Solely Button 组件触发的对话框',
-            onOk: () => {
+            onConfirm: () => {
                 this.addElementLog('Element 触发：用户点击了确定');
             },
             onCancel: () => {
@@ -308,7 +308,7 @@ export class DocsModal extends BaseElement<DocsData> {
             title: 'Element 作为内容',
             content: content,
             width: 480,
-            onOk: () => {
+            onConfirm: () => {
                 this.addElementLog('自定义内容：用户点击了确定');
             },
         });
@@ -354,7 +354,7 @@ export class DocsModal extends BaseElement<DocsData> {
             showIcon: false, // 去掉默认图标
             showCancel: false,
             okText: '知道了',
-            onOk: () => {
+            onConfirm: () => {
                 this.addElementLog('自定义 DOM：用户点击了确定');
             },
         });
@@ -366,7 +366,7 @@ export class DocsModal extends BaseElement<DocsData> {
             title: '自定义样式对话框',
             content: '通过自定义类名自定义样式的对话框内容',
             className: 'custom-modal-style',
-            onOk: () => {
+            onConfirm: () => {
                 this.addLog('自定义样式对话框：用户点击了确定');
             },
             onCancel: () => {
@@ -395,7 +395,7 @@ export class DocsModal extends BaseElement<DocsData> {
             title: '填写信息',
             content: form,
             okText: '提交',
-            onOk: () => {
+            onConfirm: () => {
                 const formData = new FormData(form);
                 const data = {
                     username: formData.get('username'),
@@ -423,7 +423,7 @@ export class DocsModal extends BaseElement<DocsData> {
             title: '克隆元素示例',
             content: content,
             cloneElement: true, // 克隆元素，保留原始元素
-            onOk: () => {
+            onConfirm: () => {
                 this.addElementLog('克隆元素对话框：确定');
             },
         });

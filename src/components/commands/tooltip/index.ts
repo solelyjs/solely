@@ -7,21 +7,22 @@
  * ```typescript
  * import { Tooltip } from 'solely/components/commands';
  *
- * // 绑定到元素
+ * // 绑定到元素（手动控制显隐）
  * const tooltip = Tooltip.bind(element, {
  *   content: '这是提示内容',
  *   placement: 'top'
  * });
- *
- * // 手动控制
  * tooltip.show();
  * tooltip.hide();
  * tooltip.destroy();
+ *
+ * // 一次性显示（自动隐藏）
+ * Tooltip.showOnce(element, { content: '提示' });
  * ```
  */
 
 import type { TooltipOptions, TooltipInstance, TooltipConfig } from './types';
-import { generateId, injectStyle, createElement } from '../utils';
+import { generateId, injectStyle, createElement, observeTheme } from '../utils';
 import type { Placement } from '../utils';
 import styles from './style.css?inline';
 
@@ -40,11 +41,11 @@ interface TooltipInfo {
     target: HTMLElement;
     placement: Placement;
     scrollParents: HTMLElement[];
+    cleanupTheme: () => void;
 }
 
 const tooltipList: TooltipInfo[] = [];
 const boundTargets = new WeakSet<HTMLElement>();
-let themeObserver: MutationObserver | null = null;
 
 function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
@@ -198,43 +199,6 @@ function unbindScrollListeners(): void {
     }
 }
 
-function observeTheme(element: HTMLElement): () => void {
-    const updateTheme = () => {
-        const theme = document.documentElement.getAttribute('data-theme');
-        if (theme) {
-            element.setAttribute('data-theme', theme);
-        } else {
-            element.removeAttribute('data-theme');
-        }
-    };
-
-    updateTheme();
-
-    if (!themeObserver) {
-        themeObserver = new MutationObserver(() => {
-            const theme = document.documentElement.getAttribute('data-theme');
-            tooltipList.forEach(t => {
-                if (theme) {
-                    t.element.setAttribute('data-theme', theme);
-                } else {
-                    t.element.removeAttribute('data-theme');
-                }
-            });
-        });
-        themeObserver.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme'],
-        });
-    }
-
-    return () => {
-        if (themeObserver && tooltipList.length === 0) {
-            themeObserver.disconnect();
-            themeObserver = null;
-        }
-    };
-}
-
 async function hideTooltipById(id: number, callback?: () => void): Promise<void> {
     const index = tooltipList.findIndex(t => t.id === id);
     if (index === -1) return;
@@ -243,16 +207,12 @@ async function hideTooltipById(id: number, callback?: () => void): Promise<void>
 
     info.element.classList.add('is-closing');
     info.element.remove();
+    info.cleanupTheme();
 
     info.scrollParents.forEach(p => p.removeEventListener('scroll', scheduleReposition));
     tooltipList.splice(index, 1);
 
     if (tooltipList.length === 0) unbindScrollListeners();
-    callback?.();
-}
-
-async function hideAllTooltips(callback?: () => void): Promise<void> {
-    hideAllTooltipsSync();
     callback?.();
 }
 
@@ -264,6 +224,7 @@ function hideAllTooltipsSync(): void {
         info.scrollParents.forEach(p => allScrollParents.add(p));
         info.element.classList.add('is-closing');
         info.element.remove();
+        info.cleanupTheme();
     });
 
     allScrollParents.forEach(p => p.removeEventListener('scroll', scheduleReposition));
@@ -271,16 +232,23 @@ function hideAllTooltipsSync(): void {
     unbindScrollListeners();
 }
 
+async function hideAllTooltips(callback?: () => void): Promise<void> {
+    hideAllTooltipsSync();
+    callback?.();
+}
+
 function showTooltip(target: HTMLElement, options: TooltipOptions): number {
     const id = generateId();
     ensureStylesInjected();
 
     const placement = (options.placement ?? globalConfig.placement) as Placement;
+    const shouldClone = options.cloneElement ?? true;
 
     const existingIndex = tooltipList.findIndex(t => t.target === target);
     if (existingIndex !== -1) {
         const existing = tooltipList[existingIndex];
         existing.element.remove();
+        existing.cleanupTheme();
         existing.scrollParents.forEach(p => p.removeEventListener('scroll', scheduleReposition));
         tooltipList.splice(existingIndex, 1);
     }
@@ -297,7 +265,8 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
         },
     });
 
-    observeTheme(tooltip);
+    // 使用共享主题观察者
+    const cleanupTheme = observeTheme(() => tooltip);
 
     const contentEl = createElement('div', { className: 'solely-tooltip__content' });
 
@@ -305,7 +274,7 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
         if (typeof options.content === 'string') {
             contentEl.textContent = options.content;
         } else if (options.content instanceof HTMLElement) {
-            contentEl.appendChild(options.content.cloneNode(true));
+            contentEl.appendChild(shouldClone ? options.content.cloneNode(true) : options.content);
         }
     }
 
@@ -338,7 +307,7 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
 
     bindScrollListeners();
 
-    tooltipList.push({ id, element: tooltip, target, placement, scrollParents });
+    tooltipList.push({ id, element: tooltip, target, placement, scrollParents, cleanupTheme });
 
     options.onVisibleChange?.(true);
 
@@ -422,6 +391,10 @@ function bind(target: HTMLElement, options: TooltipOptions): TooltipInstance {
     return { show, hide, destroy };
 }
 
+/**
+ * 一次性显示 Tooltip（自动隐藏）
+ * 如需手动控制显隐，请使用 bind() 方法
+ */
 function showOnce(target: HTMLElement, options: TooltipOptions & { duration?: number }): void {
     const id = showTooltip(target, options);
     const duration = options.duration ?? globalConfig.duration;
@@ -435,9 +408,17 @@ function config(options: Partial<TooltipConfig>): void {
 }
 
 export const Tooltip = {
+    /** 绑定到目标元素，返回可手动控制的实例 */
     bind,
+    /** 一次性显示（自动隐藏）。如需手动控制请用 bind() */
+    showOnce,
+    /** @deprecated show 的别名，仅为向后兼容保留，请使用 showOnce */
     show: showOnce,
+    /** 隐藏所有 Tooltip */
     hide: hideAllTooltips,
+    /** 销毁所有 Tooltip */
+    destroy: hideAllTooltipsSync,
+    /** 配置全局默认值 */
     config,
 };
 

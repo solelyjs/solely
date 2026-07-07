@@ -32,6 +32,8 @@ export interface MessageOptions {
     onClose?: () => void;
     /** 消息位置，默认 'top' */
     placement?: MessagePlacement;
+    /** 是否克隆传入的 HTMLElement 内容（默认 true） */
+    cloneElement?: boolean;
 }
 
 export interface MessageInstance {

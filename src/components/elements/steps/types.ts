@@ -1,5 +1,5 @@
 export type StepsDirection = 'horizontal' | 'vertical';
-export type StepsSize = 'default' | 'small' | 'large';
+export type StepsSize = 'small' | 'medium' | 'large';
 export type StepStatus = 'wait' | 'process' | 'finish' | 'error';
 
 export interface StepItem {

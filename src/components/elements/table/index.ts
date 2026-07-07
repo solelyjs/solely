@@ -17,7 +17,7 @@ import { safeJsonParse } from '../utils/helpers';
     props: [
         { name: 'columns', type: 'string' },
         { name: 'dataSource', type: 'string' },
-        { name: 'size', type: 'string' },
+        { name: 'size', type: 'string', default: 'medium' },
         { name: 'bordered', type: 'boolean', default: false },
         { name: 'loading', type: 'boolean', default: false },
         { name: 'striped', type: 'boolean', default: false },

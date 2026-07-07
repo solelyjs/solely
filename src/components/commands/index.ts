@@ -13,7 +13,13 @@ export type { MessageOptions, MessageInstance, MessageConfig, MessageType, Messa
 export type { ModalOptions, ModalInstance, ModalConfig, ModalType, ModalButton } from './modal/types';
 export type { TooltipOptions, TooltipInstance, TooltipConfig, TooltipPlacement, TooltipTrigger } from './tooltip/types';
 export type { DrawerOptions, DrawerInstance, DrawerConfig, DrawerPlacement } from './drawer/types';
-export type { PopconfirmOptions, PopconfirmInstance, PopconfirmConfig, PopconfirmPlacement } from './popconfirm/types';
+export type {
+    PopconfirmOptions,
+    PopconfirmInstance,
+    PopconfirmResult,
+    PopconfirmConfig,
+    PopconfirmPlacement,
+} from './popconfirm/types';
 
 // 导出共享工具函数和常量
 export {
@@ -24,6 +30,7 @@ export {
     calculatePosition,
     safeAsyncCallback,
     addClosingAnimation,
+    observeTheme,
     ANIMATION_DURATION,
     Z_INDEX,
 } from './utils';

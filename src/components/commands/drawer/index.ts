@@ -17,7 +17,14 @@
  */
 
 import type { DrawerOptions, DrawerInstance, DrawerConfig } from './types';
-import { generateId, injectStyle, createElement, addClosingAnimation, ANIMATION_DURATION } from '../utils';
+import {
+    generateId,
+    injectStyle,
+    createElement,
+    addClosingAnimation,
+    observeTheme,
+    ANIMATION_DURATION,
+} from '../utils';
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-drawer-styles';
@@ -39,47 +46,9 @@ interface DrawerInfo {
 
 const drawerList: DrawerInfo[] = [];
 const closingIds = new Set<number>();
-let themeObserver: MutationObserver | null = null;
 
 function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
-}
-
-function observeTheme(wrap: HTMLElement): () => void {
-    const updateTheme = () => {
-        const theme = document.documentElement.getAttribute('data-theme');
-        if (theme) {
-            wrap.setAttribute('data-theme', theme);
-        } else {
-            wrap.removeAttribute('data-theme');
-        }
-    };
-
-    updateTheme();
-
-    if (!themeObserver) {
-        themeObserver = new MutationObserver(() => {
-            drawerList.forEach(d => {
-                const theme = document.documentElement.getAttribute('data-theme');
-                if (theme) {
-                    d.element.setAttribute('data-theme', theme);
-                } else {
-                    d.element.removeAttribute('data-theme');
-                }
-            });
-        });
-        themeObserver.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme'],
-        });
-    }
-
-    return () => {
-        if (themeObserver && drawerList.length === 0) {
-            themeObserver.disconnect();
-            themeObserver = null;
-        }
-    };
 }
 
 async function closeDrawerById(id: number): Promise<void> {
@@ -133,8 +102,10 @@ function open(options: DrawerOptions): DrawerInstance {
 
     const wrap = createElement('div', { className: 'solely-drawer-wrap' });
 
-    // 主题适配
-    const cleanupTheme = observeTheme(wrap);
+    // 主题适配（使用共享观察者）
+    const cleanupTheme = observeTheme(() => wrap);
+
+    const shouldClone = options.cloneElement ?? true;
 
     // 存储需要清理的事件处理函数
     const handlersToCleanup: Array<{ element: HTMLElement; type: string; handler: EventListener }> = [];
@@ -175,7 +146,7 @@ function open(options: DrawerOptions): DrawerInstance {
             if (typeof options.title === 'string') {
                 title.textContent = options.title;
             } else if (options.title instanceof HTMLElement) {
-                title.appendChild(options.title.cloneNode(true));
+                title.appendChild(shouldClone ? options.title.cloneNode(true) : options.title);
             }
 
             header.appendChild(title);
@@ -208,7 +179,7 @@ function open(options: DrawerOptions): DrawerInstance {
     if (typeof options.content === 'string') {
         body.textContent = options.content || '';
     } else if (options.content instanceof HTMLElement) {
-        body.appendChild(options.content.cloneNode(true));
+        body.appendChild(shouldClone ? options.content.cloneNode(true) : options.content);
     }
 
     drawer.appendChild(body);
@@ -235,6 +206,7 @@ function open(options: DrawerOptions): DrawerInstance {
             options.onClose?.();
         },
         update: (newOptions: Partial<DrawerOptions>) => {
+            const updateShouldClone = newOptions.cloneElement ?? shouldClone;
             // 更新标题
             if (newOptions.title !== undefined) {
                 const titleEl = wrap.querySelector('.solely-drawer__title') as HTMLElement;
@@ -246,7 +218,7 @@ function open(options: DrawerOptions): DrawerInstance {
                     if (typeof newOptions.title === 'string') {
                         titleEl.textContent = newOptions.title;
                     } else if (newOptions.title instanceof HTMLElement) {
-                        titleEl.appendChild(newOptions.title.cloneNode(true));
+                        titleEl.appendChild(updateShouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
                     }
                 } else if (newOptions.title) {
                     // 如果之前没有标题，需要创建 header
@@ -259,7 +231,7 @@ function open(options: DrawerOptions): DrawerInstance {
                     if (typeof newOptions.title === 'string') {
                         title.textContent = newOptions.title;
                     } else if (newOptions.title instanceof HTMLElement) {
-                        title.appendChild(newOptions.title.cloneNode(true));
+                        title.appendChild(updateShouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
                     }
 
                     header.appendChild(title);
@@ -279,7 +251,7 @@ function open(options: DrawerOptions): DrawerInstance {
                     if (typeof newOptions.content === 'string') {
                         bodyEl.textContent = newOptions.content;
                     } else if (newOptions.content instanceof HTMLElement) {
-                        bodyEl.appendChild(newOptions.content.cloneNode(true));
+                        bodyEl.appendChild(updateShouldClone ? newOptions.content.cloneNode(true) : newOptions.content);
                     }
                 }
             }

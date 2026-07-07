@@ -199,7 +199,7 @@ export class DocsTooltip extends BaseElement<DocsData> {
     showOnceTooltip(): void {
         const btn = this.$refs.onceBtn as HTMLElement;
         if (btn) {
-            Tooltip.show(btn, {
+            Tooltip.showOnce(btn, {
                 content: '自动消失的提示（3秒后）',
                 placement: 'top',
                 duration: 3000,
@@ -266,7 +266,7 @@ export class DocsTooltip extends BaseElement<DocsData> {
     showElementTooltip(): void {
         const btn = this.$refs.elementShowBtn as HTMLElement;
         if (btn) {
-            Tooltip.show(btn, {
+            Tooltip.showOnce(btn, {
                 content: 'Element 临时提示（2秒后消失）',
                 placement: 'top',
                 duration: 2000,
@@ -287,7 +287,7 @@ export class DocsTooltip extends BaseElement<DocsData> {
                 </div>
             `;
 
-            Tooltip.show(btn, {
+            Tooltip.showOnce(btn, {
                 content: customContent,
                 placement: 'top',
                 duration: 3000,
@@ -307,7 +307,7 @@ export class DocsTooltip extends BaseElement<DocsData> {
     showCustomStyleTooltip(): void {
         const btn = this.$refs.customStyleBtn as HTMLElement;
         if (btn) {
-            Tooltip.show(btn, {
+            Tooltip.showOnce(btn, {
                 content: '自定义样式提示',
                 placement: 'top',
                 className: 'custom-tooltip-style',

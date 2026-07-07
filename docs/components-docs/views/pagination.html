@@ -230,7 +230,7 @@
                     total="100"
                     show-size-changer
                     @change="this.handleChange(event)"
-                    @sizeChange="this.handleSizeChange(event)">
+                    @size-change="this.handleSizeChange(event)">
                 </solely-pagination>
                 <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
                     <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
@@ -243,7 +243,7 @@
   <span class="code-attr">current</span>=<span class="code-value">"1"</span>
   <span class="code-attr">total</span>=<span class="code-value">"100"</span>
   <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span>
-  <span class="code-attr">@sizeChange</span>=<span class="code-value">"handleSizeChange(event)"</span><span class="code-bracket">&gt;</span>
+  <span class="code-attr">@size-change</span>=<span class="code-value">"handleSizeChange(event)"</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span>
 
 <span class="code-comment">&lt;!-- JavaScript --&gt;</span>
@@ -255,8 +255,8 @@ pagination.addEventListener(<span class="code-value">'change'</span>, (e) => {
   console.log(<span class="code-value">'每页条数:'</span>, e.detail.pageSize);
 });
 
-<span class="code-comment">// 每页条数改变事件（兼容旧名称 showSizeChange）
-pagination.addEventListener(<span class="code-value">'sizeChange'</span>, (e) => {
+<span class="code-comment">// 每页条数改变事件（兼容旧名称 show-size-change）
+pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) => {
   console.log(<span class="code-value">'当前页:'</span>, e.detail.current);
   console.log(<span class="code-value">'每页条数:'</span>, e.detail.pageSize);
 });</code></pre>
@@ -356,8 +356,8 @@ pagination.addEventListener(<span class="code-value">'sizeChange'</span>, (e) =>
                     <td>CustomEvent&lt;{ current: number; pageSize: number }&gt;</td>
                 </tr>
                 <tr>
-                    <td>sizeChange</td>
-                    <td>每页条数改变时触发（兼容旧名称 showSizeChange）</td>
+                    <td>size-change</td>
+                    <td>每页条数改变时触发（兼容旧名称 show-size-change）</td>
                     <td>CustomEvent&lt;{ current: number; pageSize: number }&gt;</td>
                 </tr>
             </tbody>

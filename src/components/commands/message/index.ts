@@ -1,5 +1,13 @@
 import type { MessageOptions, MessageInstance, MessageConfig, MessageType, MessagePlacement } from './types';
-import { generateId, injectStyle, createElement, addClosingAnimation, ANIMATION_DURATION, Z_INDEX } from '../utils';
+import {
+    generateId,
+    injectStyle,
+    createElement,
+    addClosingAnimation,
+    observeTheme,
+    ANIMATION_DURATION,
+    Z_INDEX,
+} from '../utils';
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-message-styles';
@@ -15,7 +23,6 @@ const globalConfig: MessageConfig = {
     placement: 'top',
 };
 
-let themeObserver: MutationObserver | null = null;
 let containerCleanupTimer: number | undefined;
 const closingIds = new Set<number>();
 
@@ -47,28 +54,12 @@ function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
 }
 
-function observeTheme(container: HTMLElement): void {
-    if (themeObserver) themeObserver.disconnect();
-    themeObserver = new MutationObserver(() => {
-        const theme = document.documentElement.getAttribute('data-theme');
-        if (theme) {
-            container.setAttribute('data-theme', theme);
-        } else {
-            container.removeAttribute('data-theme');
-        }
-    });
-    themeObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['data-theme'],
-    });
-}
-
-const containers: Map<string, HTMLElement> = new Map();
+const containers: Map<string, { element: HTMLElement; cleanupTheme: () => void }> = new Map();
 
 function getContainer(placement: MessagePlacement = globalConfig.placement): HTMLElement {
     const containerKey = placement;
     if (containers.has(containerKey)) {
-        return containers.get(containerKey) as HTMLElement;
+        return (containers.get(containerKey) as { element: HTMLElement; cleanupTheme: () => void }).element;
     }
 
     const container = createElement('div', {
@@ -136,13 +127,13 @@ function getContainer(placement: MessagePlacement = globalConfig.placement): HTM
 
     Object.assign(container.style, styles);
 
-    const theme = document.documentElement.getAttribute('data-theme');
-    if (theme) container.setAttribute('data-theme', theme);
     document.body.appendChild(container);
     ensureStylesInjected();
-    observeTheme(container);
 
-    containers.set(containerKey, container);
+    // 使用共享主题观察者
+    const cleanupTheme = observeTheme(() => container);
+
+    containers.set(containerKey, { element: container, cleanupTheme });
     return container;
 }
 
@@ -152,16 +143,13 @@ function scheduleContainerCleanup(): void {
     }
     containerCleanupTimer = window.setTimeout(() => {
         if (messageList.length === 0) {
-            containers.forEach((container, placement) => {
-                if (container.childElementCount === 0) {
-                    container.remove();
+            containers.forEach((entry, placement) => {
+                if (entry.element.childElementCount === 0) {
+                    entry.element.remove();
+                    entry.cleanupTheme();
                     containers.delete(placement);
                 }
             });
-            if (containers.size === 0 && themeObserver) {
-                themeObserver.disconnect();
-                themeObserver = null;
-            }
         }
         containerCleanupTimer = undefined;
     }, 300);
@@ -185,6 +173,7 @@ function createIconElement(icon: string | HTMLElement, type: MessageType): HTMLE
 function createMessageElement(options: MessageOptions, id: number): HTMLElement {
     const type = options.type || 'info';
     const showIcon = options.showIcon !== false;
+    const shouldClone = options.cloneElement ?? true;
 
     const element = createElement('div', {
         className: `solely-message solely-message--${type}${options.className ? ` ${options.className}` : ''}`,
@@ -209,7 +198,7 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
     if (typeof options.content === 'string') {
         textEl.textContent = options.content;
     } else if (options.content instanceof HTMLElement) {
-        textEl.appendChild(options.content.cloneNode(true));
+        textEl.appendChild(shouldClone ? options.content.cloneNode(true) : options.content);
     }
 
     content.appendChild(textEl);
@@ -223,7 +212,7 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
         if (typeof options.description === 'string') {
             descEl.textContent = options.description;
         } else if (options.description instanceof HTMLElement) {
-            descEl.appendChild(options.description.cloneNode(true));
+            descEl.appendChild(shouldClone ? options.description.cloneNode(true) : options.description);
         }
 
         content.appendChild(descEl);
@@ -438,7 +427,8 @@ function config(options: Partial<MessageConfig>): void {
     Object.assign(globalConfig, options);
 
     // 更新现有容器的样式
-    containers.forEach((container, placement) => {
+    containers.forEach((entry, placement) => {
+        const container = entry.element;
         // 顶部位置
         if (options.top !== undefined) {
             if (['top', 'topLeft', 'topRight'].includes(placement)) {

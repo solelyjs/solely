@@ -18,7 +18,7 @@ import { safeJsonParse } from '../utils/helpers';
         { name: 'current', type: 'number', default: 1 },
         { name: 'total', type: 'number', default: 0 },
         { name: 'pageSize', type: 'number', default: 10 },
-        { name: 'size', type: 'string', default: 'default' },
+        { name: 'size', type: 'string', default: 'medium' },
         { name: 'simple', type: 'boolean', default: false },
         { name: 'showQuickJumper', type: 'boolean', default: false },
         { name: 'showSizeChanger', type: 'boolean', default: false },
@@ -208,10 +208,10 @@ class SolelyPagination extends BaseElement<
         this.$data.pageSize = newPageSize;
         this.$data.current = 1;
 
-        // 派发 sizeChange 事件（同时兼容旧名称 showSizeChange）
+        // 派发 size-change 事件（同时派发 show-size-change 兼容旧监听）
         const detail = { current: 1, pageSize: newPageSize };
-        this.emit('sizeChange', detail);
-        this.emit('showSizeChange', detail);
+        this.emit('size-change', detail);
+        this.emit('show-size-change', detail);
     }
 
     /**

@@ -11,7 +11,7 @@
  * Modal.confirm({
  *   title: '确认删除？',
  *   content: '删除后无法恢复',
- *   onOk: () => deleteItem()
+ *   onConfirm: () => deleteItem()
  * });
  *
  * // 信息提示
@@ -35,6 +35,7 @@ import {
     createElement,
     addClosingAnimation,
     safeAsyncCallback,
+    observeTheme,
     ANIMATION_DURATION,
 } from '../utils';
 import styles from './style.css?inline';
@@ -58,7 +59,6 @@ interface ModalInfo {
 
 const modalList: ModalInfo[] = [];
 const closingIds = new Set<number>();
-let themeObserver: MutationObserver | null = null;
 
 const ICON_MAP: Record<ModalType, string> = {
     info: 'ℹ',
@@ -70,43 +70,6 @@ const ICON_MAP: Record<ModalType, string> = {
 
 function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
-}
-
-function observeTheme(wrap: HTMLElement): () => void {
-    const updateTheme = () => {
-        const theme = document.documentElement.getAttribute('data-theme');
-        if (theme) {
-            wrap.setAttribute('data-theme', theme);
-        } else {
-            wrap.removeAttribute('data-theme');
-        }
-    };
-
-    updateTheme();
-
-    if (!themeObserver) {
-        themeObserver = new MutationObserver(() => {
-            modalList.forEach(m => {
-                const theme = document.documentElement.getAttribute('data-theme');
-                if (theme) {
-                    m.element.setAttribute('data-theme', theme);
-                } else {
-                    m.element.removeAttribute('data-theme');
-                }
-            });
-        });
-        themeObserver.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['data-theme'],
-        });
-    }
-
-    return () => {
-        if (themeObserver && modalList.length === 0) {
-            themeObserver.disconnect();
-            themeObserver = null;
-        }
-    };
 }
 
 async function closeModalById(id: number): Promise<void> {
@@ -185,8 +148,8 @@ function open(options: ModalOptions): ModalInstance {
         attrs: { tabIndex: '-1', part: 'wrap' },
     });
 
-    // 主题适配
-    const cleanupTheme = observeTheme(wrap);
+    // 主题适配（使用共享观察者）
+    const cleanupTheme = observeTheme(() => wrap);
 
     // 存储需要清理的事件处理函数
     const handlersToCleanup: Array<{ element: HTMLElement; type: string; handler: EventListener }> = [];
@@ -309,9 +272,10 @@ function open(options: ModalOptions): ModalInstance {
             options.okText || globalConfig.okText,
             options.okType || 'primary',
             async () => {
-                if (options.onOk) {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    const result = await safeAsyncCallback(() => options.onOk!());
+                // 兼容 onOk（废弃别名），优先使用 onConfirm
+                const confirmHandler = options.onConfirm || options.onOk;
+                if (confirmHandler) {
+                    const result = await safeAsyncCallback(() => confirmHandler());
                     // 只有当回调不返回 false 时才关闭对话框
                     if (result === false) {
                         return; // 不关闭对话框

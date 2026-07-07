@@ -240,6 +240,12 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
     <div class="api-block">
     <h3 class="api-block-title">API</h3>
 
+    <p class="demo-block-desc">
+        Tooltip 提供两种使用方式：<br>
+        • <strong>声明式</strong>：使用 <code>&lt;solely-tooltip&gt;</code> 自定义元素，适合在模板中绑定（见上方示例）；<br>
+        • <strong>命令式</strong>：通过 <code>Tooltip.bind</code>（手动控制显隐）或 <code>Tooltip.showOnce</code>（一次性自动消失）调用，适合在脚本中动态触发。
+    </p>
+
     <h4 class="api-block-subtitle">Tooltip.bind(target, options)</h4>
     <table class="api-table">
         <thead>
@@ -309,7 +315,7 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
         </tbody>
     </table>
 
-    <h4 class="api-block-subtitle">Tooltip.show(target, options)</h4>
+    <h4 class="api-block-subtitle">Tooltip.showOnce(target, options)</h4>
     <table class="api-table">
         <thead>
             <tr>
@@ -378,6 +384,24 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
             <tr>
                 <td>hide()</td>
                 <td>隐藏所有提示</td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4 class="api-block-subtitle">Tooltip.destroy()</h4>
+    <table class="api-table">
+        <thead>
+            <tr>
+                <th>方法</th>
+                <th>说明</th>
+                <th>参数</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>destroy()</td>
+                <td>销毁所有提示（立即移除）</td>
                 <td>-</td>
             </tr>
         </tbody>
