@@ -7,6 +7,32 @@
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-07-07
+
+### Added
+
+- **feat(commands)**: 为命令式组件新增 `cloneElement` 属性
+    - 支持配置是否克隆传入的 HTML 内容
+- **feat(commands)**: 新增共享主题观察者 `observeTheme`
+    - 统一处理命令式组件的主题适配，移除各组件重复的主题监听逻辑
+- **feat(modal)**: 重构 Modal 回调函数，新增 `onConfirm` 并保留 `onOk` 作为兼容别名
+- **feat(popconfirm)**: 为 Popconfirm 新增 `close` 方法并优化实例返回类型
+- **feat(tooltip)**: 为 Tooltip 新增 `showOnce` 方法
+
+### Changed
+
+- **refactor(size)**: 统一组件尺寸命名
+    - 将多处组件尺寸的 `default` 统一替换为 `medium`
+    - 调整 `TableSize` 的枚举顺序
+- **refactor(pagination)**: 优化分页组件事件命名
+    - 将 `sizeChange` 改为 `size-change` 并保留旧事件名兼容
+- **refactor(popconfirm)**: 简化 Popconfirm 类名拼接逻辑
+    - 使用 `filter(Boolean).join(' ')` 替代三元判断和字符串拼接
+
+### Fixed
+
+- **docs**: 修复多处文档示例中的回调函数命名不一致问题
+
 ## [0.5.3] - 2026-06-24
 
 ### Changed
@@ -701,7 +727,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.4...HEAD
+[0.5.4]: https://github.com/solelyjs/solely/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/solelyjs/solely/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/solelyjs/solely/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/solelyjs/solely/compare/v0.5.0...v0.5.1
