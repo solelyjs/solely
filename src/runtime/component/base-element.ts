@@ -403,7 +403,10 @@ class BaseElement<
             const styleId = `solely-style-${SOLELY_VERSION}-${manifest.tagName}`;
             const count = BaseElement.#styleRefCount.get(styleId) || 0;
             if (count <= 1) {
-                const escapedId = CSS.escape(styleId);
+                const escapedId =
+                    typeof CSS !== 'undefined' && CSS.escape
+                        ? CSS.escape(styleId)
+                        : styleId.replace(/([.#:[\]()!])/g, '\\$1');
                 document.head.querySelector(`#${escapedId}`)?.remove();
                 BaseElement.#styleRefCount.delete(styleId);
             } else {

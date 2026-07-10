@@ -29,6 +29,14 @@ class TestEl extends BaseElement<TestData> {
     }
 }
 
+@CustomElement({
+    tagName: 'test-no-css-escape',
+    template: '<div></div>',
+    styles: ':host { display:block; }',
+    shadowDOM: { use: false },
+})
+class TestNoCssEscapeEl extends BaseElement<Record<string, never>> {}
+
 describe('base/BaseElement public interface tests', () => {
     let el: TestEl;
 
@@ -136,6 +144,19 @@ describe('base/BaseElement public interface tests', () => {
 
         el.disconnectedCallback(); // 触发 disconnectedCallback
         expect(spyUnmounted).toHaveBeenCalled();
+    });
+
+    it('should clean up non-shadow styles without CSS.escape', () => {
+        const originalCss = globalThis.CSS;
+        Object.defineProperty(globalThis, 'CSS', { value: undefined, configurable: true, writable: true });
+
+        try {
+            const nonShadowEl = document.createElement('test-no-css-escape') as TestNoCssEscapeEl;
+            document.body.appendChild(nonShadowEl);
+            expect(() => nonShadowEl.remove()).not.toThrow();
+        } finally {
+            Object.defineProperty(globalThis, 'CSS', { value: originalCss, configurable: true, writable: true });
+        }
     });
 
     it('should handle invalid attribute values gracefully', () => {
