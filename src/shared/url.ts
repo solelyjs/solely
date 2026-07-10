@@ -3,30 +3,28 @@
  * @param location 浏览器的location对象或者URL字符串
  * @returns 解析后的路径和查询参数对象
  */
-export function parseHashUrl(location: Location | string = window.location) {
+export function parseHashUrl(location?: Location | string) {
     let hash: string;
     if (typeof location === 'string') {
-        const url = new URL(location);
+        const url = new URL(location, typeof window !== 'undefined' ? window.location.href : 'http://localhost/');
         hash = url.hash;
-    } else {
+    } else if (location) {
         hash = location.hash;
+    } else {
+        hash = window.location.hash;
     }
 
-    const hashParts = hash.split('?');
-    let path = hashParts[0]; // 获取哈希路径，包含开头的'#'
-    const queryParams = hashParts[1]; // 获取查询参数字符串
+    const queryIndex = hash.indexOf('?');
+    let path = queryIndex === -1 ? hash : hash.slice(0, queryIndex);
+    const queryParams = queryIndex === -1 ? '' : hash.slice(queryIndex + 1);
     const query: { [key: string]: string } = {};
 
     // 移除开头的'#'和可能存在的'/'
     path = path.replace(/^#\/?/, '');
 
     if (queryParams) {
-        // 解析查询参数
-        queryParams.split('&').forEach(pair => {
-            const [key, value] = pair.split('=');
-            if (key && value) {
-                query[decodeURIComponent(key)] = decodeURIComponent(value);
-            }
+        new URLSearchParams(queryParams).forEach((value, key) => {
+            query[key] = value;
         });
     }
 
