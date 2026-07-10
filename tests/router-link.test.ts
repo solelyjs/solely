@@ -91,6 +91,24 @@ describe('router-link', () => {
         el.remove();
     });
 
+    it('should mark a non-exact link as active when only the query differs', async () => {
+        (mockContainer.router!.getCurrentRoute as ReturnType<typeof vi.fn>).mockReturnValue({
+            fullPath: '/about?tab=details',
+            params: {},
+            query: { tab: 'details' },
+            matched: [],
+        });
+
+        const el = new RouterLink();
+        el.setAttribute('to', '/about');
+        document.body.appendChild(el);
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        expect(el.classList.contains('active')).toBe(true);
+        el.remove();
+    });
+
     it('should handle exact matching', async () => {
         (mockContainer.router!.getCurrentRoute as ReturnType<typeof vi.fn>).mockReturnValue({
             fullPath: '/about/team',
@@ -204,5 +222,19 @@ describe('router-link', () => {
 
         expect(el.shadowRoot?.textContent).toContain('About Us');
         el.remove();
+    });
+
+    it('should unsubscribe from the router when disconnected', async () => {
+        const unsubscribe = vi.fn();
+        (mockContainer.router!.listen as ReturnType<typeof vi.fn>).mockReturnValue(unsubscribe);
+
+        const el = new RouterLink();
+        el.setAttribute('to', '/about');
+        document.body.appendChild(el);
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+        el.remove();
+
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
     });
 });

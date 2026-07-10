@@ -49,40 +49,49 @@ class RouterLink extends BaseElement<{
     }
 
     #prefetched = false;
+    private unsubscribe?: () => void;
+    private mountVersion = 0;
+
+    private readonly handleClick = (e: MouseEvent) => {
+        if (e.defaultPrevented) return;
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        if (e.button !== 0) return;
+
+        const target = e.target as HTMLElement;
+        if (target.closest('a')?.getAttribute('target')) return;
+
+        e.preventDefault();
+        getRouter()?.push(this.$data.to);
+    };
+
+    private readonly handleMouseEnter = () => {
+        this.prefetchRoute();
+    };
 
     async mounted() {
+        const mountVersion = ++this.mountVersion;
         const router = await routerReady();
+        if (this.mountVersion !== mountVersion) return;
 
         // 监听路由变化，更新 active 状态
-        router.listen(() => this.updateState());
+        this.unsubscribe = router.listen(() => this.updateState());
 
         // 初始化状态
         this.updateState();
 
         // 1. 完美拦截点击事件 (兼容新标签页等浏览器原生行为)
-        this.addEventListener('click', e => {
-            // 被阻止过则忽略
-            if (e.defaultPrevented) return;
-            // 存在键盘修饰键，交给浏览器原生处理（新标签页/新窗口）
-            if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-            // 非鼠标左键点击，交给浏览器原生处理
-            if (e.button !== 0) return;
-            // 目标带有 target="_blank" 等属性，交给浏览器原生处理
-            const target = e.target as HTMLElement;
-            if (target.closest('a')?.getAttribute('target')) return;
-
-            e.preventDefault();
-            getRouter()?.push(this.$data.to);
-        });
+        this.addEventListener('click', this.handleClick);
 
         // 2. Prefetch 预加载逻辑 (鼠标悬停时触发，提升页面切换极速体验)
-        this.addEventListener(
-            'mouseenter',
-            () => {
-                this.prefetchRoute();
-            },
-            { once: true },
-        ); // { once: true } 保证只触发一次，避免浪费性能
+        this.addEventListener('mouseenter', this.handleMouseEnter, { once: true }); // { once: true } 保证只触发一次，避免浪费性能
+    }
+
+    unmounted() {
+        this.mountVersion++;
+        this.unsubscribe?.();
+        this.unsubscribe = undefined;
+        this.removeEventListener('click', this.handleClick);
+        this.removeEventListener('mouseenter', this.handleMouseEnter);
     }
 
     updateState() {
@@ -107,7 +116,9 @@ class RouterLink extends BaseElement<{
                 if (isExact) {
                     isSelected = currentPath === this.$data.to;
                 } else {
-                    isSelected = currentPath === this.$data.to || currentPath.startsWith(this.$data.to + '/');
+                    const currentPathname = currentPath.split('?')[0];
+                    const targetPathname = this.$data.to.split('?')[0];
+                    isSelected = currentPathname === targetPathname || currentPathname.startsWith(targetPathname + '/');
                 }
             }
         }
