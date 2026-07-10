@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { observe, ChangeItem } from '../src/runtime/reactivity';
+import { observe, ChangeItem, toRaw } from '../src/runtime/reactivity';
 
 // 安全 stringify，支持循环引用
 function safeStringify(obj: any) {
@@ -309,6 +309,25 @@ describe('observe function', () => {
         const { proxy, unobserve } = observe(obj, () => {});
 
         expect(proxy.nested).toBe(proxy.nested);
+
+        unobserve();
+    });
+
+    it('should not emit a change when assigning an existing proxy value', () => {
+        const obj = { nested: { a: 1 } };
+        const { proxy, unobserve } = observe(
+            obj,
+            change => {
+                changes.push(formatChange(change));
+            },
+            { throttle: 0 },
+        );
+
+        const nested = proxy.nested;
+        proxy.nested = nested;
+
+        expect(changes).toHaveLength(0);
+        expect(toRaw(proxy.nested)).toBe(obj.nested);
 
         unobserve();
     });

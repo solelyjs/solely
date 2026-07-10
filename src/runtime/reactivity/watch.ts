@@ -117,10 +117,13 @@ export function watchGetter<T>(
         observers.push(obs);
     }
 
-    // immediate
+    // Establish a baseline even when the callback is not immediate. This makes
+    // the first notified change report the actual previous value.
     if (options.immediate) {
         oldValue = getter();
         callback(oldValue, undefined);
+    } else {
+        oldValue = getter();
     }
 
     return {

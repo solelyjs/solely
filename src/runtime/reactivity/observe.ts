@@ -141,13 +141,16 @@ const isNativeSkippable = (obj: unknown): boolean => {
     if (tag === '[object Date]' || tag === '[object RegExp]' || tag === '[object Map]' || tag === '[object Set]')
         return true;
 
+    // Some of these Web APIs are absent in SSR runtimes and older Node.js
+    // versions. Guard every constructor so observing a plain object never
+    // depends on a browser-only global being defined.
     return (
-        obj instanceof File ||
-        obj instanceof Blob ||
-        obj instanceof FormData ||
-        obj instanceof ArrayBuffer ||
-        obj instanceof Response ||
-        obj instanceof Request
+        (typeof File !== 'undefined' && obj instanceof File) ||
+        (typeof Blob !== 'undefined' && obj instanceof Blob) ||
+        (typeof FormData !== 'undefined' && obj instanceof FormData) ||
+        (typeof ArrayBuffer !== 'undefined' && obj instanceof ArrayBuffer) ||
+        (typeof Response !== 'undefined' && obj instanceof Response) ||
+        (typeof Request !== 'undefined' && obj instanceof Request)
     );
 };
 
@@ -453,13 +456,17 @@ const reactiveHandler: ProxyHandler<object> = {
 
     set(target, key, newVal, receiver) {
         const oldVal = Reflect.get(target, key, receiver);
-        if (Object.is(oldVal, newVal)) return true;
+        // Keep raw objects in the source graph. Assigning a value read from a
+        // reactive proxy should be a no-op when it is the same underlying
+        // object, rather than storing a proxy and emitting a false change.
+        const rawNewVal = toRaw(newVal);
+        if (Object.is(oldVal, rawNewVal)) return true;
 
-        const res = Reflect.set(target, key, newVal, receiver);
+        const res = Reflect.set(target, key, rawNewVal, receiver);
         if (!res) return false;
 
-        if (isObject(newVal) && !isNativeSkippable(newVal)) {
-            const childProxy = getOrCreateProxy(newVal);
+        if (isObject(rawNewVal) && !isNativeSkippable(rawNewVal)) {
+            const childProxy = getOrCreateProxy(rawNewVal);
             link(receiver, key, childProxy);
         } else {
             unlink(receiver, key);
@@ -467,10 +474,10 @@ const reactiveHandler: ProxyHandler<object> = {
 
         const arrayDepth = globalArrayMutationDepth.get(receiver) || 0;
         if (arrayDepth === 0) {
-            if (!Array.isArray(target) && Array.isArray(oldVal) && Array.isArray(newVal)) {
-                globalEmit(receiver, { type: 'array-replace', oldValue: oldVal, newValue: newVal });
+            if (!Array.isArray(target) && Array.isArray(oldVal) && Array.isArray(rawNewVal)) {
+                globalEmit(receiver, { type: 'array-replace', oldValue: oldVal, newValue: rawNewVal });
             } else {
-                globalEmit(receiver, { type: 'set', key, newValue: newVal, oldValue: oldVal });
+                globalEmit(receiver, { type: 'set', key, newValue: rawNewVal, oldValue: oldVal });
             }
         }
         return res;
