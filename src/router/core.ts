@@ -106,11 +106,18 @@ export class Router {
 
     constructor(options: RouterOptions) {
         this.routes = options.routes;
-        this.base = options.base ?? '/';
+        this.base = this.normalizeBase(options.base);
         this.mode = options.mode || 'history';
         this.beforeEachGuard = options.beforeEach;
         this.afterEachGuard = options.afterEach;
         this.maxKeepAlive = options.maxKeepAlive;
+    }
+
+    private normalizeBase(base?: string): string {
+        let normalized = base || '/';
+        if (!normalized.startsWith('/')) normalized = '/' + normalized;
+        if (normalized.length > 1 && normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+        return normalized;
     }
 
     private static readonly MAX_REDIRECTS = 20;
