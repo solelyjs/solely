@@ -104,6 +104,16 @@ describe('Router Core', () => {
             expect(match?.params).toEqual({ category: 'electronics', id: '456' });
         });
 
+        it('should preserve reserved object keys in route parameters', () => {
+            const routerWithReservedParam = new Router({
+                routes: [{ path: '/unsafe/:__proto__', tagName: 'unsafe-page' }],
+            });
+            const match = routerWithReservedParam.matchRoute('/unsafe/value');
+
+            expect(Object.prototype.hasOwnProperty.call(match?.params, '__proto__')).toBe(true);
+            expect(match?.params['__proto__']).toBe('value');
+        });
+
         it('should match nested route', () => {
             const match = router.matchRoute('/parent/child');
             expect(match).not.toBeNull();
@@ -174,6 +184,12 @@ describe('Router Core', () => {
             const match = router.matchRoute('/about?');
             expect(match).not.toBeNull();
             expect(match?.query).toEqual({});
+        });
+
+        it('should preserve reserved object keys in query parameters', () => {
+            const match = router.matchRoute('/about?__proto__=safe');
+            expect(Object.prototype.hasOwnProperty.call(match?.query, '__proto__')).toBe(true);
+            expect(match?.query['__proto__']).toBe('safe');
         });
     });
 
@@ -395,6 +411,16 @@ describe('Router Core', () => {
                 base: '/app',
             });
             expect(router.getPath()).toBe('/about');
+        });
+
+        it('should not strip a base from a path with only a matching prefix', () => {
+            window.history.pushState({}, '', '/apple/about');
+            const router = new Router({
+                routes: mockRoutes,
+                mode: 'history',
+                base: '/app',
+            });
+            expect(router.getPath()).toBe('/apple/about');
         });
     });
 

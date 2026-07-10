@@ -24,7 +24,12 @@ export function parseHashUrl(location?: Location | string) {
 
     if (queryParams) {
         new URLSearchParams(queryParams).forEach((value, key) => {
-            query[key] = value;
+            Object.defineProperty(query, key, {
+                value,
+                writable: true,
+                enumerable: true,
+                configurable: true,
+            });
         });
     }
 

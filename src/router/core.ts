@@ -193,7 +193,12 @@ export class Router {
                         isMatch = false;
                         break;
                     }
-                    currentLevelParams[rSeg.slice(1)] = pSeg;
+                    Object.defineProperty(currentLevelParams, rSeg.slice(1), {
+                        value: pSeg,
+                        writable: true,
+                        enumerable: true,
+                        configurable: true,
+                    });
                 } else if (rSeg === '*') {
                     isMatch = true;
                     break;
@@ -239,7 +244,12 @@ export class Router {
         if (!queryStr) return query;
         const params = new URLSearchParams(queryStr);
         params.forEach((value, key) => {
-            query[key] = value;
+            Object.defineProperty(query, key, {
+                value,
+                writable: true,
+                enumerable: true,
+                configurable: true,
+            });
         });
         return query;
     }
@@ -271,7 +281,7 @@ export class Router {
         }
 
         const safeBase = this.base || '/';
-        if (safeBase !== '/' && path.startsWith(safeBase)) {
+        if (safeBase !== '/' && (path === safeBase || path.startsWith(safeBase + '/'))) {
             path = path.slice(safeBase.length) || '/';
         }
 

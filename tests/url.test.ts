@@ -36,4 +36,10 @@ describe('utils/url.parseHashUrl', () => {
         expect(res.path).toEqual(['search']);
         expect(res.query.q).toBeDefined();
     });
+
+    it('keeps reserved object keys as query parameters', () => {
+        const res = parseHashUrl('http://example.com/#/search?__proto__=safe');
+        expect(Object.prototype.hasOwnProperty.call(res.query, '__proto__')).toBe(true);
+        expect(res.query['__proto__']).toBe('safe');
+    });
 });
