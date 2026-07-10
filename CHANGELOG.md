@@ -7,6 +7,30 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **refactor(url)**: 重写 `parseHashUrl` 以更好处理边界情况
+    - 使用 `URLSearchParams` 替代手写 `split('=')` 解析，正确处理空值（如 `flag&`）和含等号的值（如 `token=a=b=c`）
+    - 支持相对 URL 与格式错误的转义字符，传入字符串时以 `window.location.href` 为 base 构造 URL，避免抛错
+    - 优化默认参数处理与哈希解析逻辑
+
+### Fixed
+
+- **fix(reactivity)**: 修复 `watchGetter` 和 `observe` 的若干问题
+    - `set` 拦截器中使用 `toRaw(newVal)` 与旧值比较并写入，避免将代理重新赋值回源对象时触发伪变化，并防止源图中存储代理
+    - `watchGetter` 在非 immediate 模式下也调用 getter 建立基线值，使首次通知能正确报告真实旧值
+- **fix(router)**: 修复 base 路径不带前导斜杠的归一化问题
+    - 新增 `normalizeBase` 工具方法，自动补全前导斜杠并移除末尾多余斜杠
+- **fix(router-link)**: 修复非精确匹配仅查询参数不同时未激活的问题，添加解绑逻辑
+    - 非精确匹配时先 `split('?')[0]` 取 pathname 再比较，忽略查询参数差异
+    - 新增 `unmounted` 生命周期清理事件监听与路由订阅，修复内存泄漏
+    - 引入 `mountVersion` 防止异步 `mounted` 完成前组件已卸载的竞态
+- **fix(router/url)**: 修复保留字作为参数/查询键时被覆盖的问题
+    - 使用 `Object.defineProperty` 替代直接赋值添加 query 与路由参数，避免 `__proto__` 等保留键污染原型链
+    - 修复 base 路径匹配逻辑，从 `startsWith(safeBase)` 改为 `path === safeBase || path.startsWith(safeBase + '/')`，避免将 `/application` 误当作 `base: '/app'` 裁剪
+- **fix(base-element)**: 兼容不支持 `CSS.escape` 的环境
+    - `CSS.escape` 不可用时降级为正则转义特殊字符，保证样式清理逻辑正常执行
+
 ## [0.5.4] - 2026-07-07
 
 ### Added
@@ -727,7 +751,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.4...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.5...HEAD
+[0.5.5]: https://github.com/solelyjs/solely/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/solelyjs/solely/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/solelyjs/solely/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/solelyjs/solely/compare/v0.5.1...v0.5.2
