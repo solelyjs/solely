@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-07-13
+
+### Fixed
+
+- **fix(modal)**: 为 `.solely-modal__content` 默认添加 `width: 100%`
+    - 修复 flex 布局下内容较短时未占满 body 区域的问题
+
+## [0.5.5] - 2026-07-10
+
 ### Changed
 
 - **refactor(url)**: 重写 `parseHashUrl` 以更好处理边界情况
@@ -30,13 +39,6 @@
     - 修复 base 路径匹配逻辑，从 `startsWith(safeBase)` 改为 `path === safeBase || path.startsWith(safeBase + '/')`，避免将 `/application` 误当作 `base: '/app'` 裁剪
 - **fix(base-element)**: 兼容不支持 `CSS.escape` 的环境
     - `CSS.escape` 不可用时降级为正则转义特殊字符，保证样式清理逻辑正常执行
-
-## [0.5.6] - 2026-07-13
-
-### Fixed
-
-- **fix(modal)**: 为 `.solely-modal__content` 默认添加 `width: 100%`
-    - 修复 flex 布局下内容较短时未占满 body 区域的问题
 
 ## [0.5.4] - 2026-07-07
 
@@ -760,6 +762,7 @@
 
 [Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.6...HEAD
 [0.5.6]: https://github.com/solelyjs/solely/compare/v0.5.5...v0.5.6
+[0.5.5]: https://github.com/solelyjs/solely/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/solelyjs/solely/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/solelyjs/solely/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/solelyjs/solely/compare/v0.5.1...v0.5.2
