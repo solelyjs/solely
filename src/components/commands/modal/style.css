@@ -121,6 +121,10 @@
   gap: var(--solely-spacing-sm);
 }
 
+.solely-modal__content {
+  width: 100%;
+}
+
 /* ==================== 底部样式 ==================== */
 .solely-modal__footer {
   padding: var(--solely-spacing-md) var(--solely-spacing-lg);
