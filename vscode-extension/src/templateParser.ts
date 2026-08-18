@@ -82,7 +82,8 @@ function isTemplateImport(tsContent: string, htmlBaseName: string): boolean {
     const escaped = escapeRegex(htmlBaseName);
     // 支持各种相对路径: ./, ../, ./templates/, 或无前缀
     const pattern = new RegExp(
-        `import\\s+(?:\\{[^}]*\\}|\\w+|\\w+\\s*,\\s*\\{[^}]*\\})\\s+from\\s+['"](?:[^'"]*\\/)?${escaped}\\?(solely|raw)['"]`,
+        `import\\s+(?:\\{[^}]*\\}|\\w+|\\w+\\s*,\\s*\\{[^}]*\\})\\s+from\\s+['"]` +
+            `(?:[^'"]*\\/)?${escaped}\\?(solely|raw)['"]`,
     );
     return pattern.test(tsContent);
 }
