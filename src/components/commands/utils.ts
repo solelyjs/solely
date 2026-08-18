@@ -174,8 +174,22 @@ export function calculatePosition(
     }
 
     const padding = 8;
+    const beforeTop = top;
+    const beforeLeft = left;
     top = Math.max(padding, Math.min(top, window.innerHeight + scrollTop - popupHeight - padding));
     left = Math.max(padding, Math.min(left, window.innerWidth + scrollLeft - popupWidth - padding));
+
+    // 修复：触边钳制后弹窗本身被位移（delta），原箭头（相对弹窗固定）不再对准 target。
+    // 将箭头沿弹窗位移的相反方向同步平移，使其继续指向 target 的基准点；
+    // 仅在实际发生钳制位移时才调整，避免改动未钳制时各 placement 的原始箭头定位语义。
+    if (arrowLeft !== undefined && left !== beforeLeft) {
+        arrowLeft += beforeLeft - left;
+        arrowLeft = Math.max(8, Math.min(arrowLeft, popupWidth - 8));
+    }
+    if (arrowTop !== undefined && top !== beforeTop) {
+        arrowTop += beforeTop - top;
+        arrowTop = Math.max(8, Math.min(arrowTop, popupHeight - 8));
+    }
 
     return { top, left, arrowLeft, arrowTop };
 }

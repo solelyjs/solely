@@ -73,7 +73,7 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
             } else {
                 contents.appendMarkdown(`**Solely 组件属性** \`$data.${ref.name}\`\n\n`);
             }
-            contents.appendMarkdown(`\n\n在 \`@CustomElement\` 装饰器的 \`props\` 数组或 \`interface\` 中定义。`);
+            contents.appendMarkdown(`\n\n在 \`super({...})\` 初始化或 \`interface\` 类型定义中声明。`);
             contents.appendMarkdown(`\n\n*Ctrl+点击跳转到属性定义*`);
             return new vscode.Hover(contents);
         }

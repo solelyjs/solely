@@ -34,7 +34,10 @@
         "go-to-definition"
     ],
     "activationEvents": [
-        "onLanguage:html"
+        "onLanguage:html",
+        "onLanguage:typescript",
+        "onLanguage:typescriptreact",
+        "onCommand:solely.switchToCorrespondingFile"
     ],
     "main": "./dist/extension.js",
     "contributes": {
@@ -53,6 +56,13 @@
                 "injectTo": [
                     "text.html.derivative"
                 ]
+            }
+        ],
+        "commands": [
+            {
+                "command": "solely.switchToCorrespondingFile",
+                "title": "切换到对应文件",
+                "category": "Solely"
             }
         ]
     },

@@ -39,7 +39,7 @@
         },
         {
             "name": "meta.tag.solely.control",
-            "match": "<\\/?(If|ElseIf|Else|For)\\b",
+            "match": "<\\/?(If|ElseIf|Else|For|Show)\\b",
             "captures": {
                 "1": {
                     "name": "keyword.control.solely"
@@ -48,12 +48,12 @@
         },
         {
             "name": "meta.attribute.solely.event",
-            "match": "@(\\w+(?:-\\w+)*)\\s*=\\s*\"([^\"]*)\"",
+            "match": "@(\\w+(?:-\\w+)*)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "1": {
                     "name": "entity.other.attribute-name.event.solely"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.event-value",
                     "patterns": [
                         {
@@ -85,13 +85,47 @@
             }
         },
         {
+            "name": "meta.attribute.solely.on-dash-event",
+            "match": "\\bon-(\\w+(?:-\\w+)*)\\s*=\\s*([\"'])([^\"']*)\\2",
+            "captures": {
+                "1": {
+                    "name": "entity.other.attribute-name.event.solely"
+                },
+                "3": {
+                    "name": "meta.embedded.solely.event-value",
+                    "patterns": [
+                        {
+                            "name": "variable.language.solely.this",
+                            "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "(?<=\\.)(\\w+)(?=\\s*\\()"
+                        },
+                        {
+                            "name": "variable.parameter.solely",
+                            "match": "\\bevent\\b"
+                        },
+                        {
+                            "name": "keyword.other.solely.data",
+                            "match": "\\$data\\b"
+                        },
+                        {
+                            "name": "variable.other.property",
+                            "match": "(?<=\\$data\\.)(\\w+)"
+                        }
+                    ]
+                }
+            }
+        },
+        {
             "name": "meta.attribute.solely.html-event",
-            "match": "\\bon(click|change|input|keydown|keyup|keypress|submit|focus|blur|dblclick|mouseenter|mouseleave|mouseover|mouseout|mousedown|mouseup|scroll|resize|drag|dragstart|dragend|dragover|dragenter|dragleave|drop|contextmenu|wheel|load|error|invalid|reset|select)\\s*=\\s*\"([^\"]*)\"",
+            "match": "\\bon(click|change|input|keydown|keyup|keypress|submit|focus|blur|dblclick|mouseenter|mouseleave|mouseover|mouseout|mousedown|mouseup|scroll|resize|drag|dragstart|dragend|dragover|dragenter|dragleave|drop|contextmenu|wheel|load|error|invalid|reset|select)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "0": {
                     "name": "entity.other.attribute-name.html-event.solely"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.event-value",
                     "patterns": [
                         {
@@ -120,12 +154,12 @@
         },
         {
             "name": "meta.attribute.solely.bind-class",
-            "match": ":class\\s*=\\s*\"([^\"]*)\"",
+            "match": ":class\\s*=\\s*([\"'])([^\"']*)\\1",
             "captures": {
                 "0": {
                     "name": "entity.other.attribute-name.bind-class.solely"
                 },
-                "1": {
+                "2": {
                     "name": "meta.embedded.solely.class-value",
                     "patterns": [
                         {
@@ -150,12 +184,12 @@
         },
         {
             "name": "meta.attribute.solely.bind-style",
-            "match": ":style\\s*=\\s*\"([^\"]*)\"",
+            "match": ":style\\s*=\\s*([\"'])([^\"']*)\\1",
             "captures": {
                 "0": {
                     "name": "entity.other.attribute-name.bind-style.solely"
                 },
-                "1": {
+                "2": {
                     "name": "meta.embedded.solely.style-value",
                     "patterns": [
                         {
@@ -180,12 +214,12 @@
         },
         {
             "name": "meta.attribute.solely.bind-boolean",
-            "match": ":(visible|disabled|checked|readonly|required|hidden|selected)\\s*=\\s*\"([^\"]*)\"",
+            "match": ":(visible|disabled|checked|readonly|required|hidden|selected)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "1": {
                     "name": "entity.other.attribute-name.bind-boolean.solely"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.boolean-value",
                     "patterns": [
                         {
@@ -210,12 +244,12 @@
         },
         {
             "name": "meta.attribute.solely.bind",
-            "match": ":(\\w+(?:-\\w+)*)\\s*=\\s*\"([^\"]*)\"",
+            "match": ":(\\w+(?:-\\w+)*)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "1": {
                     "name": "entity.other.attribute-name.bind.solely"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.bind-value",
                     "patterns": [
                         {
@@ -240,12 +274,12 @@
         },
         {
             "name": "meta.attribute.solely.s-model",
-            "match": "s-model\\s*=\\s*\"([^\"]*)\"",
+            "match": "s-model\\s*=\\s*([\"'])([^\"']*)\\1",
             "captures": {
                 "0": {
                     "name": "entity.other.attribute-name.s-model.solely"
                 },
-                "1": {
+                "2": {
                     "name": "meta.embedded.solely.s-model-value",
                     "patterns": [
                         {
@@ -270,12 +304,12 @@
         },
         {
             "name": "meta.attribute.solely.s-class",
-            "match": "s-class\\s*=\\s*\"([^\"]*)\"",
+            "match": "s-class\\s*=\\s*([\"'])([^\"']*)\\1",
             "captures": {
                 "0": {
                     "name": "entity.other.attribute-name.s-class.solely"
                 },
-                "1": {
+                "2": {
                     "name": "meta.embedded.solely.s-class-value",
                     "patterns": [
                         {
@@ -300,12 +334,12 @@
         },
         {
             "name": "meta.attribute.solely.s-boolean",
-            "match": "s-(visible|disabled|checked|readonly|required|hidden|selected)\\s*=\\s*\"([^\"]*)\"",
+            "match": "s-(visible|disabled|checked|readonly|required|hidden|selected)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "1": {
                     "name": "entity.other.attribute-name.s-boolean.solely"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.s-boolean-value",
                     "patterns": [
                         {
@@ -330,12 +364,12 @@
         },
         {
             "name": "meta.attribute.solely.s-bind",
-            "match": "s-(\\w+(?:-\\w+)*)\\s*=\\s*\"([^\"]*)\"",
+            "match": "s-(\\w+(?:-\\w+)*)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "1": {
                     "name": "entity.other.attribute-name.s-bind.solely"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.s-bind-value",
                     "patterns": [
                         {
@@ -360,30 +394,30 @@
         },
         {
             "name": "meta.attribute.solely.ref",
-            "match": "\\bref\\s*=\\s*\"([^\"]*)\"",
+            "match": "\\bref\\s*=\\s*([\"'])([^\"']*)\\1",
             "captures": {
-                "1": {
+                "2": {
                     "name": "variable.other.constant"
                 }
             }
         },
         {
             "name": "meta.attribute.solely.slot-name",
-            "match": "\\bname\\s*=\\s*\"([^\"]*)\"",
+            "match": "\\bname\\s*=\\s*([\"'])([^\"']*)\\1",
             "captures": {
-                "1": {
+                "2": {
                     "name": "string.quoted.double"
                 }
             }
         },
         {
             "name": "meta.attribute.solely.bind-name",
-            "match": ":name\\s*=\\s*\"([^\"]*)\"",
+            "match": ":name\\s*=\\s*([\"'])([^\"']*)\\1",
             "captures": {
                 "0": {
                     "name": "entity.other.attribute-name.bind-name.solely"
                 },
-                "1": {
+                "2": {
                     "name": "meta.embedded.solely.name-value",
                     "patterns": [
                         {
@@ -413,12 +447,12 @@
         },
         {
             "name": "meta.attribute.solely.control-attr",
-            "match": "\\b(test|each|item|index|condition)\\s*=\\s*\"([^\"]*)\"",
+            "match": "\\b(test|each|item|index|condition)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "1": {
                     "name": "keyword.other.solely.control-attr"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.control-value",
                     "patterns": [
                         {
@@ -443,12 +477,12 @@
         },
         {
             "name": "meta.attribute.solely.lifecycle",
-            "match": "\\b(mounted|updated|unmounted|onMounted|onUpdated|onUnmounted)\\s*=\\s*\"([^\"]*)\"",
+            "match": "\\b(mounted|updated|unmounted|activated|deactivated|onMounted|onUpdated|onUnmounted|onActivated|onDeactivated)\\s*=\\s*([\"'])([^\"']*)\\2",
             "captures": {
                 "1": {
                     "name": "entity.other.attribute-name.lifecycle.solely"
                 },
-                "2": {
+                "3": {
                     "name": "meta.embedded.solely.lifecycle-value",
                     "patterns": [
                         {

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-const SOLELY_CONTROL_TAGS = new Set(['if', 'elseif', 'else', 'for']);
+const SOLELY_CONTROL_TAGS = new Set(['if', 'elseif', 'else', 'for', 'show']);
 
 // Cache for HTML → TS file mapping
 const tsFileCache = new Map<string, string | null>();
@@ -14,6 +14,7 @@ export function clearTsFileCache(htmlPath?: string): void {
         tsFileCache.delete(htmlPath);
     } else {
         tsFileCache.clear();
+        baseElementCache.clear();
     }
 }
 
@@ -79,17 +80,19 @@ export function findCorrespondingTsFile(htmlPath: string): string | null {
 
 function isTemplateImport(tsContent: string, htmlBaseName: string): boolean {
     const escaped = escapeRegex(htmlBaseName);
+    // 支持各种相对路径: ./, ../, ./templates/, 或无前缀
     const pattern = new RegExp(
-        `import\\s+(?:\\{[^}]*\\}|\\w+|\\w+\\s*,\\s*\\{[^}]*\\})\\s+from\\s+['"]\\.?\\/?${escaped}\\?(solely|raw)['"]`,
+        `import\\s+(?:\\{[^}]*\\}|\\w+|\\w+\\s*,\\s*\\{[^}]*\\})\\s+from\\s+['"](?:[^'"]*\\/)?${escaped}\\?(solely|raw)['"]`,
     );
     return pattern.test(tsContent);
 }
 
+/** 从 TS 文件查找其导入的对应 HTML 模板文件 */
 export function findCorrespondingHtmlFile(tsPath: string): string | null {
     try {
         const content = fs.readFileSync(tsPath, 'utf-8');
         const match = content.match(
-            /import\s+(?:\{[^}]*\}|\w+|\w+\s*,\s*\{[^}]*\})\s+from\s+['"]\.?\/?([\w./-]+\.html)\?(solely|raw)['"]/,
+            /import\s+(?:\{[^}]*\}|\w+|\w+\s*,\s*\{[^}]*\})\s+from\s+['"]([^'"]+\.html)\?(solely|raw)['"]/,
         );
         if (match) {
             const dir = path.dirname(tsPath);
@@ -102,6 +105,138 @@ export function findCorrespondingHtmlFile(tsPath: string): string | null {
         // ignore
     }
     return null;
+}
+
+/** 从 TS 文件提取 $data 的数据属性名(从 super({}) 和 interface 解析) */
+export function extractDataPropsFromTs(tsPath: string): string[] {
+    const fromSuper = extractDataPropsFromSuper(tsPath);
+    const fromInterface = extractDataPropsFromInterface(tsPath);
+    return Array.from(new Set([...fromSuper, ...fromInterface]));
+}
+
+function extractDataPropsFromSuper(tsPath: string): string[] {
+    try {
+        const content = fs.readFileSync(tsPath, 'utf-8');
+        const superMatch = content.match(/super\s*\(\s*\{/);
+        if (!superMatch) return [];
+
+        const startIdx = (superMatch.index ?? 0) + superMatch[0].length;
+        // 找到匹配的 }
+        let depth = 1;
+        let endIdx = startIdx;
+        for (let i = startIdx; i < content.length && depth > 0; i++) {
+            if (content[i] === '{') depth++;
+            else if (content[i] === '}') depth--;
+            endIdx = i;
+        }
+
+        const body = content.substring(startIdx, endIdx);
+        // 提取顶层属性: 仅在 currentDepth === 0 时识别 key。
+        // 必须跳过字符串字面量(含模板字符串)和注释, 否则会把值里的 "word:" (如 'a: b') 误当成属性。
+        const props: string[] = [];
+        let currentDepth = 0;
+        let inString = false;
+        let stringQuote = '';
+        let inLineComment = false;
+        let inBlockComment = false;
+
+        for (let i = 0; i < body.length; i++) {
+            const ch = body[i];
+
+            // 行注释
+            if (inLineComment) {
+                if (ch === '\n') inLineComment = false;
+                continue;
+            }
+            // 块注释
+            if (inBlockComment) {
+                if (ch === '*' && i + 1 < body.length && body[i + 1] === '/') {
+                    inBlockComment = false;
+                    i++; // 跳过 '/'
+                }
+                continue;
+            }
+            if (ch === '/' && i + 1 < body.length) {
+                if (body[i + 1] === '/') {
+                    inLineComment = true;
+                    i++; // 跳过第二个 '/'
+                    continue;
+                }
+                if (body[i + 1] === '*') {
+                    inBlockComment = true;
+                    i++; // 跳过 '*'
+                    continue;
+                }
+            }
+
+            // 字符串/模板字符串
+            if (inString) {
+                if (ch === '\\' && i + 1 < body.length) {
+                    i++; // 跳过转义后的字符
+                    continue;
+                }
+                if (ch === stringQuote) {
+                    inString = false;
+                }
+                continue;
+            }
+            if (ch === '"' || ch === "'" || ch === '`') {
+                inString = true;
+                stringQuote = ch;
+                continue;
+            }
+
+            // 括号深度
+            if (ch === '{') {
+                currentDepth++;
+                continue;
+            }
+            if (ch === '}') {
+                currentDepth--;
+                continue;
+            }
+
+            // 在顶层提取属性名
+            if (currentDepth === 0) {
+                const m = body.substring(i).match(/^(\w+)\s*(?=:)/);
+                if (m && !props.includes(m[1])) {
+                    props.push(m[1]);
+                    i += m[1].length - 1;
+                }
+            }
+        }
+        return props;
+    } catch {
+        return [];
+    }
+}
+
+function extractDataPropsFromInterface(tsPath: string): string[] {
+    try {
+        const content = fs.readFileSync(tsPath, 'utf-8');
+        // 查找 extends BaseElement<XXX>
+        const match = content.match(/extends\s+BaseElement\s*<\s*(\w+)\s*>/);
+        if (!match) return [];
+
+        const interfaceName = match[1];
+        // 查找 interface XXX {
+        const interfaceRegex = new RegExp(`interface\\s+${escapeRegex(interfaceName)}\\s*\\{([\\s\\S]*?)\\}`);
+        const interfaceMatch = content.match(interfaceRegex);
+        if (!interfaceMatch) return [];
+
+        const body = interfaceMatch[1];
+        const props: string[] = [];
+        const propRegex = /^\s*(\w+)\s*[\?\:]/gm;
+        let m: RegExpExecArray | null;
+        while ((m = propRegex.exec(body)) !== null) {
+            if (!props.includes(m[1])) {
+                props.push(m[1]);
+            }
+        }
+        return props;
+    } catch {
+        return [];
+    }
 }
 
 export function extractReferenceAtPosition(
@@ -225,18 +360,19 @@ function extractDataKeywordAtPosition(line: string, lineNum: number, charIndex: 
 }
 
 function extractRefAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
-    const regex = /\bref\s*=\s*"(\w+)"/g;
+    const regex = /\bref\s*=\s*(["'])(\w+)\1/g;
     let match: RegExpExecArray | null;
 
     while ((match = regex.exec(line)) !== null) {
-        const valueStart = line.indexOf('"', match.index) + 1;
+        const quote = match[1];
+        const valueStart = match.index + match[0].indexOf(quote) + 1;
         const startChar = valueStart;
-        const endChar = valueStart + match[1].length;
+        const endChar = valueStart + match[2].length;
 
         if (charIndex >= startChar && charIndex <= endChar) {
             return {
                 kind: 'ref',
-                name: match[1],
+                name: match[2],
                 range: new vscode.Range(lineNum, startChar, lineNum, endChar),
                 fullExpression: match[0],
             };
@@ -247,25 +383,35 @@ function extractRefAtPosition(line: string, lineNum: number, charIndex: number):
 }
 
 function extractSModelPropAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
-    // Match s-model="..." and extract bare property names (without $data. or this. prefix)
-    const regex = /\bs-model\s*=\s*"([^"]*)"/g;
+    // Match s-model="..." or s-model='...' and extract bare property names (without $data. or this. prefix)
+    const regex = /\bs-model\s*=\s*(["'])([^"']*)\1/g;
     let match: RegExpExecArray | null;
 
     while ((match = regex.exec(line)) !== null) {
-        const valueStart = line.indexOf('"', match.index) + 1;
-        const value = match[1];
+        const quote = match[1];
+        const valueStart = match.index + match[0].indexOf(quote) + 1;
+        const value = match[2];
 
-        // Find bare identifiers: strip $data. and this. prefixes, then match the remaining name
-        // e.g. "step" → step, "$data.step" → step, "this.step" → step
-        const bareName = value
-            .replace(/^\$data\./, '')
-            .replace(/^this\./, '')
-            .trim();
+        // Calculate the offset of the bare name within the value.
+        // Strip leading prefix ($data. / this.) and leading whitespace only;
+        // trailing whitespace must NOT affect the offset (fixes position bug).
+        let offset = 0;
+        let remaining = value;
+        const prefixMatch = remaining.match(/^(\$data\.|this\.)/);
+        if (prefixMatch) {
+            offset += prefixMatch[0].length;
+            remaining = remaining.substring(prefixMatch[0].length);
+        }
+        const leadingSpaces = remaining.match(/^\s*/);
+        if (leadingSpaces) {
+            offset += leadingSpaces[0].length;
+            remaining = remaining.substring(leadingSpaces[0].length);
+        }
+        // bareName: trailing whitespace stripped for validation only
+        const bareName = remaining.replace(/\s+$/, '');
         if (!bareName || !/^\w+$/.test(bareName)) continue;
 
-        // Calculate position of the bare name within the value
-        const prefixLen = value.length - bareName.length;
-        const nameStart = valueStart + prefixLen;
+        const nameStart = valueStart + offset;
         const nameEnd = nameStart + bareName.length;
 
         if (charIndex >= nameStart && charIndex <= nameEnd) {
@@ -484,12 +630,6 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
     return resolvedPath;
 }
 
-/** Keep backward compatibility alias */
-export function findBaseElementFile(tsPath: string): string | null {
-    const ancestors = findAncestorFiles(tsPath);
-    return ancestors.length > 0 ? ancestors[ancestors.length - 1] : null;
-}
-
 export function findPropertyClassFile(tsPath: string, propName: string): string | null {
     try {
         const content = fs.readFileSync(tsPath, 'utf-8');
@@ -630,7 +770,9 @@ function findGetterInTsFile(tsPath: string, propName: string): vscode.Location |
     // Fallback: class property (not in super({}) or interface)
     const propPattern = new RegExp(`^\\s*(?:public\\s+)?(?:readonly\\s+)?${escaped}\\s*[=:]`);
     for (let i = 0; i < lines.length; i++) {
-        if (propPattern.test(lines[i]) && !lines[i].includes('name:') && !lines[i].includes('super(')) {
+        // 排除 @CustomElement 的 name: 属性, 但属性名本身就是 name 时允许匹配
+        const skipNameCheck = propName === 'name' ? false : lines[i].includes('name:');
+        if (propPattern.test(lines[i]) && !skipNameCheck && !lines[i].includes('super(')) {
             const idx = lines[i].indexOf(propName);
             return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx >= 0 ? idx : 0));
         }
@@ -708,11 +850,12 @@ export function getMethodSignatures(tsPath: string): MethodSignature[] {
     const lines = content.split('\n');
     const signatures: MethodSignature[] = [];
 
+    // 允许匹配带有泛型字符（如 Promise<void>）的各种返回类型文本
     const methodPattern =
         '^\\s*(?:(?:public|private|protected)\\s+)?' +
         '(?:static\\s+)?(?:async\\s+)?' +
         '(\\w+)\\s*\\(([^)]*)\\)\\s*' +
-        '(?::\\s*(\\w+(?:\\[\\])?))?\\s*\\{';
+        '(?::\\s*([^{\\n]+?))?\\s*\\{';
     const methodRegex = new RegExp(methodPattern);
 
     for (let i = 0; i < lines.length; i++) {
@@ -775,6 +918,111 @@ export function getPropTypeFromTsFile(tsPath: string, propName: string): string 
     }
 
     return null;
+}
+
+/** 获取组件所有有效成员名(方法 + getter + 数据属性),包含继承链 */
+export function getComponentMembers(tsPath: string): {
+    methods: Set<string>;
+    getters: Set<string>;
+    dataProps: Set<string>;
+} {
+    const methods = new Set<string>();
+    const getters = new Set<string>();
+    const dataProps = new Set<string>();
+
+    const allPaths = [tsPath, ...findAncestorFiles(tsPath)];
+
+    for (const p of allPaths) {
+        // 方法
+        for (const sig of getMethodSignatures(p)) {
+            methods.add(sig.name);
+        }
+        // getter
+        for (const name of getGetterNames(p)) {
+            getters.add(name);
+        }
+        // 数据属性(只在当前组件中,不在父类)
+        if (p === tsPath) {
+            for (const prop of extractDataPropsFromTs(p)) {
+                dataProps.add(prop);
+            }
+        }
+    }
+
+    return { methods, getters, dataProps };
+}
+
+/** 从 TS 文件提取所有 getter 名称 */
+function getGetterNames(tsPath: string): string[] {
+    try {
+        const content = fs.readFileSync(tsPath, 'utf-8');
+        const names: string[] = [];
+        const getterRegex = /^\s*(?:public\s+)?get\s+(\w+)\s*\(/gm;
+        let match: RegExpExecArray | null;
+        while ((match = getterRegex.exec(content)) !== null) {
+            if (!names.includes(match[1])) {
+                names.push(match[1]);
+            }
+        }
+        return names;
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * 检查 HTML 模板中的引用是否在 TS 组件中存在
+ * 保守策略: 只检查 this.method() 和 $data.prop, 跳过 $ 开头的框架内置成员
+ */
+export function validateReferences(document: vscode.TextDocument): TemplateDiagnostic[] {
+    const diagnostics: TemplateDiagnostic[] = [];
+    const tsPath = findCorrespondingTsFile(document.fileName);
+    if (!tsPath) return diagnostics;
+
+    const { methods, getters, dataProps } = getComponentMembers(tsPath);
+    const text = document.getText();
+
+    // 1. 检查 this.method() 调用
+    const methodCallRegex = /\bthis\.(\w+)\s*\(/g;
+    let match: RegExpExecArray | null;
+    while ((match = methodCallRegex.exec(text)) !== null) {
+        const name = match[1];
+        // 跳过 $ 开头的框架内置成员($emit, $nextTick 等)
+        if (name.startsWith('$')) continue;
+        // 检查是否存在(方法或 getter)
+        if (!methods.has(name) && !getters.has(name)) {
+            const offset = match.index + 5; // 'this.' 的长度
+            const startPos = document.positionAt(offset);
+            const endPos = document.positionAt(offset + name.length);
+            diagnostics.push({
+                range: new vscode.Range(startPos, endPos),
+                message: `方法 '${name}' 在组件及其父类中未定义`,
+                severity: vscode.DiagnosticSeverity.Error,
+            });
+        }
+    }
+
+    // 2. 检查 $data.prop 数据属性
+    // 如果 dataProps 为空(无法解析 super/interface), 跳过检查避免误报
+    if (dataProps.size > 0) {
+        const dataPropRegex = /\$data\.(\w+)/g;
+        while ((match = dataPropRegex.exec(text)) !== null) {
+            const name = match[1];
+            // 检查是否在数据属性或 getter 中
+            if (!dataProps.has(name) && !getters.has(name)) {
+                const offset = match.index + 6; // '$data.' 的长度
+                const startPos = document.positionAt(offset);
+                const endPos = document.positionAt(offset + name.length);
+                diagnostics.push({
+                    range: new vscode.Range(startPos, endPos),
+                    message: `数据属性 '${name}' 在 super({}) 或 interface 中未定义`,
+                    severity: vscode.DiagnosticSeverity.Error,
+                });
+            }
+        }
+    }
+
+    return diagnostics;
 }
 
 export function validateTemplate(document: vscode.TextDocument): TemplateDiagnostic[] {

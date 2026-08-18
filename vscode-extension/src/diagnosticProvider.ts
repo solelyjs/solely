@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { validateTemplate } from './templateParser';
+import { validateTemplate, validateReferences } from './templateParser';
 
 export class SolelyDiagnosticProvider {
     private diagnosticCollection: vscode.DiagnosticCollection;
@@ -31,10 +31,12 @@ export class SolelyDiagnosticProvider {
     }
 
     private doUpdateDiagnostics(document: vscode.TextDocument): void {
-        const diagnostics = validateTemplate(document);
-        const vsDiagnostics: vscode.Diagnostic[] = diagnostics.map(d => {
-            return new vscode.Diagnostic(d.range, d.message, d.severity);
-        });
+        const syntaxDiagnostics = validateTemplate(document);
+        const refDiagnostics = validateReferences(document);
+
+        const vsDiagnostics: vscode.Diagnostic[] = [...syntaxDiagnostics, ...refDiagnostics].map(
+            d => new vscode.Diagnostic(d.range, d.message, d.severity),
+        );
 
         this.diagnosticCollection.set(document.uri, vsDiagnostics);
     }
