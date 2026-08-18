@@ -7,6 +7,31 @@
 
 ## [Unreleased]
 
+## [0.5.7] - 2026-08-18
+
+### Added
+
+- **feat(vscode-extension)**: 升级 VS Code 扩展到 v0.1.3，新增代码补全能力
+    - `this.` 后补全组件方法/getter（含父类继承，方法自动插入括号）
+    - `$data.` 后补全数据属性（从 `super({})` 与 `interface` 解析）
+    - `$refs.` 后补全当前模板中的 ref 名称
+    - `<` 后补全控制流标签（If / ElseIf / Else / For / Show）
+    - `s-` 补全 Solely 指令、`@` 补全 DOM 事件、`:` 补全属性绑定
+- **feat(vscode-extension)**: 新增 HTML ↔ TS 文件切换命令 `solely.switchToCorrespondingFile`
+    - 在 HTML 模板与对应 TS 组件之间快速跳转，注册对应命令并提供菜单
+- **feat(vscode-extension)**: 新增模板引用合法性诊断 `validateReferences`
+    - 校验 `this.method()` 调用与 `$data.prop` 数据属性是否在组件及其父类中定义（跳过 `$` 开头的框架内置成员）
+    - 保守策略：无法解析数据属性时跳过检查，避免误报
+- **feat(vscode-extension)**: 语法高亮增强
+    - 支持 Show 控制流标签与 `on-` 事件绑定，补全生命周期钩子（activated / deactivated 等）
+    - 所有属性匹配统一支持单引号与双引号
+
+### Changed
+
+- **refactor(templateParser)**: 重构数据属性解析逻辑
+    - `extractDataPropsFromSuper` 改为字符串/模板字符串/注释感知的扫描，避免把值或注释中的 `word:` 误判为属性
+    - 拆分超长正则表达式字符串，满足 lint `max-len` 约束
+
 ## [0.5.6] - 2026-07-13
 
 ### Fixed
@@ -760,7 +785,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.6...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.7...HEAD
+[0.5.7]: https://github.com/solelyjs/solely/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/solelyjs/solely/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/solelyjs/solely/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/solelyjs/solely/compare/v0.5.3...v0.5.4
