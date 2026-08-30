@@ -108,10 +108,13 @@
     --solely-border-radius-full: 9999px;
     --solely-border-radius-circle: 50%;
 
-    /* ==================== 阴影 - 统一命名 sm/md/lg ==================== */
+    /* ==================== 阴影 - 统一命名 sm/md/lg/xl/2xl/primary ==================== */
     --solely-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
     --solely-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
     --solely-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+    --solely-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
+    --solely-shadow-2xl: 0 16px 48px rgba(0, 0, 0, 0.24);
+    --solely-shadow-primary: 0 0 0 4px rgba(24, 144, 255, 0.2);
 
     /* ==================== 字体 - 统一命名 xs/sm/md/lg/xl/2xl ==================== */
     --solely-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -121,6 +124,9 @@
     --solely-font-size-lg: 16px;
     --solely-font-size-xl: 18px;
     --solely-font-size-2xl: 20px;
+    --solely-font-size-3xl: 24px;
+    --solely-font-size-4xl: 30px;
+    --solely-font-size-5xl: 38px;
 
     /* ==================== 行高 - 统一命名 sm/md/lg ==================== */
     --solely-line-height-sm: 1.25;
@@ -144,10 +150,28 @@
 
     /* ==================== 过渡 ==================== */
     --solely-transition-duration: 0.3s;
+    --solely-transition-duration-fast: 0.15s;
+    --solely-transition-duration-slow: 0.5s;
     --solely-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
 
     /* ==================== 禁用状态 ==================== */
     --solely-disabled-opacity: 0.6;
+
+    /* ==================== 状态背景色（语义别名） ==================== */
+    --solely-success-bg: var(--solely-success-light);
+    --solely-warning-bg: var(--solely-warning-light);
+    --solely-error-bg: var(--solely-error-light);
+    --solely-info-bg: var(--solely-info-light);
+
+    /* ==================== 焦点环（语义别名） ==================== */
+    --solely-focus-ring: 0 0 0 2px var(--solely-primary-light);
+    --solely-focus-ring-error: 0 0 0 2px var(--solely-error-light);
+    --solely-focus-ring-warning: 0 0 0 2px var(--solely-warning-light);
+    --solely-focus-ring-success: 0 0 0 2px var(--solely-success-light);
+
+    /* ==================== 品牌渐变 ==================== */
+    --solely-gradient-brand: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    --solely-gradient-brand-soft: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
 
     /* ==================== z-index 层级 ==================== */
     --solely-z-index-base: 1;
@@ -165,13 +189,6 @@
     --solely-z-index-steps-icon: 1;
     --solely-z-index-steps-tail: 0;
     --solely-z-index-slider-handle: 1;
-
-    /* ==================== 阴影 ==================== */
-    --solely-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --solely-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.15);
-    --solely-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --solely-shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.2);
-    --solely-shadow-primary: 0 0 0 4px rgba(24, 144, 255, 0.2);
 
     /* ==================== 遮罩层 ==================== */
     --solely-mask-bg: rgba(0, 0, 0, 0.45);
@@ -281,4 +298,28 @@
 
     /* 遮罩层（暗色主题下稍微轻一点） */
     --solely-mask-bg: rgba(0, 0, 0, 0.65);
+
+    /* 状态背景色 */
+    --solely-success-bg: var(--solely-success-light);
+    --solely-warning-bg: var(--solely-warning-light);
+    --solely-error-bg: var(--solely-error-light);
+    --solely-info-bg: var(--solely-info-light);
+
+    /* 焦点环 */
+    --solely-focus-ring: 0 0 0 2px var(--solely-primary-light);
+    --solely-focus-ring-error: 0 0 0 2px var(--solely-error-light);
+    --solely-focus-ring-warning: 0 0 0 2px var(--solely-warning-light);
+    --solely-focus-ring-success: 0 0 0 2px var(--solely-success-light);
+
+    /* 品牌渐变（暗色主题下加深） */
+    --solely-gradient-brand: linear-gradient(135deg, #177ddc 0%, #0958d9 100%);
+    --solely-gradient-brand-soft: linear-gradient(135deg, rgba(23, 125, 220, 0.15) 0%, rgba(9, 88, 217, 0.15) 100%);
+
+    /* 阴影（暗色主题下加深） */
+    --solely-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --solely-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+    --solely-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --solely-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.45);
+    --solely-shadow-2xl: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --solely-shadow-primary: 0 0 0 4px rgba(23, 125, 220, 0.25);
 }

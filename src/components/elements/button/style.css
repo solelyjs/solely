@@ -51,15 +51,7 @@
   position: relative;
 }
 
-.btn:hover:not(:disabled):not(.is-loading) {
-  opacity: 0.9;
-}
-
-.btn:active:not(:disabled):not(.is-loading) {
-  opacity: 0.8;
-}
-
-/* 按钮尺寸 */
+/* ==================== 按钮尺寸 ==================== */
 .btn--sm {
   height: var(--solely-height-sm);
   padding: 0 var(--solely-spacing-sm);
@@ -164,6 +156,11 @@
   border-color: var(--solely-primary);
 }
 
+.btn--default:active:not(:disabled):not(.is-loading) {
+  color: var(--solely-primary-active);
+  border-color: var(--solely-primary-active);
+}
+
 .btn--dashed {
   color: var(--solely-text-primary);
   background-color: var(--solely-component-bg);
@@ -174,6 +171,11 @@
 .btn--dashed:hover:not(:disabled):not(.is-loading) {
   color: var(--solely-primary);
   border-color: var(--solely-primary);
+}
+
+.btn--dashed:active:not(:disabled):not(.is-loading) {
+  color: var(--solely-primary-active);
+  border-color: var(--solely-primary-active);
 }
 
 /* 按钮类型 - 文字/链接 */
@@ -187,6 +189,10 @@
   background-color: var(--solely-gray-3);
 }
 
+.btn--text:active:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-gray-4);
+}
+
 .btn--link {
   color: var(--solely-primary);
   background-color: transparent;
@@ -195,6 +201,10 @@
 
 .btn--link:hover:not(:disabled):not(.is-loading) {
   color: var(--solely-primary-hover);
+}
+
+.btn--link:active:not(:disabled):not(.is-loading) {
+  color: var(--solely-primary-active);
 }
 
 /* 幽灵按钮 */

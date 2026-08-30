@@ -119,7 +119,8 @@
 
 .is-focused {
   outline: none;
-  box-shadow: 0 0 0 2px var(--solely-primary-light);
+  box-shadow: var(--solely-focus-ring);
+  border-color: var(--solely-primary);
 }
 
 .is-error {
@@ -127,7 +128,7 @@
 }
 
 .is-error.is-focused {
-  box-shadow: 0 0 0 2px var(--solely-error-light);
+  box-shadow: var(--solely-focus-ring-error);
 }
 
 .is-warning {
@@ -135,7 +136,7 @@
 }
 
 .is-warning.is-focused {
-  box-shadow: 0 0 0 2px var(--solely-warning-light);
+  box-shadow: var(--solely-focus-ring-warning);
 }
 
 .is-success {
@@ -143,7 +144,7 @@
 }
 
 .is-success.is-focused {
-  box-shadow: 0 0 0 2px var(--solely-success-light);
+  box-shadow: var(--solely-focus-ring-success);
 }
 
 /* ==================== 输入框特有样式 ==================== */

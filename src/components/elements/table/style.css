@@ -58,7 +58,7 @@
 /* 单元格 */
 .table td {
   padding: var(--solely-spacing-md) var(--solely-spacing-md);
-  color: var(--solely-text-secondary);
+  color: var(--solely-text-primary);
   border-bottom: 1px solid var(--solely-border-color);
   transition: background-color var(--solely-transition-duration);
 }

@@ -55,8 +55,8 @@
 /* 标签类型 */
 .tag--default {
   color: var(--solely-text-secondary);
-  background-color: var(--solely-gray-3);
-  border: 1px solid var(--solely-border-color);
+  background-color: var(--solely-fill-color);
+  border: 1px solid var(--solely-border-color-split);
 }
 
 .tag--default:hover:not(.is-disabled) {
