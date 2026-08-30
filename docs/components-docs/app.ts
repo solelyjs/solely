@@ -57,11 +57,13 @@ export class DocsApp extends BaseElement {
     }
 
     /**
-     * 关闭移动端侧边栏
+     * 关闭移动端侧边栏（仅移动端触发，避免桌面端无意义渲染）
      */
     closeSidebar(): void {
-        this.$data.sidebarOpen = false;
-        this.refresh();
+        if (window.innerWidth <= 768) {
+            this.$data.sidebarOpen = false;
+            this.refresh();
+        }
     }
 }
 
