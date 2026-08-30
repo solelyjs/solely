@@ -111,6 +111,11 @@
   border-color: var(--solely-secondary-hover);
 }
 
+.btn--secondary:active:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-secondary-active);
+  border-color: var(--solely-secondary-active);
+}
+
 .btn--success {
   color: var(--solely-white);
   background-color: var(--solely-success);
@@ -120,6 +125,11 @@
 .btn--success:hover:not(:disabled):not(.is-loading) {
   background-color: var(--solely-success-hover);
   border-color: var(--solely-success-hover);
+}
+
+.btn--success:active:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-success-active);
+  border-color: var(--solely-success-active);
 }
 
 .btn--warning {
@@ -133,6 +143,11 @@
   border-color: var(--solely-warning-hover);
 }
 
+.btn--warning:active:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-warning-active);
+  border-color: var(--solely-warning-active);
+}
+
 .btn--error {
   color: var(--solely-white);
   background-color: var(--solely-error);
@@ -142,6 +157,11 @@
 .btn--error:hover:not(:disabled):not(.is-loading) {
   background-color: var(--solely-error-hover);
   border-color: var(--solely-error-hover);
+}
+
+.btn--error:active:not(:disabled):not(.is-loading) {
+  background-color: var(--solely-error-active);
+  border-color: var(--solely-error-active);
 }
 
 /* 按钮类型 - 默认/描边 */
@@ -159,6 +179,7 @@
 .btn--default:active:not(:disabled):not(.is-loading) {
   color: var(--solely-primary-active);
   border-color: var(--solely-primary-active);
+  background-color: var(--solely-primary-light);
 }
 
 .btn--dashed {
@@ -176,6 +197,7 @@
 .btn--dashed:active:not(:disabled):not(.is-loading) {
   color: var(--solely-primary-active);
   border-color: var(--solely-primary-active);
+  background-color: var(--solely-primary-light);
 }
 
 /* 按钮类型 - 文字/链接 */
@@ -190,7 +212,7 @@
 }
 
 .btn--text:active:not(:disabled):not(.is-loading) {
-  background-color: var(--solely-gray-4);
+  background-color: var(--solely-gray-5);
 }
 
 .btn--link {

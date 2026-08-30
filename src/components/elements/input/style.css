@@ -41,7 +41,7 @@
   box-sizing: border-box;
 }
 
-.form-control:hover:not(.is-disabled) {
+.form-control:hover:not(.is-disabled):not(.is-error):not(.is-warning):not(.is-success) {
   border-color: var(--solely-primary-hover);
 }
 
@@ -129,6 +129,7 @@
 
 .is-error.is-focused {
   box-shadow: var(--solely-focus-ring-error);
+  border-color: var(--solely-error);
 }
 
 .is-warning {
@@ -137,6 +138,7 @@
 
 .is-warning.is-focused {
   box-shadow: var(--solely-focus-ring-warning);
+  border-color: var(--solely-warning);
 }
 
 .is-success {
@@ -145,6 +147,7 @@
 
 .is-success.is-focused {
   box-shadow: var(--solely-focus-ring-success);
+  border-color: var(--solely-success);
 }
 
 /* ==================== 输入框特有样式 ==================== */

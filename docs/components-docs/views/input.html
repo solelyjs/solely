@@ -262,14 +262,14 @@
 
     <div class="demo-block">
         <h3 class="demo-block-title">搜索建议</h3>
-        <p class="demo-block-desc">设置 suggestions 属性启用搜索建议功能，输入时会自动过滤匹配的建议。</p>
+        <p class="demo-block-desc">设置 suggestions 属性启用搜索建议功能，输入时会自动过滤匹配的建议。数组类型属性需以 JSON 格式书写（双引号字符串）。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; align-items: stretch; position: relative;">
-                <solely-input id="autocomplete-input" suggestions="['Apple', 'Apricot', 'Avocado', 'Banana', 'Blueberry', 'Cherry', 'Coconut', 'Date', 'Fig', 'Grape', 'Kiwi', 'Lemon', 'Lime', 'Mango', 'Orange', 'Papaya', 'Peach', 'Pear', 'Pineapple', 'Plum', 'Strawberry', 'Watermelon']" placeholder="输入关键词搜索..."></solely-input>
+                <solely-input id="autocomplete-input" suggestions='["Apple", "Apricot", "Avocado", "Banana", "Blueberry", "Cherry", "Coconut", "Date", "Fig", "Grape", "Kiwi", "Lemon", "Lime", "Mango", "Orange", "Papaya", "Peach", "Pear", "Pineapple", "Plum", "Strawberry", "Watermelon"]' placeholder="输入关键词搜索..."></solely-input>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- 直接在 HTML 中设置建议数据 --&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">suggestions</span>=<span class="code-value">"['Apple', 'Banana', 'Cherry']"</span> <span class="code-attr">placeholder</span>=<span class="code-value">"输入关键词搜索..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-input</span> <span class="code-attr">suggestions</span>=<span class="code-value">'["Apple", "Banana", "Cherry"]'</span> <span class="code-attr">placeholder</span>=<span class="code-value">"输入关键词搜索..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
 
 <span class="code-comment">&lt;!-- 或通过 JavaScript 动态设置 --&gt;</span>
 <span class="code-tag">const</span> input = document.<span class="code-attr">querySelector</span>(<span class="code-value">'solely-input'</span>);

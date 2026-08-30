@@ -919,6 +919,8 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
+    /* SVG 图标使用 currentColor，必须显式指定白色，否则会继承深色文本色 */
+    color: white;
     font-size: 24px;
 }
 
