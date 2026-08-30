@@ -51,13 +51,14 @@
 .logo-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--solely-gradient-brand);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 20px;
+    font-weight: 700;
 }
 
 .nav-links {
@@ -102,6 +103,75 @@
 
 .theme-icon {
     font-size: 16px;
+}
+
+/* 移动端侧边栏切换按钮 */
+.sidebar-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--docs-border-color);
+    border-radius: 20px;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--solely-transition-duration) var(--solely-transition-timing);
+    color: var(--docs-text-secondary);
+    flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+    border-color: var(--solely-primary);
+    color: var(--solely-primary);
+}
+
+.sidebar-toggle-icon {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    position: relative;
+}
+
+.sidebar-toggle-icon::before,
+.sidebar-toggle-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    transition: transform var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.sidebar-toggle-icon::before {
+    top: -6px;
+}
+
+.sidebar-toggle-icon::after {
+    top: 6px;
+}
+
+/* 侧边栏遮罩层 */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--solely-mask-bg);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.sidebar-overlay.visible {
+    display: block;
+    opacity: 1;
 }
 
 /* ==================== 主布局 ==================== */
@@ -159,7 +229,9 @@
 .sidebar-item.active {
     color: var(--solely-primary);
     background: var(--solely-primary-light, rgba(24, 144, 255, 0.1));
-    border-right: 3px solid var(--solely-primary);
+    border-left: 3px solid var(--solely-primary);
+    padding-left: 29px;
+    font-weight: 500;
 }
 
 /* ==================== 内容区域 ==================== */
@@ -354,7 +426,7 @@
 
 .icon-item span {
     font-size: 12px;
-    color: var(--solely-text-color-secondary, #666);
+    color: var(--solely-text-secondary);
     text-align: center;
     word-break: break-all;
 }
@@ -565,7 +637,7 @@
     padding: 2px 6px;
     background: var(--docs-bg-secondary);
     border-radius: 3px;
-    color: #c41d7f;
+    color: var(--solely-pink-active);
 }
 
 /* ==================== 提示框 ==================== */
@@ -579,9 +651,9 @@
 }
 
 .alert-info {
-    background: #e6f7ff;
-    border: 1px solid #91d5ff;
-    color: #096dd9;
+    background: var(--solely-info-light);
+    border: 1px solid var(--solely-primary-hover);
+    color: var(--solely-primary-active);
 }
 
 .alert-icon {
@@ -620,7 +692,7 @@
     font-size: 64px;
     font-weight: 800;
     margin-bottom: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--solely-gradient-brand);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -643,6 +715,7 @@
     display: flex;
     gap: 16px;
     justify-content: center;
+    align-items: center;
     margin-top: 32px;
 }
 
@@ -699,12 +772,23 @@
 }
 
 .home-badge {
+    display: inline-flex;
+    align-items: center;
     padding: 8px 16px;
     background: var(--docs-bg);
     border: 1px solid var(--docs-border);
     border-radius: 20px;
     font-size: 13px;
     color: var(--docs-text-secondary);
+}
+
+/* 按钮/徽章图标与文字的间距 */
+.btn svg {
+    margin-right: 8px;
+}
+
+.home-badge svg {
+    margin-right: 6px;
 }
 
 .home-section {
@@ -752,12 +836,18 @@
     background: var(--docs-bg-secondary);
     border-radius: 12px;
     text-align: center;
+    transition: transform var(--solely-transition-duration) var(--solely-transition-timing), box-shadow var(--solely-transition-duration) var(--solely-transition-timing);
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--solely-shadow-md);
 }
 
 .feature-icon {
     width: 64px;
     height: 64px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--solely-gradient-brand);
     border-radius: 16px;
     display: flex;
     align-items: center;
@@ -765,6 +855,26 @@
     margin: 0 auto 20px;
     color: white;
     font-size: 28px;
+}
+
+.feature-icon--cyan {
+    background: linear-gradient(135deg, #13c2c2 0%, #08979c 100%);
+}
+
+.feature-icon--purple {
+    background: linear-gradient(135deg, #722ed1 0%, #531dab 100%);
+}
+
+.feature-icon--green {
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+}
+
+.feature-icon--orange {
+    background: linear-gradient(135deg, #fa8c16 0%, #d46b08 100%);
+}
+
+.feature-icon--pink {
+    background: linear-gradient(135deg, #eb2f96 0%, #c41d7f 100%);
 }
 
 .feature-card h3 {
@@ -796,20 +906,40 @@
 
 .overview-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--solely-shadow-lg);
     border-color: var(--solely-primary);
 }
 
 .overview-icon {
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--solely-gradient-brand);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
     font-size: 24px;
+}
+
+.overview-icon--cyan {
+    background: linear-gradient(135deg, #13c2c2 0%, #08979c 100%);
+}
+
+.overview-icon--purple {
+    background: linear-gradient(135deg, #722ed1 0%, #531dab 100%);
+}
+
+.overview-icon--green {
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+}
+
+.overview-icon--orange {
+    background: linear-gradient(135deg, #fa8c16 0%, #d46b08 100%);
+}
+
+.overview-icon--pink {
+    background: linear-gradient(135deg, #eb2f96 0%, #c41d7f 100%);
 }
 
 .overview-card h4 {
@@ -840,7 +970,7 @@
 .home-cta {
     text-align: center;
     padding: 80px 40px;
-    background: var(--docs-bg-secondary);
+    background: var(--solely-gradient-brand-soft, var(--docs-bg-secondary));
     border-radius: 16px;
     margin-bottom: 0;
 }
@@ -950,7 +1080,7 @@
 
 .draggable-item:hover {
     border-color: var(--solely-primary);
-    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+    box-shadow: var(--solely-shadow-primary);
 }
 
 .draggable-item.dragging {
@@ -1005,13 +1135,30 @@
         padding: 0 16px;
     }
 
+    .sidebar-toggle {
+        display: flex;
+    }
+
     .main-container {
         grid-template-columns: 1fr;
         grid-template-areas: "content";
     }
 
     .sidebar {
-        display: none;
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        max-width: 85vw;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform var(--solely-transition-duration) var(--solely-transition-timing);
+        box-shadow: var(--solely-shadow-lg);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
     }
 
     .content {

@@ -2,6 +2,9 @@
     <!-- 头部 -->
     <header class="header">
         <div class="logo">
+            <button class="sidebar-toggle" @click="this.toggleSidebar()" title="菜单">
+                <span class="sidebar-toggle-icon"></span>
+            </button>
             <div class="logo-icon">S</div>
             <span>Solely UI</span>
         </div>
@@ -16,8 +19,11 @@
     </header>
 
     <div class="main-container">
+        <!-- 侧边栏遮罩层（移动端） -->
+        <div class="sidebar-overlay" :class="{ visible: $data.sidebarOpen }" @click="this.closeSidebar()"></div>
+
         <!-- 左侧边栏 -->
-        <aside class="sidebar">
+        <aside class="sidebar" :class="{ open: $data.sidebarOpen }" @click="this.closeSidebar()">
             <div class="sidebar-group">
                 <div class="sidebar-title">开发指南</div>
                 <router-link to="/intro" class="sidebar-item">介绍</router-link>

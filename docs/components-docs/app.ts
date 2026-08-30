@@ -13,7 +13,10 @@ import styles from './app.css?inline';
     template,
     styles,
     shadowDOM: { use: true, mode: 'open' },
-    props: [{ name: 'isDark', type: 'boolean', default: false }],
+    props: [
+        { name: 'isDark', type: 'boolean', default: false },
+        { name: 'sidebarOpen', type: 'boolean', default: false },
+    ],
 })
 export class DocsApp extends BaseElement {
     mounted() {
@@ -42,6 +45,22 @@ export class DocsApp extends BaseElement {
             localStorage.setItem('solely-theme', 'light');
         }
 
+        this.refresh();
+    }
+
+    /**
+     * 切换移动端侧边栏
+     */
+    toggleSidebar(): void {
+        this.$data.sidebarOpen = !this.$data.sidebarOpen;
+        this.refresh();
+    }
+
+    /**
+     * 关闭移动端侧边栏
+     */
+    closeSidebar(): void {
+        this.$data.sidebarOpen = false;
         this.refresh();
     }
 }
