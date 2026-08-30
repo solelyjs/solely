@@ -7,6 +7,42 @@
 
 ## [Unreleased]
 
+## [0.5.8] - 2026-08-30
+
+### Added
+
+- **feat(theme)**: 新增语义令牌并接入组件
+    - 阴影扩展 `--solely-shadow-xl`、`--solely-shadow-2xl`
+    - 字号扩展 `--solely-font-size-3xl` ~ `5xl`
+    - 过渡快慢档 `--solely-transition-duration-fast` / `-slow`
+    - 状态背景色别名 `--solely-{success,warning,error,info}-bg`
+    - 焦点环别名 `--solely-focus-ring` 及 `-error` / `-warning` / `-success`
+    - 品牌渐变 `--solely-gradient-brand` / `--solely-gradient-brand-soft`
+    - 暗色主题补齐 `--solely-shadow-primary` 及上述全部语义令牌
+- **docs(components-docs)**: 新增移动端侧边栏开关按钮与遮罩层，支持抽屉式导航
+
+### Changed
+
+- **style(button)**: 移除 hover/active 的全局透明度，改由语义色阶表达状态
+    - 各类型补充 `:active` 按下态，实心类使用对应 `-active` 色阶
+    - `default` / `dashed` 按下时补充浅蓝底 `--solely-primary-light`
+    - `text` 按下时灰阶由 `--solely-gray-4` 加深为 `--solely-gray-5`
+- **style(input)**: 焦点环改用 `--solely-focus-ring` 系列令牌，聚焦时同步边框色
+- **style(input)**: hover 态不再覆盖 error / warning / success 的状态色
+- **style(table)**: 单元格文字色由次要文字色改为 `--solely-text-primary`
+- **style(tag)**: 默认标签改用 `--solely-fill-color` 与 `--solely-border-color-split`
+- **docs(home)**: 首页按钮/徽章/特性图标由 emoji 替换为内联 SVG，内联样式迁移到 CSS
+- **style(theme)**: 暗色主题阴影加深，并补齐亮色主题缺失的 `--solely-shadow-xl`
+
+### Fixed
+
+- **fix(button)**: 修复 `secondary` / `success` / `warning` / `error` 四类按钮缺失 `:active` 按下态的问题
+    - 移除全局 `:active { opacity }` 后未同步补齐，导致按下时无任何反馈
+- **docs(input)**: 修复搜索建议示例中数组属性使用单引号导致解析失败的问题
+    - `type: 'array'` 的属性值走 `JSON.parse`，单引号写法必然抛错并回退空数组，须使用双引号
+- **docs(home)**: 修复 `.overview-icon` 未指定前景色导致 SVG 图标在深色渐变上不可见的问题
+- **docs(components-docs)**: 修复移动端侧边栏关闭逻辑，仅在窗口宽度 ≤768px 时执行关闭，避免桌面端无意义的渲染与状态修改
+
 ## [0.5.7] - 2026-08-18
 
 ### Added
@@ -785,7 +821,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.7...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.5.8...HEAD
+[0.5.8]: https://github.com/solelyjs/solely/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/solelyjs/solely/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/solelyjs/solely/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/solelyjs/solely/compare/v0.5.4...v0.5.5
