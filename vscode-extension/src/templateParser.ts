@@ -83,7 +83,7 @@ function isTemplateImport(tsContent: string, htmlBaseName: string): boolean {
     // 支持各种相对路径: ./, ../, ./templates/, 或无前缀
     const pattern = new RegExp(
         `import\\s+(?:\\{[^}]*\\}|\\w+|\\w+\\s*,\\s*\\{[^}]*\\})\\s+from\\s+['"]` +
-            `(?:[^'"]*\\/)?${escaped}\\?(solely|raw)['"]`,
+        `(?:[^'"]*\\/)?${escaped}\\?(solely|raw)['"]`,
     );
     return pattern.test(tsContent);
 }
@@ -750,12 +750,12 @@ function resolvePackageImport(fromDir: string, importPath: string): string | nul
             const candidates = subpath
                 ? [path.join(packageDir, subpath)]
                 : entry
-                  ? [
+                    ? [
                         path.resolve(packageDir, entry),
                         path.join(packageDir, 'index.d.ts'),
                         path.join(packageDir, 'index.ts'),
                     ]
-                  : [path.join(packageDir, 'index.d.ts'), path.join(packageDir, 'index.ts')];
+                    : [path.join(packageDir, 'index.d.ts'), path.join(packageDir, 'index.ts')];
             for (const candidate of candidates) {
                 const file =
                     resolveSourceFile(candidate) ||
@@ -816,7 +816,7 @@ export function findPropertyClassFile(tsPath: string, propName: string): string 
                             const reExportMatch = indexContent.match(
                                 new RegExp(
                                     `export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b` +
-                                        `[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
+                                    `[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
                                 ),
                             );
                             if (reExportMatch) {
@@ -848,7 +848,7 @@ function findMethodInTsFile(tsPath: string, methodName: string): vscode.Location
     // Combined pattern: optional modifiers, then method name, then ( or = or :
     const pattern = new RegExp(
         `^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?` +
-            `(?:async\\s+)?(?:get\\s+|set\\s+)?${escaped}\\s*[\\(=:]`,
+        `(?:async\\s+)?(?:get\\s+|set\\s+)?${escaped}\\s*[\\(=:]`,
     );
 
     for (let i = 0; i < lines.length; i++) {
