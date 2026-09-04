@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
     const diagnosticProvider = new SolelyDiagnosticProvider();
 
     const definitionProvider = vscode.languages.registerDefinitionProvider(
-        { language: 'html', scheme: 'file' },
+        { language: 'html' },
         new SolelyDefinitionProvider(),
     );
 

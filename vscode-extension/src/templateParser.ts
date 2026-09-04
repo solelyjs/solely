@@ -255,6 +255,12 @@ export function extractReferenceAtPosition(
     const sModelProp = extractSModelPropAtPosition(line, position.line, charIndex);
     if (sModelProp) return sModelProp;
 
+    // Framework APIs such as BaseElement.emit() are method references too.
+    // Handle the explicit this.method() form before the generic property
+    // matcher so go-to-definition is deterministic for inherited methods.
+    const method = extractMethodCallAtPosition(line, position.line, charIndex);
+    if (method) return method;
+
     // this.xxx without () — getter or class property (e.g. this.filteredTodos)
     const thisProp = extractThisPropAtPosition(line, position.line, charIndex);
     if (thisProp) return thisProp;
@@ -267,9 +273,6 @@ export function extractReferenceAtPosition(
 
     const chained = extractChainedMethodAtPosition(line, position.line, charIndex);
     if (chained) return chained;
-
-    const method = extractMethodCallAtPosition(line, position.line, charIndex);
-    if (method) return method;
 
     return null;
 }
@@ -478,6 +481,21 @@ export function findDefinitionInTsFile(tsPath: string, ref: TemplateReference): 
         }
     }
 
+    // Framework members may be accepted by the BaseElement fallback in
+    // getComponentMembers even when the inheritance file cannot be walked by
+    // the normal definition search. Resolve the immediate parent directly so
+    // inherited APIs such as `this.emit()` still support go-to-definition.
+    if ((ref.kind === 'method' || ref.kind === 'chainedMethod') && ref.name === 'emit') {
+        const componentSource = fs.readFileSync(tsPath, 'utf-8');
+        if (/\bclass\s+\w+\s+extends\s+BaseElement\b/.test(componentSource)) {
+            const baseElementPath = findParentClassFile(tsPath) ?? findBaseElementDeclaration(tsPath);
+            if (baseElementPath) {
+                const result = findMethodInTsFile(baseElementPath, ref.name);
+                if (result) return result;
+            }
+        }
+    }
+
     // Fallback for chained method: try to find the method in the class of the first-level property
     // e.g. this.router.push() → find 'router' property type → search 'push' in that class
     if (ref.kind === 'method' && ref.fullExpression) {
@@ -490,6 +508,40 @@ export function findDefinitionInTsFile(tsPath: string, ref: TemplateReference): 
         }
     }
 
+    return null;
+}
+
+/** Locate BaseElement directly inside the imported framework package. */
+function findBaseElementDeclaration(tsPath: string): string | null {
+    try {
+        const componentSource = fs.readFileSync(tsPath, 'utf-8');
+        const importMatch = componentSource.match(/from\s+['"]([^'".][^'"]*)['"]/);
+        if (!importMatch || importMatch[1].startsWith('@')) return null;
+        const entry = resolvePackageImport(path.dirname(tsPath), importMatch[1]);
+        if (!entry) return null;
+
+        let packageDir = path.dirname(entry);
+        while (packageDir !== path.dirname(packageDir)) {
+            if (fs.existsSync(path.join(packageDir, 'package.json'))) break;
+            packageDir = path.dirname(packageDir);
+        }
+
+        const pending = [packageDir];
+        while (pending.length > 0) {
+            const current = pending.pop();
+            if (!current) continue;
+            for (const item of fs.readdirSync(current, { withFileTypes: true })) {
+                const itemPath = path.join(current, item.name);
+                if (item.isDirectory() && item.name !== 'node_modules') {
+                    pending.push(itemPath);
+                } else if (/^base-element\.(?:d\.ts|ts|tsx)$/.test(item.name)) {
+                    return itemPath;
+                }
+            }
+        }
+    } catch {
+        /* ignore */
+    }
     return null;
 }
 
@@ -579,28 +631,47 @@ function findParentClassFile(tsPath: string): string | null {
  * Resolve an import path to an actual .ts file, following re-exports.
  */
 function resolveImportPath(fromDir: string, importPath: string, className: string): string | null {
+    // Relative imports are resolved from the component directory. Bare module
+    // imports (for example `import { BaseElement } from 'solely'`) must be
+    // resolved like TypeScript/Node: walk up through node_modules and prefer
+    // the package's declaration entry because the runtime file may not contain
+    // any class/method source that can be inspected.
+    if (!importPath.startsWith('.') && !path.isAbsolute(importPath)) {
+        const packagePath = resolvePackageImport(fromDir, importPath);
+        if (packagePath) {
+            const packageResult = resolveImportPath(
+                path.dirname(packagePath),
+                './' + path.basename(packagePath),
+                className,
+            );
+            return packageResult ?? packagePath;
+        }
+        return null;
+    }
+
     let resolvedPath = path.resolve(fromDir, importPath);
 
-    // If it points to a directory, try index.ts
+    // If it points to a directory, try any supported declaration/source index.
     if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isDirectory()) {
-        resolvedPath = path.join(resolvedPath, 'index.ts');
+        const indexPath = ['index.ts', 'index.tsx', 'index.d.ts']
+            .map(name => path.join(resolvedPath, name))
+            .find(candidate => fs.existsSync(candidate));
+        if (!indexPath) return null;
+        resolvedPath = indexPath;
     }
 
     // Add .ts extension if missing
-    if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.tsx')) {
-        if (fs.existsSync(resolvedPath + '.ts')) {
-            resolvedPath += '.ts';
-        } else if (fs.existsSync(resolvedPath + '.tsx')) {
-            resolvedPath += '.tsx';
-        } else {
-            return null;
-        }
+    if (!/\.(?:ts|tsx|d\.ts)$/.test(resolvedPath)) {
+        const candidates = [resolvedPath + '.ts', resolvedPath + '.tsx', resolvedPath + '.d.ts'];
+        const candidate = candidates.find(p => fs.existsSync(p));
+        if (!candidate) return null;
+        resolvedPath = candidate;
     }
 
     if (!fs.existsSync(resolvedPath)) return null;
 
     // If the resolved path is an index.ts, try to find the actual class file via re-export
-    if (resolvedPath.endsWith('index.ts') || resolvedPath.endsWith('index.tsx')) {
+    if (/index\.(?:ts|tsx|d\.ts)$/.test(resolvedPath)) {
         const indexDir = path.dirname(resolvedPath);
 
         // Try kebab-case naming: BaseElement → base-element.ts
@@ -608,8 +679,8 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
             .replace(/([A-Z])/g, '-$1')
             .toLowerCase()
             .replace(/^-/, '');
-        const directPath = path.join(indexDir, kebabName + '.ts');
-        if (fs.existsSync(directPath)) return directPath;
+        const directPath = resolveSourceFile(path.join(indexDir, kebabName));
+        if (directPath) return directPath;
 
         // Try reading the index to find the re-export
         try {
@@ -620,15 +691,84 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
             const reExportMatch = indexContent.match(reExportPattern);
             if (reExportMatch) {
                 const classPath = path.resolve(indexDir, reExportMatch[1]);
-                const finalPath = classPath.endsWith('.ts') ? classPath : classPath + '.ts';
-                if (fs.existsSync(finalPath)) return finalPath;
+                const finalPath = resolveSourceFile(classPath);
+                if (finalPath) return finalPath;
+            }
+
+            // A declaration barrel may declare the class directly rather than
+            // re-exporting it. Do not return an unrelated barrel just because
+            // it exists; callers need the barrel that actually contains the
+            // requested class/member.
+            const declarationPattern = new RegExp(`(?:declare\\s+)?class\\s+${escapeRegex(className)}\\b`);
+            if (declarationPattern.test(indexContent)) return resolvedPath;
+
+            // Package declaration barrels commonly use `export * from './runtime'`.
+            const starExportPattern = /export\s+\*\s+from\s+['"]([^'"]+)['"]/g;
+            let starExport: RegExpExecArray | null;
+            while ((starExport = starExportPattern.exec(indexContent)) !== null) {
+                const finalPath = resolveImportPath(indexDir, starExport[1], className);
+                if (finalPath) return finalPath;
             }
         } catch {
             /* ignore */
         }
     }
 
+    // Never treat an arbitrary module (for example compiler/ir/buildIR.d.ts)
+    // as the requested parent. Only return a source file when it declares the
+    // requested class; otherwise let an enclosing export-* traversal continue.
+    const sourceContent = fs.readFileSync(resolvedPath, 'utf-8');
+    const classPattern = new RegExp(`(?:declare\\s+)?(?:export\\s+)?class\\s+${escapeRegex(className)}\\b`);
+    if (!classPattern.test(sourceContent)) return null;
     return resolvedPath;
+}
+
+function resolveSourceFile(basePath: string): string | null {
+    if (fs.existsSync(basePath) && fs.statSync(basePath).isFile()) return basePath;
+    for (const suffix of ['.ts', '.tsx', '.d.ts']) {
+        if (fs.existsSync(basePath + suffix)) return basePath + suffix;
+    }
+    return null;
+}
+
+function resolvePackageImport(fromDir: string, importPath: string): string | null {
+    const parts = importPath.split('/');
+    const packageName = importPath.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+    const subpath = importPath.slice(packageName.length).replace(/^\//, '');
+    let dir = fromDir;
+    let parent = path.dirname(dir);
+    while (dir !== parent) {
+        const packageDir = path.join(dir, 'node_modules', packageName);
+        if (fs.existsSync(packageDir)) {
+            let entry: string | undefined;
+            try {
+                const pkg = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
+                entry = subpath ? undefined : typeof pkg.types === 'string' ? pkg.types : pkg.typings || pkg.main;
+            } catch {
+                /* package.json may be unavailable */
+            }
+            const candidates = subpath
+                ? [path.join(packageDir, subpath)]
+                : entry
+                  ? [
+                        path.resolve(packageDir, entry),
+                        path.join(packageDir, 'index.d.ts'),
+                        path.join(packageDir, 'index.ts'),
+                    ]
+                  : [path.join(packageDir, 'index.d.ts'), path.join(packageDir, 'index.ts')];
+            for (const candidate of candidates) {
+                const file =
+                    resolveSourceFile(candidate) ||
+                    (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()
+                        ? resolveSourceFile(path.join(candidate, 'index'))
+                        : null);
+                if (file) return file;
+            }
+        }
+        dir = parent;
+        parent = path.dirname(dir);
+    }
+    return null;
 }
 
 export function findPropertyClassFile(tsPath: string, propName: string): string | null {
@@ -856,7 +996,7 @@ export function getMethodSignatures(tsPath: string): MethodSignature[] {
         '^\\s*(?:(?:public|private|protected)\\s+)?' +
         '(?:static\\s+)?(?:async\\s+)?' +
         '(\\w+)\\s*\\(([^)]*)\\)\\s*' +
-        '(?::\\s*([^{\\n]+?))?\\s*\\{';
+        '(?::\\s*([^;{\\n]+?))?\\s*(?:\\{|;)';
     const methodRegex = new RegExp(methodPattern);
 
     for (let i = 0; i < lines.length; i++) {
@@ -932,6 +1072,20 @@ export function getComponentMembers(tsPath: string): {
     const dataProps = new Set<string>();
 
     const allPaths = [tsPath, ...findAncestorFiles(tsPath)];
+
+    // BaseElement is the framework's public component contract. Keep these
+    // members available even when the package is linked outside the current
+    // workspace or its declaration entry cannot be resolved by the extension.
+    // This prevents a valid inherited API from becoming a false diagnostic.
+    try {
+        const componentSource = fs.readFileSync(tsPath, 'utf-8');
+        if (/\bclass\s+\w+\s+extends\s+BaseElement\b/.test(componentSource)) {
+            methods.add('emit');
+            methods.add('emitNative');
+        }
+    } catch {
+        /* ignore */
+    }
 
     for (const p of allPaths) {
         // 方法

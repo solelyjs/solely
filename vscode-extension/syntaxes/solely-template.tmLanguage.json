@@ -5,6 +5,10 @@
     "injectionSelector": "L:text.html.derivative",
     "patterns": [
         {
+            "name": "entity.name.function",
+            "match": "\\bemit\\b(?=\\s*\\()"
+        },
+        {
             "name": "meta.embedded.solely.expression",
             "begin": "\\{\\{",
             "end": "\\}\\}",
@@ -59,6 +63,10 @@
                         {
                             "name": "variable.language.solely.this",
                             "match": "\\bthis\\b"
+                        },
+                        {
+                            "name": "entity.name.function",
+                            "match": "\\bthis\\.(\\w+)(?=\\s*\\()"
                         },
                         {
                             "name": "entity.name.function",

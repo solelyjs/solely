@@ -4,15 +4,15 @@ VS Code 扩展，为 [Solely](https://github.com/solelyjs/solely) 框架的 HTML
 
 ## 功能总览
 
-| 功能         | 说明                                                                          |
-| ------------ | ----------------------------------------------------------------------------- |
-| **语法高亮** | 插值表达式、控制流标签、事件/属性绑定、指令、生命周期等均有独立配色           |
-| **代码补全** | `this.`/`$data.`/`$refs.` 成员补全，控制流标签 snippet，`s-`/`@`/`:` 指令补全 |
-| **定义跳转** | 模板中 Ctrl+点击跳转到 TS 方法定义、属性定义、ref 引用                        |
-| **悬停提示** | 鼠标悬停显示方法签名、属性类型、ref 说明等信息                                |
-| **错误诊断** | 控制流配对、插值闭合、属性语法、HTML 引用诊断（方法/属性是否存在）            |
-| **模板关联** | 自动识别 `?solely`/`?raw` 导入，关联 HTML 模板与 TS 组件                      |
-| **快速切换** | 命令面板一键在 HTML 模板与 TS 组件之间切换                                    |
+| 功能         | 说明                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------ |
+| **语法高亮** | 插值表达式、控制流标签、事件/属性绑定、指令、生命周期等均有独立配色                  |
+| **代码补全** | `this.`/`$data.`/`$refs.` 成员补全，控制流标签 snippet，`s-`/`@`/`:` 指令补全        |
+| **定义跳转** | 模板中 Ctrl+点击跳转到 TS 方法定义、属性定义、ref 引用，包括继承的 `BaseElement` API |
+| **悬停提示** | 鼠标悬停显示方法签名、属性类型、ref 说明等信息                                       |
+| **错误诊断** | 控制流配对、插值闭合、属性语法、HTML 引用诊断（方法/属性是否存在）                   |
+| **模板关联** | 自动识别 `?solely`/`?raw` 导入，关联 HTML 模板与 TS 组件                             |
+| **快速切换** | 命令面板一键在 HTML 模板与 TS 组件之间切换                                           |
 
 ---
 
@@ -26,7 +26,7 @@ VS Code 扩展，为 [Solely](https://github.com/solelyjs/solely) 框架的 HTML
 <span>{{ $data.message }}</span> <span>{{ this.getTitle() }}</span>
 ```
 
-`$data`、`this`、属性名、方法名均有独立配色。
+`$data`、`this`、属性名、方法名均有独立配色，包括 `this.emit()` 等继承自 `BaseElement` 的方法。
 
 ### 控制流标签
 
@@ -183,7 +183,7 @@ s-|→  s-model     → s-model="..."
 | `ref="xxx"`          | TS 中 `this.$refs.xxx` 的使用位置                |
 | `s-model="prop"`     | 同 `$data.prop`，跳转到属性定义                  |
 
-跳转支持继承链：如果当前组件类中找不到定义，会自动向上查找父类文件。
+跳转支持继承链：如果当前组件类中找不到定义，会自动向上查找父类文件。对于通过包名导入的父类（例如 `import { BaseElement } from 'solely'`），扩展会解析依赖包的 `types`/`typings` 声明入口、`export *` 链和 `.d.ts` 文件。例如 `this.emit()` 可以跳转到 `solely` 包中的 `BaseElement` 声明。
 
 ---
 
@@ -249,8 +249,8 @@ s-|→  s-model     → s-model="..."
 <!-- ❌ 错误: 数据属性 'nweTodo' 在 super({}) 或 interface 中未定义 -->
 <span>{{ $data.nweTodo }}</span>
 
-<!-- ✅ 不报错: 框架内置成员($emit/$nextTick 等)自动跳过 -->
-<button @click="this.$emit('change')">触发事件</button>
+<!-- ✅ 不报错: BaseElement 继承成员 emit() 可直接使用 -->
+<button @click="this.emit('change')">触发事件</button>
 ```
 
 诊断采用保守策略，避免误报：
@@ -258,6 +258,7 @@ s-|→  s-model     → s-model="..."
 - 只检查 `this.method()`（带括号）和 `$data.prop`
 - 跳过 `$` 开头的框架内置成员
 - 检查继承链（组件类 + 所有父类）
+- 识别 `BaseElement` 的 `emit()`/`emitNative()` 等继承成员
 - 无法解析 `super({})` 时跳过 `$data.xxx` 检查
 
 ---
@@ -284,6 +285,7 @@ s-|→  s-model     → s-model="..."
 1. **HTML → TS**：在 HTML 文件所在目录搜索 TS 文件，匹配 `import template from './xxx.html?solely'` 或 `?raw` 语句
 2. **TS → HTML**：解析 TS 文件中的模板导入语句，定位 HTML 文件
 3. **支持各种相对路径**：`./`、`../`、`./templates/` 等路径格式均可识别
+4. **支持依赖包父类解析**：可解析 `node_modules` 中通过裸模块导入的父类，以及其 `types`/`typings`、`export *` 和 `.d.ts` 声明链
 
 ```typescript
 // TS 组件中的模板导入（两种方式均可）
