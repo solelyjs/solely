@@ -199,7 +199,7 @@ function extractDataPropsFromSuper(tsPath: string): string[] {
 
             // 在顶层提取属性名
             if (currentDepth === 0) {
-                const m = body.substring(i).match(/^(\w+)\s*(?=:)/);
+                const m = body.substring(i).match(/^(\w+)\s*(?=[:,=,])/);
                 if (m && !props.includes(m[1])) {
                     props.push(m[1]);
                     i += m[1].length - 1;
@@ -1015,6 +1015,26 @@ export function getMethodSignatures(tsPath: string): MethodSignature[] {
                 range: new vscode.Range(i, 0, i, lines[i].length),
             });
         }
+    }
+
+    // Also recognize class-field arrow functions:
+    // handleWaitingRetry = (): void => { ... }
+    const arrowMethodRegex = new RegExp(
+        '^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?' +
+            '(?:async\\s+)?(\\w+)\\s*=\\s*\\(([^)]*)\\)\\s*' +
+            '(?::\\s*([^=\\n]+?))?\\s*=>',
+    );
+    for (let i = 0; i < lines.length; i++) {
+        const match = arrowMethodRegex.exec(lines[i]);
+        if (!match || signatures.some(signature => signature.name === match[1])) continue;
+
+        const params = match[2] || '';
+        const returnType = match[3]?.trim() || 'void';
+        signatures.push({
+            name: match[1],
+            signature: `${match[1]}(${params}): ${returnType}`,
+            range: new vscode.Range(i, 0, i, lines[i].length),
+        });
     }
 
     return signatures;
