@@ -1021,8 +1021,8 @@ export function getMethodSignatures(tsPath: string): MethodSignature[] {
     // handleWaitingRetry = (): void => { ... }
     const arrowMethodRegex = new RegExp(
         '^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?' +
-            '(?:async\\s+)?(\\w+)\\s*=\\s*\\(([^)]*)\\)\\s*' +
-            '(?::\\s*([^=\\n]+?))?\\s*=>',
+        '(?:async\\s+)?(\\w+)\\s*=\\s*\\(([^)]*)\\)\\s*' +
+        '(?::\\s*([^=\\n]+?))?\\s*=>',
     );
     for (let i = 0; i < lines.length; i++) {
         const match = arrowMethodRegex.exec(lines[i]);
