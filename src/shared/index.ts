@@ -6,3 +6,4 @@ export * from './is-object';
 export * from './url';
 export * from './env';
 export * from './case-convert';
+export * from './svg-sanitize';

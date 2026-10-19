@@ -127,6 +127,10 @@ class SolelySteps extends BaseElement<
                 description: stepEl.getAttribute('data-description') || undefined,
                 disabled: stepEl.hasAttribute('disabled'),
                 // 提前保存 innerHTML，避免 Shadow DOM 中访问 Light DOM 元素的权限问题
+                // 安全说明：此处不做 sanitizeSvg 消毒——内容来自开发者自己编写的
+                // light DOM 插槽标记（与组件模板同等信任级），且 sanitizeSvg 是 SVG
+                // 元素白名单，套用到任意 HTML 上会把 <img>/<span> 等合法内容一并删除。
+                // 若将来支持接收不可信的插槽内容，需要引入独立的 HTML 消毒策略。
                 iconHtml: stepEl.innerHTML,
             };
         });

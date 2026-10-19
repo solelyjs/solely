@@ -4,6 +4,7 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
+import { sanitizeSvg } from '../../../shared/svg-sanitize';
 import type { IconProps, IconRefs, IconSpin } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
@@ -317,11 +318,19 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
 
     /**
      * 更新 SVG 元素的内容
+     *
+     * 安全说明：图标内容来自两个渠道——
+     * 1. registerIcon/registerIcons：开发者代码主动注册，可信；
+     * 2. loadIconSprite 远程加载的 SVG Sprite：可能来自第三方源，
+     *    恶意 SVG 可携带 SMIL 事件属性（onbegin 等）、<script>、
+     *    <foreignObject>、javascript: 链接等 XSS 载荷。
+     * 因此注入前统一经 sanitizeSvg 消毒（移除危险元素/属性）。
+     * 注意：innerHTML 注入的 <script> 虽不执行，但 SMIL 事件属性会。
      */
     private updateSvgContent(): void {
         const svgEl = this.$refs.svgRef;
         if (svgEl && this.hasIcon()) {
-            svgEl.innerHTML = this.getIconContent();
+            svgEl.innerHTML = sanitizeSvg(this.getIconContent());
         }
     }
 
