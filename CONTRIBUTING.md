@@ -99,7 +99,7 @@
 
 ### 前置要求
 
-- Node.js >= 18.0.0
+- Node.js ^20.19.0 || >=22.12.0（与 package.json engines 一致）
 - npm >= 9.0.0
 
 ### 安装步骤
