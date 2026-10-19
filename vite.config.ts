@@ -89,6 +89,12 @@ export default defineConfig(({ command, mode }) => {
     }
 
     // 库构建模式
+    // SOLELY_BUILD_OUT_DIR 环境变量：将构建产物重定向到临时目录，
+    // 用于验证构建（避免清理/覆盖正式 dist，也不触发清理逻辑）
+    const outDir = process.env.SOLELY_BUILD_OUT_DIR
+        ? path.resolve(__dirname, process.env.SOLELY_BUILD_OUT_DIR)
+        : path.resolve(__dirname, 'dist');
+
     return {
         root: process.cwd(),
         base: '',
@@ -105,7 +111,7 @@ export default defineConfig(({ command, mode }) => {
             }),
             // 类型声明生成 - 保持目录结构
             dtsPlugin({
-                outDir: 'dist',
+                outDir,
                 entryRoot: 'src',
                 include: ['src/**/*.ts'],
                 exclude: ['test/**', 'tests/**', 'examples/**', '**/*.test.ts', '**/*.spec.ts'],
@@ -145,7 +151,7 @@ export default defineConfig(({ command, mode }) => {
 
         build: {
             // 库构建配置
-            outDir: path.resolve(__dirname, 'dist'),
+            outDir,
             emptyOutDir: true,
             sourcemap: isDev,
             minify: isDev ? false : 'terser',
@@ -178,7 +184,7 @@ export default defineConfig(({ command, mode }) => {
                     // ESM 输出 - 现代浏览器和 Node.js
                     {
                         format: 'es',
-                        dir: 'dist',
+                        dir: outDir,
                         // 关键：保持模块结构
                         preserveModules: true,
                         preserveModulesRoot: 'src',
@@ -196,7 +202,7 @@ export default defineConfig(({ command, mode }) => {
                     // CJS 输出 - Node.js 兼容
                     {
                         format: 'cjs',
-                        dir: 'dist',
+                        dir: outDir,
                         preserveModules: true,
                         preserveModulesRoot: 'src',
                         entryFileNames: '[name].cjs',
