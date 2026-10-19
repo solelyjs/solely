@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createRender, IRRenderer } from '../src/runtime/renderer/renderIR';
+import { createRender } from '../src/runtime/renderer/renderIR';
 import { buildIR, clearIRCache } from '../src/compiler/ir/buildIR';
 import { parseHtml } from '../src/compiler/parser/parser';
-import { ASTType } from '../src/types';
 
 describe('renderIR', () => {
     let container: HTMLElement;

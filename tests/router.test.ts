@@ -1,14 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createRouter, getRouter, Router, routerReady } from '../src/router/core';
-import type { RouteConfig, RouteMatch } from '../src/router/types';
-
-// 重置全局路由实例的辅助函数
-function resetRouter() {
-    // 通过重置模块状态来清理
-    const routerModule = require('../src/runtime/router/core');
-    // 重新赋值全局实例为 null
-    (globalThis as any).globalRouterInstance = null;
-}
+import type { RouteConfig } from '../src/router/types';
 
 describe('Router Core', () => {
     const mockRoutes: RouteConfig[] = [

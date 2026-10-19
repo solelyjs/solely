@@ -126,7 +126,6 @@ describe('base/BaseElement public interface tests', () => {
 
     it('should call mounted on first refresh and updated on subsequent refresh', async () => {
         // 验证首次刷新触发 mounted，后续刷新触发 updated
-        const spyMounted = vi.spyOn(el, 'mounted');
         const spyUpdated = vi.spyOn(el, 'updated');
 
         // 再次刷新触发 updated

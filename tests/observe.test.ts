@@ -246,7 +246,7 @@ describe('observe function', () => {
 
     it('should handle immediate option', () => {
         const obj = { a: 1, b: { c: 2 } };
-        const { proxy, unobserve } = observe(
+        const { unobserve } = observe(
             obj,
             change => {
                 changes.push(formatChange(change));
