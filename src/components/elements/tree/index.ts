@@ -113,6 +113,11 @@ class SolelyTree extends BaseElement<
 
     /**
      * 解析树形数据
+     *
+     * 注意：数据源是 tree-data attribute 的字符串快照；若组件在 setTreeData()
+     * 写入新数据后被移出 DOM 再插入（重新触发 mounted），attribute 中的旧字符串
+     * 会覆盖 setTreeData 传入的数据。需要持久化动态数据的场景请在重新挂载后
+     * 再次调用 setTreeData()。
      */
     parseTreeData(): void {
         this.treeData = safeJsonParse(this.$data.treeData, []);
@@ -495,7 +500,6 @@ class SolelyTree extends BaseElement<
      */
     public setTreeData(data: TreeNode[]): void {
         this.treeData = data;
-        this.$data.treeData = JSON.stringify(data);
         this.flattenTree();
     }
 
