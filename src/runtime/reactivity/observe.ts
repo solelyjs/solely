@@ -46,8 +46,7 @@ type ObserverEntry = {
 };
 
 // 代理对象缓存 (Raw -> Proxy)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const globalProxyCache = new WeakMap<object, any>();
+const globalProxyCache = new WeakMap<object, object>();
 const globalObservers = new WeakMap<object, Set<ObserverEntry>>();
 
 // 数组突变深度
@@ -126,9 +125,8 @@ function syncArrayLinks(target: unknown[], arrayProxy: object) {
 
 export function toRaw<T>(observed: T): T {
     if (observed && typeof observed === 'object') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const raw = (observed as any)[RAW_SYMBOL];
-        if (raw) return raw;
+        const raw = (observed as Record<symbol, unknown>)[RAW_SYMBOL];
+        if (raw) return raw as T;
     }
     return observed;
 }
@@ -155,8 +153,7 @@ const isNativeSkippable = (obj: unknown): boolean => {
 };
 
 export function isProxy(value: unknown): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return !!(value && (value as any)[RAW_SYMBOL]);
+    return !!(value && (value as Record<symbol, unknown>)[RAW_SYMBOL]);
 }
 
 export type ReactiveSource<T extends object = object> = T | ObserveReturn<T>;
@@ -258,8 +255,9 @@ const deepEqual = (a: unknown, b: unknown): boolean => {
 
     for (const key of keysA) {
         if (!Reflect.has(b, key)) return false;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!deepEqual((a as any)[key], (b as any)[key])) return false;
+        const valA = (a as Record<PropertyKey, unknown>)[key];
+        const valB = (b as Record<PropertyKey, unknown>)[key];
+        if (!deepEqual(valA, valB)) return false;
     }
     return true;
 };
@@ -349,8 +347,14 @@ const globalEmit = (targetProxy: object, payload: ChangePayload) => {
 
 /* ======================= 全局代理生成器与静态拦截器 ======================= */
 
+/** 数组仪器方法的宽松函数类型（this 绑定到 proxy，运行期动态分发） */
+type ArrayMethodFn = (...a: unknown[]) => unknown;
+
 // 全局静态的数组仪器（解耦于具体 proxy 实例，依靠 this 绑定获取）
 const arrayInstrumentations: Record<string, Function> = {};
+
+const getArrayMethod = (target: unknown[], key: string): ArrayMethodFn =>
+    (target as unknown as Record<string, ArrayMethodFn>)[key];
 
 (['push', 'pop', 'shift', 'unshift', 'splice'] as const).forEach(key => {
     arrayInstrumentations[key] = function (this: unknown[], ...args: unknown[]) {
@@ -361,8 +365,7 @@ const arrayInstrumentations: Record<string, Function> = {};
 
         try {
             const oldLength = target.length;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const res = (target as any)[key].apply(target, args);
+            const res = getArrayMethod(target, key).apply(target, args);
 
             if (key === 'push') {
                 const startIndex = target.length - args.length;
@@ -396,16 +399,14 @@ const arrayInstrumentations: Record<string, Function> = {};
 });
 
 (['sort', 'reverse', 'fill', 'copyWithin'] as const).forEach(key => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    arrayInstrumentations[key] = function (this: unknown[], ...args: any[]) {
+    arrayInstrumentations[key] = function (this: unknown[], ...args: unknown[]) {
         const proxy = this as object;
         const target = toRaw(proxy) as unknown[];
         const currentDepth = globalArrayMutationDepth.get(proxy) || 0;
         globalArrayMutationDepth.set(proxy, currentDepth + 1);
 
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const res = (target as any)[key].apply(target, args);
+            const res = getArrayMethod(target, key).apply(target, args);
             syncArrayLinks(target, proxy);
             globalEmit(proxy, { type: 'array-reset', method: key });
             return res;
@@ -416,14 +417,12 @@ const arrayInstrumentations: Record<string, Function> = {};
 });
 
 (['indexOf', 'lastIndexOf', 'includes'] as const).forEach(key => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    arrayInstrumentations[key] = function (this: unknown[], searchElement: unknown, ...args: any[]) {
+    arrayInstrumentations[key] = function (this: unknown[], searchElement: unknown, ...args: unknown[]) {
         const target = toRaw(this) as unknown[];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let res = (target as any)[key].apply(target, [searchElement, ...args]);
+        const method = getArrayMethod(target, key);
+        let res = method.apply(target, [searchElement, ...args]);
         if ((res === -1 || res === false) && isProxy(searchElement)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            res = (target as any)[key].apply(target, [toRaw(searchElement), ...args]);
+            res = method.apply(target, [toRaw(searchElement), ...args]);
         }
         return res;
     };
@@ -508,11 +507,10 @@ function getOrCreateProxy<T extends object>(target: T): T {
     if (!Object.isExtensible(target)) return target;
     if (isNativeSkippable(target)) return target;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((target as any)[RAW_SYMBOL]) return target;
+    if ((target as Record<symbol, unknown>)[RAW_SYMBOL]) return target;
 
     const cached = globalProxyCache.get(target);
-    if (cached) return cached;
+    if (cached) return cached as T;
 
     // 直接复用全局单例 Handler
     const proxy = new Proxy(target, reactiveHandler) as T;
@@ -558,8 +556,7 @@ export function observe<T extends object>(
         // 将快照提取到循环外部，防止大规模树遍历时重复解构产生 GC
         const snapshot = [...rootObservers];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const walk = (obj: any, currentProxy: any, path: PathKey[] = [], seen = new WeakSet<object>()) => {
+        const walk = (obj: unknown, currentProxy: object, path: PathKey[] = [], seen = new WeakSet<object>()) => {
             if (!isObject(obj) || seen.has(obj)) return;
             seen.add(obj);
 

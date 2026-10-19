@@ -1,6 +1,7 @@
 /** 函数创建器类型 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FunctionCreator<TArgs extends any[], TReturn> = (...args: TArgs) => TReturn;
+// 注意：TReturn 在使用处以 any 显式实例化是刻意设计——动态编译的函数返回类型
+// 在编译期不可知，由调用方（编译器/渲染器）自行断言，收敛为 unknown 会波及整条调用链
+export type FunctionCreator<TArgs extends unknown[], TReturn> = (...args: TArgs) => TReturn;
 
 /**
  * 检测当前环境是否受 CSP 限制（不允许 unsafe-eval）
@@ -11,8 +12,7 @@ let _cspBlocked: boolean | null = null;
 export function isCSPBlocked(): boolean {
     if (_cspBlocked !== null) return _cspBlocked;
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        new Function('return 1') as any;
+        void new Function('return 1');
         _cspBlocked = false;
     } catch {
         _cspBlocked = true;
@@ -27,7 +27,7 @@ export function isCSPBlocked(): boolean {
  * @returns 创建的函数
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createFunction<TArgs extends any[]>(args: string[]): FunctionCreator<TArgs, any> {
+export function createFunction<TArgs extends unknown[]>(args: string[]): FunctionCreator<TArgs, any> {
     const functionBody = args[args.length - 1];
     if (functionBody.trim() === '') {
         throw new Error('Function body cannot be empty');

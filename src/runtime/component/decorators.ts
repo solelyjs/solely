@@ -83,12 +83,20 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
     // 环境检测：是否为浏览器环境且支持 Custom Elements
     const isBrowser = typeof window !== 'undefined' && typeof customElements !== 'undefined';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (OriginalClass: any) => {
+    // 说明：ClassDecorator 的泛型签名限制参数必须为 Function 子类型，
+    // 无法直接表达构造函数类型，故内部按构造函数使用并在出口做一次断言
+    const decorator = (OriginalClass: Function): unknown => {
+        const Ctor = OriginalClass as new (...args: never[]) => object;
         const { tagName } = manifest;
 
         // ---------- 修复 3：检查基类是否为 HTMLElement ----------
-        if (isBrowser && !(OriginalClass.prototype instanceof HTMLElement) && OriginalClass !== HTMLElement) {
+        // 注意：必须保留 typeof 守卫的短路语义——Node/SSR 环境下 HTMLElement 未定义，
+        // 提前求值会抛 ReferenceError（jsdom 测试覆盖不到此场景）
+        const notHtmlElement =
+            typeof HTMLElement !== 'undefined' &&
+            !(OriginalClass.prototype instanceof HTMLElement) &&
+            (OriginalClass as unknown) !== HTMLElement;
+        if (isBrowser && notHtmlElement) {
             throw new TypeError(
                 `[Solely] CustomElement decorator can only be applied to classes extending HTMLElement.\n` +
                     `Received: ${OriginalClass.name || 'anonymous class'}`,
@@ -101,7 +109,7 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
                 console.warn(`[Solely] 标签名称 "${tagName}" 已经被注册，跳过重复定义。`);
             }
             // 即使已注册，仍需挂载 manifest 供框架内部获取元数据
-            (OriginalClass as typeof OriginalClass)[MANIFEST_SYMBOL] = manifest;
+            (OriginalClass as unknown as Record<symbol, unknown>)[MANIFEST_SYMBOL] = manifest;
             return OriginalClass;
         }
 
@@ -189,8 +197,8 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
         }
 
         // 定义新类并挂载 manifest
-        class CE extends OriginalClass {}
-        (CE as typeof OriginalClass)[MANIFEST_SYMBOL] = manifest;
+        class CE extends Ctor {}
+        (CE as unknown as Record<symbol, unknown>)[MANIFEST_SYMBOL] = manifest;
 
         // 注册自定义元素（仅浏览器环境）
         if (isBrowser) {
@@ -210,4 +218,6 @@ export const CustomElement = (config: Manifest): ClassDecorator => {
 
         return CE;
     };
+
+    return decorator as ClassDecorator;
 };
