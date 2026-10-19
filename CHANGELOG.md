@@ -7,6 +7,62 @@
 
 ## [Unreleased]
 
+### ⚠️ Breaking
+
+- **engines**: Node 要求从 `>=16.0.0` 提升至 `^20.19.0 || >=22.12.0`（与 Vite 7 实际要求一致；`>=20.19.0` 会误放行 Vite 7 不支持的 21.x 与 22.0–22.11）；Node 16/18 均已 EOL
+- **types**: `FunctionCreator` / `createFunction` 泛型约束由 `any[]` 改为 `unknown[]`（导出类型签名变更；src 内无引用，下游如有显式实例化需注意）
+
+### Changed
+
+- **build(deps)**: 工具链全面升级
+    - TypeScript 5.6 → 5.9.3
+    - Vite 5 → 7.3.7（`vite-plugin-dts` 自动解析至 4.5.x，兼容 Vite 7）
+    - ESLint 8 → 9.39.4，配置由 `.eslintrc.cjs` 迁移为 flat config `eslint.config.cjs`
+        - 引入 `@typescript-eslint` `flat/recommended`，显式关闭 `no-unused-vars` / `no-undef` / `no-redeclare` 基础规则（由 TS 版本接管）
+        - 新增 `globals`、`@eslint/js` 依赖：后者此前仅作为 `eslint` 的传递依赖存在于 `node_modules`，而 `eslint.config.cjs` 直接 `require` 却未声明，pnpm / npm 严格模式下会报错；`__SOLELY_VERSION__`（vite define 注入）加入 globals
+        - `@typescript-eslint/no-unused-expressions` 新版 recommended 默认开启，迁移期关闭以保持行为一致
+        - ignores 增加 `dist-examples/`、`dev-tool/`、`dist-verify/`
+- **chore(tsconfig)**: 将 `tests` 纳入 `tsconfig.json` include，消除 `npm run typecheck` 的测试代码盲区
+- **refactor(reactivity)**: 收敛 `observe.ts` 全部 any（原 11 处）
+    - `globalProxyCache` 类型收紧为 `WeakMap<object, object>`
+    - `RAW_SYMBOL` 访问改用 `Record<symbol, unknown>` 断言
+    - 数组仪器方法经新增的 `getArrayMethod()` helper 取宽松函数类型，替换 `(target as any)[key]` 模式
+- **refactor(decorators)**: `CustomElement` 装饰器参数由 `any` 改为 `Function` + 局部构造断言，出口一次 `as ClassDecorator`，消除 any
+- **refactor(functions)**: `FunctionCreator` / `createFunction` 泛型约束 `any[]` → `unknown[]`，删除 CSP 探测处无意义的 `as any`；`TReturn` 的 any 为刻意保留的设计逃生舱（动态编译函数返回类型编译期不可知），已注释说明
+- **feat(security)**: SVG 消毒规则补强（`svg-sanitize.ts`）
+    - 新增 SMIL 动画写属性载荷拦截：`<set>`/`<animate>` 等元素 `attributeName` 命中 `on*`，或命中 URL 属性且 `to`/`values`/`from`/`by` 携带危险协议时整个移除（此类载荷可绕过静态 `on*` 检查；命中 URL 属性但值无害的动画放行）
+    - 危险协议补充 `vbscript:` 与 `data:text/html`（`data:image/*` 放行）
+    - `<style>` 不再拦截：iconfont sprite 内嵌样式是常见写法，整删导致图标样式丢失
+    - 解析策略改为「XML 严格优先 + HTML 容错回退」：XML 失败（最常见于 `registerIcon` 收到未转义 `&` 的 JS 字符串）时回退 `text/html` 解析，避免整个图标被静默清空
+        - 回退路径同样以 `<svg>` 包裹：保证消毒解析语境与注入语境（`svgEl.innerHTML` 的 SVG foreign content）一致。若用 `<div>` 包裹，`<style>` 在 HTML 语境是 RAWTEXT、内部标签逃过消毒，注入 foreign content 后被恢复执行——构成 mXSS 绕过（攻击者以裸 `&` 即可主动触发回退路径）；svg 包裹下 HTML 专有标签触发 foreign content breakout 落到 svg 外，取根节点时被自然丢弃
+        - 新增 mXSS 回归测试（`svg-sanitize.test.ts`）：直接以 `innerHTML` 注入后断言 `[onerror]` 不存在，而非只断言字符串；已通过注入 `<div>` 回归反向验证
+    - 元素过滤由「危险元素黑名单」改为「SVG 元素白名单」（约 60 个合法元素，含 `fe*` 滤镜基元）：黑名单需逐个追补 `img` / `video` / `base` / `form`……永远补不完（HTML / MathML 元素可借 integration point 存活，`onerror` 被剥但元素残留）；白名单从结构上一次性收口，XML 与回退两条路径同时生效。刻意排除 `script`（可执行）与 `foreignObject`（内嵌 HTML 上下文），保留 `a` / `style`；已用真实 `bootstrap-icons` sprite（2078 个 symbol）验证无元素被误杀
+    - mXSS 变体测试矩阵：MathML `mtext` 命名空间逃逸 / `<template>` inert 内容 / `<plaintext>` 文档吞没 / 实体混淆 `javascript:` URL，各覆盖 text/html 回退与 XML 严格双路径；另覆盖 16 类非 SVG 元素（`video`/`audio`/`base`/`form`/`input`/`math` 等）的移除与完整合法 SVG 元素集（渐变 / 滤镜 / 裁剪 / 蒙版 / 文本 / 动画）的保留
+    - 新增按输入字符串索引的结果缓存（上限 500），消除列表场景重复 DOMParser 解析开销；补充淘汰分支测试（501 条不同输入触发 `CACHE_LIMIT`）
+    - 注释与文档校准：`sanitizeSvg` 的 SSR 分支注释改为「fail-closed 不输出图标」（原措辞「调用方保证来源可信」与实际返回空串的行为不符）；`steps` 组件 `iconHtml` 注明未走消毒的原因（内容为开发者 light DOM，与组件模板同等信任级；且 `sanitizeSvg` 是 SVG 元素白名单，套用到任意 HTML 会误删 `<img>` / `<span>` 等合法内容）
+- **test(coverage)**: `vitest.config.js` 新增覆盖率门禁 thresholds（statements 80 / branches 75 / functions 85 / lines 80，略低于当前实际值 81.3/78.0/87.0/81.3），作为防劣化底线，后续随测试补充逐步上调；`src/components/**` 暂不计入覆盖率统计
+- **build(vite)**: 库构建支持 `SOLELY_BUILD_OUT_DIR` 环境变量重定向产物目录，便于验证构建不触碰正式 `dist`
+- **chore(scripts)**: `lint` / `lint:fix` 移除 flat config 下已无意义的 `--ext .ts,.tsx`
+- **chore(eslint)**: ignores 清理已删除的 `.eslintrc.cjs` 条目，补充 `dist-verify/`
+- **chore(readme)**: TypeScript badge 5.6 → 5.9
+- **chore(deps)**: `vite-plugin-dts` 声明版本对齐实际安装（^4.4.0 → ^4.5.4）
+- **docs(readme)**: 测试数量描述更新为 380+
+- **build(husky)**: `lint-staged` 的 `*.{ts,tsx}` 增加 `prettier --write`（原先只有 `eslint --fix`）。ESLint 忽略 `tests/`，此前测试代码完全游离于格式检查之外，提交时无任何格式化入口；改为增量处理暂存文件，不触发存量文件重排
+
+### Added
+
+- **feat(security)**: 新增 `src/shared/svg-sanitize.ts` SVG 消毒工具（移除 script/foreignObject/iframe/object/embed/link/meta、on\* 事件属性、javascript: URL），icon 组件 `innerHTML` 注入前统一消毒，防止远程 SVG Sprite 携带 SMIL 事件属性等 XSS 载荷
+- **test(components)**: 新增组件库测试骨架 `tests/components/`，覆盖 tree、table、modal、drawer、message、coordinate-input 共 50 个用例；新增 `tests/svg-sanitize.test.ts` 消毒规则用例
+- **test(ssr)**: 新增 `tests/ssr-safety.test.ts`（Node environment 冒烟测试），锁定 SSR 下 `CustomElement` 装饰器与 `sanitizeSvg` 的环境守卫回归（jsdom 测试无法覆盖此类场景，已通过注入回归反向验证）
+
+### Fixed
+
+- **fix(security)**: 修复 `CustomElement` 装饰器在 Node/SSR 下的崩溃回归
+    - any 收敛时将 `HTMLElement` 检查提取为变量，破坏了 `isBrowser &&` 的短路语义，Node 环境提前求值抛 `ReferenceError: HTMLElement is not defined`
+    - 恢复 `typeof HTMLElement !== 'undefined'` 守卫，并由 `tests/ssr-safety.test.ts` 锁定
+- **fix(security)**: `sanitizeSvg` 增加 `DOMParser` 存在性守卫，Node/SSR 下返回空串（fail closed）而非抛错
+- **fix(tree)**: 修复 `setTreeData` 误将 `$data.treeData` 回写为 JSON 字符串导致 `flattenTree` 遍历字符串字符的问题；并注释说明重新挂载时 attribute 旧值可能覆盖动态数据的边界（该边界已由 `tests/components/tree.test.ts` 的「re-attach」用例锁定：`connectedCallback` 会把 `tree-data` 重新同步进 `$data`，随后 `mounted` → `parseTreeData()` 覆盖动态数据）
+
 ## [0.5.8] - 2026-08-30
 
 ### Added

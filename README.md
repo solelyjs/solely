@@ -10,7 +10,7 @@
 [![codecov](https://codecov.io/gh/solelyjs/solely/branch/main/graph/badge.svg)](https://codecov.io/gh/solelyjs/solely)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Solely-blue?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=solely.solely-vscode)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
 </div>
 
@@ -376,8 +376,9 @@ solely/
 ├── runtime/          # 运行时核心
 │   ├── component/    # 组件基类和装饰器
 │   ├── reactivity/   # 响应式系统
-│   ├── renderer/     # 渲染器
-│   └── router/       # 路由系统
+│   └── renderer/     # 渲染器
+├── router/           # 路由系统
+├── components/       # 组件库（元素组件 / 命令式组件 / 主题）
 ├── shared/           # 共享工具函数
 ├── types/            # TypeScript 类型定义
 ├── plugins/          # 插件系统
@@ -389,7 +390,7 @@ solely/
 1. **编译器**：将模板转换为高效的渲染函数，支持 AST 解析和中间表示优化
 2. **运行时**：包含组件系统、响应式系统、渲染器和路由系统
 3. **响应式系统**：基于 Proxy 的响应式数据绑定，采用 DAG 弱引用双向图和全局代理生成器自动追踪依赖，支持路径过滤、批量防抖与深度比较
-4. **路由系统**：支持单页应用的路由管理，包括路由定义、导航和组件挂载
+4. **路由系统**：顶层独立模块，支持单页应用的路由管理，包括路由定义、嵌套路由、路由守卫和 keepAlive 缓存
 5. **插件系统**：提供扩展机制，支持自定义功能
 
 ## 🔌 插件系统
@@ -586,7 +587,7 @@ Solely 框架内置了多层安全防护机制，有效防止常见的 XSS（跨
 
 查看 [安全演示示例](./examples/security-demo/) 了解框架如何防护 XSS 攻击。
 
-## � API 参考
+## 📖 API 参考
 
 ### CustomElement 装饰器
 
@@ -1400,7 +1401,7 @@ npm run test:ui
 npm run test:coverage
 ```
 
-> 当前测试套件包含 270+ 个单元测试，覆盖编译器、运行时、响应式系统、路由系统和组件接口等模块。
+> 当前测试套件包含 380+ 个单元测试，覆盖编译器、运行时、响应式系统、路由系统和组件接口等模块。
 
 ## 🔧 构建和开发
 
