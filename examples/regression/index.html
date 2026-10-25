@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Solely - 回归验证</title>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f5f7fa;
+                color: #1f2937;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                line-height: 1.6;
+            }
+
+            .demo {
+                max-width: 960px;
+                margin: 0 auto;
+            }
+
+            .demo > header h1 {
+                margin: 0 0 6px;
+                font-size: 26px;
+            }
+
+            .sub {
+                margin: 0 0 20px;
+                color: #6b7280;
+                font-size: 13px;
+            }
+
+            .toolbar {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 18px;
+            }
+
+            .toolbar button {
+                margin: 0;
+            }
+
+            .summary {
+                font-size: 14px;
+            }
+
+            .card {
+                margin-bottom: 16px;
+                padding: 18px 20px;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+                background: #fff;
+            }
+
+            .card h2 {
+                margin: 0 0 10px;
+                font-size: 16px;
+            }
+
+            .card p {
+                margin: 6px 0;
+            }
+
+            .case {
+                padding: 6px 10px;
+                border-left: 3px solid #93c5fd;
+                background: #f8fafc;
+                font-size: 15px;
+            }
+
+            .nbsp {
+                width: 86px;
+                border-left-color: #fca5a5;
+                background: #fff5f5;
+            }
+
+            button {
+                margin: 8px 8px 0 0;
+                padding: 7px 14px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                background: #fff;
+                color: #1f2937;
+                font-size: 13px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                border-color: #3b82f6;
+                color: #1d4ed8;
+            }
+
+            .out {
+                margin: 10px 0 0;
+                padding: 10px 12px;
+                border-radius: 6px;
+                background: #0f172a;
+                color: #e2e8f0;
+                font-family: Consolas, Monaco, monospace;
+                font-size: 12px;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+
+            .multi {
+                min-width: 160px;
+                padding: 4px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+
+            .child {
+                margin: 6px 0;
+                padding: 8px 10px;
+                border: 1px dashed #cbd5e1;
+                border-radius: 6px;
+                background: #f8fafc;
+                font-size: 13px;
+            }
+
+            code {
+                padding: 1px 5px;
+                border-radius: 3px;
+                background: #eef2f6;
+                font-family: Consolas, Monaco, monospace;
+            }
+
+            .button-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .button-row button {
+                margin: 0;
+            }
+
+            .host {
+                min-height: 8px;
+            }
+
+            a {
+                margin-right: 12px;
+                color: #2563eb;
+            }
+        </style>
+    </head>
+    <body>
+        <regression-demo></regression-demo>
+        <script type="module" src="./index.ts"></script>
+    </body>
+</html>

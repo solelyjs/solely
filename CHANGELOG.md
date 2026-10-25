@@ -7,6 +7,59 @@
 
 ## [Unreleased]
 
+### ⚠️ Breaking
+
+- **types**: `IRRoot['m']['t']` 由必填改为可选（生产构建不再写入时间戳）；下游若直接读取 `ir.m.t` 需处理 `undefined`
+- **types**: `ChangePayload` 的 `array-replace` 分支新增必填 `key` 字段（修复 reflect 与路径过滤所需；手工构造该载荷的代码需同步）
+- **security**: `:srcdoc` 绑定默认拦截（值本身是 HTML，无法用协议白名单判断；此前会原样写入 iframe）
+- **plugin**: `sourceMap` 默认值由 `true` 改为 `false`（该选项此前只产出空映射，现已标记 deprecated）
+
+### Fixed
+
+- **compiler**: 修复模板中纯空白文本节点被丢弃导致的文本粘连——`<b>Hello</b> <i>World</i>` 会渲染成 `HelloWorld`、`<b>Name:</b> {{ x }}` 渲染成 `Name:x`。现改为「折叠连续空白 + 按相邻节点是否块级决定首尾空格去留」，并修复编译阶段对 template 源码二次 `trim()` 的问题；`<b>Hello </b>` 这类行内闭合标签前的空格也会保留
+- **reactivity**: `array-replace` 变更补充 `key` 字段与完整 `path`，修复 `reflect: true` 的数组 prop 在整体替换数组时无法同步到 attribute 的问题
+- **reactivity**: `deepCompare` 增加循环引用保护，修复自引用对象比较时的 `RangeError: Maximum call stack size exceeded`
+- **component**: 通过 HTML attribute 更新 prop 时改为走用户自定义 setter，不再绕过其校验/格式化/派生逻辑（与 README 的属性升级规则一致）
+- **compiler**: `<select multiple>` 的初始选中态在首次挂载时丢失（同步逻辑只挂在 `updated`），补充 `mounted` 钩子
+- **component**: 同一初始数据对象被多个实例复用时输出 DEV 告警（说明 `$data` 会共享同一响应式代理）
+- **component**: 已 `dispose()` 的元素再次插入 DOM 时不再在 `connectedCallback` 中抛错（异常会冒泡到 `appendChild` 调用方），改为 DEV 告警 + 移除
+- **renderer**: `&nbsp;` 现在正确解码为 `U+00A0`（此前被当成普通空格）；命名实体表由 12 个扩展到 70+ 个常用符号
+- **router**: `keepAlive` 缓存被淘汰或 router `destroy()` 时，若缓存元素实现了 `dispose()` 则调用，避免资源泄漏
+- **security**: `:href` / `:src` / `:action` / `:formaction` / `:poster` / `:xlink:href` 默认拦截 `javascript:` / `vbscript:` / `data:text/html`（含 `java\tscript:` 混淆写法）
+- **security**: SVG 消毒新增 `<style>` 危险构造拦截（`@import` / `expression()` / `behavior:` / `-moz-binding`）
+- **compiler**: 修复空白保留规则打断 `<If>/<ElseIf>/<Else>` 链的问题——格式化写法（分支间换行缩进）会产生空白 Text 节点，导致 `ElseIf/Else` 变成孤儿分支并同时渲染；现在条件链收集会跳过分支间的空白与注释（仅当后续节点仍是本链分支时才跳过，避免吞掉内联内容前的空格）
+- **security**: 修正 `data:text/html` 拦截规则——原正则要求 `html` 后跟冒号，而真实形式是 `data:text/html,` / `data:text/html;base64,`，此前实际未生效
+- **security**: SVG `<style>` 匹配前先剥离 CSS 注释，避免注释里的 `behavior:` / `@import` 说明文字导致整块样式被误删
+- **security**: URL 协议校验补充 `srcset`，并默认拦截 `:srcdoc` 绑定
+- **security**: 修正 `behavior:` 正则误伤 `scroll-behavior:` 的问题（增加声明起始边界）
+- **renderer**: 修复实体解码命中原型链的问题（`&toString;` 会输出 `function toString() { [native code] }`），改用 `hasOwnProperty` 判定
+- **renderer**: 危险 URL 告警按「元素 + 属性 + 值」去重——此前组件每次刷新都会重复打印同一条 `Blocked unsafe URL`，控制台会被刷屏
+- **component**: `default: null` 的 prop 在 attribute 被移除或值非法时回到 `null`（此前会保留旧值，与初始化行为不一致）
+- **component**: props 的 object/array 默认值改为按实例克隆——此前 `default: []` / `default: {}` 会被所有实例共享，一个实例修改后其它实例可见，甚至污染后续新建实例的初始值
+- **component**: 修复自定义 setter 不写 `$data` 时 `#isAttributeUpdate` 标记悬挂，导致下一次普通刷新误触发属性生命周期钩子的问题
+- **router**: `setKeepAlive` 覆盖同一 key 时释放旧实例（此前只有淘汰与 `destroy` 路径会调用 `dispose()`）
+- **examples**: 修复示例画廊从「安全机制 / CSP 模式」返回（浏览器回退）后内容区空白的问题——独立页面链接不再清空 tab 状态，并在 `pageshow` 时恢复上次选中项
+- **ssr**: 修复 Node 环境 `import 'solely'` 抛 `ReferenceError: HTMLElement is not defined`——`BaseElement` 基类在无 DOM 时退化为空类；`Message` 的 loading 图标改为惰性创建（原在模块顶层调用 `document.createElement`，导致组件入口在 Node 下 import 即崩溃）
+
+### Changed
+
+- **build**: 构建模式（`vite build`）默认剥离 `ir.m.src`（模板源码），避免产物中重复携带整份 HTML；新增 `includeTemplateSource` 选项可显式保留
+- **build**: 编译时间戳仅在开发环境写入，生产构建产物可复现
+- **plugin**: `sourceMap` 选项标记为 deprecated，默认值改为 `false`，显式开启时打印一次告警；同时移除每次构建中无用的 `generateMap` 计算
+- **build**: 新增 `scripts/check-exports.mjs` 与 `check:exports` 脚本；`pack:local`、`prepublishOnly`、CI 均会校验 `exports` 目标真实存在
+- **ci**: 增加 `format:check` 与 `check:exports` 步骤
+- **repo**: 新增 `.gitattributes`（`* text=auto eol=lf`）；本次触及的 3 个源码文件工作区行尾已归一为 LF（索引中本就是 LF，无内容 diff）
+- **docs**: 修正 README 中「零运行时依赖」「路由默认 hash」「测试完善」等与实现不一致的表述；`docs/api.md` 同步 `array-replace` 载荷
+- **component**: 新增 `dataChangeEvent` 配置（默认 `true`），高频更新场景可关闭每次变更的 `dataChange` 事件派发
+- **tooling**: 新增 `test:run`（非 watch）与 `verify`（typecheck + lint + format + test + build + exports）脚本；`prepublishOnly` 与 CI 改用 `test:run`，避免本地发布时 vitest 以 watch 模式挂起
+- **env**: `IS_DEV` 新增 `globalThis.__IS_PROD__` 强制生产开关；`process.env.NODE_ENV` 改为经 `globalThis.process` 读取，避免库构建时被 Vite 静态替换
+- **repo**: 删除根目录遗留的手工调试页 `test-message-placement.html`（Message 的演示已由文档站 `docs/components-docs/views/message.ts` 完整覆盖，且已有 10 个自动化测试，示例页属重复）
+
+### Added
+
+- **examples**: 新增 `examples/regression/` 回归验证页（12 个自动判定用例 + 1 条手工环境说明，覆盖本轮主要修复），每个用例输出「预期 / 实际 / 结论」，并在示例画廊添加入口
+- **test**: 补充模板空白、数组反射、自定义 setter、共享数据告警、多选初始态、循环引用、插件源码剥离、URL 协议拦截、SVG `<style>` 消毒、`keepAlive` 资源释放、`dispose` 重连、`dataChangeEvent`、环境判定、`routerReady` 语义、`computed`、`solely/plugin` 入口等回归用例（384 → 453）
+
 ## [0.6.0] - 2026-10-19
 
 ### ⚠️ Breaking

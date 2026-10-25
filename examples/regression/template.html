@@ -1,0 +1,112 @@
+<div class="demo">
+    <header>
+        <h1>Solely 回归验证</h1>
+        <p class="sub">
+            每个用例会自动执行，并给出「预期 / 实际 / 结论」。点击「全部重跑」可重复验证。
+            URL 与共享数据用例会把预期告警各输出 1 条到控制台（方便确认）；
+            dispose 用例的预期错误由页面捕获，不会打印。
+        </p>
+        <div class="toolbar">
+            <button onclick="this.runAll()">全部重跑</button>
+            <strong class="summary">{{ $data.summary }}</strong>
+        </div>
+    </header>
+
+    <section class="card">
+        <h2>1. 模板空白</h2>
+        <p class="case" data-case="inline-space"><b>Hello</b> <i>World</i></p>
+        <p class="case" data-case="before-interp"><b>Name:</b> {{ $data.title }}</p>
+        <p class="case" data-case="trailing-space"><b>Hello </b><i>World</i></p>
+        <p class="case nbsp" data-case="nbsp">A&nbsp;B&nbsp;C&nbsp;D</p>
+        <p class="case" data-case="entities">&mdash; &times; &ldquo;引用&rdquo;</p>
+        <pre class="out">{{ $data.rBlank }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>2. 多选初始态</h2>
+        <p>页面打开时就应已选中 A、C（无需先改数据）。</p>
+        <select multiple s-model="$data.picked" class="multi">
+            <option value="a">A</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+        </select>
+        <pre class="out">{{ $data.rMulti }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>3. 数组 prop reflect</h2>
+        <reflect-array-demo ref="reflectDemo"></reflect-array-demo>
+        <pre class="out">{{ $data.rReflect }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>4. 自定义 setter</h2>
+        <setter-demo ref="setterDemo"></setter-demo>
+        <pre class="out">{{ $data.rSetter }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>5. dataChangeEvent</h2>
+        <event-on-demo ref="eventOn"></event-on-demo>
+        <event-off-demo ref="eventOff"></event-off-demo>
+        <pre class="out">{{ $data.rEvent }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>6. URL 协议拦截</h2>
+        <a :href="$data.dangerUrl" ref="dangerLink">危险链接（javascript:）</a>
+        <a :href="$data.safeUrl" ref="safeLink">安全链接</a>
+        <pre class="out">{{ $data.rUrl }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>7. SVG &lt;style&gt; 消毒</h2>
+        <pre class="out">{{ $data.rSvg }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>8. dispose 后重连</h2>
+        <div ref="disposeHost" class="host"></div>
+        <pre class="out">{{ $data.rDispose }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>9. keepAlive 淘汰释放</h2>
+        <pre class="out">{{ $data.rKeepAlive }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>10. routerReady 语义</h2>
+        <pre class="out">{{ $data.rRouterReady }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>11. 共享初始数据对象告警</h2>
+        <p>两个实例传入同一个对象时，DEV 下应输出告警（对象确实共享）。</p>
+        <pre class="out">{{ $data.rShared }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>12. 条件链（If/ElseIf/Else）</h2>
+        <div class="case" data-case="chain">
+            <If test="$data.chain === 1"><span>分支 A</span></If>
+            <ElseIf test="$data.chain === 2"><span>分支 B</span></ElseIf>
+            <Else><span>分支 C</span></Else>
+        </div>
+        <div class="button-row">
+            <button onclick="this.setChain(1)">显示 A</button>
+            <button onclick="this.setChain(2)">显示 B</button>
+            <button onclick="this.setChain(3)">显示 C</button>
+        </div>
+        <pre class="out">{{ $data.rChain }}</pre>
+    </section>
+
+    <section class="card">
+        <h2>13. 环境判定（手工项）</h2>
+        <p>
+            1.12 无法在运行时切换：生产部署在 localhost 时，需在入口设置
+            <code>globalThis.__IS_PROD__ = true</code> 后刷新。
+        </p>
+        <pre class="out">{{ $data.rEnv }}</pre>
+    </section>
+</div>

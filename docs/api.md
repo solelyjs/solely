@@ -62,7 +62,7 @@ class MyComponent extends BaseElement<{ message: string }> {
 interface PropDescriptor {
     name: string; // 属性名（camelCase 或 kebab-case）
     type?: 'string' | 'number' | 'boolean' | 'object' | 'array'; // 数据类型
-    default?: any; // 默认值
+    default?: any; // 默认值（object/array 会按实例克隆）
     reflect?: boolean; // 是否同步回 HTML Attribute
 }
 ```
@@ -208,7 +208,7 @@ type ChangeItem = {
     | { type: 'delete'; key: string | symbol; oldValue: unknown }
     | { type: 'array-push'; index: number; values: unknown[] }
     | { type: 'array-splice'; index: number; deleteCount: number; insert: unknown[] }
-    | { type: 'array-replace'; oldValue: unknown[]; newValue: unknown[] }
+    | { type: 'array-replace'; key: string | symbol; oldValue: unknown[]; newValue: unknown[] }
     | { type: 'array-reset'; method: string }
 );
 ```
@@ -591,6 +591,22 @@ interface RouteMatch {
 | `exact`        | `boolean` | 是否精确匹配路径                           |
 | `custom`       | `boolean` | 自定义模式，消除包裹 a 标签的视觉/布局影响 |
 | `prefetch`     | `boolean` | 鼠标悬停时预加载路由组件                   |
+
+### routerReady
+
+等待一个可用的 router 实例，适合在组件先于 `createRouter()` 挂载时使用。
+
+```typescript
+import { routerReady } from 'solely';
+
+const router = await routerReady;
+```
+
+语义说明：
+
+- `routerReady` 是 Promise 与函数的混合体，支持 `await routerReady`、`await routerReady()`、`routerReady.then(...)` 三种写法
+- 调用 `router.destroy()` 后，它会保持 pending，直到下一次 `createRouter()` 完成
+- 若不再创建新实例，则不会 resolve（属预期行为，不会抛错）
 
 ---
 

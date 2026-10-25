@@ -53,7 +53,6 @@ export default defineConfig(({ command, mode }) => {
                 // 示例使用运行时编译模式（?raw 导入），不需要预编译
                 solelyVitePlugin({
                     precompile: true,
-                    sourceMap: isDev,
                     minify: !isDev,
                 }),
             ],
@@ -77,6 +76,7 @@ export default defineConfig(({ command, mode }) => {
                         main: path.resolve(__dirname, 'examples/index.html'),
                         'security-demo': path.resolve(__dirname, 'examples/security-demo/index.html'),
                         'csp-demo': path.resolve(__dirname, 'examples/csp-demo/index.html'),
+                        regression: path.resolve(__dirname, 'examples/regression/index.html'),
                     },
                     output: {
                         entryFileNames: `assets/[name]-[hash].js`,
@@ -106,7 +106,6 @@ export default defineConfig(({ command, mode }) => {
         plugins: [
             solelyVitePlugin({
                 precompile: true,
-                sourceMap: isDev,
                 minify: !isDev,
             }),
             // 类型声明生成 - 保持目录结构

@@ -33,7 +33,7 @@ setIconSpritePath(<span class="code-value">'/icons/bootstrap-icons.svg'</span>);
 
     <div class="demo-block">
         <h3 class="demo-block-title">手动注册图标</h3>
-        <p class="demo-block-desc">使用 registerIcon 或 registerIcons 手动注册自定义图标。</p>
+        <p class="demo-block-desc">使用 registerIcon 或 registerIcons 手动注册自定义图标。注入的 SVG 会经过白名单消毒：保留 <code>&lt;style&gt;</code>，但会移除 <code>@import</code>、<code>expression()</code>、<code>behavior:</code>、<code>-moz-binding</code> 等危险构造。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-icon name="my-icon" size="24"></solely-icon>

@@ -16,20 +16,21 @@
 
 ## ✨ 核心特性
 
-- **🚀 高性能**：轻量级架构，零运行时依赖，快速渲染
+- **🚀 高性能**：轻量级架构，浏览器运行时零依赖（`magic-string` 仅构建期使用），快速渲染
 - **🔧 类型安全**：完整的 TypeScript 支持，类型提示完善
 - **🎨 强大模板**：基于 AST 的模板编译，支持条件渲染和列表渲染
-- **⚡ 响应式系统**：高效的响应式数据绑定，自动追踪依赖
+- **⚡ 响应式系统**：高效的响应式数据绑定，变更按微任务批量刷新
 - **🧩 Web 组件**：原生 Web 组件支持，可自定义元素
-- **🛡️ 安全可靠**：编译时模板固定，自动 HTML 转义，内置 XSS 防护机制
+- **🛡️ 安全可靠**：编译时模板固定，文本节点自动转义，SVG 图标注入前消毒
 - **📦 插件系统**：灵活的插件扩展机制
-- **🧪 测试完善**：完整的单元测试覆盖
+- **🧪 测试覆盖**：440+ 个单元测试，核心模块覆盖率门禁 80%+
 - **🗺️ 路由支持**：内置路由系统，支持单页应用开发
 
 ## 📚 文档
 
 - [快速开始指南](./docs/guide.md) - 从零开始学习 Solely
 - [API 文档](./docs/api.md) - 完整的 API 参考
+- [验证与发布检查清单](./docs/verification.md) - 改动后如何验证、发版前检查项
 - [示例项目](./examples/) - 实际应用示例
 - [VS Code 扩展](./vscode-extension/) - 语法高亮、智能跳转、错误诊断
 - [插件系统](#插件系统) - 了解 Vite 插件的使用方法
@@ -118,6 +119,10 @@ class MyCounter extends BaseElement<{ count: number }> {
     }
 }
 ```
+
+> **提示**：`super(initialData)` 传入的对象会成为该实例的 `$data` 响应式代理。若多个实例传入**同一个对象**，
+> 它们会共享同一份状态（修改一个会同时触发另一个刷新）。需要实例隔离时，请为每个实例传入新对象；
+> 开发模式下框架会对此输出告警。
 
 ### 2. 在 HTML 中使用
 
@@ -516,18 +521,34 @@ Solely 框架内置了多层安全防护机制，有效防止常见的 XSS（跨
 
 ### 编译时安全
 
-- **模板编译时固定**：所有模板在构建阶段编译为中间表示（IR），运行时无法更改模板结构
-- **无运行时解析**：不存在 `eval` 或动态模板解析，杜绝代码注入
+- **模板编译时固定**：模板在构建阶段编译为中间表示（IR），运行时无法更改模板结构
+- **预编译模式无 `eval`**：使用 `?solely` 预编译时，表达式在构建期编译为普通函数，运行时不需要 `new Function`
+- **运行时编译模式**：直接传入模板字符串时会使用 `new Function` 编译表达式，受 CSP 约束（需要 `'unsafe-eval'` 或改用预编译）
 
-### 自动 HTML 转义
+### 自动转义
 
-- **文本插值自动转义**：使用 `{{ }}` 插值时，框架自动进行 HTML 实体编码
+- **文本插值安全**：`{{ }}` 的结果通过 `textContent` 写入，不会被浏览器解析为 HTML
 
     ```html
     <!-- 用户输入: <script>alert('XSS')</script> -->
     <div>{{ $data.userInput }}</div>
-    <!-- 渲染结果: &lt;script&gt;alert('XSS')&lt;/script&gt; -->
+    <!-- 渲染结果: 原样显示 <script>alert('XSS')</script> 文本，不执行 -->
     ```
+
+### URL 协议防护
+
+- `:href` / `:src` / `:srcset` / `:action` / `:formaction` / `:poster` / `:xlink:href` 绑定会自动拦截
+  `javascript:`、`vbscript:`、`data:text/html` 协议（含 `java\tscript:` 等混淆写法），开发模式下会打印告警
+- `:srcdoc` 绑定默认拦截（iframe 内嵌 HTML 无法用协议白名单判断）
+- 这只是兜底，仍建议业务层按白名单校验 URL
+
+### SVG 消毒
+
+`registerIcon` / `loadIconSprite` 注入的 SVG 会经过白名单消毒：
+
+- 仅保留合法 SVG 元素，移除 `script`、`foreignObject` 及未知命名空间
+- 移除 `on*` 事件属性，以及 SMIL 动画通过 `attributeName` 写入事件/危险 URL 的载荷
+- `<style>` 保留（iconfont 依赖），但会移除包含 `@import`、`expression()`、`behavior:`、`-moz-binding` 的样式块
 
 ### 安全最佳实践
 
@@ -552,9 +573,8 @@ Solely 框架内置了多层安全防护机制，有效防止常见的 XSS（跨
 
 ⚠️ **`:href` 属性绑定（高危）**：
 
-- **永远不要**将用户输入直接绑定到 `:href`
-- 恶意 URL 如 `javascript:alert('XSS')` 会在点击时执行代码
-- 建议对 URL 进行协议白名单过滤（只允许 `http://`, `https://`）
+- 框架会默认拦截 `javascript:`、`vbscript:`、`data:text/html`（含混淆写法），但**不要**依赖它做业务校验
+- 仍建议对 URL 进行协议白名单过滤（只允许 `http://`, `https://`）
 - 示例：
 
     ```typescript
@@ -596,10 +616,11 @@ Solely 框架内置了多层安全防护机制，有效防止常见的 XSS（跨
 ```typescript
 @CustomElement({
   tagName: 'my-component',     // 必须：组件标签名
-  template: '...',             // 必须：HTML 模板字符串
+  template: '...',             // 必须：HTML 模板字符串或预编译 IR
   props: [...],                // 可选：属性定义，设置后会自动同步到 $data 中，外部修改会触发响应式
   styles: '...',               // 可选：组件样式
-  shadowDOM: { use: true }     // 可选：使用 Shadow DOM
+  shadowDOM: { use: true },    // 可选：使用 Shadow DOM
+  dataChangeEvent: false       // 可选：关闭每次数据变更时的 dataChange 事件派发（默认开启）
 })
 ```
 
@@ -656,7 +677,7 @@ class MyComponent extends BaseElement<MyData> {
 interface PropDescriptor {
     name: string; // 属性名（camelCase）
     type?: 'string' | 'number' | 'boolean' | 'object' | 'array'; // 类型转换
-    default?: unknown; // 默认值
+    default?: unknown; // 默认值（object/array 会按实例克隆）
     reflect?: boolean; // 是否同步回 HTML attribute
     reactive?: boolean; // 是否响应式同步到 $data（默认 true）
 }
@@ -744,11 +765,13 @@ document.body.appendChild(element);
 
 **自动升级规则**：
 
-| 属性类型                      | 升级行为       | 说明                                 |
-| ----------------------------- | -------------- | ------------------------------------ |
-| 声明在 `props` 中的属性       | 同步到 `$data` | 通过框架生成的 setter 自动同步       |
-| 有自定义 getter/setter 的属性 | 触发 setter    | 用户自定义逻辑执行，同时同步 `$data` |
-| 普通数据属性                  | 保持原样       | 不干预，作为普通实例属性             |
+| 属性类型                      | 升级行为       | 说明                                                      |
+| ----------------------------- | -------------- | --------------------------------------------------------- |
+| 声明在 `props` 中的属性       | 同步到 `$data` | 通过框架生成的 setter 自动同步                            |
+| 有自定义 getter/setter 的属性 | 触发 setter    | 用户自定义逻辑执行（是否写入 `$data` 由 setter 自身决定） |
+| 普通数据属性                  | 保持原样       | 不干预，作为普通实例属性                                  |
+
+> 框架只调用自定义 setter，不会在调用后补写 `$data`；若 setter 未写入 `$data`，依赖该值的模板不会更新。
 
 #### 生命周期钩子
 
@@ -1246,18 +1269,19 @@ Solely 支持两种路由模式：
 | `hash`    | 基于 URL hash          | `#/users/123` | 兼容旧浏览器，无需服务器配置 |
 | `history` | 基于 HTML5 History API | `/users/123`  | 更美观的 URL，需要服务器支持 |
 
+> 未指定 `mode` 时默认使用 `history`。
+
 ```typescript
-// Hash 模式（默认）
+// History 模式（默认）
+const router = createRouter({
+    routes,
+    base: '/app', // 应用基础路径（可选）
+});
+
+// Hash 模式
 const router = createRouter({
     routes,
     mode: 'hash',
-});
-
-// History 模式
-const router = createRouter({
-    routes,
-    mode: 'history',
-    base: '/app', // 应用基础路径
 });
 ```
 
@@ -1274,6 +1298,17 @@ const unsubscribe = router.listen(() => {
 // 移除监听器
 unsubscribe();
 ```
+
+#### 等待路由就绪
+
+组件可能先于 `createRouter()` 挂载，此时可以等待 `routerReady`：
+
+```typescript
+const router = await routerReady;
+```
+
+`routerReady` 的语义是「等待一个可用的 router 实例」：调用 `router.destroy()` 后它会保持 pending，
+直到下一次 `createRouter()` 完成；若不再创建新实例，则不会 resolve（属预期行为，不会抛错）。
 
 #### 路由组件
 
@@ -1401,7 +1436,9 @@ npm run test:ui
 npm run test:coverage
 ```
 
-> 当前测试套件包含 380+ 个单元测试，覆盖编译器、运行时、响应式系统、路由系统和组件接口等模块。
+> 当前测试套件包含 440+ 个单元测试，覆盖编译器、运行时、响应式系统、路由系统和组件接口等模块。
+> 覆盖率门禁（statements 80 / branches 75 / functions 85 / lines 80）针对编译器、运行时、响应式与路由核心模块；
+> `src/components/**` 暂不计入统计，组件测试仍在补齐中。
 
 ## 🔧 构建和开发
 
@@ -1418,6 +1455,19 @@ npm run link
 # 本地打包（用于其他项目引用）
 npm run pack:local
 ```
+
+### 开发/生产环境判定
+
+`IS_DEV` 依次按以下规则判定：
+
+1. `globalThis.__IS_PROD__ === true` → 生产（**最高优先级**，用于生产构建部署在 localhost / 内网 / Electron 的场景）
+2. `?debug`、`globalThis.__DEBUG__`、`globalThis.__IS_DEV__` → 开发
+3. `globalThis.process.env.NODE_ENV` → `production` / `development`
+4. 主机名为 `localhost` / `127.0.0.1` / `0.0.0.0` → 开发
+5. 其余 → 生产
+
+> 若你的生产环境跑在 localhost（如桌面端、内网部署），在入口脚本最前面加一行
+> `globalThis.__IS_PROD__ = true` 即可关闭开发模式下的告警与错误面板。
 
 ## 🤝 贡献指南
 

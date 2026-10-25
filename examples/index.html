@@ -115,6 +115,7 @@
       <button class="tab-btn" data-tab="router">🧭 路由测试</button>
       <button class="tab-btn" data-tab="control-flow">🎛️ 控制流</button>
       <button class="tab-btn" data-tab="audit">🧪 审查测试</button>
+      <a href="./regression/index.html" class="tab-btn">🧪 回归验证</a>
       <a href="./security-demo/index.html" class="tab-btn security-link">🛡️ 安全机制</a>
       <a href="./csp-demo/index.html" class="tab-btn security-link">🔒 CSP 模式</a>
     </div>
@@ -177,15 +178,32 @@
     console.log('Loaded:', counter, todo, form, weather, refExample, routerTest, controlFlow, auditTest);
 
     // Tab switching logic
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.example-container').forEach(c => c.classList.remove('active'));
+    function activateTab(btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.example-container').forEach(c => c.classList.remove('active'));
 
-        btn.classList.add('active');
-        const tabId = btn.dataset.tab + '-example';
-        document.getElementById(tabId)?.classList.add('active');
+      btn.classList.add('active');
+      const tabId = btn.dataset.tab + '-example';
+      document.getElementById(tabId)?.classList.add('active');
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      // 独立页面链接（安全机制 / CSP / 回归验证）交给浏览器导航，不要清空 tab 状态，
+      // 否则浏览器回退时（bfcache 恢复 DOM）下面会是一片空白
+      if (btn.tagName === 'A') return;
+
+      btn.addEventListener('click', () => {
+        activateTab(btn);
+        sessionStorage.setItem('solely-example-tab', btn.dataset.tab);
       });
+    });
+
+    // 从 bfcache / 前进后退恢复时，如果没有激活的 tab，则恢复上次选中项
+    window.addEventListener('pageshow', () => {
+      if (document.querySelector('.example-container.active')) return;
+      const saved = sessionStorage.getItem('solely-example-tab');
+      const target = saved ? document.querySelector(`.tab-btn[data-tab="${saved}"]`) : null;
+      activateTab(target || document.querySelector('.tab-btn[data-tab]'));
     });
 
     console.log('All examples loaded successfully!');
