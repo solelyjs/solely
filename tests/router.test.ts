@@ -505,3 +505,72 @@ describe('Router Core', () => {
         });
     });
 });
+
+describe('Router keepAlive resource cleanup', () => {
+    it('should dispose the evicted cached element', () => {
+        const router = new Router({ routes: [], maxKeepAlive: 1 });
+        const first = document.createElement('div');
+        const dispose = vi.fn();
+        (first as unknown as { dispose: () => void }).dispose = dispose;
+        const second = document.createElement('div');
+
+        router.setKeepAlive('a', first);
+        router.setKeepAlive('b', second);
+
+        expect(dispose).toHaveBeenCalledTimes(1);
+        expect(router.hasKeepAlive('a')).toBe(false);
+        expect(router.hasKeepAlive('b')).toBe(true);
+    });
+
+    it('should dispose cached elements on destroy', () => {
+        const router = new Router({ routes: [] });
+        const cached = document.createElement('div');
+        const dispose = vi.fn();
+        (cached as unknown as { dispose: () => void }).dispose = dispose;
+
+        router.setKeepAlive('a', cached);
+        router.destroy();
+
+        expect(dispose).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('Router routerReady semantics', () => {
+    it('should stay pending after destroy and resolve on the next createRouter', async () => {
+        const first = createRouter({ routes: [] });
+        first.destroy();
+        expect(getRouter()).toBeNull();
+
+        let resolved: Router | null = null;
+        const waiting = routerReady.then(router => {
+            resolved = router;
+        });
+
+        // destroy 之后、下一次 createRouter 之前：保持 pending
+        await Promise.resolve();
+        expect(resolved).toBeNull();
+
+        const second = createRouter({ routes: [] });
+        await waiting;
+
+        expect(resolved).toBe(second);
+
+        second.destroy();
+    });
+});
+
+describe('Router keepAlive overwrite cleanup', () => {
+    it('should dispose the previous element when overwriting the same key', () => {
+        const router = new Router({ routes: [] });
+        const first = document.createElement('div');
+        const dispose = vi.fn();
+        (first as unknown as { dispose: () => void }).dispose = dispose;
+        const second = document.createElement('div');
+
+        router.setKeepAlive('same', first);
+        router.setKeepAlive('same', second);
+
+        expect(dispose).toHaveBeenCalledTimes(1);
+        expect(router.getKeepAlive('same')).toBe(second);
+    });
+});

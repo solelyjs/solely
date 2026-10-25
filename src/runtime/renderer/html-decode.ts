@@ -6,19 +6,85 @@
  * 4. 性能：针对模板引擎优化，包含快速路径判断
  */
 
+/**
+ * 常用命名实体表（HTML4 常用符号 + 拉丁标点）
+ * 说明：不是完整 WHATWG 实体表（2000+ 项），只收录实际模板中常见的符号；
+ * 未收录的实体会原样保留，不会误删内容。
+ */
 const NAMED_ENTITIES: Record<string, string> = {
+    // 基础
     amp: '&',
     lt: '<',
     gt: '>',
     quot: '"',
     apos: "'",
-    nbsp: ' ',
+    // 空白与连接
+    nbsp: '\u00A0',
+    ensp: '\u2002',
+    emsp: '\u2003',
+    thinsp: '\u2009',
+    shy: '\u00AD',
+    zwj: '\u200D',
+    zwnj: '\u200C',
+    // 标点
+    hellip: '…',
+    middot: '·',
+    bull: '•',
+    ndash: '–',
+    mdash: '—',
+    lsquo: '‘',
+    rsquo: '’',
+    ldquo: '“',
+    rdquo: '”',
+    laquo: '«',
+    raquo: '»',
+    lsaquo: '‹',
+    rsaquo: '›',
+    dagger: '†',
+    Dagger: '‡',
+    prime: '′',
+    Prime: '″',
+    permil: '‰',
+    // 货币与符号
+    cent: '¢',
+    pound: '£',
+    yen: '¥',
+    euro: '€',
+    curren: '¤',
     copy: '©',
     reg: '®',
     trade: '™',
-    hellip: '…',
-    middot: '·',
-    euro: '€',
+    deg: '°',
+    plusmn: '±',
+    times: '×',
+    divide: '÷',
+    frac12: '½',
+    frac14: '¼',
+    frac34: '¾',
+    sup1: '¹',
+    sup2: '²',
+    sup3: '³',
+    micro: 'µ',
+    para: '¶',
+    sect: '§',
+    iexcl: '¡',
+    iquest: '¿',
+    // 数学
+    minus: '−',
+    le: '≤',
+    ge: '≥',
+    ne: '≠',
+    asymp: '≈',
+    equiv: '≡',
+    infin: '∞',
+    sum: '∑',
+    radic: '√',
+    // 箭头
+    larr: '←',
+    uarr: '↑',
+    rarr: '→',
+    darr: '↓',
+    harr: '↔',
 };
 
 const WIN1252_MAP: Record<number, number> = {
@@ -60,7 +126,16 @@ export default function htmlDecode(str: string): string {
 
     return str.replace(ENTITY_REGEX, (match, numEntity, nameEntity) => {
         if (nameEntity) {
-            return NAMED_ENTITIES[nameEntity.toLowerCase()] || match;
+            // 先精确匹配（&Dagger; 与 &dagger; 是两个不同实体），再回退小写匹配。
+            // 必须用 hasOwnProperty：直接下标会命中原型链（&toString; 会输出 native code）
+            if (Object.prototype.hasOwnProperty.call(NAMED_ENTITIES, nameEntity)) {
+                return NAMED_ENTITIES[nameEntity];
+            }
+            const lower = nameEntity.toLowerCase();
+            if (Object.prototype.hasOwnProperty.call(NAMED_ENTITIES, lower)) {
+                return NAMED_ENTITIES[lower];
+            }
+            return match;
         }
 
         if (numEntity) {

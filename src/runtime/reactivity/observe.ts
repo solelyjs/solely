@@ -11,7 +11,7 @@ export type ChangePayload =
     | { type: 'delete'; key: PathKey; oldValue: unknown }
     | { type: 'array-push'; index: number; values: unknown[] }
     | { type: 'array-splice'; index: number; deleteCount: number; insert: unknown[] }
-    | { type: 'array-replace'; oldValue: unknown[]; newValue: unknown[] }
+    | { type: 'array-replace'; key: PathKey; oldValue: unknown[]; newValue: unknown[] }
     | { type: 'array-reset'; method: string };
 
 export type ChangeItem = ChangePayload & { path: PathKey[] };
@@ -235,14 +235,23 @@ const isPathMatched = (path: PathKey[], filterRegexes: RegExp[]): boolean => {
     return false;
 };
 
-const deepEqual = (a: unknown, b: unknown): boolean => {
+const deepEqual = (a: unknown, b: unknown, seen = new WeakMap<object, WeakSet<object>>()): boolean => {
     if (Object.is(a, b)) return true;
     if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+
+    // 循环引用保护：同一对对象只比较一次，避免自引用结构导致无限递归（栈溢出）
+    let comparedWith = seen.get(a);
+    if (comparedWith?.has(b)) return true;
+    if (!comparedWith) {
+        comparedWith = new WeakSet();
+        seen.set(a, comparedWith);
+    }
+    comparedWith.add(b);
 
     if (Array.isArray(a) && Array.isArray(b)) {
         if (a.length !== b.length) return false;
         for (let i = 0; i < a.length; i++) {
-            if (!deepEqual(a[i], b[i])) return false;
+            if (!deepEqual(a[i], b[i], seen)) return false;
         }
         return true;
     }
@@ -257,7 +266,7 @@ const deepEqual = (a: unknown, b: unknown): boolean => {
         if (!Reflect.has(b, key)) return false;
         const valA = (a as Record<PropertyKey, unknown>)[key];
         const valB = (b as Record<PropertyKey, unknown>)[key];
-        if (!deepEqual(valA, valB)) return false;
+        if (!deepEqual(valA, valB, seen)) return false;
     }
     return true;
 };
@@ -267,7 +276,7 @@ const deepEqual = (a: unknown, b: unknown): boolean => {
 const dispatchToEntry = (entry: ObserverEntry, change: ChangeItem) => {
     if (!entry.active) return;
 
-    if (entry.deepCompare && change.type === 'set') {
+    if (entry.deepCompare && (change.type === 'set' || change.type === 'array-replace')) {
         if (deepEqual(change.oldValue, change.newValue)) return;
     }
 
@@ -306,7 +315,7 @@ const globalEmit = (targetProxy: object, payload: ChangePayload) => {
                 if (!entry.active) return;
 
                 let finalPath = relativePath;
-                if (payload.type === 'set' || payload.type === 'delete') {
+                if (payload.type === 'set' || payload.type === 'delete' || payload.type === 'array-replace') {
                     finalPath = [...relativePath, payload.key];
                 } else if (payload.type === 'array-push' || payload.type === 'array-splice') {
                     finalPath = [...relativePath, String(payload.index)];
@@ -474,7 +483,7 @@ const reactiveHandler: ProxyHandler<object> = {
         const arrayDepth = globalArrayMutationDepth.get(receiver) || 0;
         if (arrayDepth === 0) {
             if (!Array.isArray(target) && Array.isArray(oldVal) && Array.isArray(rawNewVal)) {
-                globalEmit(receiver, { type: 'array-replace', oldValue: oldVal, newValue: rawNewVal });
+                globalEmit(receiver, { type: 'array-replace', key, oldValue: oldVal, newValue: rawNewVal });
             } else {
                 globalEmit(receiver, { type: 'set', key, newValue: rawNewVal, oldValue: oldVal });
             }

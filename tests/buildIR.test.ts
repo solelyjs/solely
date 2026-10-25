@@ -290,3 +290,27 @@ describe('buildIR', () => {
         spy.mockRestore();
     });
 });
+
+describe('conditional chain with formatted whitespace', () => {
+    it('should keep If/ElseIf/Else as one chain when separated by newline indentation', () => {
+        const html = `<div>
+  <If test="$data.a === 1"><span>a</span></If>
+  <ElseIf test="$data.a === 2"><span>b</span></ElseIf>
+  <Else><span>c</span></Else>
+</div>`;
+        const ir = buildIR(parseHtml(html), { filename: 'formatted-if.html', source: html });
+
+        const div = ir.n[0];
+        expect(div.c).toHaveLength(1);
+        expect(div.c![0].b).toHaveLength(3);
+    });
+
+    it('should keep the chain when a comment sits between branches', () => {
+        const html = '<div><If test="$data.a">A</If><!-- note --><Else>B</Else></div>';
+        const ir = buildIR(parseHtml(html), { filename: 'comment-if.html', source: html });
+
+        const div = ir.n[0];
+        expect(div.c).toHaveLength(1);
+        expect(div.c![0].b).toHaveLength(2);
+    });
+});

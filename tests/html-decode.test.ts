@@ -8,10 +8,15 @@ describe('html-decode', () => {
         expect(htmlDecode('&gt;')).toBe('>');
         expect(htmlDecode('&quot;')).toBe('"');
         expect(htmlDecode('&apos;')).toBe("'");
-        expect(htmlDecode('&nbsp;')).toBe(' ');
+        expect(htmlDecode('&nbsp;')).toBe('\u00A0');
         expect(htmlDecode('&copy;')).toBe('©');
         expect(htmlDecode('&reg;')).toBe('®');
         expect(htmlDecode('&euro;')).toBe('€');
+        expect(htmlDecode('&mdash;')).toBe('—');
+        expect(htmlDecode('&times;')).toBe('×');
+        expect(htmlDecode('&ldquo;引用&rdquo;')).toBe('“引用”');
+        expect(htmlDecode('&Dagger;')).toBe('‡');
+        expect(htmlDecode('&dagger;')).toBe('†');
     });
 
     it('should decode decimal numeric entities', () => {
@@ -84,5 +89,13 @@ describe('html-decode', () => {
 
     it('should handle Windows-1252 edge without specific mapping', () => {
         expect(htmlDecode('&#129;')).toBe('');
+    });
+});
+
+describe('html-decode prototype safety', () => {
+    it('should not resolve Object.prototype properties as entities', () => {
+        expect(htmlDecode('&toString;')).toBe('&toString;');
+        expect(htmlDecode('&constructor;')).toBe('&constructor;');
+        expect(htmlDecode('&hasOwnProperty;')).toBe('&hasOwnProperty;');
     });
 });

@@ -53,8 +53,42 @@ describe('parseHtml', () => {
             expect(ast[0].children![0].content).toBe('Hello World');
         });
 
-        it('should trim whitespace in text nodes', () => {
+        it('should condense whitespace and trim block boundaries', () => {
             const ast = parseHtml('<div>  hello  </div>');
+            expect(ast[0].children![0].content).toBe('hello');
+        });
+
+        it('should keep single-line space between inline elements', () => {
+            const ast = parseHtml('<p><b>Hello</b> <i>World</i></p>');
+            expect(ast[0].children).toHaveLength(3);
+            expect(ast[0].children![1].type).toBe(ASTType.Text);
+            expect(ast[0].children![1].content).toBe(' ');
+        });
+
+        it('should keep newline-separated space between inline elements', () => {
+            const ast = parseHtml('<p><b>Hello</b>\n<i>World</i></p>');
+            expect(ast[0].children![1].content).toBe(' ');
+        });
+
+        it('should keep trailing space before an inline tag', () => {
+            const ast = parseHtml('<p>Hello <b>world</b></p>');
+            expect(ast[0].children![0].content).toBe('Hello ');
+        });
+
+        it('should keep trailing space when inline tag is on the next line', () => {
+            const ast = parseHtml('<p>Hello\n<b>world</b></p>');
+            expect(ast[0].children![0].content).toBe('Hello ');
+        });
+
+        it('should drop newline indentation between block tags', () => {
+            const ast = parseHtml('<div>\n  <p>a</p>\n  <p>b</p>\n</div>');
+            expect(ast[0].children).toHaveLength(2);
+            expect(ast[0].children![0].tag).toBe('p');
+            expect(ast[0].children![1].tag).toBe('p');
+        });
+
+        it('should strip indentation around text content', () => {
+            const ast = parseHtml('<span>\n  hello\n</span>');
             expect(ast[0].children![0].content).toBe('hello');
         });
 
@@ -346,5 +380,19 @@ describe('parseHtml', () => {
             expect(ast).toHaveLength(1);
             expect(ast[0].tag).toBe('div');
         });
+    });
+});
+
+describe('inline trailing whitespace', () => {
+    it('should keep the space before an inline closing tag', () => {
+        const ast = parseHtml('<p><b>Hello </b><i>World</i></p>');
+
+        expect(ast[0].children![0].children![0].content).toBe('Hello ');
+    });
+
+    it('should still strip newline indentation before an inline closing tag', () => {
+        const ast = parseHtml('<p><b>\n  Hello\n</b></p>');
+
+        expect(ast[0].children![0].children![0].content).toBe('Hello');
     });
 });

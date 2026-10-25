@@ -7,6 +7,43 @@ import { IRRoot } from '@/types';
 
 const MANIFEST_SYMBOL: unique symbol = Symbol.for('solely.manifest');
 
+/**
+ * Node/SSR 环境没有 HTMLElement。若模块顶层直接 `extends HTMLElement`，
+ * `import 'solely'` 会在求值阶段抛 `ReferenceError: HTMLElement is not defined`。
+ * 这里退化为空基类：浏览器环境仍是原生 HTMLElement（行为不变），
+ * Node 环境仅保证「可导入」，实例化与渲染仍需 DOM。
+ */
+const HTMLElementBase: typeof HTMLElement =
+    typeof HTMLElement !== 'undefined' ? HTMLElement : (class {} as unknown as typeof HTMLElement);
+
+/**
+ * 克隆 props 的默认值
+ *
+ * `props[].default` 定义在 manifest 上，如果直接使用，object/array 会被所有实例共享：
+ * 一个实例修改后其它实例可见，甚至污染后续新建实例的初始值。这里按实例克隆一份。
+ * 原始值（string/number/boolean/null）直接返回，无额外开销。
+ */
+function cloneDefaultValue<T>(value: T): T {
+    if (value === null || typeof value !== 'object') return value;
+
+    const clone = (globalThis as { structuredClone?: <V>(input: V) => V }).structuredClone;
+    if (typeof clone === 'function') {
+        try {
+            return clone(value);
+        } catch {
+            // 含函数、DOM 节点等无法结构化克隆的值退回 JSON。
+            // 注意：JSON 兜底会丢弃函数值（默认值里放函数属罕见用法）
+        }
+    }
+
+    try {
+        return JSON.parse(JSON.stringify(value)) as T;
+    } catch {
+        // 循环引用等无法克隆：保持原值，至少不破坏现有行为
+        return value;
+    }
+}
+
 /* -------------------- 类型定义 -------------------- */
 declare interface BaseElement<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -32,7 +69,7 @@ class BaseElement<
     TData extends object = Record<string, unknown>,
     TRefs extends Record<string, Element> = Record<string, Element>,
 >
-    extends HTMLElement
+    extends HTMLElementBase
     implements BaseElement<TData, TRefs>
 {
     $refs: TRefs = {} as TRefs;
@@ -63,6 +100,12 @@ class BaseElement<
 
     // 非 Shadow DOM 样式引用计数（用于组件卸载时清理）
     static #styleRefCount = new Map<string, number>();
+
+    // 已作为组件初始数据使用过的对象（用于发现跨实例共享同一数据对象）
+    static #usedDataObjects = new WeakSet<object>();
+
+    // 用户自定义访问器缓存：prop name -> 原型链上的访问器描述符（无则为 null）
+    #customAccessors = new Map<string, PropertyDescriptor | null>();
 
     // 内部字段白名单（单例，避免每次 upgradeReactiveProperties 重建）
     static readonly #internalFields = new Set([
@@ -120,7 +163,7 @@ class BaseElement<
 
         const setterMap = new Map<string, PropertyDescriptor>();
         let proto = Object.getPrototypeOf(this);
-        while (proto && proto !== HTMLElement.prototype) {
+        while (proto && proto !== HTMLElementBase.prototype) {
             const descriptors = Object.getOwnPropertyDescriptors(proto);
             for (const [key, desc] of Object.entries(descriptors)) {
                 if (desc.set && !setterMap.has(key)) {
@@ -149,9 +192,20 @@ class BaseElement<
 
     /* -------------------- 初始化 -------------------- */
     #initData(data: TData) {
+        if (IS_DEV && data && typeof data === 'object') {
+            if (BaseElement.#usedDataObjects.has(data)) {
+                console.warn(
+                    `[Solely] <${this.#manifest.tagName}>: 该初始数据对象已被其他实例使用，` +
+                        `$data 会共享同一响应式代理（改一个实例会同时触发另一个实例刷新）。` +
+                        `如需实例隔离，请为每个实例传入新对象。`,
+                );
+            }
+            BaseElement.#usedDataObjects.add(data);
+        }
+
         const { proxy, dispose } = observe(data, (change: ChangeItem) => {
-            // 1. 使用类型守卫：只处理属性赋值操作
-            if (change.type === 'set') {
+            // set 与 array-replace 都带有 key，均可用于 reflect 同步
+            if (change.type === 'set' || change.type === 'array-replace') {
                 const { key, newValue } = change;
 
                 const manifest = this.#manifest as InternalManifest;
@@ -165,9 +219,11 @@ class BaseElement<
                 }
             }
 
-            this.emit('dataChange', {
-                ...change,
-            });
+            if (this.#manifest.dataChangeEvent !== false) {
+                this.emit('dataChange', {
+                    ...change,
+                });
+            }
 
             this.#scheduleRefresh();
         });
@@ -209,6 +265,43 @@ class BaseElement<
         }
     }
 
+    /**
+     * 查找用户在原型链上为某个 prop 定义的访问器（getter/setter）
+     * 结果缓存，避免每次属性同步都遍历原型链
+     */
+    #getCustomAccessor(name: string): PropertyDescriptor | null {
+        const cached = this.#customAccessors.get(name);
+        if (cached !== undefined) return cached;
+
+        let result: PropertyDescriptor | null = null;
+        let proto = Object.getPrototypeOf(this);
+        while (proto && proto !== HTMLElementBase.prototype) {
+            const desc = Object.getOwnPropertyDescriptor(proto, name);
+            if (desc) {
+                result = desc.get || desc.set ? desc : null;
+                break;
+            }
+            proto = Object.getPrototypeOf(proto);
+        }
+
+        this.#customAccessors.set(name, result);
+        return result;
+    }
+
+    /**
+     * 写入 prop 值
+     * - 用户自定义了 setter：走 setter，保证其校验/格式化/派生逻辑不被绕过
+     * - 否则：直接写入 $data
+     */
+    #writeProp(desc: PropDescriptor, value: unknown) {
+        const accessor = this.#getCustomAccessor(desc.name);
+        if (accessor?.set) {
+            (this as Record<string, unknown>)[desc.name] = value;
+        } else {
+            (this.$data as DataRecord)[desc.name] = value;
+        }
+    }
+
     #installReactiveProps() {
         const manifest = this.#manifest as InternalManifest;
         if (!manifest.attributeMap) return;
@@ -217,16 +310,8 @@ class BaseElement<
             // 跳过非响应式
             if (desc.reactive === false) continue;
 
-            // 沿原型链向上查找用户自定义的 getter/setter，支持继承链
-            let protoDesc: PropertyDescriptor | undefined;
-            let proto = Object.getPrototypeOf(this);
-            while (proto && proto !== HTMLElement.prototype) {
-                protoDesc = Object.getOwnPropertyDescriptor(proto, desc.name);
-                if (protoDesc) break;
-                proto = Object.getPrototypeOf(proto);
-            }
-
-            if (protoDesc?.get || protoDesc?.set) {
+            // 用户自定义 getter/setter：保持用户实现，不覆盖
+            if (this.#getCustomAccessor(desc.name)) {
                 continue;
             } else {
                 // 在覆盖前，先取出实例上可能存在的自有数据属性值
@@ -418,8 +503,13 @@ class BaseElement<
     /* -------------------- 生命周期 -------------------- */
     connectedCallback(): void {
         if (this.#disposed) {
+            // 不在 connectedCallback 中抛错：异常会冒泡到 appendChild/insertBefore 的调用方，
+            // 把一次误操作放大成整棵渲染失败。这里只告警并移除。
+            if (IS_DEV) {
+                console.error(`[Solely] <${this.tagName.toLowerCase()}> has been disposed and cannot be reconnected.`);
+            }
             this.remove();
-            throw new Error(`[Solely] <${this.tagName.toLowerCase()}> has been disposed and cannot be reconnected.`);
+            return;
         }
         this.#isActive = true;
 
@@ -445,14 +535,14 @@ class BaseElement<
 
                 if (this.hasAttribute(attrName)) {
                     const raw = this.getAttribute(attrName);
-                    const value = this.#convertAttrValue(raw, desc.default, desc.type);
-                    (this.$data as DataRecord)[propName] = value;
+                    const value = this.#convertAttrValue(raw, cloneDefaultValue(desc.default), desc.type);
+                    this.#writeProp(desc, value);
                 } else if ('default' in desc) {
                     // 只有在 property 没有被设置过（比如通过 s-model）的情况下才使用默认值
                     // 检查 $data 中是否已经有值（非 undefined），有则保留，无则使用默认值
                     const currentValue = (this.$data as DataRecord)[propName];
                     if (currentValue === undefined) {
-                        (this.$data as DataRecord)[propName] = desc.default;
+                        this.#writeProp(desc, cloneDefaultValue(desc.default));
                         // 对于布尔类型，如果默认值是 true，同步设置到 HTML 属性
                         if (desc.type === 'boolean' && desc.default === true) {
                             this.setAttribute(attrName, '');
@@ -498,14 +588,25 @@ class BaseElement<
         const oldDataValue = (this.$data as DataRecord)[propName];
 
         // 2. 转换值
-        const next = this.#convertAttrValue(newValue, desc.default ?? oldDataValue, desc.type);
+        const fallback = desc.default !== undefined ? cloneDefaultValue(desc.default) : oldDataValue;
+        const next = this.#convertAttrValue(newValue, fallback, desc.type);
 
         // 3. 避免 primitive 类型的无意义更新（object/array 不适用 deep comparison）
         if (oldDataValue === next) return;
 
         // 4. 标记 attribute 更新（必须在赋值前设置，避免 observe → scheduleRefresh 先于标记执行）
         this.#isAttributeUpdate = true;
-        (this.$data as DataRecord)[propName] = next;
+        // 走 #writeProp：用户自定义 setter 的 prop 不会被绕过
+        this.#writeProp(desc, next);
+
+        // 自定义 setter 可能不写 $data（这是支持的用法）：此时不会触发 observe，
+        // 也就不会排队刷新。必须复位标记，否则下一次普通刷新会误触发属性生命周期钩子。
+        if ((this.$data as DataRecord)[propName] === oldDataValue) {
+            this.#isAttributeUpdate = false;
+        }
+        // 说明：这里假设 setter 同步写入 $data。若 setter 异步写入，复位后那次写入会走普通刷新，
+        // 不再归类为 attribute 更新（不会悬挂，也不会误触发属性钩子）。
+
         this.attributeChanged(name, oldDataValue, next);
     }
 

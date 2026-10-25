@@ -76,19 +76,21 @@ class FunctionCompiler {
     }
 
     compile(type: GenType, expr: string, locals: IRLocal[]): number {
-        const trimmed = expr?.trim();
-        if (!trimmed) return 0;
+        // template 类型的前后空白是**内容的一部分**（例如 `<b>Name:</b> {{ x }}` 中的空格），
+        // 不能 trim；其余类型（表达式/事件/生命周期）的空白无意义，可以归一化。
+        const source = type === 'template' ? (expr ?? '') : (expr?.trim() ?? '');
+        if (!source.trim()) return 0;
 
-        const cacheKey = this.makeCacheKey(type, trimmed, locals);
+        const cacheKey = this.makeCacheKey(type, source, locals);
         const cached = this.cache.get(cacheKey);
         if (cached !== undefined) return cached;
 
         let fn: Function;
         try {
-            fn = genFunction(trimmed, type, locals);
+            fn = genFunction(source, type, locals);
         } catch (e) {
             if (IS_DEV) {
-                console.error(`[Solely] IR Compile Error - Type: ${type}, Expr: "${trimmed}"`, e);
+                console.error(`[Solely] IR Compile Error - Type: ${type}, Expr: "${source}"`, e);
             }
             fn = () => ''; // 安全回退
         }
@@ -226,16 +228,18 @@ export function transformModel(node: ASTNode) {
 
         if (isMultiple) {
             // 数据 → DOM
-            // add(':value', model);
-            // 这个地方需要所有选择的option设置selected 更新后设置
-            add(
-                'updated',
-                `
+            // 多选没有可用的 `:value` 语义（value 只能选中单个 option），
+            // 必须在子节点就绪后逐个设置 option.selected。
+            // 同时注册 mounted 与 updated：
+            // - mounted 负责首次挂载的初始选中态（只挂 updated 会导致初始值丢失）
+            // - updated 负责后续数据变化
+            const syncSelected = `
                     const values = Array.isArray(${model}) ? ${model} : ${model} != null ? [${model}] : [];
                     for (const opt of el.options) {
                         opt.selected = values.includes(opt.value);
-                    }`,
-            );
+                    }`;
+            add('mounted', syncSelected);
+            add('updated', syncSelected);
 
             // DOM → 数据
             add('@change', `${model} = Array.from(event.target.selectedOptions).map(o => o.value)`, 'model');
@@ -443,6 +447,30 @@ function transformList(nodes: ASTNode[], locals: IRLocal[], compiler: FunctionCo
                 const currentNode = nodes[currentIdx];
                 const type = currentNode.type;
 
+                // 分支之间允许夹空白/注释（格式化写法 `</If>\n  <ElseIf>`）。
+                // 但只有「后面仍是本链分支」时才跳过，否则必须把空白留给外层渲染，
+                // 避免 `<If>a</If> <span>b</span>` 把中间空格吃掉。
+                if (
+                    (currentNode.type === ASTType.Text && !(currentNode.content ?? '').trim()) ||
+                    currentNode.type === ASTType.Comment
+                ) {
+                    let look = currentIdx;
+                    while (look < nodes.length) {
+                        const candidate = nodes[look];
+                        const skippable =
+                            (candidate.type === ASTType.Text && !(candidate.content ?? '').trim()) ||
+                            candidate.type === ASTType.Comment;
+                        if (!skippable) break;
+                        look++;
+                    }
+                    const next = nodes[look];
+                    if (next && (next.type === ASTType.ElseIf || next.type === ASTType.Else)) {
+                        currentIdx = look;
+                        continue;
+                    }
+                    break;
+                }
+
                 // 如果当前不是条件节点，跳出
                 if (type !== ASTType.If && type !== ASTType.ElseIf && type !== ASTType.Else && type !== ASTType.Show) {
                     break;
@@ -566,7 +594,8 @@ export function buildIR(ast: ASTNode[], options: BuildIROptions = {}): IRRoot {
             sn: staticSubtreeCount, // 静态子树数量
         },
         m: {
-            t: new Date().toISOString(),
+            // 编译时间仅在开发环境写入：生产构建保持确定性，避免相同输入产出不同字节
+            ...(IS_DEV && { t: new Date().toISOString() }),
             as: ast.length,
             fn: filename,
             ...(source && { src: source }),

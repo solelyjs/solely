@@ -32,6 +32,61 @@ const ATTR_ONLY_PROPS = new Set(['data-', 'aria-', 'role', 'form']);
 /** 需在子节点挂载后才能设置的属性（如 select.value） */
 const POST_CHILD_PROPS = new Set(['value', 'selectedIndex']);
 
+/** 需要做协议校验的 URL 属性 */
+const URL_PROPS = new Set(['href', 'src', 'srcset', 'action', 'formaction', 'xlink:href', 'poster']);
+
+/** 值本身就是 HTML、无法用协议白名单判断的属性：默认拦截 */
+const BLOCKED_PROPS = new Set(['srcdoc']);
+/**
+ * 危险协议：
+ * - `javascript:` / `vbscript:` 后面直接跟冒号
+ * - `data:text/html` 的真实形式是 `data:text/html,` 或 `data:text/html;base64,`，
+ *   冒号在 `data` 之后，因此不能用统一的 `\s*:` 匹配
+ */
+const UNSAFE_URL_RE = /^\s*(?:javascript|vbscript)\s*:|^\s*data:text\/html(?:[;,]|$)/i;
+
+/** 已告警过的危险 URL（元素 -> `prop:value`），避免每次刷新重复刷屏 */
+const warnedUnsafeUrls = new WeakMap<Element, Set<string>>();
+
+function warnBlockedOnce(el: Element, key: string, message: string): void {
+    if (!IS_DEV) return;
+
+    let warned = warnedUnsafeUrls.get(el);
+    if (!warned) {
+        warned = new Set();
+        warnedUnsafeUrls.set(el, warned);
+    }
+
+    if (warned.has(key)) return;
+    warned.add(key);
+    console.warn(message);
+}
+
+function warnUnsafeUrlOnce(el: Element, propKey: string, value: unknown): void {
+    warnBlockedOnce(
+        el,
+        `${propKey}:${String(value)}`,
+        `[Solely] Blocked unsafe URL for "${propKey}": ${String(value).slice(0, 80)}. ` +
+            `Use a http(s)/relative URL instead.`,
+    );
+}
+
+function warnSrcdocOnce(el: Element, value: unknown): void {
+    warnBlockedOnce(
+        el,
+        `srcdoc:${String(value)}`,
+        `[Solely] Blocked "srcdoc" binding (HTML injection risk). Use a sandboxed iframe with "src" instead.`,
+    );
+}
+
+/** 判断绑定值是否为危险 URL */
+function isUnsafeUrl(value: unknown): boolean {
+    if (typeof value !== 'string') return false;
+    // 去掉空白（空格/制表符/换行等），防止 `java\tscript:` 之类混淆。
+    // 说明：C0 控制字符未显式剥离——浏览器会把它替换为 U+FFFD，无法构成可执行协议。
+    return UNSAFE_URL_RE.test(value.replace(/\s+/g, ''));
+}
+
 /** 元素运行时数据，通过 WeakMap 存储以避免在 DOM 上挂载自定义属性 */
 interface ElementRuntimeData {
     /** 当前 loops 上下文（事件回调时使用） */
@@ -272,6 +327,18 @@ function setProperty(el: Element, propKey: string, value: unknown, isSVGHint?: b
     const camelKey = HTML_PROP_MAP[propKey] || propKey;
     if (propKey.startsWith('data-') || propKey.startsWith('aria-') || ATTR_ONLY_PROPS.has(propKey)) {
         setAttribute(el, propKey, value);
+        return;
+    }
+
+    // 值本身是 HTML 的属性（iframe srcdoc）：直接拦截，无法通过协议判断
+    if (BLOCKED_PROPS.has(propKey) && value != null) {
+        warnSrcdocOnce(el, value);
+        return;
+    }
+
+    // URL 属性协议校验：拦截 javascript: / vbscript: / data:text/html
+    if ((URL_PROPS.has(propKey) || URL_PROPS.has(camelKey)) && isUnsafeUrl(value)) {
+        warnUnsafeUrlOnce(el, propKey, value);
         return;
     }
 

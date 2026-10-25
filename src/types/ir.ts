@@ -112,8 +112,8 @@ export interface IRRoot {
     };
     /** meta 编译元数据 */
     m?: {
-        /** 编译时间 */
-        t: string;
+        /** 编译时间（仅开发环境写入，生产构建不写以保证产物可复现） */
+        t?: string;
         /** 原始AST大小 */
         as: number;
         /** 源文件路径 */

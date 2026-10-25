@@ -299,6 +299,18 @@ describe('renderIR', () => {
         expect(spy).toHaveBeenCalled();
     });
 
+    it('should preserve the space between inline elements', () => {
+        buildAndRender('<p><b>Hello</b> <i>World</i></p>', {});
+
+        expect(container.textContent).toBe('Hello World');
+    });
+
+    it('should preserve the space between an inline tag and interpolation', () => {
+        buildAndRender('<p><b>Name:</b> {{ $data.n }}</p>', { $data: { n: 'x' } });
+
+        expect(container.textContent).toBe('Name: x');
+    });
+
     it('should handle errors in evalIR gracefully', () => {
         const spy = vi.spyOn(console, 'groupCollapsed').mockImplementation(() => {});
         const scope = { $data: {} };
@@ -321,5 +333,193 @@ describe('renderIR', () => {
         buildAndRender('<div>&lt;test&gt;</div>');
 
         expect(container.textContent).toBe('<test>');
+    });
+});
+
+describe('renderIR - s-model on multiple select', () => {
+    it('should apply initial selection on mount', async () => {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const scope: Record<string, unknown> = { $data: { picked: ['a', 'c'] } };
+        const ir = buildIR(
+            parseHtml(
+                '<select multiple s-model="$data.picked">' +
+                    '<option value="a">a</option>' +
+                    '<option value="b">b</option>' +
+                    '<option value="c">c</option>' +
+                    '</select>',
+            ),
+            { filename: 'multi-select.html' },
+        );
+
+        createRender(ir, host, scope);
+
+        // mounted 生命周期在 requestAnimationFrame 中执行
+        await new Promise(resolve => setTimeout(resolve, 30));
+
+        const select = host.querySelector('select')!;
+        expect(Array.from(select.selectedOptions).map(o => o.value)).toEqual(['a', 'c']);
+
+        host.remove();
+    });
+});
+
+describe('renderIR - URL safety', () => {
+    function renderLink(url: string) {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const scope: Record<string, unknown> = { $data: { url } };
+        const ir = buildIR(parseHtml('<a :href="$data.url">link</a>'), { filename: 'url-safety.html' });
+        createRender(ir, host, scope);
+        return host;
+    }
+
+    it('should block javascript: URLs on :href', () => {
+        const host = renderLink('javascript:alert(1)');
+        expect(host.querySelector('a')!.hasAttribute('href')).toBe(false);
+        host.remove();
+    });
+
+    it('should allow http(s) and relative URLs', () => {
+        const host = renderLink('/docs');
+        expect(host.querySelector('a')!.getAttribute('href')).toBe('/docs');
+        host.remove();
+    });
+
+    it('should block obfuscated javascript: URLs', () => {
+        const host = renderLink('java\tscript:alert(1)');
+        expect(host.querySelector('a')!.hasAttribute('href')).toBe(false);
+        host.remove();
+    });
+});
+
+describe('renderIR - URL scheme edge cases', () => {
+    function renderLink(url: string) {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const scope: Record<string, unknown> = { $data: { url } };
+        const ir = buildIR(parseHtml('<a :href="$data.url">link</a>'), { filename: 'url-edge.html' });
+        createRender(ir, host, scope);
+        return host;
+    }
+
+    it('should block data:text/html URLs', () => {
+        for (const url of ['data:text/html,<script>alert(1)</script>', 'data:text/html;base64,PHNjcmlwdD4=']) {
+            const host = renderLink(url);
+            expect(host.querySelector('a')!.hasAttribute('href')).toBe(false);
+            host.remove();
+        }
+    });
+
+    it('should allow data:image URLs', () => {
+        const url = 'data:image/png;base64,iVBORw0KGgo=';
+        const host = renderLink(url);
+
+        expect(host.querySelector('a')!.getAttribute('href')).toBe(url);
+        host.remove();
+    });
+});
+
+describe('renderIR - inline whitespace', () => {
+    it('should render the space before a closing inline tag', () => {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const ir = buildIR(parseHtml('<p><b>Hello </b><i>World</i></p>'), { filename: 'inline-space.html' });
+        createRender(ir, host, {});
+
+        expect(host.textContent).toBe('Hello World');
+        host.remove();
+    });
+});
+
+describe('renderIR - inline conditional whitespace', () => {
+    function render(html: string) {
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const ir = buildIR(parseHtml(html), { filename: 'inline-if.html' });
+        createRender(ir, host, {});
+        return host;
+    }
+
+    it('should keep spaces on both sides of an inline If', () => {
+        const host = render('<p>foo <If test="true">x</If> baz</p>');
+
+        expect(host.textContent).toBe('foo x baz');
+        host.remove();
+    });
+
+    it('should keep the space between a conditional chain and following inline content', () => {
+        const host = render('<div><If test="true">a</If> <span>b</span></div>');
+
+        expect(host.textContent).toBe('a b');
+        host.remove();
+    });
+});
+
+describe('renderIR - unsafe URL warning', () => {
+    it('should warn only once per element/prop/value across updates', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const scope: Record<string, unknown> = { $data: { url: 'javascript:alert(1)', n: 0 } };
+        const ir = buildIR(parseHtml('<a :href="$data.url">x</a><span>{{ $data.n }}</span>'), {
+            filename: 'warn-once.html',
+        });
+        const renderer = createRender(ir, host, scope);
+
+        renderer.update();
+        renderer.update();
+
+        const blockedWarnings = warnSpy.mock.calls.filter(call => String(call[0]).includes('Blocked unsafe URL'));
+        expect(blockedWarnings).toHaveLength(1);
+
+        host.remove();
+        warnSpy.mockRestore();
+    });
+});
+
+describe('renderIR - srcset / srcdoc', () => {
+    it('should block javascript: in srcset', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const scope: Record<string, unknown> = { $data: { set: 'javascript:alert(1) 1x' } };
+        const ir = buildIR(parseHtml('<img :srcset="$data.set">'), { filename: 'srcset.html' });
+        createRender(ir, host, scope);
+
+        expect(host.querySelector('img')!.hasAttribute('srcset')).toBe(false);
+
+        host.remove();
+        warnSpy.mockRestore();
+    });
+
+    it('should block srcdoc bindings', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        clearIRCache();
+
+        const scope: Record<string, unknown> = { $data: { html: '<script>alert(1)</script>' } };
+        const ir = buildIR(parseHtml('<iframe :srcdoc="$data.html"></iframe>'), { filename: 'srcdoc.html' });
+        createRender(ir, host, scope);
+
+        expect(host.querySelector('iframe')!.hasAttribute('srcdoc')).toBe(false);
+
+        host.remove();
+        warnSpy.mockRestore();
     });
 });

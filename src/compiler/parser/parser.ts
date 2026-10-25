@@ -18,6 +18,75 @@ const voidElements = new Set([
     'track',
     'wbr',
 ]);
+
+/**
+ * 块级元素集合（用于判断空白是否具有「分隔」语义）
+ * 只影响空白处理，不影响渲染：位于两个内联节点之间的空格必须保留，
+ * 而块级元素边界处的缩进空白应当丢弃。
+ */
+const blockElements = new Set([
+    'html',
+    'head',
+    'body',
+    'div',
+    'p',
+    'section',
+    'article',
+    'aside',
+    'header',
+    'footer',
+    'main',
+    'nav',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'ul',
+    'ol',
+    'li',
+    'dl',
+    'dt',
+    'dd',
+    'table',
+    'caption',
+    'colgroup',
+    'col',
+    'thead',
+    'tbody',
+    'tfoot',
+    'tr',
+    'td',
+    'th',
+    'form',
+    'fieldset',
+    'legend',
+    'blockquote',
+    'pre',
+    'hr',
+    'address',
+    'figure',
+    'figcaption',
+    'details',
+    'summary',
+    'dialog',
+    'menu',
+    'option',
+    'optgroup',
+    'datalist',
+    'template',
+    'script',
+    'style',
+    'title',
+    'noscript',
+]);
+
+/** 判断 index 处（指向 '<'）是否为块级开标签 */
+function isBlockTagAt(html: string, index: number): boolean {
+    const match = /^<([a-zA-Z][a-zA-Z0-9-]*)/.exec(html.slice(index, index + 32));
+    return match ? blockElements.has(match[1].toLowerCase()) : false;
+}
 const attrRE = /\s*([^\s"'/>=]+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gs;
 
 function parseAttributes(tag: string, tagLoc: SourceLocation): Attribute[] {
@@ -172,7 +241,6 @@ export function parseHtml(html: string): ASTNode[] {
     if (!html) return [];
 
     const stack: ASTNode[] = [];
-    const openingTags: string[] = [];
 
     const getCurrent = (): ASTNode[] => (stack.length === 0 ? astNodes : (stack[stack.length - 1].children ||= []));
 
@@ -217,26 +285,64 @@ export function parseHtml(html: string): ASTNode[] {
             let textContent: string;
             let startPos: number;
 
+            const current = getCurrent();
+            const lastNode = current[current.length - 1];
+
             if (preserveWhitespace) {
                 // 特殊标签：原样保留原始文本（包括首尾空白和空字符串）
                 textContent = rawText;
                 startPos = index;
             } else {
-                // 普通标签：去除首尾空白
-                textContent = rawText.trim();
+                // 空白归一化：先折叠连续空白为单个空格，再根据相邻节点是否为块级边界决定首尾空格去留。
+                // 直接 trim 会吃掉紧邻内联标签的空格，导致 `<b>Hello</b> <i>World</i>` 渲染成
+                // `HelloWorld`、`<b>Name:</b> {{ x }}` 渲染成 `Name:x`。
+                const prevIsBoundary =
+                    !lastNode ||
+                    (lastNode.type === ASTType.Element && blockElements.has((lastNode.tag || '').toLowerCase()));
+
+                let nextIsBoundary = true;
+                let nextIsClosing = false;
+                if (nextTagStart !== -1) {
+                    nextIsClosing = html.startsWith('</', nextTagStart);
+                    if (nextIsClosing) {
+                        // 闭合标签：只有父元素是块级时才算边界。
+                        // 行内元素内的尾随空格属于内容（`<b>Hello </b>` 不能粘成 `Hello`）
+                        nextIsBoundary = parent ? blockElements.has(parent.tag.toLowerCase()) : true;
+                    } else {
+                        nextIsBoundary = isBlockTagAt(html, nextTagStart);
+                    }
+                }
+
+                const hasTrailingNewline = /\n\s*$/.test(rawText);
+                textContent = rawText.replace(/\s+/g, ' ');
+
+                if (/^\s+$/.test(rawText)) {
+                    // 纯空白节点：闭合标签前、块级边界处、以及任何缩进都丢弃；
+                    // 仅保留两个内联节点之间的分隔空格（含换行，HTML 会折叠成空格）
+                    if (nextIsClosing || prevIsBoundary || nextIsBoundary) {
+                        index = nextTagStart;
+                        if (nextTagStart === -1) break;
+                        continue;
+                    }
+                    textContent = ' ';
+                } else {
+                    if (prevIsBoundary) textContent = textContent.replace(/^ /, '');
+                    // 闭合标签前的尾随空格：块级父元素直接裁掉；行内父元素只裁掉换行缩进
+                    if (nextIsBoundary || (nextIsClosing && hasTrailingNewline)) {
+                        textContent = textContent.replace(/ $/, '');
+                    }
+                }
+
                 if (textContent === '') {
-                    // 纯空白节点直接丢弃
                     index = nextTagStart;
                     if (nextTagStart === -1) break;
                     continue;
                 }
+
                 // 计算内容实际起始位置（跳过前导空白）
                 const leadingWhitespace = rawText.length - rawText.trimStart().length;
                 startPos = index + leadingWhitespace;
             }
-
-            const current = getCurrent();
-            const lastNode = current[current.length - 1];
 
             // 合并相邻文本节点（属于同一父节点）
             if (lastNode && lastNode.type === ASTType.Text) {
@@ -338,7 +444,6 @@ export function parseHtml(html: string): ASTNode[] {
                 }
                 if (found !== -1) {
                     stack.length = found;
-                    openingTags.length = found;
                 }
             }
             index = tagEnd + 1;
@@ -390,7 +495,6 @@ export function parseHtml(html: string): ASTNode[] {
         // -------- 入栈 --------
         if (!isVoidElement && ast.type !== ASTType.Text && ast.type !== ASTType.Comment) {
             stack.push(ast);
-            openingTags.push(tagName);
         }
 
         index = tagEnd + 1;

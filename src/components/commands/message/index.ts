@@ -41,12 +41,13 @@ function createLoadingSpinner(): HTMLElement {
     return createElement('span', { className: 'solely-message__loading-spinner' });
 }
 
-const ICON_MAP: Record<MessageType, string | HTMLElement> = {
+const ICON_MAP: Record<MessageType, string | HTMLElement | (() => HTMLElement)> = {
     info: 'ℹ',
     success: '✓',
     warning: '⚠',
     error: '✕',
-    loading: createLoadingSpinner(),
+    // 惰性创建：模块顶层调用 document.createElement 会导致 Node/SSR 下 import 直接崩溃
+    loading: createLoadingSpinner,
 };
 
 // ---------- 样式与主题 ----------
@@ -184,7 +185,8 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
     element.setAttribute('aria-live', type === 'error' || type === 'warning' ? 'assertive' : 'polite');
 
     if (showIcon) {
-        const icon = options.icon ? createIconElement(options.icon, type) : createIconElement(ICON_MAP[type], type);
+        const iconSource = options.icon ?? ICON_MAP[type];
+        const icon = createIconElement(typeof iconSource === 'function' ? iconSource() : iconSource, type);
         element.appendChild(icon);
     }
 

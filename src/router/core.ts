@@ -418,6 +418,10 @@ export class Router {
         this.isStarted = false;
         this.listeners.clear();
         this.componentCache.clear();
+        // 缓存的页面不会再被复用，释放其资源
+        for (const el of this.keepAliveCache.values()) {
+            (el as HTMLElement & { dispose?: () => void }).dispose?.();
+        }
         this.keepAliveCache.clear();
         this.keepAliveKeys = [];
         this.currentRoute = null;
@@ -443,7 +447,12 @@ export class Router {
 
     public setKeepAlive(key: string, el: HTMLElement): void {
         if (this.keepAliveCache.has(key)) {
-            // key 已存在时更新缓存元素并调整访问顺序
+            // key 已存在：先释放被替换的旧实例，避免资源泄漏
+            const previous = this.keepAliveCache.get(key);
+            if (previous && previous !== el) {
+                (previous as HTMLElement & { dispose?: () => void }).dispose?.();
+            }
+            // 更新缓存元素并调整访问顺序
             this.keepAliveCache.set(key, el);
             const idx = this.keepAliveKeys.indexOf(key);
             if (idx !== -1) {
@@ -465,7 +474,12 @@ export class Router {
         if (!this.maxKeepAlive) return;
         while (this.keepAliveKeys.length > this.maxKeepAlive) {
             const oldest = this.keepAliveKeys.shift();
-            if (oldest) this.keepAliveCache.delete(oldest);
+            if (oldest) {
+                const el = this.keepAliveCache.get(oldest);
+                // 被淘汰的页面不会再被复用，显式释放其资源（组件若实现 dispose 则调用）
+                (el as (HTMLElement & { dispose?: () => void }) | undefined)?.dispose?.();
+                this.keepAliveCache.delete(oldest);
+            }
         }
     }
 

@@ -426,3 +426,67 @@ describe('observe function', () => {
         unobserve();
     });
 });
+
+describe('observe - change payload completeness', () => {
+    it('array-replace 应携带 key 与完整 path', () => {
+        const received: ChangeItem[] = [];
+        const { proxy, unobserve } = observe({ list: [1, 2] } as { list: number[] }, change => {
+            received.push(change);
+        });
+
+        proxy.list = [3, 4];
+
+        const change = received.find(c => c.type === 'array-replace');
+        expect(change).toBeDefined();
+        expect(change!.path).toEqual(['list']);
+        expect(change!.type === 'array-replace' && change!.key).toBe('list');
+
+        unobserve();
+    });
+
+    it('嵌套对象的 array-replace 路径应包含父级 key', () => {
+        const received: ChangeItem[] = [];
+        const { proxy, unobserve } = observe(
+            { nested: { list: [1] } } as {
+                nested: { list: number[] };
+            },
+            change => {
+                received.push(change);
+            },
+        );
+
+        proxy.nested.list = [2];
+
+        const change = received.find(c => c.type === 'array-replace');
+        expect(change).toBeDefined();
+        expect(change!.path).toEqual(['nested', 'list']);
+
+        unobserve();
+    });
+
+    it('deepCompare 遇到循环引用不应栈溢出', () => {
+        const makeCyclic = (): Record<string, unknown> => {
+            const obj: Record<string, unknown> = { v: 1 };
+            obj.self = obj;
+            return obj;
+        };
+
+        const received: ChangeItem[] = [];
+        const { proxy, unobserve } = observe(
+            { node: makeCyclic() } as Record<string, unknown>,
+            change => {
+                received.push(change);
+            },
+            { deepCompare: true },
+        );
+
+        expect(() => {
+            (proxy as Record<string, unknown>).node = makeCyclic();
+        }).not.toThrow();
+
+        // 结构相同，深度比较应判定为无变化
+        expect(received).toHaveLength(0);
+
+        unobserve();
+    });
+});

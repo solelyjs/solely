@@ -37,3 +37,36 @@ describe('SSR / Node safety', () => {
         expect(sanitizeSvg('<script>alert(1)</script>')).toBe('');
     });
 });
+
+describe('SSR / Node entry safety', () => {
+    it('should import the main entry without DOM globals', async () => {
+        expect(typeof window).toBe('undefined');
+        expect(typeof HTMLElement).toBe('undefined');
+
+        const mod = await import('../src/index');
+
+        expect(typeof mod.BaseElement).toBe('function');
+        expect(typeof mod.CustomElement).toBe('function');
+        expect(typeof mod.buildIR).toBe('function');
+        expect(typeof mod.createRouter).toBe('function');
+        expect(typeof mod.observe).toBe('function');
+    });
+
+    it('should import the compiler entry without DOM globals', async () => {
+        const mod = await import('../src/compiler/index');
+
+        expect(typeof mod.parseHtml).toBe('function');
+        expect(typeof mod.buildIR).toBe('function');
+    });
+});
+
+describe('SSR / Node component entry safety', () => {
+    it('should import command and element component entries without DOM globals', async () => {
+        const commands = await import('../src/components/commands/index');
+        const elements = await import('../src/components/elements/index');
+
+        expect(typeof commands.Message.info).toBe('function');
+        expect(typeof commands.Modal.confirm).toBe('function');
+        expect(typeof elements.SolelyButton).toBe('function');
+    });
+});

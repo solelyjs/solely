@@ -57,6 +57,13 @@ export interface Manifest {
     tagName: string;
     /** s-model 双向绑定配置 */
     model?: ModelConfig;
+    /**
+     * 是否在每次数据变更时派发 `dataChange` 事件（冒泡 + composed）
+     * - 默认 true，便于外部监听
+     * - 高频更新场景（输入框、拖拽）可设为 false 以省去事件构造与派发开销
+     * @default true
+     */
+    dataChangeEvent?: boolean;
 }
 
 /** 框架内部使用的运行时版本 */

@@ -1,22 +1,32 @@
 /** 是否为开发环境 */
 export const IS_DEV = /* @__PURE__ */ (() => {
-    // 1. 最高优先级：运行时强制后门（用户随时可以打开调试）
+    const global = globalThis as Record<string, unknown>;
+
+    // 0. 显式强制生产：用于「生产构建部署在 localhost / 内网 / Electron」等无法靠主机名判断的场景
+    //    在入口脚本最前面设置 globalThis.__IS_PROD__ = true 即可
+    if (global.__IS_PROD__ === true) {
+        return false;
+    }
+
+    // 1. 运行时强制后门（用户随时可以打开调试）
     if (typeof window !== 'undefined') {
         // URL 参数 ?debug 或 ?debug=true
         if (window.location?.search.includes('debug')) {
             return true;
         }
         // 全局变量（用户可以在自己的 index.html 或代码里注入）
-        const global = globalThis as Record<string, unknown>;
         if (global.__DEBUG__ === true || global.__IS_DEV__ === true) {
             return true;
         }
     }
 
     // 2. 兼容 process.env.NODE_ENV（很多用户项目里会定义这个，尤其是在 webpack/vite/react-scripts 项目中）
-    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
-        return true;
-    }
+    //    注意：这里必须通过 globalThis.process 访问，不能直接写 process.env.NODE_ENV——
+    //    库构建时 Vite 会把 `process.env.NODE_ENV` 静态替换为 "production"，
+    //    导致发布出去的库在用户开发环境里也永远判定为生产环境。
+    const nodeEnv = (global.process as { env?: Record<string, string | undefined> } | undefined)?.env?.NODE_ENV;
+    if (nodeEnv === 'production') return false;
+    if (nodeEnv === 'development') return true;
 
     // 3. 本地主机名兜底（开发机上默认认为是 dev）
     if (
