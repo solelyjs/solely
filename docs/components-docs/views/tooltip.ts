@@ -13,9 +13,7 @@ interface DocsData {
     template,
 })
 export class DocsTooltip extends BaseElement<DocsData> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private basicTooltipInstances: any[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private demoTooltipInstance: any = null;
 
     constructor() {
@@ -241,7 +239,6 @@ export class DocsTooltip extends BaseElement<DocsData> {
         this.refresh();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private elementTooltipInstance: any = null;
 
     bindElementTooltip(): void {

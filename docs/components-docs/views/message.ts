@@ -7,9 +7,7 @@ import template from './message.html?raw';
 interface DocsData {
     messageLog: string[];
     elementMessageLog: string[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     loadingInstance?: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     elementLoadingInstance?: any;
 }
 

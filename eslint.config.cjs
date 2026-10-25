@@ -94,4 +94,14 @@ module.exports = [
             'max-len': 'off',
         },
     },
+
+    // 演示代码（examples / docs）不是发布产物：允许 console.log 与显式 any，
+    // 避免演示日志和演示类型噪音淹没 src 的真实告警。
+    {
+        files: ['examples/**/*.ts', 'docs/**/*.ts'],
+        rules: {
+            'no-console': 'off',
+            '@typescript-eslint/no-explicit-any': 'off',
+        },
+    },
 ];

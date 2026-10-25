@@ -205,7 +205,6 @@ export class DocsDrawer extends BaseElement<DocsData> {
 
     openElementDrawer(): void {
         const btn = this.$refs.drawerTriggerBtn as HTMLElement;
-        // eslint-disable-next-line no-console
         console.info('通过 Element 组件触发:', btn);
 
         Drawer.open({

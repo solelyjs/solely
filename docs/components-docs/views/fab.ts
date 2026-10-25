@@ -40,7 +40,6 @@ export class DocsFab extends BaseElement<FabData> {
      */
     handleFabClick(event: MouseEvent): void {
         alert('FAB 按钮被点击了！');
-        // eslint-disable-next-line no-console
         console.log('FAB click event:', event);
     }
 
@@ -92,7 +91,6 @@ export class DocsFab extends BaseElement<FabData> {
             alert('当前 FAB 处于禁用状态，点击不会触发事件！');
         } else {
             alert('FAB 按钮被点击了！');
-            // eslint-disable-next-line no-console
             console.log('FAB click event:', event);
         }
     }

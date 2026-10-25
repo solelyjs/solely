@@ -74,7 +74,6 @@ export class DocsBreadcrumb extends BaseElement<{ title: string }> {
 
             // 监听点击事件
             breadcrumb5.addEventListener('click', () => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const item = (breadcrumb5 as any).clickedItem;
                 if (item) {
                     this.logClick(item.title);

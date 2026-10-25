@@ -23,15 +23,15 @@ URL 与共享数据用例会把预期告警各输出 1 条到控制台（方便�
 
 **当前基线**
 
-| 项                             | 通过标准                                                          |
-| ------------------------------ | ----------------------------------------------------------------- |
-| `tsc --noEmit`                 | exit 0，无输出                                                    |
-| `eslint .`                     | **0 error**；warning 基线 40 条（全部在 `examples/`、`docs/`）    |
-| `prettier --check src`         | All matched files use Prettier code style                         |
-| `vitest run`                   | **453 passed / 1 skipped**（30 个文件）                           |
-| 覆盖率                         | statements 87.1 / branches 83.9 / functions 95.1（阈值 80/75/85） |
-| `vite build` + `check:exports` | 140 个导出目标全部存在                                            |
-| `build:examples`               | 构建成功，无报错                                                  |
+| 项                             | 通过标准                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `tsc --noEmit`                 | exit 0，无输出                                                                           |
+| `eslint .`                     | **0 error / 0 warning**（`examples/`、`docs/` 已放宽 `no-console` 与 `no-explicit-any`） |
+| `prettier --check src`         | All matched files use Prettier code style                                                |
+| `vitest run`                   | **453 passed / 1 skipped**（30 个文件）                                                  |
+| 覆盖率                         | statements 87.1 / branches 83.9 / functions 95.1（阈值 80/75/85）                        |
+| `vite build` + `check:exports` | 140 个导出目标全部存在                                                                   |
+| `build:examples`               | 构建成功，无报错                                                                         |
 
 > 上表是 2026-10-25 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
 

@@ -27,7 +27,6 @@ export class DocsAlert extends BaseElement<AlertDocData> {
         const alertDemo = this.querySelector('#alert-event-demo');
         if (alertDemo) {
             alertDemo.addEventListener('close', () => {
-                // eslint-disable-next-line no-console
                 console.log('Alert closed');
                 Message.success('Alert closed!');
             });

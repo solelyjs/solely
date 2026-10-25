@@ -51,6 +51,7 @@
 - **repo**: 新增 `.gitattributes`（`* text=auto eol=lf`）；本次触及的 3 个源码文件工作区行尾已归一为 LF（索引中本就是 LF，无内容 diff）
 - **docs**: 修正 README 中「零运行时依赖」「路由默认 hash」「测试完善」等与实现不一致的表述；`docs/api.md` 同步 `array-replace` 载荷
 - **component**: 新增 `dataChangeEvent` 配置（默认 `true`），高频更新场景可关闭每次变更的 `dataChange` 事件派发
+- **tooling**: `examples/`、`docs/` 放宽 `no-console` 与 `no-explicit-any`（演示代码不是发布产物），并移除失效的 `eslint-disable`，lint 基线归零
 - **tooling**: 新增 `test:run`（非 watch）与 `verify`（typecheck + lint + format + test + build + exports）脚本；`prepublishOnly` 与 CI 改用 `test:run`，避免本地发布时 vitest 以 watch 模式挂起
 - **env**: `IS_DEV` 新增 `globalThis.__IS_PROD__` 强制生产开关；`process.env.NODE_ENV` 改为经 `globalThis.process` 读取，避免库构建时被 Vite 静态替换
 - **repo**: 删除根目录遗留的手工调试页 `test-message-placement.html`（Message 的演示已由文档站 `docs/components-docs/views/message.ts` 完整覆盖，且已有 10 个自动化测试，示例页属重复）

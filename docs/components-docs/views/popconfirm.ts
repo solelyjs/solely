@@ -13,7 +13,6 @@ interface DocsData {
     template,
 })
 export class DocsPopconfirm extends BaseElement<DocsData> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private bindInstance: any = null;
 
     constructor() {

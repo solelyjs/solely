@@ -18,7 +18,6 @@ export class DocsButton extends BaseElement {
         const button = event.target as HTMLElement;
         const text = button?.textContent || '按钮';
         alert(`${text} 被点击了！`);
-        // eslint-disable-next-line no-console
         console.log('Button click event:', event);
     }
 }

@@ -48,7 +48,6 @@ export class DocsIntro extends BaseElement<DocsIntroData> {
             title: '欢迎使用',
             content: 'Solely UI 是一个轻量级的 Web Components 组件库',
             onConfirm: () => {
-                // eslint-disable-next-line no-console
                 console.log('用户点击了确定');
             },
         });
