@@ -33,11 +33,17 @@ jobs:
       - name: Run linter
         run: npm run lint
 
+      - name: Check formatting
+        run: npm run format:check
+
       - name: Run tests
-        run: npm test
+        run: npm run test:run
 
       - name: Build project
         run: npm run build
+
+      - name: Verify package exports
+        run: npm run check:exports
 
   coverage:
     runs-on: ubuntu-latest

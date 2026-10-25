@@ -122,6 +122,24 @@ const URL_ATTRS = new Set(['href', 'xlink:href', 'src', 'action', 'formaction'])
 /** SMIL 动画元素中承载目标值的属性 */
 const SMIL_VALUE_ATTRS = ['to', 'values', 'from', 'by'];
 
+/**
+ * 危险 CSS 构造：
+ * - `@import`：可加载外部样式，用于数据外带
+ * - `expression()` / `behavior:` / `-moz-binding`：历史 IE/Firefox 的脚本执行入口
+ *
+ * 说明：SVG 内的 `<style>` 是**文档级作用域**（不是 SVG 局部作用域），
+ * 第三方 sprite 可借此改写宿主页面样式。这里不整体禁用 `<style>`（iconfont 依赖它），
+ * 但拦截上述明确的危险构造。
+ */
+const DANGEROUS_CSS = /@import|expression\s*\(|(?:^|[;{\s])behavior\s*:|-moz-binding/i;
+
+/** CSS 注释：匹配前先剥离，避免注释里的 behavior: 等说明文字误触发整块移除 */
+const CSS_COMMENT_RE = /\/\*[\s\S]*?\*\//g;
+
+function hasDangerousCss(css: string): boolean {
+    return DANGEROUS_CSS.test(css.replace(CSS_COMMENT_RE, ''));
+}
+
 /** 消毒结果缓存（相同输入只解析一次，避免列表场景重复 DOMParser 开销） */
 const sanitizeCache = new Map<string, string>();
 const CACHE_LIMIT = 500;
@@ -230,6 +248,11 @@ function sanitizeElement(el: Element): void {
         }
         // SMIL 动画写属性载荷：整个元素移除
         if (SMIL_TAGS.has(tag) && isDangerousSmil(child)) {
+            child.remove();
+            continue;
+        }
+        // <style> 中的危险 CSS 构造（外部导入 / 脚本表达式）
+        if (tag === 'style' && hasDangerousCss(child.textContent || '')) {
             child.remove();
             continue;
         }

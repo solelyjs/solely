@@ -332,3 +332,51 @@ describe('sanitizeSvg element allowlist', () => {
         }
     });
 });
+
+describe('sanitizeSvg - style hardening', () => {
+    it('should keep safe inline styles', () => {
+        const result = sanitizeSvg('<style>.cls{fill:red}</style><path class="cls" d="M0 0h8v8H0z"/>');
+        expect(result).toContain('<style');
+        expect(result).toContain('.cls{fill:red}');
+    });
+
+    it('should remove <style> containing @import', () => {
+        const result = sanitizeSvg('<style>@import url(https://evil.example/x.css);</style><path d="M0 0h8v8H0z"/>');
+        expect(result.toLowerCase()).not.toContain('@import');
+        expect(result).toContain('<path');
+    });
+
+    it('should remove <style> containing expression() or behavior:', () => {
+        expect(sanitizeSvg('<style>a{width:expression(alert(1))}</style>')).not.toContain('expression');
+        expect(sanitizeSvg('<style>a{behavior:url(x.htc)}</style>')).not.toContain('behavior');
+    });
+});
+
+describe('sanitizeSvg - CSS false positives', () => {
+    it('should keep scroll-behavior (not treat it as legacy behavior:)', () => {
+        const result = sanitizeSvg('<style>a{scroll-behavior:smooth}</style><path d="M0 0h8v8H0z"/>');
+
+        expect(result).toContain('scroll-behavior:smooth');
+        expect(result).toContain('<path');
+    });
+
+    it('should still remove legacy behavior: declarations', () => {
+        const result = sanitizeSvg('<style>a{behavior:url(x.htc)}</style>');
+
+        expect(result).not.toContain('behavior');
+    });
+});
+
+describe('sanitizeSvg - CSS comments', () => {
+    it('should not treat comments as dangerous constructs', () => {
+        const behaviorComment = sanitizeSvg(
+            '<style>/* behavior: smooth 的说明 */a{fill:red}</style><path d="M0 0h8v8H0z"/>',
+        );
+        expect(behaviorComment).toContain('<style');
+        expect(behaviorComment).toContain('a{fill:red}');
+
+        const importComment = sanitizeSvg('<style>/* @import 说明 */a{fill:red}</style>');
+        expect(importComment).toContain('<style');
+        expect(importComment).toContain('a{fill:red}');
+    });
+});

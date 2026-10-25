@@ -179,3 +179,47 @@ describe('solely-vite-plugin', () => {
         });
     });
 });
+
+describe('template source in output', () => {
+    const html = '<div class="a">{{ $data.x }}</div>';
+
+    it('should strip template source in build mode', () => {
+        const plugin = solelyVitePlugin();
+        (plugin.configResolved as Function)({ command: 'build' });
+
+        const result = (plugin.transform as Function)(html, 'test.html?solely');
+
+        expect(result.code).toContain('__SOLELY_IR__');
+        expect(result.code).not.toContain('"src"');
+    });
+
+    it('should keep template source in serve mode', () => {
+        const plugin = solelyVitePlugin();
+        (plugin.configResolved as Function)({ command: 'serve' });
+
+        const result = (plugin.transform as Function)(html, 'test.html?solely');
+
+        expect(result.code).toContain('"src"');
+    });
+
+    it('should allow explicitly keeping source in build mode', () => {
+        const plugin = solelyVitePlugin({ includeTemplateSource: true });
+        (plugin.configResolved as Function)({ command: 'build' });
+
+        const result = (plugin.transform as Function)(html, 'test.html?solely');
+
+        expect(result.code).toContain('"src"');
+    });
+
+    it('should warn and return null map when sourceMap is enabled', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const plugin = solelyVitePlugin({ sourceMap: true });
+
+        const result = (plugin.transform as Function)(html, 'test.html?solely');
+
+        expect(result.map).toBeNull();
+        expect(warnSpy).toHaveBeenCalled();
+
+        warnSpy.mockRestore();
+    });
+});
