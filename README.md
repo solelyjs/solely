@@ -1347,7 +1347,22 @@ Solely 提供了两个内置的路由组件：
 <!-- 基本用法 -->
 <router-view></router-view>
 
-<!-- 嵌套路由视图 -->
+<!-- 启动占位 + 404 兜底（两者都是内置组件，直接用） -->
+<router-view loading="solely-skeleton" not-found="solely-not-found"></router-view>
+```
+
+`router-view` 区分三种结果：**还在等待**时渲染 `loading` 指定的占位组件（未配置则保持空白，**不会**误渲染成 404）——「还在等待」既包括首次导航尚未完成，也包括之后又发起了一次导航（此时即便当前无匹配，也先显示占位而不是 404）；等待结束且有匹配时渲染页面；结束且无匹配时才渲染 `not-found`。
+
+想确保启动期不出现空白，也可以在挂载前等待首次导航：
+
+```typescript
+const router = await routerReady;
+await router.isReady();
+```
+
+**嵌套路由视图**
+
+```html
 <div class="layout">
     <aside>
         <router-link to="/user/profile">个人资料</router-link>

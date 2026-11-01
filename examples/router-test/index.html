@@ -26,7 +26,7 @@
         <h3>路由视图</h3>
       </div>
       <div class="view-container">
-        <router-view></router-view>
+        <router-view loading="boot-placeholder"></router-view>
       </div>
     </div>
 
@@ -55,6 +55,20 @@
           <button class="btn btn-info" @click="this.router.push('/search?keyword=hello&category=tech&page=2')">🔍 Query</button>
           <button class="btn btn-info" @click="this.router.push('/nested/child1')">📁 嵌套</button>
           <button class="btn btn-purple" @click="this.router.push('/keepalive')">💾 KeepAlive</button>
+        </div>
+      </div>
+
+      <div class="nav-card">
+        <div class="card-header">
+          <span class="card-icon">⏳</span>
+          <h4>启动占位</h4>
+        </div>
+        <div class="card-body">
+          <button class="btn btn-purple" @click="this.reloadWithBoot(true)">🐢 慢启动 1.2s</button>
+          <button class="btn btn-gray" @click="this.reloadWithBoot(false)">⚡ 正常启动</button>
+          <p class="boot-note">
+            慢启动时首导航被推迟，路由视图先显示 loading 占位（boot-placeholder），而不是 404；就绪后再切到首页。
+          </p>
         </div>
       </div>
 

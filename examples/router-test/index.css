@@ -159,6 +159,15 @@
   gap: 6px;
 }
 
+/* 启动占位卡片的说明文字 */
+.boot-note {
+  width: 100%;
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9aa3b2;
+}
+
 /* 按钮样式 */
 .btn {
   display: inline-flex;

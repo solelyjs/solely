@@ -246,6 +246,77 @@ export class KeepAlivePage extends BaseElement<{ count: number; text: string }> 
 }
 
 /**
+ * 启动占位组件
+ * 首导航（setupListeners → 首次 navigate）尚未 settled 时，由 router-view 的 loading 属性渲染
+ */
+@CustomElement({
+    tagName: 'boot-placeholder',
+    template: `
+    <div class="boot">
+      <div class="boot__bar"></div>
+      <div class="boot__line boot__line--w90"></div>
+      <div class="boot__line boot__line--w70"></div>
+      <div class="boot__line boot__line--w50"></div>
+      <p class="boot__hint">启动中 · 首导航尚未完成（router-view 的 loading 占位）</p>
+    </div>
+  `,
+    styles: `
+    :host {
+      display: block;
+    }
+    .boot {
+      padding: 4px 0;
+    }
+    .boot__bar,
+    .boot__line {
+      background: linear-gradient(90deg, #eef0f5 25%, #e3e6ee 37%, #eef0f5 63%);
+      background-size: 400% 100%;
+      border-radius: 6px;
+      animation: boot-shimmer 1.4s ease-in-out infinite;
+    }
+    .boot__bar {
+      width: 40%;
+      height: 28px;
+      margin-bottom: 22px;
+    }
+    .boot__line {
+      height: 14px;
+      margin-bottom: 12px;
+    }
+    .boot__line--w90 {
+      width: 90%;
+    }
+    .boot__line--w70 {
+      width: 70%;
+    }
+    .boot__line--w50 {
+      width: 50%;
+    }
+    .boot__hint {
+      margin: 22px 0 0;
+      font-size: 12px;
+      color: #9aa3b2;
+    }
+    @keyframes boot-shimmer {
+      0% {
+        background-position: 100% 0;
+      }
+      100% {
+        background-position: 0 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .boot__bar,
+      .boot__line {
+        animation: none;
+      }
+    }
+  `,
+    shadowDOM: { use: true },
+})
+export class BootPlaceholder extends BaseElement {}
+
+/**
  * 路由测试组件数据接口
  */
 interface RouterTestData {
@@ -319,6 +390,9 @@ export class RouterTest extends BaseElement<RouterTestData> {
     // 取消监听的函数
     private unsubscribe?: () => void;
 
+    // 慢启动演示的定时器
+    private bootTimer?: number;
+
     constructor() {
         super({
             currentPath: '/',
@@ -348,16 +422,40 @@ export class RouterTest extends BaseElement<RouterTestData> {
         });
 
         // 设置浏览器事件监听
-        this.router.setupListeners();
+        // ?boot=slow 时故意延迟首次导航，用于观察 router-view 的启动占位（loading）
+        const slowBoot = new URLSearchParams(window.location.search).get('boot') === 'slow';
+        const start = () => {
+            this.router.setupListeners();
+            // 初始化当前路由
+            this.router.push('/');
+        };
+        if (slowBoot) {
+            // 首导航未 settled 期间 currentRoute 恒为 null，router-view 渲染 boot-placeholder
+            this.bootTimer = window.setTimeout(start, 1200);
+        } else {
+            start();
+        }
+    }
 
-        // 初始化当前路由
-        this.router.push('/');
+    /**
+     * 重载页面并切换启动模式
+     * @param slow 是否模拟慢启动（?boot=slow）
+     */
+    reloadWithBoot(slow: boolean) {
+        const url = new URL(window.location.href);
+        if (slow) url.searchParams.set('boot', 'slow');
+        else url.searchParams.delete('boot');
+        window.location.href = url.toString();
     }
 
     /**
      * 组件卸载时清理
      */
     unmounted() {
+        if (this.bootTimer !== undefined) {
+            window.clearTimeout(this.bootTimer);
+            this.bootTimer = undefined;
+        }
         if (this.unsubscribe) {
             this.unsubscribe();
         }

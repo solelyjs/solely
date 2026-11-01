@@ -432,7 +432,8 @@ interface RouteConfig {
     meta?: Record<string, unknown>; // 路由元信息
     children?: RouteConfig[]; // 嵌套子路由
     async?: boolean; // 是否为异步路由
-    notFoundComponent?: string; // 404 页面组件标签名
+    /** @deprecated 从未生效，请改用 { path: '*', tagName } 兜底路由或 router-view 的 not-found */
+    notFoundComponent?: string; // 404 页面组件标签名（已弃用）
 }
 ```
 
@@ -440,9 +441,11 @@ interface RouteConfig {
 
 #### 属性
 
-| 属性       | 类型                  | 说明         |
-| ---------- | --------------------- | ------------ |
-| `modeType` | `'hash' \| 'history'` | 当前路由模式 |
+| 属性           | 类型                  | 说明                                                       |
+| -------------- | --------------------- | ---------------------------------------------------------- |
+| `modeType`     | `'hash' \| 'history'` | 当前路由模式                                               |
+| `hasNavigated` | `boolean`             | 只读，首次导航是否已 settled（`false` 表示仍处于启动阶段） |
+| `isNavigating` | `boolean`             | 只读，是否有导航正在进行（含卡在异步守卫里的那次）         |
 
 #### 方法
 
@@ -538,6 +541,34 @@ back(): void
 forward(): void
 ```
 
+##### isReady()
+
+等待路由就绪：首次导航已 settled（含守卫与重定向；成功、被拦截、无匹配都算 settled）**且当前没有导航在飞**。
+
+```typescript
+isReady(): Promise<void>
+```
+
+就绪 = 首次导航已 settled **且当前没有导航在飞**（`isNavigating === false`）。因此：
+
+- 启动导航若被后发的导航取消（例如异步鉴权守卫期间又调用了 `push()`），不会提前 resolve，直到新导航结束才 settle
+- 首导航已 settled（哪怕是无匹配）之后若又发起一次导航，`isReady()` 会重新变回 pending，直到这次导航落地——否则调用方会在两次导航之间读到 `currentRoute === null`，把「还在导航」误判成「无匹配」
+
+语义与 `routerReady` 对齐：
+
+- `setupListeners()` 之前调用会保持 pending
+- `destroy()` 后重置为未就绪；**销毁时仍处于 pending 的等待会被立即 resolve**（不会 reject），调用方据此结束等待
+- `destroy()` **之后**再调用会一直保持 pending —— 该实例已作废，不应继续使用；需要路由请重新 `createRouter()`
+
+用于区分「启动中」与「真的没有匹配路由」——启动阶段 `getCurrentRoute()` 返回 `null` 属正常状态，不应被当作 404：
+
+```typescript
+const router = await routerReady;
+await router.isReady(); // 首次导航完成后再挂载 / 渲染
+```
+
+> ⚠️ 首导航被守卫返回 `false` 拦截时，`currentRoute` 会保持 `null`，`router-view` 首屏会渲染 `not-found`（未配置则输出 `404 Not Found`）。希望保留页面时，守卫应返回重定向路径（字符串）而不是 `false`。
+
 ##### destroy()
 
 销毁路由器，清理事件监听和缓存。
@@ -565,6 +596,24 @@ interface RouteMatch {
 ```html
 <router-view></router-view>
 ```
+
+**属性：**
+
+| 属性        | 类型     | 说明                                                                             |
+| ----------- | -------- | -------------------------------------------------------------------------------- |
+| `not-found` | `string` | 无匹配路由时渲染的组件标签名                                                     |
+| `loading`   | `string` | 还在等待时的占位组件（首导航未完成 / 当前无匹配且又有导航在飞 / 异步组件加载中） |
+
+两者都可以直接填内置组件（需 `import 'solely/components'`）：`not-found="solely-not-found"`、`loading="solely-skeleton"`。`solely-skeleton` 支持 `paragraph-rows` / `avatar` / `active` 等属性，也可以换成项目自有的骨架组件标签名。
+
+渲染分四种状态，互不混用：
+
+| 状态                                   | 表现                                                     |
+| -------------------------------------- | -------------------------------------------------------- |
+| 首次导航未 settled                     | 渲染 `loading` 组件；未配置则保持空白（不渲染 404）      |
+| 已 settled，但又有导航在飞且当前无匹配 | 同上，仍渲染 `loading` 占位                              |
+| 已 settled 且有匹配                    | 渲染匹配到的路由组件                                     |
+| 已 settled、无匹配、且没有导航在飞     | 渲染 `not-found` 组件；未配置则输出 `404 Not Found` 文本 |
 
 **特性：**
 

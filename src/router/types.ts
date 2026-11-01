@@ -51,7 +51,9 @@ export interface RouteConfig {
     async?: boolean;
 
     /** * 404 页面组件标签名。
-     * 当没有匹配到路由时显示的组件，优先级高于 RouterView 的 not-found 属性。
+     * @deprecated 该字段从未生效：路径不匹配时 `matchRoute()` 直接返回 null，
+     * 不存在可读取的 config，因此无法取到本字段。
+     * 请改用 `{ path: '*', tagName: 'xxx' }` 兜底路由，或 RouterView 的 `not-found` 属性。
      */
     notFoundComponent?: string;
 }

@@ -1,6 +1,7 @@
 import { BaseElement, CustomElement } from '../runtime/component';
 import type { RouteConfig, RouteMatch } from './types';
-import { Router, routerReady } from './core';
+import { Router, routerReady, getRouter } from './core';
+import { IS_DEV } from '../shared/env';
 
 interface ComponentState {
     routerAttrs: Set<string>;
@@ -20,9 +21,12 @@ function getComponentState(el: HTMLElement): ComponentState {
 
 @CustomElement({
     tagName: 'router-view',
-    props: [{ name: 'notFound', type: 'string', default: '' }],
+    props: [
+        { name: 'notFound', type: 'string', default: '' },
+        { name: 'loading', type: 'string', default: '' },
+    ],
 })
-class RouterView extends BaseElement<{ notFound: string }> {
+class RouterView extends BaseElement<{ notFound: string; loading: string }> {
     private unsubscribe?: () => void;
     private level = 0;
     private currentElement: HTMLElement | null = null;
@@ -36,6 +40,7 @@ class RouterView extends BaseElement<{ notFound: string }> {
     private abortController: AbortController | null = null;
     private disposed = false;
     private router: Router | null = null;
+    private warnTimer?: number;
 
     async mounted() {
         this.disposed = false;
@@ -45,11 +50,42 @@ class RouterView extends BaseElement<{ notFound: string }> {
         if (this.disposed) return;
 
         this.unsubscribe = this.router.listen(() => this.scheduleLoad());
+
+        // 首次导航尚未 settled 时 currentRoute 必为 null，此时不能当成 404：
+        // 先渲染启动占位（未配置 loading 则保持空白），等就绪后再加载真实路由
+        if (this.router.getCurrentRoute() === null) {
+            const loadIdBeforeWait = this.latestLoadId;
+            // 「还在等」的两种情形都要渲染占位：尚未启动过（启动期），或已有导航在飞。
+            // 只有「已 settled + 无匹配 + 没有导航在飞」才是真 404 —— 那种情况提前挂载
+            // loading 组件会让它的 mounted（可能带请求）白跑一次
+            if (!this.router.hasNavigated || this.router.isNavigating) {
+                this.renderPending();
+                // 告警只针对「从未启动过」：已经 settle 过（哪怕是无匹配）就不该提示 setupListeners
+                if (IS_DEV && !this.router.hasNavigated) this.warnIfNeverStarted();
+            }
+            await this.router.isReady();
+            // 就绪后若又有新导航在飞（例如 afterEach 里再次 push），继续等它落地，
+            // 否则仍会把「还在导航」读成「无匹配」
+            while (!this.disposed && this.router.getCurrentRoute() === null && this.router.isNavigating) {
+                await this.router.isReady();
+            }
+            if (this.disposed) return;
+            // 等待期间 router 被 destroy：保持现状，不把「已销毁」当成「无匹配」
+            if (getRouter() !== this.router) return;
+            // 等待期间已由 listen 回调排过一次加载（含异步组件）：它比本方法先入队，
+            // 再调一次会把它的 AbortController 中止并重复执行 component()，这里直接让位
+            if (this.latestLoadId !== loadIdBeforeWait) return;
+        }
+
         this.loadRoute(this.router.getCurrentRoute());
     }
 
     unmounted() {
         this.disposed = true;
+        if (this.warnTimer !== undefined) {
+            window.clearTimeout(this.warnTimer);
+            this.warnTimer = undefined;
+        }
         this.abortController?.abort();
         this.abortController = null;
         this.unsubscribe?.();
@@ -64,6 +100,20 @@ class RouterView extends BaseElement<{ notFound: string }> {
             if (this.disposed || !this.router) return;
             this.loadRoute(this.router.getCurrentRoute());
         });
+    }
+
+    /** DEV 提示：首导航 3s 内未 settle —— 可能是忘了 setupListeners()，也可能是守卫本身很慢 */
+    private warnIfNeverStarted() {
+        this.warnTimer = window.setTimeout(() => {
+            this.warnTimer = undefined;
+            if (this.disposed || !this.router) return;
+            if (this.router.hasNavigated === false) {
+                console.warn(
+                    '[router-view] 首次导航 3s 内仍未完成，router-view 会保持占位状态：' +
+                        '若尚未调用 router.setupListeners() 请补上；若守卫确实耗时较长，可忽略此提示',
+                );
+            }
+        }, 3000);
     }
 
     private detectLevel() {
@@ -96,7 +146,7 @@ class RouterView extends BaseElement<{ notFound: string }> {
         const matched = route?.matched[this.level];
 
         if (!matched) {
-            this.handleEmptyRoute(route);
+            this.handleEmptyRoute();
             return;
         }
 
@@ -198,12 +248,13 @@ class RouterView extends BaseElement<{ notFound: string }> {
         return params.length ? `${this.level}:${pathPart}:${params.join('|')}` : `${this.level}:${pathPart}`;
     }
 
-    private handleEmptyRoute(route: RouteMatch | null) {
+    private handleEmptyRoute() {
         // 【修复】仅最顶层 RouterView（level === 0）渲染 404 内容，子级保持空白
         if (this.level === 0) {
             this.clear();
-            const matched = route?.matched?.[0];
-            const tag = matched?.config?.notFoundComponent || this.$data.notFound;
+            // 注意：启动阶段的 currentRoute === null 已在 mounted() 中被 isReady() 拦下，
+            // 走到这里说明首次导航已 settled，属于真正的「没有匹配路由」
+            const tag = this.$data.notFound;
             if (tag) {
                 const el = document.createElement(tag);
                 this.appendManagedNode(el);
@@ -232,12 +283,30 @@ class RouterView extends BaseElement<{ notFound: string }> {
         this.currentTagName = null;
     }
 
-    private renderLoading() {
+    /**
+     * 渲染占位内容：优先使用 `loading` 指定的占位组件，未配置时按需渲染兜底文本。
+     * 启动阶段（首导航未完成）不传 fallbackText，保持空白。
+     */
+    private renderPlaceholder(fallbackText?: string) {
         this.clear();
+        const tag = this.$data.loading;
+        if (tag) {
+            this.appendManagedNode(document.createElement(tag));
+            return;
+        }
+        if (!fallbackText) return;
         const div = document.createElement('div');
         div.style.cssText = 'padding:20px; color:#999;';
-        div.textContent = 'Loading...';
+        div.textContent = fallbackText;
         this.appendManagedNode(div);
+    }
+
+    private renderLoading() {
+        this.renderPlaceholder('Loading...');
+    }
+
+    private renderPending() {
+        this.renderPlaceholder();
     }
 
     private renderError(msg: string) {

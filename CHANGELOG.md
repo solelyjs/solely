@@ -7,6 +7,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- **router**: 新增 `router.isReady()` 与只读 `router.hasNavigated` / `router.isNavigating`，用于等待首次导航（含守卫与重定向）settled、并判断当前是否有导航正在进行；`setupListeners()` 之前保持 pending，`destroy()` 后重置
+- **router**: `router-view` 新增 `loading` 属性，在「还在等待」时渲染该占位组件（首导航未完成，或当前无匹配且又有导航在飞；未配置则保持空白）；异步路由组件的 `Loading...` 兜底同样复用该占位
+
+### Fixed
+
+- **router**: 启动阶段 `router-view` 不再误渲染 404 —— 此前 `loadRoute(null)` 与「路径确实没有匹配」共用一个空判定，`createRouter()` 与 `setupListeners()` 之间存在窗口（守卫为异步、或首次导航尚未执行）时会先闪一屏 `<router-view not-found="...">` 配置的 404 页。现在首导航未 settled 时渲染占位，404 只在 settled 且无匹配时出现
+- **router**: 就绪态只在「最新一次导航」落地、且没有其它导航在飞时才 settle —— 启动导航若被后发导航取消（异步鉴权守卫期间又触发 `push()` / 重定向），或首导航已 settled 后又立刻发起一次卡在守卫里的 `push()`，`await isReady()` 都不会提前恢复，否则会读到 `currentRoute === null` 而闪一屏 404
+- **router**: `destroy()` 会作废仍在进行中的导航 —— 卡在异步守卫里的 `push()` / `replace()` 在销毁后返回 `{ success: false, cancelled: true }`，不再写回 `currentRoute`、不再 `pushState`，也不会把 `hasNavigated` 置回 `true`
+- **router**: `router-view` 在「已 settled 且无匹配」时不再先挂载 `loading` 占位再卸载，骨架屏组件的 `mounted` 与其中发起的请求不会白跑一次
+
+### Deprecated
+
+- **router**: `RouteConfig.notFoundComponent` —— 该字段从未生效（路径不匹配时 `matchRoute()` 直接返回 `null`，取不到 config），请改用 `{ path: '*', tagName: 'xxx' }` 或 `router-view` 的 `not-found` 属性
+
 ## [0.7.0] - 2026-10-25
 
 ### ⚠️ Breaking

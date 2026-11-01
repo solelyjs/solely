@@ -51,6 +51,189 @@ describe('Router Core', () => {
         });
     });
 
+    describe('isReady / hasNavigated', () => {
+        it('stays pending before setupListeners', async () => {
+            const router = new Router({ routes: mockRoutes });
+
+            const result = await Promise.race([
+                router.isReady().then(() => 'ready'),
+                new Promise<string>(resolve => setTimeout(() => resolve('pending'), 10)),
+            ]);
+
+            expect(router.hasNavigated).toBe(false);
+            expect(result).toBe('pending');
+        });
+
+        it('resolves after the initial navigation settles', async () => {
+            const router = new Router({ routes: mockRoutes });
+
+            router.setupListeners();
+            await router.isReady();
+
+            expect(router.hasNavigated).toBe(true);
+            expect(router.getCurrentRoute()?.fullPath).toBe('/');
+            router.destroy();
+        });
+
+        it('settles even when the initial navigation is cancelled by a guard', async () => {
+            const router = new Router({ routes: mockRoutes, beforeEach: () => false });
+
+            router.setupListeners();
+            await router.isReady();
+
+            expect(router.hasNavigated).toBe(true);
+            expect(router.getCurrentRoute()).toBeNull();
+            router.destroy();
+        });
+
+        it('settles even when the guard throws', async () => {
+            const router = new Router({
+                routes: mockRoutes,
+                beforeEach: () => {
+                    throw new Error('boom');
+                },
+            });
+
+            router.setupListeners();
+            await router.isReady();
+
+            expect(router.hasNavigated).toBe(true);
+            expect(router.getCurrentRoute()).toBeNull();
+            router.destroy();
+        });
+
+        it('does not settle early when the initial navigation is cancelled by a later one', async () => {
+            let releaseFirst!: () => void;
+            const firstGate = new Promise<void>(resolve => {
+                releaseFirst = resolve;
+            });
+            let releaseSecond!: () => void;
+            const secondGate = new Promise<void>(resolve => {
+                releaseSecond = resolve;
+            });
+            let callIndex = 0;
+
+            const router = new Router({
+                routes: mockRoutes,
+                // 异步守卫：第 1 次（启动导航）卡 firstGate，第 2 次（后发导航）卡 secondGate
+                beforeEach: async () => {
+                    const gate = ++callIndex === 1 ? firstGate : secondGate;
+                    await gate;
+                    return true;
+                },
+            });
+
+            router.setupListeners(); // 导航 #1，卡在守卫
+
+            // 就绪那一刻读到的路由，才是 RouterView 真正会渲染的东西
+            const settledRoute = router.isReady().then(() => router.getCurrentRoute());
+            void router.push('/about'); // 导航 #2：使 #1 被取消
+
+            releaseFirst();
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // #1 已被取消，但 #2 尚未完成：此时绝不能 settle，否则 RouterView 会读到 null 而闪 404
+            expect(router.hasNavigated).toBe(false);
+
+            releaseSecond();
+            expect((await settledRoute)?.fullPath).toBe('/about');
+            expect(router.hasNavigated).toBe(true);
+            router.destroy();
+        });
+
+        it('goes back to pending while a later navigation is in flight', async () => {
+            let release!: () => void;
+            const gate = new Promise<void>(resolve => {
+                release = resolve;
+            });
+            const router = new Router({
+                routes: [
+                    { path: '/', tagName: 'home-page' },
+                    { path: '/about', tagName: 'about-page' },
+                ],
+                beforeEach: async () => {
+                    await gate;
+                    return true;
+                },
+            });
+
+            // 首导航无匹配 → 立即 settle（此时还没有任何导航在飞）
+            await router.navigate('/nope');
+            expect(router.hasNavigated).toBe(true);
+            expect(router.isNavigating).toBe(false);
+
+            // 紧接着的一次导航卡在守卫里：就绪态必须重新变回 pending，
+            // 否则 RouterView 会在两次导航之间醒来，把 null 读成「无匹配」
+            const pushed = router.push('/about');
+            expect(router.isNavigating).toBe(true);
+
+            let settled = false;
+            void router.isReady().then(() => {
+                settled = true;
+            });
+            await new Promise(resolve => setTimeout(resolve, 10));
+            expect(settled).toBe(false);
+
+            release();
+            await pushed;
+            await router.isReady();
+
+            expect(settled).toBe(true);
+            expect(router.getCurrentRoute()?.fullPath).toBe('/about');
+            router.destroy();
+        });
+
+        it('resets after destroy', async () => {
+            const router = new Router({ routes: mockRoutes });
+            router.setupListeners();
+            await router.isReady();
+
+            router.destroy();
+
+            expect(router.hasNavigated).toBe(false);
+        });
+
+        it('resolves pending waiters on destroy', async () => {
+            // 未调用 setupListeners：isReady() 处于 pending，destroy() 必须把它唤醒
+            const router = new Router({ routes: mockRoutes });
+            let settled = false;
+            void router.isReady().then(() => {
+                settled = true;
+            });
+
+            router.destroy();
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            expect(settled).toBe(true);
+            // 唤醒不等于「已就绪」：销毁后仍回到未就绪状态
+            expect(router.hasNavigated).toBe(false);
+        });
+
+        it('invalidates the in-flight navigation on destroy', async () => {
+            let release!: () => void;
+            const gate = new Promise<void>(resolve => {
+                release = resolve;
+            });
+            const router = new Router({
+                routes: mockRoutes,
+                beforeEach: async () => {
+                    await gate;
+                    return true;
+                },
+            });
+
+            router.setupListeners(); // 导航卡在异步守卫里
+            router.destroy();
+
+            // 守卫恢复后，这次导航必须被作废：不能写回 currentRoute，也不能重新 markReady
+            release();
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            expect(router.hasNavigated).toBe(false);
+            expect(router.getCurrentRoute()).toBeNull();
+        });
+    });
+
     describe('getRouter', () => {
         it('should return null before createRouter is called', () => {
             // 注意：由于单例模式，这个测试需要在干净的模块状态下运行

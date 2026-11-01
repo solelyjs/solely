@@ -103,6 +103,11 @@ export class Router {
     private keepAliveKeys: string[] = [];
     private navigationId = 0;
     private maxKeepAlive: number | undefined;
+    /** 首次导航（含守卫与重定向）是否已 settled */
+    private navigated = false;
+    /** 尚未完成的「最新一次」导航的 navId；null 表示当前没有导航在飞 */
+    private pendingNavId: number | null = null;
+    private readyDeferred: { promise: Promise<void>; resolve: () => void } | null = null;
 
     constructor(options: RouterOptions) {
         this.routes = options.routes;
@@ -310,34 +315,49 @@ export class Router {
         fromEvent: boolean = false,
     ): Promise<NavigationResult> {
         const navId = ++this.navigationId;
-        const safePath = this.normalizePath(path);
+        this.pendingNavId = navId;
 
-        const from = this.currentRoute;
-        const to = this.matchRoute(safePath);
+        try {
+            const safePath = this.normalizePath(path);
 
-        if (!to) return { success: false, error: `No route matched: ${safePath}` };
-        if (from && from.fullPath === to.fullPath) return { success: true };
+            const from = this.currentRoute;
+            const to = this.matchRoute(safePath);
 
-        if (this.beforeEachGuard) {
-            try {
-                const result = await this.beforeEachGuard(to, from);
-                if (navId !== this.navigationId) return { success: false, cancelled: true };
-                if (result === false) return { success: false, cancelled: true };
-                if (typeof result === 'string') return this.navigate(result, replace);
-            } catch (error) {
-                if (navId !== this.navigationId) return { success: false, cancelled: true };
-                return { success: false, error: error instanceof Error ? error.message : 'Guard Error' };
+            if (!to) return { success: false, error: `No route matched: ${safePath}` };
+            if (from && from.fullPath === to.fullPath) return { success: true };
+
+            if (this.beforeEachGuard) {
+                try {
+                    const result = await this.beforeEachGuard(to, from);
+                    if (navId !== this.navigationId) return { success: false, cancelled: true };
+                    if (result === false) return { success: false, cancelled: true };
+                    if (typeof result === 'string') return this.navigate(result, replace);
+                } catch (error) {
+                    if (navId !== this.navigationId) return { success: false, cancelled: true };
+                    return { success: false, error: error instanceof Error ? error.message : 'Guard Error' };
+                }
+            }
+
+            if (navId !== this.navigationId) return { success: false, cancelled: true };
+
+            this.currentRoute = to;
+            if (!fromEvent) this.updateBrowserHistory(safePath, replace);
+            this.notifyListeners();
+            if (this.afterEachGuard) this.afterEachGuard(to, from);
+
+            return { success: true };
+        } finally {
+            // 只有「最新一次导航」才有资格 settle 就绪态：
+            // 被后发导航取消的旧导航（启动期最常见的鉴权重定向场景）不得提前 resolve，
+            // 否则 await isReady() 的 RouterView 会在新导航完成前读到 currentRoute === null，
+            // 把「仍在启动」误判成「无匹配」而闪一屏 404。
+            // 重定向递归会先自增 navigationId，故由内层负责 settle，外层自然跳过。
+            if (this.pendingNavId === navId) {
+                this.pendingNavId = null;
+                // 只有在飞的导航全部落地后才 settle；销毁过的实例（navigationId 已被 ++）不再 settle
+                if (navId === this.navigationId) this.markReady();
             }
         }
-
-        if (navId !== this.navigationId) return { success: false, cancelled: true };
-
-        this.currentRoute = to;
-        if (!fromEvent) this.updateBrowserHistory(safePath, replace);
-        this.notifyListeners();
-        if (this.afterEachGuard) this.afterEachGuard(to, from);
-
-        return { success: true };
     }
 
     // ── 路径解析 ────────────────────────────────────────
@@ -402,11 +422,19 @@ export class Router {
             window.location.hash = '/';
         }
 
-        void this.navigate(this.getPath(), true);
+        // 首导航的 settle 由 navigate() 内部的 finally 负责（只有最新导航才 settle），
+        // 这里只需吞掉 afterEach 抛错导致的 rejection，避免 unhandled rejection
+        void this.navigate(this.getPath(), true).catch(error => {
+            if (IS_DEV) console.error('[Router] 首导航异常:', error);
+        });
     }
 
     // ── 销毁 ────────────────────────────────────────────
     public destroy(): void {
+        // 作废仍在飞行中的导航：卡在异步守卫里的那次导航恢复后会命中 navId 校验，
+        // 否则它仍会把 currentRoute 写回、再 pushState 一次，并在 finally 里 markReady()，
+        // 让「已销毁」的实例重新变成 hasNavigated === true
+        this.navigationId++;
         if (this.handleRouteChange) {
             if (this.mode === 'hash') {
                 window.removeEventListener('hashchange', this.handleRouteChange);
@@ -425,11 +453,66 @@ export class Router {
         this.keepAliveCache.clear();
         this.keepAliveKeys = [];
         this.currentRoute = null;
+        this.navigated = false;
+        this.pendingNavId = null;
+        // 唤醒仍在等待首导航的调用方：销毁后它们不会再有任何结果，
+        // 保持 pending 只会让 await isReady() 永久挂起（既拿不到 resolve 也拿不到 reject）
+        this.readyDeferred?.resolve();
+        this.readyDeferred = null;
         globalRouterInstance = null;
     }
 
     public getCurrentRoute(): RouteMatch | null {
         return this.currentRoute;
+    }
+
+    // ── 就绪状态 ────────────────────────────────────────
+    /**
+     * 首次导航是否已完成（成功或失败均算完成）。
+     *
+     * 用于区分「启动中」与「真的没有匹配路由」：`currentRoute === null` 在启动阶段
+     * 是正常状态，不应被上层当成 404。
+     */
+    public get hasNavigated(): boolean {
+        return this.navigated;
+    }
+
+    /**
+     * 是否有导航正在进行（含卡在异步守卫里的那次）。
+     *
+     * `isReady()` 在仍有导航在飞时保持 pending —— 否则调用方会在两次导航之间醒来，
+     * 读到 `currentRoute === null` 而把「还在导航」当成「无匹配」。
+     */
+    public get isNavigating(): boolean {
+        return this.pendingNavId !== null;
+    }
+
+    /**
+     * 等待首次导航 settled。
+     *
+     * 语义与 `routerReady` 对齐：`setupListeners()` 之前调用会保持 pending，
+     * 需配合「先 setupListeners 再 await」的启动顺序；`destroy()` 后重置，
+     * 且销毁时仍 pending 的等待会被立即 resolve（不 reject），调用方据此结束等待；
+     * 销毁**之后**再调用会一直 pending —— 该实例已作废，不应继续使用。
+     */
+    public isReady(): Promise<void> {
+        // 首次导航已 settled 且当前没有导航在飞，才算真正就绪
+        if (this.navigated && this.pendingNavId === null) return Promise.resolve();
+        if (!this.readyDeferred) {
+            let resolve!: () => void;
+            const promise = new Promise<void>(r => {
+                resolve = r;
+            });
+            this.readyDeferred = { promise, resolve };
+        }
+        return this.readyDeferred.promise;
+    }
+
+    /** 唯一调用点（`navigate()` 的 finally）已保证 `pendingNavId` 为 null */
+    private markReady(): void {
+        this.navigated = true;
+        this.readyDeferred?.resolve();
+        this.readyDeferred = null;
     }
 
     // ── KeepAlive ───────────────────────────────────────

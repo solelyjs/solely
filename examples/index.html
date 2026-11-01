@@ -206,6 +206,17 @@
       activateTab(target || document.querySelector('.tab-btn[data-tab]'));
     });
 
+    // 启动占位演示：带 ?boot=slow 重载时自动切到路由页，
+    // 否则 router-test 在隐藏容器里就跑完了首导航，看不到 loading 占位
+    if (new URLSearchParams(location.search).get('boot') === 'slow') {
+      document.querySelector('.tab-btn[data-tab="router"]')?.click();
+    } else {
+      // 普通重载时恢复上次选中的 tab，避免「慢启动后再点正常启动」被弹回计数器页
+      const savedTab = sessionStorage.getItem('solely-example-tab');
+      const savedBtn = savedTab ? document.querySelector(`.tab-btn[data-tab="${savedTab}"]`) : null;
+      if (savedBtn) activateTab(savedBtn);
+    }
+
     console.log('All examples loaded successfully!');
   </script>
 </body>

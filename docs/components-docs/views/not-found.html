@@ -9,7 +9,7 @@
         <h3 class="demo-block-title">基础用法</h3>
         <p class="demo-block-desc">最简单的 404 页面用法，使用默认样式和内容。</p>
         <div class="demo-box">
-            <div class="demo-preview" style="min-height: 320px;">
+            <div class="demo-preview" style="min-height: 320px">
                 <solely-not-found embedded></solely-not-found>
             </div>
             <div class="demo-code">
@@ -29,14 +29,15 @@
         <h3 class="demo-block-title">自定义内容</h3>
         <p class="demo-block-desc">使用属性自定义标题、描述和按钮文字。</p>
         <div class="demo-box">
-            <div class="demo-preview" style="min-height: 320px;">
+            <div class="demo-preview" style="min-height: 320px">
                 <solely-not-found
                     embedded
                     title="404"
                     subtitle="页面走丢了"
                     description="您访问的页面可能已被删除或暂时无法访问"
                     back-text="返回首页"
-                    back-url="/">
+                    back-url="/"
+                >
                 </solely-not-found>
             </div>
             <div class="demo-code">
@@ -54,9 +55,11 @@
     <!-- CSS Part 自定义样式 -->
     <div class="demo-block">
         <h3 class="demo-block-title">CSS Part 自定义样式</h3>
-        <p class="demo-block-desc">通过 ::part() 伪元素可在 Shadow DOM 外部自定义 404 页面内部样式，无需修改组件源码。</p>
+        <p class="demo-block-desc">
+            通过 ::part() 伪元素可在 Shadow DOM 外部自定义 404 页面内部样式，无需修改组件源码。
+        </p>
         <div class="demo-box">
-            <div class="demo-preview" id="notfound-part-demo" style="min-height: 320px;">
+            <div class="demo-preview" id="notfound-part-demo" style="min-height: 320px">
                 <style>
                     #notfound-part-demo solely-not-found::part(base) {
                         background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
@@ -136,13 +139,10 @@
                 <pre><code><span class="code-comment">// 方式一：在 router-view 上指定</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">router-view</span> <span class="code-attr">not-found</span>=<span class="code-value">"solely-not-found"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">router-view</span><span class="code-bracket">&gt;</span>
 
-<span class="code-comment">// 方式二：在路由配置中指定</span>
+<span class="code-comment">// 方式二：用通配符兜底路由（* 优先级最低，不会抢走精确/动态路由）</span>
 <span class="code-keyword">const</span> routes: <span class="code-type">RouteConfig</span>[] = [
-  {
-    <span class="code-attr">path</span>: <span class="code-value">'/'</span>,
-    <span class="code-attr">tagName</span>: <span class="code-value">'home-page'</span>,
-    <span class="code-attr">notFoundComponent</span>: <span class="code-value">'solely-not-found'</span>
-  }
+  { <span class="code-attr">path</span>: <span class="code-value">'/'</span>, <span class="code-attr">tagName</span>: <span class="code-value">'home-page'</span> },
+  { <span class="code-attr">path</span>: <span class="code-value">'*'</span>, <span class="code-attr">tagName</span>: <span class="code-value">'solely-not-found'</span> }
 ];</code></pre>
             </div>
         </div>
@@ -324,7 +324,11 @@
 <span class="code-keyword">interface</span> <span class="code-type">RouteConfig</span> {
   <span class="code-comment">// ... 其他属性</span>
   
-  <span class="code-comment">/** 404 页面组件标签名 */</span>
+  <span class="code-comment">/**</span>
+  <span class="code-comment"> * @deprecated 该字段从未生效：路径不匹配时 matchRoute() 直接返回 null，</span>
+  <span class="code-comment"> * 取不到 config。请改用 { path: '*', tagName: 'xxx' } 兜底路由，</span>
+  <span class="code-comment"> * 或 router-view 的 not-found 属性。</span>
+  <span class="code-comment"> */</span>
   <span class="code-attr">notFoundComponent</span>?: <span class="code-type">string</span>;
 }</code></pre>
         </div>
