@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-01
+
 ### Added
 
 - **router**: 新增 `router.isReady()` 与只读 `router.hasNavigated` / `router.isNavigating`，用于等待首次导航（含守卫与重定向）settled、并判断当前是否有导航正在进行；`setupListeners()` 之前保持 pending，`destroy()` 后重置
@@ -951,7 +953,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/solelyjs/solely/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/solelyjs/solely/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/solelyjs/solely/compare/v0.5.8...v0.6.0
 [0.5.8]: https://github.com/solelyjs/solely/compare/v0.5.7...v0.5.8
