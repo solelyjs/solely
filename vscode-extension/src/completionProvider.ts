@@ -8,6 +8,70 @@ import {
     type MethodSignature,
 } from './templateParser';
 
+const CONTROL_TAGS: { tag: string; detail: string; snippet: string }[] = [
+    { tag: 'If', detail: '条件渲染', snippet: 'If test="$1">\n\t$0\n</If>' },
+    { tag: 'ElseIf', detail: '否则如果', snippet: 'ElseIf test="$1">\n\t$0\n</ElseIf>' },
+    { tag: 'Else', detail: '否则', snippet: 'Else>\n\t$0\n</Else>' },
+    { tag: 'For', detail: '列表循环', snippet: 'For each="$1" item="$2" index="$3">\n\t$0\n</For>' },
+    { tag: 'Show', detail: '显示控制(支持 keepalive)', snippet: 'Show test="$1">\n\t$0\n</Show>' },
+];
+
+const S_DIRECTIVES: { name: string; detail: string }[] = [
+    { name: 's-model', detail: '双向数据绑定' },
+    { name: 's-class', detail: '动态 class 绑定' },
+    { name: 's-visible', detail: '可见性控制' },
+    { name: 's-disabled', detail: '禁用状态(布尔)' },
+    { name: 's-checked', detail: '选中状态(布尔)' },
+    { name: 's-readonly', detail: '只读状态(布尔)' },
+    { name: 's-required', detail: '必填状态(布尔)' },
+    { name: 's-hidden', detail: '隐藏状态(布尔)' },
+    { name: 's-selected', detail: '选中状态(布尔)' },
+];
+
+const EVENTS: { name: string; detail: string }[] = [
+    { name: '@click', detail: '点击' },
+    { name: '@dblclick', detail: '双击' },
+    { name: '@change', detail: '内容变化' },
+    { name: '@input', detail: '输入' },
+    { name: '@keydown', detail: '按键按下' },
+    { name: '@keyup', detail: '按键释放' },
+    { name: '@keypress', detail: '按键按压' },
+    { name: '@submit', detail: '表单提交' },
+    { name: '@focus', detail: '获得焦点' },
+    { name: '@blur', detail: '失去焦点' },
+    { name: '@mouseenter', detail: '鼠标进入' },
+    { name: '@mouseleave', detail: '鼠标离开' },
+    { name: '@mousedown', detail: '鼠标按下' },
+    { name: '@mouseup', detail: '鼠标释放' },
+    { name: '@mousemove', detail: '鼠标移动' },
+    { name: '@scroll', detail: '滚动' },
+    { name: '@wheel', detail: '滚轮' },
+    { name: '@contextmenu', detail: '右键菜单' },
+    { name: '@drag', detail: '拖拽' },
+    { name: '@dragstart', detail: '拖拽开始' },
+    { name: '@dragend', detail: '拖拽结束' },
+    { name: '@drop', detail: '拖拽放置' },
+];
+
+const BINDS: { name: string; detail: string }[] = [
+    { name: ':class', detail: '动态 class 绑定' },
+    { name: ':style', detail: '动态 style 绑定' },
+    { name: ':src', detail: '资源地址绑定' },
+    { name: ':href', detail: '链接地址绑定' },
+    { name: ':value', detail: '值绑定' },
+    { name: ':disabled', detail: '禁用状态绑定' },
+    { name: ':checked', detail: '选中状态绑定' },
+    { name: ':visible', detail: '可见性绑定' },
+    { name: ':readonly', detail: '只读状态绑定' },
+    { name: ':required', detail: '必填状态绑定' },
+    { name: ':hidden', detail: '隐藏状态绑定' },
+    { name: ':selected', detail: '选中状态绑定' },
+    { name: ':title', detail: '标题绑定' },
+    { name: ':alt', detail: '替代文本绑定' },
+    { name: ':id', detail: 'ID 绑定' },
+    { name: ':placeholder', detail: '占位符绑定' },
+];
+
 /**
  * Solely 模板代码补全 Provider
  *
@@ -44,24 +108,29 @@ export class SolelyCompletionProvider implements vscode.CompletionItemProvider {
             return this.getRefsCompletions(document);
         }
 
-        // 4. 控制流标签补全: <I, <F, <S 等
-        if (/<[A-Za-z]*$/.test(textBefore)) {
-            return this.getControlTagCompletions();
+        // 4. 控制流标签补全: 只在输入的前缀确实匹配某个标签时给出，
+        //    否则敲 <div 也会弹出 If/For/Show
+        const tagPrefix = /<([A-Za-z]*)$/.exec(textBefore);
+        if (tagPrefix) {
+            return this.getControlTagCompletions(tagPrefix[1]);
         }
 
         // 5. s- 指令补全(确保在属性位置: 前面是空格或行首)
-        if (/(?:^|\s)s-\w*$/.test(textBefore)) {
-            return this.getSDirectiveCompletions();
+        const sDirective = /(?:^|\s)(s-\w*)$/.exec(textBefore);
+        if (sDirective) {
+            return this.getSDirectiveCompletions(position, sDirective[1]);
         }
 
         // 6. @ 事件补全
-        if (/(?:^|\s)@\w*$/.test(textBefore)) {
-            return this.getEventCompletions();
+        const eventPrefix = /(?:^|\s)(@\w*)$/.exec(textBefore);
+        if (eventPrefix) {
+            return this.getEventCompletions(position, eventPrefix[1]);
         }
 
         // 7. : 属性绑定补全
-        if (/(?:^|\s):\w*$/.test(textBefore)) {
-            return this.getBindCompletions();
+        const bindPrefix = /(?:^|\s)(:\w*)$/.exec(textBefore);
+        if (bindPrefix) {
+            return this.getBindCompletions(position, bindPrefix[1]);
         }
 
         return undefined;
@@ -88,13 +157,13 @@ export class SolelyCompletionProvider implements vscode.CompletionItemProvider {
         };
 
         // 组件自身方法 + 父类方法
-        addSignatures(getMethodSignatures(tsPath));
-        for (const ancestorPath of findAncestorFiles(tsPath)) {
-            addSignatures(getMethodSignatures(ancestorPath));
+        addSignatures(getMethodSignatures(tsPath, document.fileName));
+        for (const ancestorPath of findAncestorFiles(tsPath, document.fileName)) {
+            addSignatures(getMethodSignatures(ancestorPath, document.fileName));
         }
 
         // getter(作为属性补全,不带括号)
-        const { getters } = getComponentMembers(tsPath);
+        const { getters } = getComponentMembers(tsPath, document.fileName);
         for (const name of getters) {
             if (seen.has(name)) continue;
             seen.add(name);
@@ -109,7 +178,7 @@ export class SolelyCompletionProvider implements vscode.CompletionItemProvider {
         const tsPath = findCorrespondingTsFile(document.fileName);
         if (!tsPath) return [];
 
-        const props = extractDataPropsFromTs(tsPath);
+        const props = extractDataPropsFromTs(tsPath, document.fileName);
         return props.map(prop => new vscode.CompletionItem(prop, vscode.CompletionItemKind.Property));
     }
 
@@ -117,7 +186,7 @@ export class SolelyCompletionProvider implements vscode.CompletionItemProvider {
     private getRefsCompletions(document: vscode.TextDocument): vscode.CompletionItem[] {
         const content = document.getText();
         const refs = new Set<string>();
-        const refRegex = /\bref\s*=\s*["']([^"']+)["']/g;
+        const refRegex = /\bref\s*=\s*["']([\w-]+)["']/g;
         let match: RegExpExecArray | null;
         while ((match = refRegex.exec(content)) !== null) {
             refs.add(match[1]);
@@ -125,124 +194,63 @@ export class SolelyCompletionProvider implements vscode.CompletionItemProvider {
         return Array.from(refs).map(ref => new vscode.CompletionItem(ref, vscode.CompletionItemKind.Variable));
     }
 
-    /** < 后补全: Solely 控制流标签 */
-    private getControlTagCompletions(): vscode.CompletionItem[] {
-        const tags: { tag: string; detail: string; snippet: string }[] = [
-            {
-                tag: 'If',
-                detail: '条件渲染',
-                snippet: 'If test="$1">\n\t$0\n</If>',
+    /** < 后补全: Solely 控制流标签（按已输入前缀过滤） */
+    private getControlTagCompletions(prefix: string): vscode.CompletionItem[] {
+        const lowered = prefix.toLowerCase();
+        return CONTROL_TAGS.filter(({ tag }) => tag.toLowerCase().startsWith(lowered)).map(
+            ({ tag, detail, snippet }) => {
+                const item = new vscode.CompletionItem(tag, vscode.CompletionItemKind.Keyword);
+                item.detail = detail;
+                item.insertText = new vscode.SnippetString(snippet);
+                return item;
             },
-            {
-                tag: 'ElseIf',
-                detail: '否则如果',
-                snippet: 'ElseIf test="$1">\n\t$0\n</ElseIf>',
-            },
-            {
-                tag: 'Else',
-                detail: '否则',
-                snippet: 'Else>\n\t$0\n</Else>',
-            },
-            {
-                tag: 'For',
-                detail: '列表循环',
-                snippet: 'For each="$1" item="$2" index="$3">\n\t$0\n</For>',
-            },
-            {
-                tag: 'Show',
-                detail: '显示控制(支持 keepalive)',
-                snippet: 'Show test="$1">\n\t$0\n</Show>',
-            },
-        ];
+        );
+    }
 
-        return tags.map(({ tag, detail, snippet }) => {
-            const item = new vscode.CompletionItem(tag, vscode.CompletionItemKind.Keyword);
-            item.detail = detail;
-            item.insertText = new vscode.SnippetString(snippet);
-            return item;
-        });
+    /**
+     * 生成 `name="..."` 形式的补全项。
+     *
+     * 触发字符（`s-` / `@` / `:`）不是 word 字符，VS Code 的默认替换范围
+     * 只覆盖光标前的「单词」，会把整段文本原样插到触发符后面，
+     * 结果就是 `@@click` / `::class` / `s-s-model`。这里显式指定替换范围。
+     */
+    private makeValueItem(
+        position: vscode.Position,
+        typed: string,
+        name: string,
+        detail: string,
+        kind: vscode.CompletionItemKind,
+    ): vscode.CompletionItem {
+        const item = new vscode.CompletionItem(name, kind);
+        item.detail = detail;
+        item.insertText = new vscode.SnippetString(`${name}="$1"$0`);
+        item.range = new vscode.Range(
+            position.line,
+            position.character - typed.length,
+            position.line,
+            position.character,
+        );
+        return item;
     }
 
     /** s- 前缀补全: Solely 指令 */
-    private getSDirectiveCompletions(): vscode.CompletionItem[] {
-        const directives: { name: string; detail: string; snippet: string }[] = [
-            { name: 's-model', detail: '双向数据绑定', snippet: 's-model="$1"$0' },
-            { name: 's-class', detail: '动态 class 绑定', snippet: 's-class="$1"$0' },
-            { name: 's-visible', detail: '可见性控制', snippet: 's-visible="$1"$0' },
-            { name: 's-disabled', detail: '禁用状态(布尔)', snippet: 's-disabled="$1"$0' },
-            { name: 's-checked', detail: '选中状态(布尔)', snippet: 's-checked="$1"$0' },
-            { name: 's-readonly', detail: '只读状态(布尔)', snippet: 's-readonly="$1"$0' },
-            { name: 's-required', detail: '必填状态(布尔)', snippet: 's-required="$1"$0' },
-            { name: 's-hidden', detail: '隐藏状态(布尔)', snippet: 's-hidden="$1"$0' },
-            { name: 's-selected', detail: '选中状态(布尔)', snippet: 's-selected="$1"$0' },
-        ];
-        return directives.map(({ name, detail, snippet }) => {
-            const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Property);
-            item.detail = detail;
-            item.insertText = new vscode.SnippetString(snippet);
-            return item;
-        });
+    private getSDirectiveCompletions(position: vscode.Position, typed: string): vscode.CompletionItem[] {
+        return S_DIRECTIVES.map(({ name, detail }) =>
+            this.makeValueItem(position, typed, name, detail, vscode.CompletionItemKind.Property),
+        );
     }
 
     /** @ 前缀补全: DOM 事件 */
-    private getEventCompletions(): vscode.CompletionItem[] {
-        const events: { name: string; detail: string }[] = [
-            { name: '@click', detail: '点击' },
-            { name: '@dblclick', detail: '双击' },
-            { name: '@change', detail: '内容变化' },
-            { name: '@input', detail: '输入' },
-            { name: '@keydown', detail: '按键按下' },
-            { name: '@keyup', detail: '按键释放' },
-            { name: '@keypress', detail: '按键按压' },
-            { name: '@submit', detail: '表单提交' },
-            { name: '@focus', detail: '获得焦点' },
-            { name: '@blur', detail: '失去焦点' },
-            { name: '@mouseenter', detail: '鼠标进入' },
-            { name: '@mouseleave', detail: '鼠标离开' },
-            { name: '@mousedown', detail: '鼠标按下' },
-            { name: '@mouseup', detail: '鼠标释放' },
-            { name: '@mousemove', detail: '鼠标移动' },
-            { name: '@scroll', detail: '滚动' },
-            { name: '@wheel', detail: '滚轮' },
-            { name: '@contextmenu', detail: '右键菜单' },
-            { name: '@drag', detail: '拖拽' },
-            { name: '@dragstart', detail: '拖拽开始' },
-            { name: '@dragend', detail: '拖拽结束' },
-            { name: '@drop', detail: '拖拽放置' },
-        ];
-        return events.map(({ name, detail }) => {
-            const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Event);
-            item.detail = detail;
-            item.insertText = new vscode.SnippetString(`${name}="$1"$0`);
-            return item;
-        });
+    private getEventCompletions(position: vscode.Position, typed: string): vscode.CompletionItem[] {
+        return EVENTS.map(({ name, detail }) =>
+            this.makeValueItem(position, typed, name, detail, vscode.CompletionItemKind.Event),
+        );
     }
 
     /** : 前缀补全: 属性绑定 */
-    private getBindCompletions(): vscode.CompletionItem[] {
-        const binds: { name: string; detail: string }[] = [
-            { name: ':class', detail: '动态 class 绑定' },
-            { name: ':style', detail: '动态 style 绑定' },
-            { name: ':src', detail: '资源地址绑定' },
-            { name: ':href', detail: '链接地址绑定' },
-            { name: ':value', detail: '值绑定' },
-            { name: ':disabled', detail: '禁用状态绑定' },
-            { name: ':checked', detail: '选中状态绑定' },
-            { name: ':visible', detail: '可见性绑定' },
-            { name: ':readonly', detail: '只读状态绑定' },
-            { name: ':required', detail: '必填状态绑定' },
-            { name: ':hidden', detail: '隐藏状态绑定' },
-            { name: ':selected', detail: '选中状态绑定' },
-            { name: ':title', detail: '标题绑定' },
-            { name: ':alt', detail: '替代文本绑定' },
-            { name: ':id', detail: 'ID 绑定' },
-            { name: ':placeholder', detail: '占位符绑定' },
-        ];
-        return binds.map(({ name, detail }) => {
-            const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Property);
-            item.detail = detail;
-            item.insertText = new vscode.SnippetString(`${name}="$1"$0`);
-            return item;
-        });
+    private getBindCompletions(position: vscode.Position, typed: string): vscode.CompletionItem[] {
+        return BINDS.map(({ name, detail }) =>
+            this.makeValueItem(position, typed, name, detail, vscode.CompletionItemKind.Property),
+        );
     }
 }

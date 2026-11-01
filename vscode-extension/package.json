@@ -34,23 +34,12 @@
         "go-to-definition"
     ],
     "activationEvents": [
-        "onLanguage:html",
-        "onLanguage:typescript",
-        "onLanguage:typescriptreact",
-        "onCommand:solely.switchToCorrespondingFile"
+        "onLanguage:html"
     ],
     "main": "./dist/extension.js",
     "contributes": {
-        "languages": [
-            {
-                "id": "solely-template",
-                "extensions": [],
-                "configuration": "./language-configuration.json"
-            }
-        ],
         "grammars": [
             {
-                "language": "solely-template",
                 "scopeName": "text.html.solely",
                 "path": "./syntaxes/solely-template.tmLanguage.json",
                 "injectTo": [
@@ -70,6 +59,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./tsconfig.json",
         "watch": "tsc -watch -p ./tsconfig.json",
+        "test": "npm run compile && node --test",
         "package": "vsce package",
         "publish:vsce": "vsce publish",
         "publish:ovsx": "ovsx publish"

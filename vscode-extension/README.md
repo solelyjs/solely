@@ -234,7 +234,7 @@ s-|→  s-model     → s-model="..."
 ### 属性语法
 
 ```html
-<!-- ❌ 警告: @click 值未加引号 -->
+<!-- ⚠️ 警告: 值没有加引号（框架本身支持，只是建议统一加引号） -->
 <button @click="this.handleClick()">点击</button>
 ```
 
@@ -255,11 +255,16 @@ s-|→  s-model     → s-model="..."
 
 诊断采用保守策略，避免误报：
 
+- **只检查表达式区域**：`{{ ... }}` 的插值内容，以及 `@click` / `onclick` / `:class` / `s-model` / `test` 等动态属性的值（带引号或不带引号都会检查）。注释、`<style>`、`<script>` 和正文文案都不参与检查
 - 只检查 `this.method()`（带括号）和 `$data.prop`
 - 跳过 `$` 开头的框架内置成员
-- 检查继承链（组件类 + 所有父类）
-- 识别 `BaseElement` 的 `emit()`/`emitNative()` 等继承成员
+- 检查继承链（组件类 + 所有父类），并支持**多行签名**与泛型方法
+- 放行 `BaseElement` 的 `emit()`/`emitNative()`/`refresh()`/`dispose()` 等公开成员，以及 `setAttribute()`/`querySelector()` 等 HTMLElement API
 - 无法解析 `super({})` 时跳过 `$data.xxx` 检查
+- **只有能关联到 TS 组件的 HTML 才会被当作 Solely 模板校验**，普通 HTML（Handlebars / Jinja / 静态演示页）不会被 `{{ }}` 之类的规则打扰
+
+> 单文件多组件（一个 `.ts` 里既有父组件也有私有子组件）时，扩展会根据
+> `@CustomElement({ template })` 里绑定的模板找到**对应那个类**，而不是文件里的第一个类。
 
 ---
 
@@ -282,10 +287,11 @@ s-|→  s-model     → s-model="..."
 
 扩展通过以下方式自动关联 HTML 模板与 TS 组件：
 
-1. **HTML → TS**：在 HTML 文件所在目录搜索 TS 文件，匹配 `import template from './xxx.html?solely'` 或 `?raw` 语句
+1. **HTML → TS**：在 HTML 文件所在目录、其父目录、以及父目录下的兄弟目录里搜索 TS 文件，匹配 `import template from './xxx.html?solely'` 或 `?raw` 语句
 2. **TS → HTML**：解析 TS 文件中的模板导入语句，定位 HTML 文件
-3. **支持各种相对路径**：`./`、`../`、`./templates/` 等路径格式均可识别
+3. **路径精确比对**：导入说明符会先解析成绝对路径再比较，不同目录下的同名 `index.html` 不会互相串台
 4. **支持依赖包父类解析**：可解析 `node_modules` 中通过裸模块导入的父类，以及其 `types`/`typings`、`export *` 和 `.d.ts` 声明链
+5. **实时生效**：TS 内容改动（包括未保存的编辑）会立即刷新模板侧的方法/属性解析，不需要重启扩展
 
 ```typescript
 // TS 组件中的模板导入（两种方式均可）
@@ -321,7 +327,11 @@ code --install-extension solely.solely-vscode
 cd vscode-extension
 npm install
 npm run compile
-# 按 F5 启动扩展开发宿主
+# 按 F5 选择「运行扩展（Extension Host）」启动调试
+```
+
+```bash
+npm test   # 编译后跑 tests/ 下的解析与诊断用例
 ```
 
 ---
@@ -337,6 +347,9 @@ npm run compile
 <input ref="inputRef" />
 <input ref="inputRef" />
 ```
+
+> 模板需要能被 `import ... from './xxx.html?solely'`（或 `?raw`）关联到某个 TS 组件，
+> 才会启用诊断与补全。没有关联的普通 HTML 不会被当作 Solely 模板处理。
 
 ---
 

@@ -1,24 +1,103 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import {
+    ClassInfo,
+    MemberInfo,
+    escapeRegex,
+    findInterfaceBody,
+    findKeyIndex,
+    findKeyType,
+    findMatchingBracket,
+    listClasses,
+    maskTypeScript,
+    readInterfaceKeys,
+    readObjectLiteralKeys,
+    scanClassMembers,
+} from './tsSource';
+import { collectExpressionRegions, computeLineStarts, maskHtmlNonContent, offsetToLineCol } from './htmlSource';
 
 const SOLELY_CONTROL_TAGS = new Set(['if', 'elseif', 'else', 'for', 'show']);
 
-// Cache for HTML → TS file mapping
+/**
+ * 组件继承自 BaseElement（→ HTMLElement），这些成员在模板里可以直接调用。
+ * 只做「放行」不做「补全」，因此宁多勿少——漏掉会变成误报。
+ */
+const FRAMEWORK_METHODS = new Set([
+    // BaseElement 公开 API
+    'emit',
+    'emitNative',
+    'refresh',
+    'dispose',
+    'warn',
+    'error',
+    // HTMLElement / Node 常用 API
+    'setAttribute',
+    'getAttribute',
+    'removeAttribute',
+    'hasAttribute',
+    'toggleAttribute',
+    'appendChild',
+    'removeChild',
+    'insertBefore',
+    'replaceChildren',
+    'remove',
+    'querySelector',
+    'querySelectorAll',
+    'closest',
+    'matches',
+    'contains',
+    'getBoundingClientRect',
+    'getClientRects',
+    'focus',
+    'blur',
+    'click',
+    'scrollIntoView',
+    'scrollTo',
+    'addEventListener',
+    'removeEventListener',
+    'dispatchEvent',
+    'animate',
+    'requestFullscreen',
+    'getRootNode',
+    'cloneNode',
+    'setPointerCapture',
+    'releasePointerCapture',
+]);
+
+/** 不是「可调用成员」的名字（构造函数不会被模板调用） */
+const NON_CALLABLE = new Set(['constructor']);
+
+// HTML → TS 文件映射
 const tsFileCache = new Map<string, string | null>();
-// Cache for TS → BaseElement file mapping
-const baseElementCache = new Map<string, string | null>();
+// 父类解析结果（key: tsPath#className）
+const parentCache = new Map<string, { path: string; name: string } | null>();
 
 export function clearTsFileCache(htmlPath?: string): void {
     if (htmlPath) {
         tsFileCache.delete(htmlPath);
     } else {
         tsFileCache.clear();
-        baseElementCache.clear();
+        parentCache.clear();
     }
 }
 
-export type ReferenceKind = 'method' | 'dataProp' | 'ref' | 'chainedMethod' | 'dataKeyword' | 'getter';
+/**
+ * 内容变化后失效缓存。
+ * 之前的实现只在「文件增删改名」时清缓存，导致补上 `import './x.html?solely'`
+ * 之后仍然拿不到对应 TS，必须重启扩展宿主。
+ */
+export function invalidateForChangedFile(filePath: string): void {
+    for (const [htmlPath, tsPath] of tsFileCache) {
+        // 指向被改文件的映射必然失效；
+        // null（未找到）也可能因为新增了 import 而变得可解析，一并清掉。
+        // 不能只清「同目录」——模板在 templates/、组件在 components/ 时清不到。
+        if (tsPath === null || tsPath === filePath) tsFileCache.delete(htmlPath);
+    }
+    parentCache.clear();
+}
+
+export type ReferenceKind = 'method' | 'dataProp' | 'ref' | 'dataKeyword' | 'getter';
 
 export interface TemplateReference {
     kind: ReferenceKind;
@@ -39,38 +118,155 @@ export interface MethodSignature {
     range: vscode.Range;
 }
 
-export function findCorrespondingTsFile(htmlPath: string): string | null {
-    // Check cache first
-    const cached = tsFileCache.get(htmlPath);
-    if (cached !== undefined) {
-        // Verify the cached file still exists
-        if (cached === null || fs.existsSync(cached)) {
-            return cached;
-        }
-        tsFileCache.delete(htmlPath);
+/* ============================================================
+ * 源码读取与缓存
+ * ============================================================ */
+
+interface SourceInfo {
+    text: string;
+    masked: string;
+    classes: ClassInfo[];
+    version: string;
+}
+
+const sourceCache = new Map<string, SourceInfo>();
+
+function buildSource(filePath: string, text: string, version: string): SourceInfo {
+    const masked = maskTypeScript(text);
+    const info: SourceInfo = { text, masked, classes: listClasses(masked), version };
+    sourceCache.set(filePath, info);
+    return info;
+}
+
+/**
+ * 读取 TS 源码。优先用编辑器里**未保存**的内容，保证刚写完的方法立刻参与诊断；
+ * 用 version（文档 version / mtime+size）做缓存键，避免每次调用都重新掩码。
+ */
+function loadSource(filePath: string): SourceInfo | null {
+    const documents: readonly vscode.TextDocument[] = vscode.workspace?.textDocuments ?? [];
+    const open = documents.find(doc => doc.uri?.scheme === 'file' && doc.uri.fsPath === filePath);
+    if (open) {
+        const version = `doc:${open.version}`;
+        const cached = sourceCache.get(filePath);
+        if (cached && cached.version === version) return cached;
+        return buildSource(filePath, open.getText(), version);
     }
 
-    const dir = path.dirname(htmlPath);
-    const htmlBaseName = path.basename(htmlPath);
-
-    if (!fs.existsSync(dir)) {
-        tsFileCache.set(htmlPath, null);
+    let stat: fs.Stats;
+    try {
+        stat = fs.statSync(filePath);
+    } catch {
+        sourceCache.delete(filePath);
         return null;
     }
 
-    const entries = fs.readdirSync(dir);
-    const tsFiles = entries.filter(f => f.endsWith('.ts') || f.endsWith('.tsx'));
+    const version = `fs:${stat.mtimeMs}:${stat.size}`;
+    const cached = sourceCache.get(filePath);
+    if (cached && cached.version === version) return cached;
 
-    for (const tsFile of tsFiles) {
-        const tsPath = path.join(dir, tsFile);
+    try {
+        return buildSource(filePath, fs.readFileSync(filePath, 'utf-8'), version);
+    } catch {
+        return null;
+    }
+}
+
+function readText(filePath: string): string | null {
+    return loadSource(filePath)?.text ?? null;
+}
+
+/* ============================================================
+ * 模板 ↔ 组件关联
+ * ============================================================ */
+
+interface TemplateImport {
+    spec: string;
+    localName: string | null;
+}
+
+/** 列出文件里所有 `?solely` / `?raw` 模板导入 */
+function findTemplateImports(text: string): TemplateImport[] {
+    const result: TemplateImport[] = [];
+    const re = /import\s+([^'"]*?)from\s+['"]([^'"]+)['"]|import\s+['"]([^'"]+)['"]/g;
+    let match: RegExpExecArray | null;
+
+    while ((match = re.exec(text)) !== null) {
+        const spec = match[2] ?? match[3] ?? '';
+        if (!/\?(?:solely|raw)$/.test(spec)) continue;
+        const clause = match[1] ?? '';
+        const def = /^\s*([A-Za-z_$][\w$]*)/.exec(clause);
+        result.push({ spec, localName: def ? def[1] : null });
+    }
+
+    return result;
+}
+
+function importsTemplate(text: string, tsPath: string, htmlPath: string): boolean {
+    return findTemplateImports(text).some(item => resolveSpecifier(tsPath, item.spec) === normalizePath(htmlPath));
+}
+
+/** 把 import 说明符解析成绝对路径（去查询串、统一分隔符与大小写） */
+function resolveSpecifier(tsPath: string, spec: string): string {
+    return normalizePath(path.resolve(path.dirname(tsPath), spec.split('?')[0]));
+}
+
+function normalizePath(filePath: string): string {
+    const normalized = path.normalize(filePath);
+    // Windows 下大小写不敏感，比较前统一小写
+    return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
+}
+
+/**
+ * 候选目录：模板自身目录 → 父目录 → 父目录下的兄弟目录（模板放在 templates/ 子目录的场景）。
+ * 大多数项目第一个就命中，后面的只是兜底。
+ */
+function candidateDirs(htmlDir: string): string[] {
+    const dirs = [htmlDir];
+    const parent = path.dirname(htmlDir);
+    if (parent === htmlDir) return dirs;
+
+    dirs.push(parent);
+    try {
+        for (const entry of fs.readdirSync(parent, { withFileTypes: true })) {
+            if (!entry.isDirectory()) continue;
+            if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+            dirs.push(path.join(parent, entry.name));
+            if (dirs.length >= 40) break;
+        }
+    } catch {
+        /* 忽略无权限目录 */
+    }
+    return dirs;
+}
+
+export function findCorrespondingTsFile(htmlPath: string): string | null {
+    const cached = tsFileCache.get(htmlPath);
+    if (cached !== undefined) {
+        if (cached === null || fs.existsSync(cached)) return cached;
+        tsFileCache.delete(htmlPath);
+    }
+
+    let budget = 400;
+
+    for (const dir of candidateDirs(path.dirname(htmlPath))) {
+        let entries: string[];
         try {
-            const content = fs.readFileSync(tsPath, 'utf-8');
-            if (isTemplateImport(content, htmlBaseName)) {
+            entries = fs.readdirSync(dir);
+        } catch {
+            continue;
+        }
+
+        for (const file of entries) {
+            if (!file.endsWith('.ts') && !file.endsWith('.tsx')) continue;
+            if (--budget <= 0) break;
+
+            const tsPath = path.join(dir, file);
+            const text = readText(tsPath);
+            if (!text) continue;
+            if (importsTemplate(text, tsPath, htmlPath)) {
                 tsFileCache.set(htmlPath, tsPath);
                 return tsPath;
             }
-        } catch {
-            continue;
         }
     }
 
@@ -78,167 +274,199 @@ export function findCorrespondingTsFile(htmlPath: string): string | null {
     return null;
 }
 
-function isTemplateImport(tsContent: string, htmlBaseName: string): boolean {
-    const escaped = escapeRegex(htmlBaseName);
-    // 支持各种相对路径: ./, ../, ./templates/, 或无前缀
-    const pattern = new RegExp(
-        `import\\s+(?:\\{[^}]*\\}|\\w+|\\w+\\s*,\\s*\\{[^}]*\\})\\s+from\\s+['"]` +
-        `(?:[^'"]*\\/)?${escaped}\\?(solely|raw)['"]`,
-    );
-    return pattern.test(tsContent);
-}
-
 /** 从 TS 文件查找其导入的对应 HTML 模板文件 */
 export function findCorrespondingHtmlFile(tsPath: string): string | null {
-    try {
-        const content = fs.readFileSync(tsPath, 'utf-8');
-        const match = content.match(
-            /import\s+(?:\{[^}]*\}|\w+|\w+\s*,\s*\{[^}]*\})\s+from\s+['"]([^'"]+\.html)\?(solely|raw)['"]/,
-        );
-        if (match) {
-            const dir = path.dirname(tsPath);
-            const htmlPath = path.resolve(dir, match[1]);
-            if (fs.existsSync(htmlPath)) {
-                return htmlPath;
-            }
-        }
-    } catch {
-        // ignore
+    const text = readText(tsPath);
+    if (!text) return null;
+
+    const dir = path.dirname(tsPath);
+    for (const item of findTemplateImports(text)) {
+        const htmlPath = path.resolve(dir, item.spec.split('?')[0]);
+        if (fs.existsSync(htmlPath)) return htmlPath;
     }
     return null;
 }
 
-/** 从 TS 文件提取 $data 的数据属性名(从 super({}) 和 interface 解析) */
-export function extractDataPropsFromTs(tsPath: string): string[] {
-    const fromSuper = extractDataPropsFromSuper(tsPath);
-    const fromInterface = extractDataPropsFromInterface(tsPath);
-    return Array.from(new Set([...fromSuper, ...fromInterface]));
-}
+/* ============================================================
+ * 组件类定位
+ * ============================================================ */
 
-function extractDataPropsFromSuper(tsPath: string): string[] {
-    try {
-        const content = fs.readFileSync(tsPath, 'utf-8');
-        const superMatch = content.match(/super\s*\(\s*\{/);
-        if (!superMatch) return [];
-
-        const startIdx = (superMatch.index ?? 0) + superMatch[0].length;
-        // 找到匹配的 }
-        let depth = 1;
-        let endIdx = startIdx;
-        for (let i = startIdx; i < content.length && depth > 0; i++) {
-            if (content[i] === '{') depth++;
-            else if (content[i] === '}') depth--;
-            endIdx = i;
-        }
-
-        const body = content.substring(startIdx, endIdx);
-        // 提取顶层属性: 仅在 currentDepth === 0 时识别 key。
-        // 必须跳过字符串字面量(含模板字符串)和注释, 否则会把值里的 "word:" (如 'a: b') 误当成属性。
-        const props: string[] = [];
-        let currentDepth = 0;
-        let inString = false;
-        let stringQuote = '';
-        let inLineComment = false;
-        let inBlockComment = false;
-
-        for (let i = 0; i < body.length; i++) {
-            const ch = body[i];
-
-            // 行注释
-            if (inLineComment) {
-                if (ch === '\n') inLineComment = false;
-                continue;
-            }
-            // 块注释
-            if (inBlockComment) {
-                if (ch === '*' && i + 1 < body.length && body[i + 1] === '/') {
-                    inBlockComment = false;
-                    i++; // 跳过 '/'
-                }
-                continue;
-            }
-            if (ch === '/' && i + 1 < body.length) {
-                if (body[i + 1] === '/') {
-                    inLineComment = true;
-                    i++; // 跳过第二个 '/'
-                    continue;
-                }
-                if (body[i + 1] === '*') {
-                    inBlockComment = true;
-                    i++; // 跳过 '*'
-                    continue;
-                }
-            }
-
-            // 字符串/模板字符串
-            if (inString) {
-                if (ch === '\\' && i + 1 < body.length) {
-                    i++; // 跳过转义后的字符
-                    continue;
-                }
-                if (ch === stringQuote) {
-                    inString = false;
-                }
-                continue;
-            }
-            if (ch === '"' || ch === "'" || ch === '`') {
-                inString = true;
-                stringQuote = ch;
-                continue;
-            }
-
-            // 括号深度
-            if (ch === '{') {
-                currentDepth++;
-                continue;
-            }
-            if (ch === '}') {
-                currentDepth--;
-                continue;
-            }
-
-            // 在顶层提取属性名
-            if (currentDepth === 0) {
-                const m = body.substring(i).match(/^(\w+)\s*(?=[:,=,])/);
-                if (m && !props.includes(m[1])) {
-                    props.push(m[1]);
-                    i += m[1].length - 1;
-                }
-            }
-        }
-        return props;
-    } catch {
-        return [];
+/** 找到某个模板导入在文件里的默认导入名 */
+function findTemplateLocalName(text: string, tsPath: string, htmlPath: string): string | null {
+    const target = normalizePath(htmlPath);
+    for (const item of findTemplateImports(text)) {
+        if (!item.localName) continue;
+        if (resolveSpecifier(tsPath, item.spec) === target) return item.localName;
     }
+    return null;
 }
 
-function extractDataPropsFromInterface(tsPath: string): string[] {
-    try {
-        const content = fs.readFileSync(tsPath, 'utf-8');
-        // 查找 extends BaseElement<XXX>
-        const match = content.match(/extends\s+BaseElement\s*<\s*(\w+)\s*>/);
-        if (!match) return [];
+/** 在装饰器参数里找到 `template: localName` 或 `template,` 简写，返回其后第一个类 */
+function findClassByTemplateBinding(masked: string, classes: ClassInfo[], localName: string): ClassInfo | null {
+    const decorator = /@[A-Za-z_$][\w$]*\s*\(/g;
+    const explicit = new RegExp(`\\btemplate\\s*:\\s*${escapeRegex(localName)}\\b`);
+    const shorthand = /(?:^|[{,])\s*template\s*(?=[,}]|$)/;
 
-        const interfaceName = match[1];
-        // 查找 interface XXX {
-        const interfaceRegex = new RegExp(`interface\\s+${escapeRegex(interfaceName)}\\s*\\{([\\s\\S]*?)\\}`);
-        const interfaceMatch = content.match(interfaceRegex);
-        if (!interfaceMatch) return [];
+    let match: RegExpExecArray | null;
+    while ((match = decorator.exec(masked)) !== null) {
+        const open = match.index + match[0].length - 1;
+        const close = findMatchingBracket(masked, open);
+        if (close === -1) continue;
 
-        const body = interfaceMatch[1];
-        const props: string[] = [];
-        const propRegex = /^\s*(\w+)\s*[\?\:]/gm;
-        let m: RegExpExecArray | null;
-        while ((m = propRegex.exec(body)) !== null) {
-            if (!props.includes(m[1])) {
-                props.push(m[1]);
-            }
-        }
-        return props;
-    } catch {
-        return [];
+        const args = masked.slice(open + 1, close);
+        if (!explicit.test(args) && !shorthand.test(args)) continue;
+
+        const owner = classes.find(cls => cls.keywordIndex > close);
+        if (owner) return owner;
     }
+
+    return null;
 }
+
+/**
+ * 定位「这个模板属于哪个类」。
+ *
+ * 单文件多组件（父组件 + 私有子组件）是 Web Components 的常见写法，
+ * 之前只取文件里第一个 `super({})` / 第一个 `extends BaseElement<...>`，
+ * 导致同文件其它组件的模板全部误报。
+ */
+function resolveComponentClass(tsPath: string, htmlPath?: string): ClassInfo | null {
+    const source = loadSource(tsPath);
+    if (!source || source.classes.length === 0) return null;
+    if (source.classes.length === 1) return source.classes[0];
+
+    if (htmlPath) {
+        const localName = findTemplateLocalName(source.text, tsPath, htmlPath);
+        if (localName) {
+            const byBinding = findClassByTemplateBinding(source.masked, source.classes, localName);
+            if (byBinding) return byBinding;
+        }
+    }
+
+    const baseClasses = source.classes.filter(cls => cls.extendsName === 'BaseElement');
+    return baseClasses.length === 1 ? baseClasses[0] : null;
+}
+
+/**
+ * 类成员扫描缓存。键是 SourceInfo 对象本身——源码版本一变就会生成新对象，
+ * 缓存自然失效，不需要手动清理。
+ */
+const memberCache = new WeakMap<SourceInfo, Map<string, MemberInfo[]>>();
+
+function membersOf(source: SourceInfo, cls: ClassInfo | null): MemberInfo[] {
+    const key = cls?.name ?? '*';
+    let byClass = memberCache.get(source);
+    if (!byClass) {
+        byClass = new Map();
+        memberCache.set(source, byClass);
+    }
+
+    const cached = byClass.get(key);
+    if (cached) return cached;
+
+    const targets = cls ? [cls] : source.classes;
+    const members: MemberInfo[] = [];
+    for (const target of targets) {
+        members.push(...scanClassMembers(source.text, source.masked, target.bodyStart, target.bodyEnd));
+    }
+
+    byClass.set(key, members);
+    return members;
+}
+
+/** 取类体范围内的成员；无法定位到单个类时合并全部类的成员 */
+function collectMembers(tsPath: string, htmlPath?: string): MemberInfo[] {
+    const source = loadSource(tsPath);
+    if (!source) return [];
+    return membersOf(source, resolveComponentClass(tsPath, htmlPath));
+}
+
+/** 取组件类（或全部类）的 `super({...})` 对象字面量起始下标 */
+function findSuperObject(source: SourceInfo, cls: ClassInfo | null): number | null {
+    const ranges = cls
+        ? [[cls.bodyStart, cls.bodyEnd] as const]
+        : source.classes.map(c => [c.bodyStart, c.bodyEnd] as const);
+
+    for (const [start, end] of ranges) {
+        const re = /\bsuper\s*\(/g;
+        re.lastIndex = start;
+        const match = re.exec(source.masked);
+        if (!match || match.index >= end) continue;
+
+        const parenOpen = match.index + match[0].length - 1;
+        const parenClose = findMatchingBracket(source.masked, parenOpen);
+        if (parenClose === -1 || parenClose > end) continue;
+
+        // `{` 必须落在实参括号内：`super()` / `super(init)` 没有对象字面量，
+        // 不能顺手把后面方法体的 `{` 当成数据对象。
+        const open = source.masked.indexOf('{', parenOpen);
+        if (open !== -1 && open < parenClose) return open;
+    }
+
+    return null;
+}
+
+/* ============================================================
+ * 数据属性提取
+ * ============================================================ */
+
+/** 从 TS 文件提取 $data 的数据属性名（super({}) + interface） */
+export function extractDataPropsFromTs(tsPath: string, htmlPath?: string): string[] {
+    const props = [...extractDataPropsFromSuper(tsPath, htmlPath), ...extractDataPropsFromInterface(tsPath, htmlPath)];
+    return Array.from(new Set(props));
+}
+
+function extractDataPropsFromSuper(tsPath: string, htmlPath?: string): string[] {
+    const source = loadSource(tsPath);
+    if (!source) return [];
+
+    const open = findSuperObject(source, resolveComponentClass(tsPath, htmlPath));
+    if (open === null) return [];
+
+    return readObjectLiteralKeys(source.masked, open);
+}
+
+/**
+ * 定位组件 `$data` 类型声明的 `{`。
+ *
+ * 支持两种写法：
+ * - `BaseElement<MyData>` → 去找 `interface MyData {`（`inline: false`）
+ * - `BaseElement<{ a: number }>` → 直接用类型字面量本身（`inline: true`）
+ *
+ * `BaseElement<Props, Refs>` 与 `BaseElement<TreeProps & {...}>` 都只取第一个类型参数。
+ */
+function findDataTypeBody(source: SourceInfo, cls: ClassInfo | null): { open: number; inline: boolean } | null {
+    const owner = cls ?? findFirstBaseElementClass(source);
+    const typeArg = owner?.extendsTypeArg;
+    if (!typeArg) return null;
+
+    if (typeArg.startsWith('{') && owner && owner.extendsTypeArgStart >= 0) {
+        const open = source.masked.indexOf('{', owner.extendsTypeArgStart);
+        return open === -1 ? null : { open, inline: true };
+    }
+
+    const firstName = /^\s*([A-Za-z_$][\w$]*)/.exec(typeArg)?.[1];
+    if (!firstName) return null;
+
+    const open = findInterfaceBody(source.masked, firstName);
+    return open === null ? null : { open, inline: false };
+}
+
+function extractDataPropsFromInterface(tsPath: string, htmlPath?: string): string[] {
+    const source = loadSource(tsPath);
+    if (!source) return [];
+
+    const body = findDataTypeBody(source, resolveComponentClass(tsPath, htmlPath));
+    return body === null ? [] : readInterfaceKeys(source.masked, body.open);
+}
+
+function findFirstBaseElementClass(source: SourceInfo): ClassInfo | null {
+    return source.classes.find(cls => cls.extendsName === 'BaseElement' && cls.extendsTypeArg) ?? null;
+}
+
+/* ============================================================
+ * 位置 → 引用
+ * ============================================================ */
 
 export function extractReferenceAtPosition(
     document: vscode.TextDocument,
@@ -247,21 +475,18 @@ export function extractReferenceAtPosition(
     const line = document.lineAt(position.line).text;
     const charIndex = position.character;
 
-    // Try all patterns on the current line (works for both {{ }} interpolation and attribute values)
     const refAttr = extractRefAtPosition(line, position.line, charIndex);
     if (refAttr) return refAttr;
 
-    // s-model bare prop (e.g. s-model="step" → $data.step)
     const sModelProp = extractSModelPropAtPosition(line, position.line, charIndex);
     if (sModelProp) return sModelProp;
 
-    // Framework APIs such as BaseElement.emit() are method references too.
-    // Handle the explicit this.method() form before the generic property
-    // matcher so go-to-definition is deterministic for inherited methods.
+    const chained = extractChainedMethodAtPosition(line, position.line, charIndex);
+    if (chained) return chained;
+
     const method = extractMethodCallAtPosition(line, position.line, charIndex);
     if (method) return method;
 
-    // this.xxx without () — getter or class property (e.g. this.filteredTodos)
     const thisProp = extractThisPropAtPosition(line, position.line, charIndex);
     if (thisProp) return thisProp;
 
@@ -270,9 +495,6 @@ export function extractReferenceAtPosition(
 
     const dataKw = extractDataKeywordAtPosition(line, position.line, charIndex);
     if (dataKw) return dataKw;
-
-    const chained = extractChainedMethodAtPosition(line, position.line, charIndex);
-    if (chained) return chained;
 
     return null;
 }
@@ -299,8 +521,7 @@ function extractMethodCallAtPosition(line: string, lineNum: number, charIndex: n
 }
 
 function extractThisPropAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
-    // Match this.xxx that is NOT a method call (not followed by ()
-    // Use \b word boundary after \w+ to prevent backtracking into the word
+    // `this.xxx` 且后面不是 `(`；`\b` 防止回溯到词中间
     const regex = /\bthis\.(\w+)\b(?!\s*\()/g;
     let match: RegExpExecArray | null;
 
@@ -364,7 +585,7 @@ function extractDataKeywordAtPosition(line: string, lineNum: number, charIndex: 
 }
 
 function extractRefAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
-    const regex = /\bref\s*=\s*(["'])(\w+)\1/g;
+    const regex = /\bref\s*=\s*(["'])([\w-]+)\1/g;
     let match: RegExpExecArray | null;
 
     while ((match = regex.exec(line)) !== null) {
@@ -387,7 +608,6 @@ function extractRefAtPosition(line: string, lineNum: number, charIndex: number):
 }
 
 function extractSModelPropAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
-    // Match s-model="..." or s-model='...' and extract bare property names (without $data. or this. prefix)
     const regex = /\bs-model\s*=\s*(["'])([^"']*)\1/g;
     let match: RegExpExecArray | null;
 
@@ -396,9 +616,7 @@ function extractSModelPropAtPosition(line: string, lineNum: number, charIndex: n
         const valueStart = match.index + match[0].indexOf(quote) + 1;
         const value = match[2];
 
-        // Calculate the offset of the bare name within the value.
-        // Strip leading prefix ($data. / this.) and leading whitespace only;
-        // trailing whitespace must NOT affect the offset (fixes position bug).
+        // 去掉 $data. / this. 前缀和前导空白；尾部空白不能影响偏移（历史 bug）
         let offset = 0;
         let remaining = value;
         const prefixMatch = remaining.match(/^(\$data\.|this\.)/);
@@ -411,7 +629,6 @@ function extractSModelPropAtPosition(line: string, lineNum: number, charIndex: n
             offset += leadingSpaces[0].length;
             remaining = remaining.substring(leadingSpaces[0].length);
         }
-        // bareName: trailing whitespace stripped for validation only
         const bareName = remaining.replace(/\s+$/, '');
         if (!bareName || !/^\w+$/.test(bareName)) continue;
 
@@ -431,6 +648,12 @@ function extractSModelPropAtPosition(line: string, lineNum: number, charIndex: n
     return null;
 }
 
+/**
+ * 链式调用 `this.router.push(...)`：
+ * 第一段是属性访问（getter/类字段），第二段才是方法。
+ * 之前把第一段标成 `chainedMethod` 会去「方法表」里找 router，永远找不到；
+ * 这里直接按属性处理，跳转/悬停都走 getter 分支。
+ */
 function extractChainedMethodAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
     const regex = /\bthis\.(\w+)\.(\w+)\s*\(/g;
     let match: RegExpExecArray | null;
@@ -443,7 +666,7 @@ function extractChainedMethodAtPosition(line: string, lineNum: number, charIndex
 
         if (charIndex >= firstStart && charIndex <= firstEnd) {
             return {
-                kind: 'chainedMethod',
+                kind: 'getter',
                 name: match[1],
                 range: new vscode.Range(lineNum, firstStart, lineNum, firstEnd),
                 fullExpression: match[0],
@@ -463,48 +686,42 @@ function extractChainedMethodAtPosition(line: string, lineNum: number, charIndex
     return null;
 }
 
-export function findDefinitionInTsFile(tsPath: string, ref: TemplateReference): vscode.Location | null {
-    if (!fs.existsSync(tsPath)) {
-        return null;
-    }
+/* ============================================================
+ * 定义跳转
+ * ============================================================ */
 
-    // First try to find in the component's own TS file
-    const localResult = findDefinitionLocally(tsPath, ref);
+export function findDefinitionInTsFile(
+    tsPath: string,
+    ref: TemplateReference,
+    htmlPath?: string,
+): vscode.Location | null {
+    if (!fs.existsSync(tsPath)) return null;
+
+    const localResult = findDefinitionLocally(tsPath, ref, htmlPath);
     if (localResult) return localResult;
 
-    // Fallback: walk up the inheritance chain (extends A → A extends B → ...)
-    if (ref.kind === 'method' || ref.kind === 'chainedMethod' || ref.kind === 'getter') {
-        const ancestorPaths = findAncestorFiles(tsPath);
-        for (const ancestorPath of ancestorPaths) {
-            const result = findDefinitionLocally(ancestorPath, ref);
+    if (ref.kind === 'method' || ref.kind === 'getter') {
+        for (const ancestorPath of findAncestorFiles(tsPath, htmlPath)) {
+            const result = findDefinitionLocally(ancestorPath, ref, htmlPath);
             if (result) return result;
         }
     }
 
-    // Framework members may be accepted by the BaseElement fallback in
-    // getComponentMembers even when the inheritance file cannot be walked by
-    // the normal definition search. Resolve the immediate parent directly so
-    // inherited APIs such as `this.emit()` still support go-to-definition.
-    if ((ref.kind === 'method' || ref.kind === 'chainedMethod') && ref.name === 'emit') {
-        const componentSource = fs.readFileSync(tsPath, 'utf-8');
-        if (/\bclass\s+\w+\s+extends\s+BaseElement\b/.test(componentSource)) {
-            const baseElementPath = findParentClassFile(tsPath) ?? findBaseElementDeclaration(tsPath);
-            if (baseElementPath) {
-                const result = findMethodInTsFile(baseElementPath, ref.name);
-                if (result) return result;
-            }
+    // 框架成员（emit / refresh / setAttribute …）跳到声明处
+    if (ref.kind === 'method' && FRAMEWORK_METHODS.has(ref.name)) {
+        const baseElementPath = findParentClassFile(tsPath, undefined)?.path ?? findBaseElementDeclaration(tsPath);
+        if (baseElementPath) {
+            const result = findMethodInTsFile(baseElementPath, ref.name);
+            if (result) return result;
         }
     }
 
-    // Fallback for chained method: try to find the method in the class of the first-level property
-    // e.g. this.router.push() → find 'router' property type → search 'push' in that class
+    // 链式调用：this.router.push() → 先找 router 的类型，再在那个类里找 push
     if (ref.kind === 'method' && ref.fullExpression) {
         const chainedMatch = ref.fullExpression.match(/\bthis\.(\w+)\.\w+\s*\(/);
         if (chainedMatch) {
-            const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1]);
-            if (propClassPath) {
-                return findMethodInTsFile(propClassPath, ref.name);
-            }
+            const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1], htmlPath);
+            if (propClassPath) return findMethodInTsFile(propClassPath, ref.name);
         }
     }
 
@@ -514,9 +731,12 @@ export function findDefinitionInTsFile(tsPath: string, ref: TemplateReference): 
 /** Locate BaseElement directly inside the imported framework package. */
 function findBaseElementDeclaration(tsPath: string): string | null {
     try {
-        const componentSource = fs.readFileSync(tsPath, 'utf-8');
+        const componentSource = readText(tsPath);
+        if (!componentSource) return null;
+
         const importMatch = componentSource.match(/from\s+['"]([^'".][^'"]*)['"]/);
-        if (!importMatch || importMatch[1].startsWith('@')) return null;
+        if (!importMatch) return null;
+
         const entry = resolvePackageImport(path.dirname(tsPath), importMatch[1]);
         if (!entry) return null;
 
@@ -545,17 +765,16 @@ function findBaseElementDeclaration(tsPath: string): string | null {
     return null;
 }
 
-function findDefinitionLocally(tsPath: string, ref: TemplateReference): vscode.Location | null {
+function findDefinitionLocally(tsPath: string, ref: TemplateReference, htmlPath?: string): vscode.Location | null {
     switch (ref.kind) {
         case 'method':
-        case 'chainedMethod':
-            return findMethodInTsFile(tsPath, ref.name);
+            return findMethodInTsFile(tsPath, ref.name, htmlPath);
         case 'getter':
-            return findGetterInTsFile(tsPath, ref.name);
+            return findGetterInTsFile(tsPath, ref.name, htmlPath);
         case 'dataProp':
-            return findPropInTsFile(tsPath, ref.name);
+            return findPropInTsFile(tsPath, ref.name, htmlPath);
         case 'dataKeyword':
-            return findDataDefinitionInTsFile(tsPath);
+            return findDataDefinitionInTsFile(tsPath, htmlPath);
         case 'ref':
             return findRefInTsFile(tsPath, ref.name);
         default:
@@ -564,78 +783,75 @@ function findDefinitionLocally(tsPath: string, ref: TemplateReference): vscode.L
 }
 
 /**
- * Walk up the inheritance chain and return all ancestor class file paths in order.
- * e.g. MyComponent extends MyBaseComponent extends BaseElement → [MyBaseComponent.ts, base-element.ts]
+ * 沿继承链返回所有祖先文件路径（按由近到远）。
+ * e.g. MyComponent extends MyBase extends BaseElement → [MyBase.ts, base-element.ts]
  */
-export function findAncestorFiles(tsPath: string): string[] {
+export function findAncestorFiles(tsPath: string, htmlPath?: string): string[] {
     const result: string[] = [];
-    const visited = new Set<string>();
-    visited.add(tsPath);
+    const visited = new Set<string>([tsPath]);
 
-    let currentPath = tsPath;
+    let currentPath: string | null = tsPath;
+    let currentClass = resolveComponentClass(tsPath, htmlPath)?.name ?? undefined;
+
     while (currentPath) {
-        const parentPath = findParentClassFile(currentPath);
-        if (!parentPath || visited.has(parentPath)) break;
-        visited.add(parentPath);
-        result.push(parentPath);
-        currentPath = parentPath;
+        const parent = findParentClassFile(currentPath, currentClass);
+        if (!parent || visited.has(parent.path)) break;
+        visited.add(parent.path);
+        result.push(parent.path);
+        currentPath = parent.path;
+        currentClass = parent.name;
     }
 
     return result;
 }
 
-/**
- * Find the file path of the parent class that the class in tsPath extends.
- * e.g. class MyComponent extends BaseElement → find BaseElement's source file
- */
-function findParentClassFile(tsPath: string): string | null {
-    const cached = baseElementCache.get(tsPath);
-    if (cached !== undefined) {
-        return cached;
-    }
+/** 找到 `class X extends Y` 里 Y 所在的文件 */
+function findParentClassFile(tsPath: string, className?: string): { path: string; name: string } | null {
+    const cacheKey = `${tsPath}#${className ?? ''}`;
+    const cached = parentCache.get(cacheKey);
+    if (cached !== undefined) return cached;
 
-    try {
-        const content = fs.readFileSync(tsPath, 'utf-8');
-        const dir = path.dirname(tsPath);
+    const source = loadSource(tsPath);
+    if (!source) return null;
 
-        // Find the extends clause: class Foo extends Bar
-        const extendsMatch = content.match(/\bclass\s+\w+\s+extends\s+(\w+)/);
-        if (!extendsMatch) {
-            baseElementCache.set(tsPath, null);
-            return null;
-        }
+    const cls = className
+        ? (source.classes.find(item => item.name === className) ?? null)
+        : source.classes.length === 1
+          ? source.classes[0]
+          : null;
 
-        const parentClassName = extendsMatch[1];
-
-        // Find import of the parent class
-        const importPattern = new RegExp(
-            `import\\s+\\{[^}]*\\b${escapeRegex(parentClassName)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
-        );
-        const importMatch = content.match(importPattern);
-        if (!importMatch) {
-            baseElementCache.set(tsPath, null);
-            return null;
-        }
-
-        const importPath = importMatch[1];
-        const resolvedPath = resolveImportPath(dir, importPath, parentClassName);
-        baseElementCache.set(tsPath, resolvedPath);
-        return resolvedPath;
-    } catch {
-        baseElementCache.set(tsPath, null);
+    if (!cls?.extendsName) {
+        parentCache.set(cacheKey, null);
         return null;
     }
+
+    const importPath = findImportPathForName(source.text, cls.extendsName);
+    if (!importPath) {
+        parentCache.set(cacheKey, null);
+        return null;
+    }
+
+    const resolved = resolveImportPath(path.dirname(tsPath), importPath, cls.extendsName);
+    const value = resolved ? { path: resolved, name: cls.extendsName } : null;
+    parentCache.set(cacheKey, value);
+    return value;
+}
+
+/** 找到导入某个类名的模块路径（支持命名导入与默认导入） */
+function findImportPathForName(text: string, className: string): string | null {
+    const named = new RegExp(`import\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`);
+    const namedMatch = text.match(named);
+    if (namedMatch) return namedMatch[1];
+
+    const defaultImport = new RegExp(`import\\s+${escapeRegex(className)}\\s+from\\s+['"]([^'"]+)['"]`);
+    const defaultMatch = text.match(defaultImport);
+    return defaultMatch ? defaultMatch[1] : null;
 }
 
 /**
  * Resolve an import path to an actual .ts file, following re-exports.
  */
 function resolveImportPath(fromDir: string, importPath: string, className: string): string | null {
-    // Relative imports are resolved from the component directory. Bare module
-    // imports (for example `import { BaseElement } from 'solely'`) must be
-    // resolved like TypeScript/Node: walk up through node_modules and prefer
-    // the package's declaration entry because the runtime file may not contain
-    // any class/method source that can be inspected.
     if (!importPath.startsWith('.') && !path.isAbsolute(importPath)) {
         const packagePath = resolvePackageImport(fromDir, importPath);
         if (packagePath) {
@@ -651,7 +867,6 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
 
     let resolvedPath = path.resolve(fromDir, importPath);
 
-    // If it points to a directory, try any supported declaration/source index.
     if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isDirectory()) {
         const indexPath = ['index.ts', 'index.tsx', 'index.d.ts']
             .map(name => path.join(resolvedPath, name))
@@ -660,7 +875,6 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
         resolvedPath = indexPath;
     }
 
-    // Add .ts extension if missing
     if (!/\.(?:ts|tsx|d\.ts)$/.test(resolvedPath)) {
         const candidates = [resolvedPath + '.ts', resolvedPath + '.tsx', resolvedPath + '.d.ts'];
         const candidate = candidates.find(p => fs.existsSync(p));
@@ -670,11 +884,9 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
 
     if (!fs.existsSync(resolvedPath)) return null;
 
-    // If the resolved path is an index.ts, try to find the actual class file via re-export
     if (/index\.(?:ts|tsx|d\.ts)$/.test(resolvedPath)) {
         const indexDir = path.dirname(resolvedPath);
 
-        // Try kebab-case naming: BaseElement → base-element.ts
         const kebabName = className
             .replace(/([A-Z])/g, '-$1')
             .toLowerCase()
@@ -682,7 +894,6 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
         const directPath = resolveSourceFile(path.join(indexDir, kebabName));
         if (directPath) return directPath;
 
-        // Try reading the index to find the re-export
         try {
             const indexContent = fs.readFileSync(resolvedPath, 'utf-8');
             const reExportPattern = new RegExp(
@@ -695,14 +906,9 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
                 if (finalPath) return finalPath;
             }
 
-            // A declaration barrel may declare the class directly rather than
-            // re-exporting it. Do not return an unrelated barrel just because
-            // it exists; callers need the barrel that actually contains the
-            // requested class/member.
             const declarationPattern = new RegExp(`(?:declare\\s+)?class\\s+${escapeRegex(className)}\\b`);
             if (declarationPattern.test(indexContent)) return resolvedPath;
 
-            // Package declaration barrels commonly use `export * from './runtime'`.
             const starExportPattern = /export\s+\*\s+from\s+['"]([^'"]+)['"]/g;
             let starExport: RegExpExecArray | null;
             while ((starExport = starExportPattern.exec(indexContent)) !== null) {
@@ -714,10 +920,8 @@ function resolveImportPath(fromDir: string, importPath: string, className: strin
         }
     }
 
-    // Never treat an arbitrary module (for example compiler/ir/buildIR.d.ts)
-    // as the requested parent. Only return a source file when it declares the
-    // requested class; otherwise let an enclosing export-* traversal continue.
-    const sourceContent = fs.readFileSync(resolvedPath, 'utf-8');
+    const sourceContent = readText(resolvedPath);
+    if (!sourceContent) return null;
     const classPattern = new RegExp(`(?:declare\\s+)?(?:export\\s+)?class\\s+${escapeRegex(className)}\\b`);
     if (!classPattern.test(sourceContent)) return null;
     return resolvedPath;
@@ -737,6 +941,7 @@ function resolvePackageImport(fromDir: string, importPath: string): string | nul
     const subpath = importPath.slice(packageName.length).replace(/^\//, '');
     let dir = fromDir;
     let parent = path.dirname(dir);
+
     while (dir !== parent) {
         const packageDir = path.join(dir, 'node_modules', packageName);
         if (fs.existsSync(packageDir)) {
@@ -750,12 +955,13 @@ function resolvePackageImport(fromDir: string, importPath: string): string | nul
             const candidates = subpath
                 ? [path.join(packageDir, subpath)]
                 : entry
-                    ? [
+                  ? [
                         path.resolve(packageDir, entry),
                         path.join(packageDir, 'index.d.ts'),
                         path.join(packageDir, 'index.ts'),
                     ]
-                    : [path.join(packageDir, 'index.d.ts'), path.join(packageDir, 'index.ts')];
+                  : [path.join(packageDir, 'index.d.ts'), path.join(packageDir, 'index.ts')];
+
             for (const candidate of candidates) {
                 const file =
                     resolveSourceFile(candidate) ||
@@ -771,318 +977,261 @@ function resolvePackageImport(fromDir: string, importPath: string): string | nul
     return null;
 }
 
-export function findPropertyClassFile(tsPath: string, propName: string): string | null {
-    try {
-        const content = fs.readFileSync(tsPath, 'utf-8');
-        const lines = content.split('\n');
-        const dir = path.dirname(tsPath);
-        const escaped = escapeRegex(propName);
+export function findPropertyClassFile(tsPath: string, propName: string, htmlPath?: string): string | null {
+    const source = loadSource(tsPath);
+    if (!source) return null;
 
-        // Find property declaration: private router = createRouter(...) or router: Router = ...
-        const propPattern = new RegExp(
-            `^\\s*(?:(?:public|private|protected)\\s+)?(?:readonly\\s+)?${escaped}\\s*[=:]\\s*(?:new\\s+)?(\\w+)`,
-        );
-        for (const line of lines) {
-            const match = propPattern.exec(line);
-            if (match) {
-                const className = match[1];
-                // Find import of this class/function
-                const importPattern = new RegExp(
-                    `import\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
-                );
-                const importMatch = content.match(importPattern);
-                if (importMatch) {
-                    const importPath = importMatch[1];
-                    let resolvedPath = path.resolve(dir, importPath);
-                    if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.tsx')) {
-                        if (fs.existsSync(resolvedPath + '.ts')) resolvedPath += '.ts';
-                        else if (fs.existsSync(resolvedPath + '.tsx')) resolvedPath += '.tsx';
-                    }
+    const members = collectMembers(tsPath, htmlPath);
+    const property = members.find(member => member.name === propName && member.kind === 'property');
+    if (!property) return null;
 
-                    // If it's an index file, try to find the actual class file
-                    if (resolvedPath.endsWith('index.ts') || resolvedPath.endsWith('index.tsx')) {
-                        const indexDir = path.dirname(resolvedPath);
-                        // Try common naming patterns: class-name.ts
-                        const kebabName = className
-                            .replace(/([A-Z])/g, '-$1')
-                            .toLowerCase()
-                            .replace(/^-/, '');
-                        const directPath = path.join(indexDir, kebabName + '.ts');
-                        if (fs.existsSync(directPath)) return directPath;
+    // 取属性声明所在的行，解析 `= new Foo(...)` / `: Foo = ...`
+    const lineStart = source.text.lastIndexOf('\n', property.nameIndex) + 1;
+    const lineEnd = source.text.indexOf('\n', property.nameIndex);
+    const declaration = source.text.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
 
-                        // Try reading the index to find the re-export
-                        try {
-                            const indexContent = fs.readFileSync(resolvedPath, 'utf-8');
-                            const reExportMatch = indexContent.match(
-                                new RegExp(
-                                    `export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b` +
-                                    `[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
-                                ),
-                            );
-                            if (reExportMatch) {
-                                const classPath = path.resolve(indexDir, reExportMatch[1]);
-                                const finalPath = classPath.endsWith('.ts') ? classPath : classPath + '.ts';
-                                if (fs.existsSync(finalPath)) return finalPath;
-                            }
-                        } catch {
-                            /* ignore */
-                        }
-                    }
+    const typeMatch = declaration.match(new RegExp(`\\b${escapeRegex(propName)}\\s*[:=]\\s*(?:new\\s+)?([A-Z]\\w*)`));
+    if (!typeMatch) return null;
 
-                    if (fs.existsSync(resolvedPath)) return resolvedPath;
-                }
+    const className = typeMatch[1];
+    const dir = path.dirname(tsPath);
+    const importPath = findImportPathForName(source.text, className);
+    if (!importPath) return null;
+
+    let resolvedPath = path.resolve(dir, importPath);
+    if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.tsx')) {
+        if (fs.existsSync(resolvedPath + '.ts')) resolvedPath += '.ts';
+        else if (fs.existsSync(resolvedPath + '.tsx')) resolvedPath += '.tsx';
+    }
+
+    if (resolvedPath.endsWith('index.ts') || resolvedPath.endsWith('index.tsx')) {
+        const indexDir = path.dirname(resolvedPath);
+        const kebabName = className
+            .replace(/([A-Z])/g, '-$1')
+            .toLowerCase()
+            .replace(/^-/, '');
+        const directPath = path.join(indexDir, kebabName + '.ts');
+        if (fs.existsSync(directPath)) return directPath;
+
+        const indexContent = readText(resolvedPath);
+        if (indexContent) {
+            const reExportMatch = indexContent.match(
+                new RegExp(`export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`),
+            );
+            if (reExportMatch) {
+                const classPath = path.resolve(indexDir, reExportMatch[1]);
+                const finalPath = classPath.endsWith('.ts') ? classPath : classPath + '.ts';
+                if (fs.existsSync(finalPath)) return finalPath;
             }
         }
-
-        return null;
-    } catch {
-        return null;
     }
+
+    return fs.existsSync(resolvedPath) ? resolvedPath : null;
 }
 
-function findMethodInTsFile(tsPath: string, methodName: string): vscode.Location | null {
-    const content = fs.readFileSync(tsPath, 'utf-8');
-    const lines = content.split('\n');
+/* ============================================================
+ * 定位（定义跳转用）
+ * ============================================================ */
 
-    const escaped = escapeRegex(methodName);
-    // Combined pattern: optional modifiers, then method name, then ( or = or :
-    const pattern = new RegExp(
-        `^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?` +
-        `(?:async\\s+)?(?:get\\s+|set\\s+)?${escaped}\\s*[\\(=:]`,
+function offsetToPosition(text: string, offset: number): vscode.Position {
+    const starts = computeLineStarts(text);
+    const { line, col } = offsetToLineCol(starts, offset);
+    return new vscode.Position(line, col);
+}
+
+function locate(tsPath: string, offset: number): vscode.Location | null {
+    const source = loadSource(tsPath);
+    if (!source) return null;
+    return new vscode.Location(vscode.Uri.file(tsPath), offsetToPosition(source.text, offset));
+}
+
+function findMethodInTsFile(tsPath: string, methodName: string, htmlPath?: string): vscode.Location | null {
+    const source = loadSource(tsPath);
+    if (!source) return null;
+
+    // 先只在「当前模板对应的类」里找：多组件文件里同名方法不会跳错类
+    const cls = resolveComponentClass(tsPath, htmlPath);
+    if (cls) {
+        const scoped = membersOf(source, cls).find(member => member.name === methodName && member.kind !== 'property');
+        if (scoped) return locate(tsPath, scoped.nameIndex);
+    }
+
+    for (const target of source.classes) {
+        const hit = scanClassMembers(source.text, source.masked, target.bodyStart, target.bodyEnd).find(
+            member => member.name === methodName && member.kind !== 'property',
+        );
+        if (hit) return locate(tsPath, hit.nameIndex);
+    }
+
+    // 没有类（或类里没有）时退回全文搜索声明位置
+    const fallback = new RegExp(
+        `^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?(?:async\\s+)?` +
+            `(?:get\\s+|set\\s+)?${escapeRegex(methodName)}\\s*[\\(=:]`,
+        'm',
     );
-
-    for (let i = 0; i < lines.length; i++) {
-        if (pattern.test(lines[i])) {
-            const methodIdx = lines[i].indexOf(methodName);
-            const pos = new vscode.Position(i, methodIdx >= 0 ? methodIdx : 0);
-            return new vscode.Location(vscode.Uri.file(tsPath), pos);
-        }
-    }
-
-    return null;
+    const match = fallback.exec(source.masked);
+    return match ? locate(tsPath, match.index + match[0].indexOf(methodName)) : null;
 }
 
-function findPropInTsFile(tsPath: string, propName: string): vscode.Location | null {
-    const content = fs.readFileSync(tsPath, 'utf-8');
-    const lines = content.split('\n');
-    const escaped = escapeRegex(propName);
+function findPropInTsFile(tsPath: string, propName: string, htmlPath?: string): vscode.Location | null {
+    const source = loadSource(tsPath);
+    if (!source) return null;
 
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes(`name: '${propName}'`) || lines[i].includes(`name: "${propName}"`)) {
-            const idx = lines[i].indexOf(`'${propName}'`);
-            const finalIdx = idx >= 0 ? idx : lines[i].indexOf(`"${propName}"`);
-            const pos = new vscode.Position(i, finalIdx >= 0 ? finalIdx + 1 : 0);
-            return new vscode.Location(vscode.Uri.file(tsPath), pos);
-        }
+    const cls = resolveComponentClass(tsPath, htmlPath);
+
+    // 1. super({ ... }) 里的键
+    const superOpen = findSuperObject(source, cls);
+    if (superOpen !== null) {
+        const keyIndex = findKeyIndex(source.masked, superOpen, propName);
+        if (keyIndex !== null) return locate(tsPath, keyIndex);
     }
 
-    const interfacePropPattern = new RegExp(`\\b${escaped}\\s*[:?]\\s*`);
-    for (let i = 0; i < lines.length; i++) {
-        if (interfacePropPattern.test(lines[i]) && !lines[i].includes('(') && !lines[i].includes('function')) {
-            const idx = lines[i].indexOf(propName);
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx));
-        }
+    // 2. 类型声明里的属性（interface 或内联字面量）
+    const dataBody = findDataTypeBody(source, cls);
+    if (dataBody !== null) {
+        const keyIndex = findKeyIndex(source.masked, dataBody.open, propName);
+        if (keyIndex !== null) return locate(tsPath, keyIndex);
     }
 
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes(`this.$data.${propName}`)) {
-            const idx = lines[i].indexOf(propName);
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx));
-        }
+    // 3. 装饰器 props 数组里的 { name: 'xxx' }
+    const quoted = new RegExp(`name\\s*:\\s*(['"])${escapeRegex(propName)}\\1`);
+    const quotedMatch = quoted.exec(source.text);
+    if (quotedMatch) {
+        return locate(tsPath, quotedMatch.index + quotedMatch[0].indexOf(quotedMatch[1]));
     }
 
-    return null;
+    // 4. 代码里对 $data 的使用
+    const usage = new RegExp(`this\\.\\$data\\.${escapeRegex(propName)}\\b`);
+    const usageMatch = usage.exec(source.text);
+    return usageMatch ? locate(tsPath, usageMatch.index + 'this.$data.'.length) : null;
 }
 
-function findGetterInTsFile(tsPath: string, propName: string): vscode.Location | null {
-    const content = fs.readFileSync(tsPath, 'utf-8');
-    const lines = content.split('\n');
-    const escaped = escapeRegex(propName);
+function findGetterInTsFile(tsPath: string, propName: string, htmlPath?: string): vscode.Location | null {
+    const source = loadSource(tsPath);
+    if (!source) return null;
 
-    // Match: get propName() or get propName ():
-    const getterPattern = new RegExp(`^\\s*(?:public\\s+)?get\\s+${escaped}\\s*\\(`);
-    for (let i = 0; i < lines.length; i++) {
-        if (getterPattern.test(lines[i])) {
-            const idx = lines[i].indexOf(propName);
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx >= 0 ? idx : 0));
-        }
-    }
+    const members = collectMembers(tsPath, htmlPath);
+    const getter = members.find(member => member.name === propName && member.kind === 'getter');
+    if (getter) return locate(tsPath, getter.nameIndex);
 
-    // Fallback: class property (not in super({}) or interface)
-    const propPattern = new RegExp(`^\\s*(?:public\\s+)?(?:readonly\\s+)?${escaped}\\s*[=:]`);
-    for (let i = 0; i < lines.length; i++) {
-        // 排除 @CustomElement 的 name: 属性, 但属性名本身就是 name 时允许匹配
-        const skipNameCheck = propName === 'name' ? false : lines[i].includes('name:');
-        if (propPattern.test(lines[i]) && !skipNameCheck && !lines[i].includes('super(')) {
-            const idx = lines[i].indexOf(propName);
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx >= 0 ? idx : 0));
-        }
-    }
+    const property = members.find(member => member.name === propName && member.kind === 'property');
+    if (property) return locate(tsPath, property.nameIndex);
 
-    return null;
+    const fallback = new RegExp(`^\\s*(?:public\\s+)?(?:readonly\\s+)?${escapeRegex(propName)}\\s*[=:]`, 'm');
+    const match = fallback.exec(source.masked);
+    return match ? locate(tsPath, match.index + match[0].indexOf(propName)) : null;
 }
 
-function findDataDefinitionInTsFile(tsPath: string): vscode.Location | null {
-    const content = fs.readFileSync(tsPath, 'utf-8');
-    const lines = content.split('\n');
+function findDataDefinitionInTsFile(tsPath: string, htmlPath?: string): vscode.Location | null {
+    const source = loadSource(tsPath);
+    if (!source) return null;
 
-    for (let i = 0; i < lines.length; i++) {
-        if (/\binterface\s+\w*Data\b/.test(lines[i])) {
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, 0));
-        }
+    const cls = resolveComponentClass(tsPath, htmlPath);
+
+    const dataBody = findDataTypeBody(source, cls);
+    if (dataBody !== null) {
+        if (dataBody.inline) return locate(tsPath, dataBody.open);
+        const interfaceIndex = source.masked.lastIndexOf('interface', dataBody.open);
+        if (interfaceIndex !== -1) return locate(tsPath, interfaceIndex);
     }
 
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('BaseElement<') && !lines[i].includes('import')) {
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, 0));
-        }
-    }
+    if (cls) return locate(tsPath, cls.keywordIndex);
 
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('super({')) {
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, 0));
-        }
-    }
-
-    return null;
+    const superOpen = findSuperObject(source, null);
+    return superOpen === null ? null : locate(tsPath, superOpen);
 }
 
 function findRefInTsFile(tsPath: string, refName: string): vscode.Location | null {
-    const content = fs.readFileSync(tsPath, 'utf-8');
-    const lines = content.split('\n');
+    const source = loadSource(tsPath);
+    if (!source) return null;
 
-    const refPatterns = [`this.$refs.${refName}`, `$refs.${refName}`, `${refName}Ref`, `${refName}Refs`];
-
-    for (let i = 0; i < lines.length; i++) {
-        for (const pattern of refPatterns) {
-            if (lines[i].includes(pattern)) {
-                const idx = lines[i].indexOf(pattern);
-                return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx));
-            }
-        }
+    const patterns = [`this.$refs.${refName}`, `$refs.${refName}`, `${refName}Ref`, `${refName}Refs`];
+    for (const pattern of patterns) {
+        const index = source.text.indexOf(pattern);
+        if (index !== -1) return locate(tsPath, index);
     }
 
-    const escaped = escapeRegex(refName);
-    const typeAnnotationPattern = new RegExp(`\\b${escaped}\\s*:\\s*HTML\\w+Element`);
-    for (let i = 0; i < lines.length; i++) {
-        if (typeAnnotationPattern.test(lines[i])) {
-            const idx = lines[i].indexOf(refName);
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx));
-        }
-    }
+    const typeAnnotation = new RegExp(`\\b${escapeRegex(refName)}\\s*:\\s*HTML\\w+Element`);
+    const typeMatch = typeAnnotation.exec(source.text);
+    if (typeMatch) return locate(tsPath, typeMatch.index);
 
-    const genericRefPattern = new RegExp(`\\b${escaped}\\s*:\\s*`);
-    for (let i = 0; i < lines.length; i++) {
-        if (genericRefPattern.test(lines[i]) && !lines[i].includes('(') && !lines[i].includes('function')) {
-            const idx = lines[i].indexOf(refName);
-            return new vscode.Location(vscode.Uri.file(tsPath), new vscode.Position(i, idx));
-        }
-    }
-
-    return null;
+    const generic = new RegExp(`\\b${escapeRegex(refName)}\\s*:\\s*`);
+    const genericMatch = generic.exec(source.text);
+    return genericMatch ? locate(tsPath, genericMatch.index) : null;
 }
 
-export function getMethodSignatures(tsPath: string): MethodSignature[] {
-    if (!fs.existsSync(tsPath)) {
-        return [];
-    }
+/* ============================================================
+ * 成员 / 签名
+ * ============================================================ */
 
-    const content = fs.readFileSync(tsPath, 'utf-8');
-    const lines = content.split('\n');
+function formatSignature(member: MemberInfo): string {
+    const params = member.params.replace(/\s+/g, ' ').replace(/,\s*$/, '').trim();
+    const returnType = (member.returnType ?? 'void').replace(/\s+/g, ' ').trim();
+    return `${member.name}(${params}): ${returnType}`;
+}
+
+export function getMethodSignatures(tsPath: string, htmlPath?: string): MethodSignature[] {
+    const source = loadSource(tsPath);
+    if (!source) return [];
+
+    const lineStarts = computeLineStarts(source.text);
     const signatures: MethodSignature[] = [];
+    const seen = new Set<string>();
 
-    // 允许匹配带有泛型字符（如 Promise<void>）的各种返回类型文本
-    const methodPattern =
-        '^\\s*(?:(?:public|private|protected)\\s+)?' +
-        '(?:static\\s+)?(?:async\\s+)?' +
-        '(\\w+)\\s*\\(([^)]*)\\)\\s*' +
-        '(?::\\s*([^;{\\n]+?))?\\s*(?:\\{|;)';
-    const methodRegex = new RegExp(methodPattern);
+    for (const member of collectMembers(tsPath, htmlPath)) {
+        if (member.kind === 'property' || member.kind === 'getter' || member.kind === 'setter') continue;
+        if (NON_CALLABLE.has(member.name)) continue;
+        if (seen.has(member.name)) continue;
+        seen.add(member.name);
 
-    for (let i = 0; i < lines.length; i++) {
-        const match = methodRegex.exec(lines[i]);
-        if (match) {
-            const name = match[1];
-            if (name === 'constructor' || name === 'if' || name === 'for' || name === 'while') continue;
+        const from = offsetToLineCol(lineStarts, member.nameIndex);
+        const to = offsetToLineCol(lineStarts, member.nameIndex + member.name.length);
 
-            const params = match[2] || '';
-            const returnType = match[3] || 'void';
-            const signature = `${name}(${params}): ${returnType}`;
-
-            signatures.push({
-                name,
-                signature,
-                range: new vscode.Range(i, 0, i, lines[i].length),
-            });
-        }
-    }
-
-    // Also recognize class-field arrow functions:
-    // handleWaitingRetry = (): void => { ... }
-    const arrowMethodRegex = new RegExp(
-        '^\\s*(?:(?:public|private|protected)\\s+)?(?:static\\s+)?' +
-        '(?:async\\s+)?(\\w+)\\s*=\\s*\\(([^)]*)\\)\\s*' +
-        '(?::\\s*([^=\\n]+?))?\\s*=>',
-    );
-    for (let i = 0; i < lines.length; i++) {
-        const match = arrowMethodRegex.exec(lines[i]);
-        if (!match || signatures.some(signature => signature.name === match[1])) continue;
-
-        const params = match[2] || '';
-        const returnType = match[3]?.trim() || 'void';
         signatures.push({
-            name: match[1],
-            signature: `${match[1]}(${params}): ${returnType}`,
-            range: new vscode.Range(i, 0, i, lines[i].length),
+            name: member.name,
+            signature: formatSignature(member),
+            range: new vscode.Range(from.line, from.col, to.line, to.col),
         });
     }
 
     return signatures;
 }
 
-export function getPropTypeFromTsFile(tsPath: string, propName: string): string | null {
-    if (!fs.existsSync(tsPath)) {
-        return null;
+export function getPropTypeFromTsFile(tsPath: string, propName: string, htmlPath?: string): string | null {
+    const source = loadSource(tsPath);
+    if (!source) return null;
+
+    const cls = resolveComponentClass(tsPath, htmlPath);
+
+    // 1. 类型声明里的类型注解（interface 或内联字面量）
+    const dataBody = findDataTypeBody(source, cls);
+    if (dataBody !== null) {
+        const type = findKeyType(source.text, source.masked, dataBody.open, propName);
+        if (type) return type;
     }
 
-    const content = fs.readFileSync(tsPath, 'utf-8');
-    const lines = content.split('\n');
-    const escaped = escapeRegex(propName);
-
-    // Try to find type in interface: propName: Type
-    const interfacePattern = new RegExp(`\\b${escaped}\\s*[?:]\\s*(\\w+(?:<[^>]+>)?(?:\\[\\])?)`);
-    for (const line of lines) {
-        const match = interfacePattern.exec(line);
-        if (match && !line.includes('(') && !line.includes('function')) {
-            return match[1];
-        }
+    // 2. super({ prop: value as Type })
+    const superOpen = findSuperObject(source, cls);
+    if (superOpen !== null) {
+        const asMatch = new RegExp(`\\b${escapeRegex(propName)}\\s*:\\s*[^,}\\n]*?\\bas\\s+([\\w<>\\[\\]| ]+)`).exec(
+            source.text.slice(superOpen),
+        );
+        if (asMatch) return asMatch[1].trim();
     }
 
-    // Try to find type in super({ propName: defaultValue as Type })
-    const superPattern = new RegExp(`${escaped}\\s*:\\s*[^,}]+as\\s+(\\w+)`);
-    for (const line of lines) {
-        const match = superPattern.exec(line);
-        if (match) {
-            return match[1];
-        }
-    }
-
-    // Try to find return type of getter: get propName(): Type
-    const getterPattern = new RegExp(
-        `^\\s*(?:public\\s+)?get\\s+${escaped}\\s*\\(\\s*\\)\\s*:\\s*(\\w+(?:<[^>]+>)?(?:\\[\\])?)`,
-    );
-    for (const line of lines) {
-        const match = getterPattern.exec(line);
-        if (match) {
-            return match[1];
-        }
-    }
+    // 3. getter 返回类型
+    const members = collectMembers(tsPath, htmlPath);
+    const getter = members.find(member => member.name === propName && member.kind === 'getter');
+    if (getter?.returnType) return getter.returnType.replace(/\s+/g, ' ').trim();
 
     return null;
 }
 
-/** 获取组件所有有效成员名(方法 + getter + 数据属性),包含继承链 */
-export function getComponentMembers(tsPath: string): {
+/** 获取组件所有有效成员名（方法 + getter + 数据属性），包含继承链 */
+export function getComponentMembers(
+    tsPath: string,
+    htmlPath?: string,
+): {
     methods: Set<string>;
     getters: Set<string>;
     dataProps: Set<string>;
@@ -1091,294 +1240,276 @@ export function getComponentMembers(tsPath: string): {
     const getters = new Set<string>();
     const dataProps = new Set<string>();
 
-    const allPaths = [tsPath, ...findAncestorFiles(tsPath)];
+    // 组件继承 HTMLElement，这些 API 在模板里调用是合法的
+    for (const name of FRAMEWORK_METHODS) methods.add(name);
 
-    // BaseElement is the framework's public component contract. Keep these
-    // members available even when the package is linked outside the current
-    // workspace or its declaration entry cannot be resolved by the extension.
-    // This prevents a valid inherited API from becoming a false diagnostic.
-    try {
-        const componentSource = fs.readFileSync(tsPath, 'utf-8');
-        if (/\bclass\s+\w+\s+extends\s+BaseElement\b/.test(componentSource)) {
-            methods.add('emit');
-            methods.add('emitNative');
-        }
-    } catch {
-        /* ignore */
-    }
+    const allPaths = [tsPath, ...findAncestorFiles(tsPath, htmlPath)];
 
-    for (const p of allPaths) {
-        // 方法
-        for (const sig of getMethodSignatures(p)) {
-            methods.add(sig.name);
+    for (const currentPath of allPaths) {
+        for (const member of collectMembers(currentPath, currentPath === tsPath ? htmlPath : undefined)) {
+            if (member.kind === 'getter') getters.add(member.name);
+            else if (member.kind === 'setter') getters.add(member.name);
+            else if (member.kind !== 'property') methods.add(member.name);
         }
-        // getter
-        for (const name of getGetterNames(p)) {
-            getters.add(name);
-        }
-        // 数据属性(只在当前组件中,不在父类)
-        if (p === tsPath) {
-            for (const prop of extractDataPropsFromTs(p)) {
-                dataProps.add(prop);
-            }
+
+        // 数据属性只在当前组件里找（父类的 $data 是另一套）
+        if (currentPath === tsPath) {
+            for (const prop of extractDataPropsFromTs(currentPath, htmlPath)) dataProps.add(prop);
         }
     }
 
     return { methods, getters, dataProps };
 }
 
-/** 从 TS 文件提取所有 getter 名称 */
-function getGetterNames(tsPath: string): string[] {
-    try {
-        const content = fs.readFileSync(tsPath, 'utf-8');
-        const names: string[] = [];
-        const getterRegex = /^\s*(?:public\s+)?get\s+(\w+)\s*\(/gm;
-        let match: RegExpExecArray | null;
-        while ((match = getterRegex.exec(content)) !== null) {
-            if (!names.includes(match[1])) {
-                names.push(match[1]);
-            }
-        }
-        return names;
-    } catch {
-        return [];
-    }
-}
+/* ============================================================
+ * 诊断
+ * ============================================================ */
 
 /**
- * 检查 HTML 模板中的引用是否在 TS 组件中存在
- * 保守策略: 只检查 this.method() 和 $data.prop, 跳过 $ 开头的框架内置成员
+ * 检查 HTML 模板中的引用是否在 TS 组件中存在。
+ *
+ * 只在「会被编译成表达式」的区域里检查（`{{ }}` 内容与动态属性值），
+ * 因此注释掉的代码、`<style>` 里的内容、正文里的 `this.xxx()` 文案都不会误报。
  */
 export function validateReferences(document: vscode.TextDocument): TemplateDiagnostic[] {
     const diagnostics: TemplateDiagnostic[] = [];
     const tsPath = findCorrespondingTsFile(document.fileName);
     if (!tsPath) return diagnostics;
 
-    const { methods, getters, dataProps } = getComponentMembers(tsPath);
+    const { methods, getters, dataProps } = getComponentMembers(tsPath, document.fileName);
     const text = document.getText();
+    const masked = maskHtmlNonContent(text);
+    const lineStarts = computeLineStarts(text);
+    const regions = collectExpressionRegions(masked);
 
-    // 1. 检查 this.method() 调用
-    const methodCallRegex = /\bthis\.(\w+)\s*\(/g;
-    let match: RegExpExecArray | null;
-    while ((match = methodCallRegex.exec(text)) !== null) {
-        const name = match[1];
-        // 跳过 $ 开头的框架内置成员($emit, $nextTick 等)
-        if (name.startsWith('$')) continue;
-        // 检查是否存在(方法或 getter)
-        if (!methods.has(name) && !getters.has(name)) {
-            const offset = match.index + 5; // 'this.' 的长度
-            const startPos = document.positionAt(offset);
-            const endPos = document.positionAt(offset + name.length);
-            diagnostics.push({
-                range: new vscode.Range(startPos, endPos),
-                message: `方法 '${name}' 在组件及其父类中未定义`,
-                severity: vscode.DiagnosticSeverity.Error,
-            });
-        }
-    }
+    const pushDiagnostic = (message: string, start: number, length: number): void => {
+        const from = offsetToLineCol(lineStarts, start);
+        const to = offsetToLineCol(lineStarts, start + length);
+        diagnostics.push({
+            message,
+            range: new vscode.Range(from.line, from.col, to.line, to.col),
+            severity: vscode.DiagnosticSeverity.Error,
+        });
+    };
 
-    // 2. 检查 $data.prop 数据属性
-    // 如果 dataProps 为空(无法解析 super/interface), 跳过检查避免误报
-    if (dataProps.size > 0) {
-        const dataPropRegex = /\$data\.(\w+)/g;
-        while ((match = dataPropRegex.exec(text)) !== null) {
+    for (const region of regions) {
+        const slice = masked.slice(region.start, region.end);
+
+        const methodCall = /\bthis\.(\w+)\s*\(/g;
+        let match: RegExpExecArray | null;
+        while ((match = methodCall.exec(slice)) !== null) {
             const name = match[1];
-            // 检查是否在数据属性或 getter 中
-            if (!dataProps.has(name) && !getters.has(name)) {
-                const offset = match.index + 6; // '$data.' 的长度
-                const startPos = document.positionAt(offset);
-                const endPos = document.positionAt(offset + name.length);
-                diagnostics.push({
-                    range: new vscode.Range(startPos, endPos),
-                    message: `数据属性 '${name}' 在 super({}) 或 interface 中未定义`,
-                    severity: vscode.DiagnosticSeverity.Error,
-                });
-            }
+            if (name.startsWith('$')) continue;
+            if (methods.has(name) || getters.has(name)) continue;
+            pushDiagnostic(`方法 '${name}' 在组件及其父类中未定义`, region.start + match.index + 5, name.length);
+        }
+
+        // dataProps 为空说明 super/interface 都没解析出来，跳过以免误报
+        if (dataProps.size === 0) continue;
+
+        const dataProp = /\$data\.(\w+)/g;
+        while ((match = dataProp.exec(slice)) !== null) {
+            const name = match[1];
+            if (dataProps.has(name) || getters.has(name) || methods.has(name)) continue;
+            pushDiagnostic(
+                `数据属性 '${name}' 在 super({}) 或 interface 中未定义`,
+                region.start + match.index + 6,
+                name.length,
+            );
         }
     }
 
     return diagnostics;
 }
 
+/**
+ * 模板语法校验。
+ *
+ * 只有能关联到 TS 组件的文件才会被当作 Solely 模板校验——普通 HTML
+ * （Handlebars / Jinja / 静态演示页）不再被 `{{ }}`、`@click` 之类的规则骚扰。
+ */
 export function validateTemplate(document: vscode.TextDocument): TemplateDiagnostic[] {
     const diagnostics: TemplateDiagnostic[] = [];
-    const text = document.getText();
-    const lines = text.split('\n');
+    if (!findCorrespondingTsFile(document.fileName)) return diagnostics;
 
-    validateControlFlowTags(text, lines, diagnostics);
-    validateInterpolations(lines, diagnostics);
-    validateAttributeSyntax(lines, diagnostics);
+    const text = document.getText();
+    const masked = maskHtmlNonContent(text);
+    const lineStarts = computeLineStarts(text);
+
+    validateControlFlowTags(masked, lineStarts, diagnostics);
+    validateInterpolations(masked, lineStarts, diagnostics);
+    validateAttributeSyntax(masked, lineStarts, diagnostics);
 
     return diagnostics;
 }
 
-function validateControlFlowTags(text: string, lines: string[], diagnostics: TemplateDiagnostic[]): void {
-    const tagStack: { tag: string; line: number; col: number }[] = [];
+function rangeAt(lineStarts: number[], start: number, length: number): vscode.Range {
+    const from = offsetToLineCol(lineStarts, start);
+    const to = offsetToLineCol(lineStarts, start + length);
+    return new vscode.Range(from.line, from.col, to.line, to.col);
+}
+
+function validateControlFlowTags(masked: string, lineStarts: number[], diagnostics: TemplateDiagnostic[]): void {
+    const tagStack: { tag: string; index: number }[] = [];
     const tagRegex = /<\/?([A-Za-z][A-Za-z0-9\-]*)/g;
+
+    // 上一次闭合的控制流标签：Else/ElseIf 必须紧跟在它后面
+    let lastClosed: { tag: string; depth: number; end: number } | null = null;
+
     let match: RegExpExecArray | null;
-
-    // Track the last closed control tag at each nesting depth for ElseIf/Else validation
-    // Key: nesting depth (tagStack.length at close time), Value: the tag that was closed
-    const lastClosedAtDepth = new Map<number, string>();
-
-    while ((match = tagRegex.exec(text)) !== null) {
+    while ((match = tagRegex.exec(masked)) !== null) {
         const fullMatch = match[0];
         const tagName = match[1].toLowerCase();
-        const isClosing = fullMatch.startsWith('</');
-        const pos = getLineCol(lines, match.index);
-
         if (!SOLELY_CONTROL_TAGS.has(tagName)) continue;
+
+        const isClosing = fullMatch.startsWith('</');
+        const tagEnd = findTagEnd(masked, match.index);
+        const isSelfClosing = !isClosing && tagEnd !== -1 && masked[tagEnd - 1] === '/';
 
         if (isClosing) {
             if (tagStack.length === 0) {
                 diagnostics.push({
                     message: `意外的闭合标签 </${tagName}>，没有对应的开始标签`,
-                    range: new vscode.Range(pos.line, pos.col, pos.line, pos.col + fullMatch.length),
+                    range: rangeAt(lineStarts, match.index, fullMatch.length),
                     severity: vscode.DiagnosticSeverity.Error,
                 });
-            } else {
-                const last = tagStack[tagStack.length - 1];
-                if (tagName === last.tag) {
-                    // Record what was closed at this depth before popping
-                    lastClosedAtDepth.set(tagStack.length - 1, tagName);
-                    tagStack.pop();
-                } else {
-                    diagnostics.push({
-                        message: `标签不匹配: 期望 </${last.tag}>，但找到 </${tagName}>`,
-                        range: new vscode.Range(pos.line, pos.col, pos.line, pos.col + fullMatch.length),
-                        severity: vscode.DiagnosticSeverity.Error,
-                    });
-                }
+                continue;
             }
-        } else {
-            // Opening tags
-            // Validate ElseIf/Else: must follow If or ElseIf at the same nesting level
-            if (tagName === 'elseif' || tagName === 'else') {
-                const currentDepth = tagStack.length;
-                const lastClosed = lastClosedAtDepth.get(currentDepth);
-                if (lastClosed !== 'if' && lastClosed !== 'elseif') {
-                    diagnostics.push({
-                        message: `<${match[1]}> 必须在 <If> 或 <ElseIf> 之后`,
-                        range: new vscode.Range(pos.line, pos.col, pos.line, pos.col + fullMatch.length),
-                        severity: vscode.DiagnosticSeverity.Error,
-                    });
-                }
-                // Clear the record so a second Else at the same depth is flagged
-                lastClosedAtDepth.delete(currentDepth);
+
+            const last = tagStack[tagStack.length - 1];
+            if (tagName !== last.tag) {
+                diagnostics.push({
+                    message: `标签不匹配: 期望 </${last.tag}>，但找到 </${tagName}>`,
+                    range: rangeAt(lineStarts, match.index, fullMatch.length),
+                    severity: vscode.DiagnosticSeverity.Error,
+                });
+                continue;
             }
-            tagStack.push({ tag: tagName, line: pos.line, col: pos.col });
+
+            tagStack.pop();
+            lastClosed = { tag: tagName, depth: tagStack.length, end: tagEnd === -1 ? match.index : tagEnd + 1 };
+            continue;
         }
+
+        // 自闭合的 <Show test="x" /> 是合法的（框架把它当 void 元素）
+        if (isSelfClosing) continue;
+
+        if (tagName === 'elseif' || tagName === 'else') {
+            const valid =
+                lastClosed !== null &&
+                lastClosed.depth === tagStack.length &&
+                (lastClosed.tag === 'if' || lastClosed.tag === 'elseif') &&
+                // 编译器只允许空白/注释出现在 </If> 与 <Else> 之间
+                masked.slice(lastClosed.end, match.index).trim() === '';
+
+            if (!valid) {
+                diagnostics.push({
+                    message: `<${match[1]}> 必须紧跟 <If> 或 <ElseIf> 之后`,
+                    range: rangeAt(lineStarts, match.index, fullMatch.length),
+                    severity: vscode.DiagnosticSeverity.Error,
+                });
+            }
+
+            // 一个 Else 之后不能再接 ElseIf/Else
+            lastClosed = null;
+        }
+
+        tagStack.push({ tag: tagName, index: match.index });
     }
 
     for (const unclosed of tagStack) {
         diagnostics.push({
             message: `未闭合的标签 <${unclosed.tag}>`,
-            range: new vscode.Range(unclosed.line, unclosed.col, unclosed.line, unclosed.col + unclosed.tag.length + 1),
+            range: rangeAt(lineStarts, unclosed.index, unclosed.tag.length + 1),
             severity: vscode.DiagnosticSeverity.Error,
         });
     }
 }
 
-function validateInterpolations(lines: string[], diagnostics: TemplateDiagnostic[]): void {
-    const text = lines.join('\n');
+/** 从 `<` 开始找到标签结束的 `>`（考虑引号） */
+function findTagEnd(text: string, from: number): number {
+    let quote: string | null = null;
+    for (let i = from; i < text.length; i++) {
+        const ch = text[i];
+        if (quote) {
+            if (ch === quote) quote = null;
+        } else if (ch === '"' || ch === "'") {
+            quote = ch;
+        } else if (ch === '>') {
+            return i;
+        } else if (ch === '\n' && i - from > 2000) {
+            return -1;
+        }
+    }
+    return -1;
+}
 
-    // Track matched {{ and }} positions to detect stray }}
+function validateInterpolations(masked: string, lineStarts: number[], diagnostics: TemplateDiagnostic[]): void {
     const matchedClosePositions = new Set<number>();
 
-    // Find all {{ ... }} pairs (including multiline) and check for issues
     const openRegex = /\{\{/g;
     let openMatch: RegExpExecArray | null;
 
-    while ((openMatch = openRegex.exec(text)) !== null) {
+    while ((openMatch = openRegex.exec(masked)) !== null) {
         const openPos = openMatch.index;
         const afterOpen = openPos + 2;
 
-        // Find the matching }}
-        const closeIdx = text.indexOf('}}', afterOpen);
+        const closeIdx = masked.indexOf('}}', afterOpen);
         if (closeIdx === -1) {
-            const startPos = getLineCol(lines, openPos);
-            const endPos = getLineCol(lines, text.length - 1);
             diagnostics.push({
                 message: '插值表达式未闭合，缺少 }}',
-                range: new vscode.Range(startPos.line, startPos.col, endPos.line, lines[endPos.line].length),
+                range: rangeAt(lineStarts, openPos, Math.max(2, masked.length - openPos)),
                 severity: vscode.DiagnosticSeverity.Error,
             });
             break;
         }
 
-        // Mark this }} as matched
         matchedClosePositions.add(closeIdx);
 
-        // Check if the content between {{ and }} is empty
-        const content = text.substring(afterOpen, closeIdx).trim();
-        if (content.length === 0) {
-            const startPos = getLineCol(lines, openPos);
-            const endPos = getLineCol(lines, closeIdx + 2);
+        if (masked.substring(afterOpen, closeIdx).trim().length === 0) {
             diagnostics.push({
                 message: '插值表达式内容为空',
-                range: new vscode.Range(startPos.line, startPos.col, endPos.line, endPos.col),
+                range: rangeAt(lineStarts, openPos, closeIdx + 2 - openPos),
                 severity: vscode.DiagnosticSeverity.Warning,
             });
         }
 
-        // Skip past this closing }}
         openRegex.lastIndex = closeIdx + 2;
     }
 
-    // Check for stray }} without matching {{
     const closeRegex = /\}\}/g;
     let closeMatch: RegExpExecArray | null;
-    while ((closeMatch = closeRegex.exec(text)) !== null) {
-        if (!matchedClosePositions.has(closeMatch.index)) {
-            const pos = getLineCol(lines, closeMatch.index);
-            diagnostics.push({
-                message: '意外的 }} ，缺少 {{',
-                range: new vscode.Range(pos.line, pos.col, pos.line, pos.col + 2),
-                severity: vscode.DiagnosticSeverity.Warning,
-            });
-        }
+    while ((closeMatch = closeRegex.exec(masked)) !== null) {
+        if (matchedClosePositions.has(closeMatch.index)) continue;
+        diagnostics.push({
+            message: '意外的 }} ，缺少 {{',
+            range: rangeAt(lineStarts, closeMatch.index, 2),
+            severity: vscode.DiagnosticSeverity.Warning,
+        });
     }
 }
 
-function validateAttributeSyntax(lines: string[], diagnostics: TemplateDiagnostic[]): void {
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+function validateAttributeSyntax(masked: string, lineStarts: number[], diagnostics: TemplateDiagnostic[]): void {
+    // 要求属性名前是空白，避免把 `title="a:b=c"` 这种引号内的内容当成属性绑定
+    const unquotedAt = /(?:^|\s)@(\w+(?:-\w+)*)\s*=\s*(?!"|')([^\s>]+)/g;
+    let match: RegExpExecArray | null;
 
-        // Check for unquoted event binding values: @click=foo (should be @click="foo")
-        const unquotedAt = /@(\w+(?:-\w+)*)\s*=\s*(?!"|')([^\s>]+)/g;
-        let m: RegExpExecArray | null;
-        while ((m = unquotedAt.exec(line)) !== null) {
-            diagnostics.push({
-                message: `事件绑定 @${m[1]} 的值建议使用引号包裹`,
-                range: new vscode.Range(i, m.index, i, m.index + m[0].length),
-                severity: vscode.DiagnosticSeverity.Warning,
-            });
-        }
-
-        // Check for unquoted property binding values: :src=foo (should be :src="foo")
-        const unquotedBind = /:(\w+(?:-\w+)*)\s*=\s*(?!"|')([^\s>]+)/g;
-        while ((m = unquotedBind.exec(line)) !== null) {
-            diagnostics.push({
-                message: `属性绑定 :${m[1]} 的值建议使用引号包裹`,
-                range: new vscode.Range(i, m.index, i, m.index + m[0].length),
-                severity: vscode.DiagnosticSeverity.Warning,
-            });
-        }
+    while ((match = unquotedAt.exec(masked)) !== null) {
+        const leading = match[0].length - match[0].trimStart().length;
+        diagnostics.push({
+            message: `事件绑定 @${match[1]} 的值建议使用引号包裹`,
+            range: rangeAt(lineStarts, match.index + leading, match[0].length - leading),
+            severity: vscode.DiagnosticSeverity.Warning,
+        });
     }
-}
 
-function getLineCol(lines: string[], charIndex: number): { line: number; col: number } {
-    let currentIndex = 0;
-    for (let i = 0; i < lines.length; i++) {
-        const lineLength = lines[i].length + 1;
-        if (currentIndex + lineLength > charIndex) {
-            return { line: i, col: charIndex - currentIndex };
-        }
-        currentIndex += lineLength;
+    const unquotedBind = /(?:^|\s):(\w+(?:-\w+)*)\s*=\s*(?!"|')([^\s>]+)/g;
+    while ((match = unquotedBind.exec(masked)) !== null) {
+        const leading = match[0].length - match[0].trimStart().length;
+        diagnostics.push({
+            message: `属性绑定 :${match[1]} 的值建议使用引号包裹`,
+            range: rangeAt(lineStarts, match.index + leading, match[0].length - leading),
+            severity: vscode.DiagnosticSeverity.Warning,
+        });
     }
-    return { line: lines.length - 1, col: 0 };
-}
-
-function escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

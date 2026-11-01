@@ -24,16 +24,16 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
             return null;
         }
 
-        if (ref.kind === 'method' || ref.kind === 'chainedMethod') {
-            let signatures = getMethodSignatures(tsPath);
+        if (ref.kind === 'method') {
+            let signatures = getMethodSignatures(tsPath, document.fileName);
             let sig = signatures.find(s => s.name === ref.name);
             let source = '组件类';
 
             // Walk up the inheritance chain
             if (!sig) {
-                const ancestorPaths = findAncestorFiles(tsPath);
+                const ancestorPaths = findAncestorFiles(tsPath, document.fileName);
                 for (const ancestorPath of ancestorPaths) {
-                    signatures = getMethodSignatures(ancestorPath);
+                    signatures = getMethodSignatures(ancestorPath, document.fileName);
                     sig = signatures.find(s => s.name === ref.name);
                     if (sig) {
                         // Use the class name from the file path as source label
@@ -44,12 +44,12 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
             }
 
             // Fallback for chained method: find in the class of the first-level property
-            if (!sig && ref.kind === 'method' && ref.fullExpression) {
+            if (!sig && ref.fullExpression) {
                 const chainedMatch = ref.fullExpression.match(/\bthis\.(\w+)\.\w+\s*\(/);
                 if (chainedMatch) {
-                    const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1]);
+                    const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1], document.fileName);
                     if (propClassPath) {
-                        signatures = getMethodSignatures(propClassPath);
+                        signatures = getMethodSignatures(propClassPath, document.fileName);
                         sig = signatures.find(s => s.name === ref.name);
                         source = chainedMatch[1];
                     }
@@ -57,16 +57,15 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
             }
 
             if (sig) {
-                const kindLabel = ref.kind === 'chainedMethod' ? '链式调用 → ' : '';
                 const contents = new vscode.MarkdownString();
-                contents.appendCodeblock(`${kindLabel}${sig.signature}`, 'typescript');
+                contents.appendCodeblock(sig.signature, 'typescript');
                 contents.appendMarkdown(`\n\n*来自 ${source} — Ctrl+点击跳转到定义*`);
                 return new vscode.Hover(contents);
             }
         }
 
         if (ref.kind === 'dataProp') {
-            const propType = getPropTypeFromTsFile(tsPath, ref.name);
+            const propType = getPropTypeFromTsFile(tsPath, ref.name, document.fileName);
             const contents = new vscode.MarkdownString();
             if (propType) {
                 contents.appendCodeblock(`$data.${ref.name}: ${propType}`, 'typescript');
@@ -79,14 +78,14 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
         }
 
         if (ref.kind === 'getter') {
-            let propType = getPropTypeFromTsFile(tsPath, ref.name);
+            let propType = getPropTypeFromTsFile(tsPath, ref.name, document.fileName);
             let source = '组件类';
 
             // Walk up the inheritance chain
             if (!propType) {
-                const ancestorPaths = findAncestorFiles(tsPath);
+                const ancestorPaths = findAncestorFiles(tsPath, document.fileName);
                 for (const ancestorPath of ancestorPaths) {
-                    propType = getPropTypeFromTsFile(ancestorPath, ref.name);
+                    propType = getPropTypeFromTsFile(ancestorPath, ref.name, document.fileName);
                     if (propType) {
                         source = ancestorPath.split(/[/\\]/).pop()?.replace(/\.ts$/, '') ?? '父类';
                         break;

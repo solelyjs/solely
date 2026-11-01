@@ -11,7 +11,8 @@ export class SolelyDiagnosticProvider {
     }
 
     updateDiagnostics(document: vscode.TextDocument): void {
-        if (document.languageId !== 'html') {
+        // 只处理磁盘上的 HTML 模板；diff / output / untitled 视图跳过
+        if (document.languageId !== 'html' || document.uri.scheme !== 'file') {
             return;
         }
 
@@ -31,6 +32,9 @@ export class SolelyDiagnosticProvider {
     }
 
     private doUpdateDiagnostics(document: vscode.TextDocument): void {
+        // 文档可能在防抖窗口内被关闭，close 事件已经清过，不必再跑一遍
+        if (document.isClosed) return;
+
         const syntaxDiagnostics = validateTemplate(document);
         const refDiagnostics = validateReferences(document);
 

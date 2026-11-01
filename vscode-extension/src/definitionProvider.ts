@@ -17,7 +17,7 @@ export class SolelyDefinitionProvider implements vscode.DefinitionProvider {
             return null;
         }
 
-        const location = findDefinitionInTsFile(tsPath, ref);
+        const location = findDefinitionInTsFile(tsPath, ref, document.fileName);
         if (location) {
             return location;
         }

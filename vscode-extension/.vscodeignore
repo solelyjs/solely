@@ -2,10 +2,14 @@
 .vscode-test/**
 src/**
 scripts/**
+tests/**
 PUBLISH.md
+ROADMAP.md
 icons/solely.svg
 *.vsix
 tsconfig.json
 .gitignore
 node_modules/**
 package-lock.json
+dist/**/*.map
+dist/**/*.d.ts
