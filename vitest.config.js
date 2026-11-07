@@ -14,6 +14,11 @@ export default defineConfig({
     },
   },
   test: {
+    // 只收集根目录 tests/ 下的 Vitest 用例；
+    // vscode-extension 使用 node:test，需在子包内独立运行，避免被根 Vitest 误收集
+    include: ['tests/**/*.test.ts'],
+    // SSR 用例会动态导入全部组件入口，Windows/全量并行时可能远超默认 5s
+    testTimeout: 30000,
     environment: 'jsdom',
     globals: true,
     setupFiles: './tests/setup.ts',
