@@ -95,7 +95,8 @@ function readSavedTheme(): ThemeConfig | null {
 
 /**
  * 初始化主题
- * 优先级：用户保存的设置 > 系统偏好 > 默认浅色
+ * 优先级：用户保存的设置 > 系统偏好（仅作为首次初始化的默认值） > 默认浅色
+ * 注意：这里只在初始化时读取一次系统偏好，不会持续监听系统主题变化
  */
 export function initTheme(): void {
     // 优先使用用户保存的设置（非法内容视为未保存）
@@ -105,7 +106,7 @@ export function initTheme(): void {
         return;
     }
 
-    // 其次跟随系统偏好；matchMedia 缺失或抛错时降级为默认浅色
+    // 其次把系统偏好作为首次默认值；matchMedia 缺失或抛错时降级为默认浅色
     let prefersDark = false;
     try {
         prefersDark =

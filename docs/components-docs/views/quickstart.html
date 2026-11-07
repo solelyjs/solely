@@ -159,7 +159,7 @@ drawer.<span class="code-attr">close</span>();</pre>
 
 <div class="demo-block">
     <h3 class="demo-block-title">主题样式</h3>
-    <p class="demo-block-desc">引入全部组件时，主题 CSS 变量会自动加载；按需引入时需要单独导入主题样式。</p>
+    <p class="demo-block-desc">主题在首次导入时初始化：优先使用本地保存的选择，其次以系统偏好作为初始默认值，再没有则使用浅色；初始化后以保存的选择为准，不会持续跟随系统主题变化。引入全部组件时主题 CSS 变量会自动加载；按需引入时需要单独导入主题样式。</p>
     <div class="demo-box">
         <div class="demo-code">
             <pre><span class="code-comment">// 引入全部组件（主题 CSS 已包含）</span>
@@ -169,7 +169,7 @@ drawer.<span class="code-attr">close</span>();</pre>
 <span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
 <span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
 
-<span class="code-comment">// 使用主题切换功能</span>
+<span class="code-comment">// 主题只在首次导入时初始化，之后需要时通过 API 手动切换</span>
 <span class="code-keyword">import</span> { <span class="code-type">setTheme</span>, <span class="code-type">toggleTheme</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/theme'</span>;
 <span class="code-type">toggleTheme</span>(); <span class="code-comment">// 切换明暗主题</span></pre>
         </div>
