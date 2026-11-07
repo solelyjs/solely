@@ -7,7 +7,7 @@
  * import 'solely/components';
  *
  * // 导入主题 CSS（需手动引入）
- * import 'solely/theme/variables.css';
+ * import 'solely/components/theme/variables.css';
  *
  * // 仅导入自定义元素组件
  * import { SolelyButton } from 'solely/components/elements';

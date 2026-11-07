@@ -112,7 +112,10 @@ cd solely
 # 安装依赖
 npm install
 
-# 运行测试
+# 一次性运行测试
+npm run test:run
+
+# 开发时监听变更（watch 模式）
 npm test
 
 # 构建项目
@@ -126,7 +129,8 @@ npm run dev
 
 ```bash
 npm run build      # 构建项目
-npm run test       # 运行单元测试
+npm run test:run   # 一次性运行单元测试
+npm test           # 监听模式运行单元测试
 npm run test:ui    # 运行测试并打开 UI
 npm run dev        # 启动开发服务器
 npm run preview    # 预览构建结果

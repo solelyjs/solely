@@ -14,7 +14,7 @@ npm run verify
 ```
 
 `verify` = `typecheck` → `lint` → `format:check` → `test:run` → `build` → `check:exports`。
-全部通过即说明静态检查、453 个单测、构建与导出入口都没问题；失败会在对应步骤直接停下。
+全部通过即说明静态检查、467 个单测、构建与导出入口都没问题；失败会在对应步骤直接停下。
 
 **人工直观验证**：`npm run dev` 后打开 `http://localhost:5173/examples/regression/index.html`。
 页面会自动跑完 12 个用例，每项给出「预期 / 实际 / 结论」，顶部显示 `12/12 通过`；
@@ -28,12 +28,12 @@ URL 与共享数据用例会把预期告警各输出 1 条到控制台（方便�
 | `tsc --noEmit`                 | exit 0，无输出                                                                           |
 | `eslint .`                     | **0 error / 0 warning**（`examples/`、`docs/` 已放宽 `no-console` 与 `no-explicit-any`） |
 | `prettier --check src`         | All matched files use Prettier code style                                                |
-| `vitest run`                   | **453 passed / 1 skipped**（30 个文件）                                                  |
-| 覆盖率                         | statements 87.1 / branches 83.9 / functions 95.1（阈值 80/75/85）                        |
+| `vitest run`                   | **467 passed / 1 skipped**（30 个文件）                                                  |
+| 覆盖率                         | statements 87.42 / branches 80.66 / functions 91.80（阈值 80/75/85）                     |
 | `vite build` + `check:exports` | 140 个导出目标全部存在                                                                   |
 | `build:examples`               | 构建成功，无报错                                                                         |
 
-> 上表是 2026-10-25 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
+> 上表是 2026-11-07 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
 
 > 若只想快速确认，跑 `npm run verify` 即可；下面的手工项用于覆盖单测覆盖不到的真实浏览器行为。
 
@@ -201,14 +201,14 @@ createRouter({ routes, maxKeepAlive: 1 });
 
 ```bash
 npm run pack:local
-# 会先 build + check:exports，再产出 solely-0.6.0.tgz
+# 会先 build + check:exports，再产出 solely-0.7.1.tgz
 ```
 
 然后在一个空目录安装并验证所有入口（Node 20/22）：
 
 ```bash
 mkdir -p /tmp/solely-smoke && cd /tmp/solely-smoke && npm init -y
-npm i /path/to/solely/solely-0.6.0.tgz
+npm i /path/to/solely/solely-0.7.1.tgz
 
 node --input-type=module -e "import('solely').then(m=>console.log('main', typeof m.BaseElement, typeof m.buildIR))"
 node --input-type=module -e "import('solely/compiler').then(m=>console.log('compiler', typeof m.buildIR))"
@@ -222,7 +222,7 @@ node -e "const s=require('solely'); console.log('cjs', typeof s.BaseElement)"
 再确认 tarball 里关键入口齐全：
 
 ```bash
-tar -tf solely-0.6.0.tgz | grep -E "package/dist/(index|plugin|compiler/index|components/elements/button/index)"
+tar -tf solely-0.7.1.tgz | grep -E "package/dist/(index|plugin|compiler/index|components/elements/button/index)"
 ```
 
 ---
