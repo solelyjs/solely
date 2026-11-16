@@ -7,6 +7,117 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-16
+
+### ⚠️ Breaking
+
+- **runtime**: 布尔 attribute 改为按值解析：`"false"` / `"0"`（大小写不敏感、trim 后）解析为 `false`，`""` 与其它字符串仍为 `true`，`removeAttribute` 回退到 props 默认值。此前 attribute 只要存在即为 `true`，因此 `disabled="false"` 的语义发生反转——现在表示**启用**而不是禁用。迁移：需要禁用时写 `disabled` / `disabled="true"` / `disabled=""`，需要关闭默认开启的布尔属性时写 `="false"`（如 `show-info="false"`、`local-sort="false"`）；改用 `hasAttribute()` 判断布尔状态的代码改为读取属性值或 property。
+- **runtime**: 组件属性赋值现在会反向写回同名 attribute（`value`、对象/数组与声明了 `reflect: false` 的属性除外）。迁移：依赖 `hasAttribute()` / CSS 属性选择器判断「是否用户显式设置」的代码改为读取属性值；DOM 快照、SSR 水合断言与基于 attribute 的测试需同步更新。
+- **form**: `input` / `checkbox` / `switch` / `radio` / `select` 接入原生 form 关联。`required` 现在参与约束校验并可能阻止原生提交，`name` 值进入 `FormData`，`form.reset()` 会重置组件并派发 `change`（`source: 'reset'`），祖先 `<fieldset disabled>` 会级联禁用。迁移：不需要原生提交的表单加 `novalidate` 或移除 `required` / `name`；依赖 reset 不派发事件的代码过滤 `event.detail.source === 'reset'`；需要旧行为时移除这些属性并继续用 `setValue()` 自行同步。
+- **input**: `el.value = x` 改为静默，不再自动派发 `change`。迁移：需要事件时改用 `setValue(x)`（默认 `silent = false`，同值仍不派发）；仅做显示同步可继续直接赋值。
+- **input**: `change` 事件由裸 `Event` 改为 `CustomEvent`，detail 为 `{ name, value, previousValue, source }`，初始化与同值写入不再派发。迁移：`event.target.value` 仍可用；需要旧值/来源时读取 `event.detail`；依赖挂载期或重复赋值触发 `change` 的副作用需移除。
+- **input**: 内部新增 `.form-control-group` 包装层（`part="group"`）。`.form-control` 仍是 `part="base"`，`::part(base)` 继续有效，并不要求其为宿主直接子元素。迁移：检查「宿主直接子元素」、`shadowRoot` 结构断言以及对 `part="base"` 的绝对定位/尺寸假设；需要整体样式时改用 `::part(group)`；同步更新 Parts 文档。
+- **checkbox**: `change` 改为 `CustomEvent`，detail 为 `{ name, value, checked, previousChecked, source }`；值未变化（含半选点击后 `checked` 不变）不再派发。迁移：优先读取 `event.detail.checked`（`target.checked` 仍可用）；依赖「每次交互必派发」的副作用改为先比较 `checked` / `previousChecked`。
+- **switch**: `change` 改为 `CustomEvent`，detail 为 `{ name, value, checked, previousChecked, source }`；`checked` 未变化不再派发。迁移：读取 `event.detail.checked` 与 `event.detail.previousChecked`；`toggle()` 仍会改变状态并派发，重复赋值需自行判断。
+- **radio**: `change` 改为 `CustomEvent`，detail 为 `{ name, value, checked, previousChecked, source }`；组内取消其它单选的内部同步走静默路径，不再为每个被取消项各派发一次 `change`。迁移：只监听目标选中项即可；需要感知「某选项被取消」的代码监听 `checked` 变化或自行维护前后状态。
+- **radio**: 分组边界改为容器优先：最近的 `role="radiogroup"` / `data-radio-group` 容器 → 最近的 `<form>` → 根节点，且仅同一边界内同名互斥。迁移：需要跨表单/跨容器互斥的同名单选框放入同一容器或改用 `radio-group`；依赖旧版「全文档同名互斥」的页面需显式分组。
+- **radio**: 新增组内 roving tabindex 与键盘操作，独立单选框也会进入 Tab 顺序。迁移：更新依赖旧 Tab 顺序的 E2E / 快捷键测试；自定义焦点管理需适配动态 `tabindex`，不要写死为 `0`。
+- **slider**: `value` 类型由 `number` 扩展为 `number | number[]`，`getValue()` 返回 `number | [number, number]`；`range` 模式内部为 `role="group"` + 两个 `role="slider"` 手柄，单值模式结构与下标保持不变。迁移：TS 调用方用 `Array.isArray(value)` 或元组收窄；读取手柄 DOM 的测试按 `range` 分支；`setValue()` 传入数组前确认已开启 `range`。
+- **tabs**: `role="tablist"` 由根节点 `.tabs` 移到 `.tabs__nav`，并补充 `aria-orientation`。迁移：依赖根节点 `role` 的选择器改为 `.tabs__nav`；无障碍断言同步更新。
+- **tabs**: `change` 统一为 `CustomEvent`（`detail.activeKey`），点击路径此前派发裸 `Event`；初始化与同值 `activeKey` 赋值不再派发。此前版本已存在 `change`，本次不是新增。迁移：点击回调改读 `event.detail.activeKey`；依赖挂载期或重复赋值触发 `change` 的代码改为挂载后主动读取当前值。
+- **rate**: 值未变化时不再派发 `change`（点击当前值且未开启 `allow-clear`、键盘停在边界）。迁移：依赖「点击即触发」的副作用改用 `click` 事件或在回调中比较前后值；清空（`allow-clear`）仍会派发。
+- **steps**: 默认不再响应点击，需显式 `clickable`；程序化 `current` 赋值同值/初始化同步不再派发。迁移：需要可点击步骤时加 `clickable`；外部同步改为比较 `current` 后自行处理，或监听用户点击路径。
+- **pagination**: `current` / `pageSize` 同值或初始化同步不再派发；`current` 归一到 ≥1 的整数，`pageSize` / `total` 变化会钳制 `current` 并可能派发 `change`。迁移：不要依赖属性回写事件做外部同步；需要精确响应时比较 `event.detail` 后再更新状态。
+- **table**: 列配置中的 `sortable` / `filters` 从「被忽略」变为实际生效（`localSort` / `localFilter` 默认 `true`，服务端模式需 `remote`），带 `filters` 的列会新增内置筛选行，行上新增 `data-row-key` / `data-row-index`。说明：`row-key` 稳定插槽只是新增优先级，旧 `col-<key>-<index>` 仍为兜底，不构成破坏。迁移：服务端分页/排序/筛选务必设置 `remote`；不需要内置筛选行时改用自定义筛选 UI；依赖「未知列字段被忽略」的配置需删除或改为受控渲染。
+- **upload**: 未配置 `action` 且未提供 `customRequest` 时不再伪造成功，改为 `error` 状态并派发 `error`。迁移：必须配置真实上传目标或 `customRequest`；补充 `error` 处理与重试；依赖「无配置也成功」的演示/测试改为本地 `customRequest`。
+- **modal**: `maskClosable` 默认值由 `false` 改为 `true`（`Modal.confirm` 仍默认 `false`，可被调用方 options 覆盖）。迁移：需要点击遮罩不关闭的调用显式传 `maskClosable: false` 或 `mask-closable="false"`；`Modal.confirm` 不受影响。
+- **modal / drawer**: 浮层改由统一基座管理：打开时锁定页面滚动并补偿滚动条宽度、给背景兄弟节点加 `inert`、z-index 按打开顺序动态分配，主题 `--solely-z-index-*` 不再是最终层级。迁移：检查自定义滚动容器与依赖滚动条宽度的布局；嵌套浮层不要再写死 z-index；依赖背景可点击/可聚焦的测试需更新（`inert` 后不可交互）。
+- **drawer**: 删除 `solely-drawer-open` 空类，滚动锁改由浮层基座接管。迁移：外部 CSS 若依赖该类，改用自有状态类或 `body:has()`；如需锁定样式，监听 open/close 自行维护类名。
+- **select**: 多选由顿号文本改为标签块，`multiple` 下 `value` 为 `string[]`；`disabled` 只阻止用户交互，不再阻止程序化赋值与事件派发。迁移：多选读取按数组处理并兼容字符串输入；依赖 `disabled` 阻止代码写值的逻辑改到调用侧判断。
+- **breadcrumb**: 自定义 `click` 事件改名为 `legacy-click`，并新增统一的 `item-click`（含带 `href` 的项）。迁移：`addEventListener('click')` 的自定义逻辑改为 `item-click`；过渡期可继续监听 `legacy-click`；原生 click 不再携带 `detail.item`。
+- **timeline**: 移除 `TimelineItem.label` 类型字段（运行时从未渲染该字段）。迁移：删除该字段，改用 `title` 或默认插槽承载内容，并重新运行类型检查。
+- **skeleton**: `SkeletonType` 移除 `button` / `input` / `image`（运行时从未支持）。迁移：改用 `text` / `title` / `avatar` / `paragraph` 等组合，清理类型配置。
+- **theme**: 主题变量改为主入口 `solely/components` 自动注入；严格 CSP（`style-src` 无 `'unsafe-inline'` / nonce）下注入会被拦截。迁移：CSP 站点继续手动引入 `solely/components/theme/variables.css` 并不依赖自动注入；按需子入口仍走手动引入。
+- **theme**: `variables.css` 仓库源文件由 `public/components/theme/` 移到 `src/components/theme/`（包导出路径 `solely/components/theme/variables.css` 不变）。迁移：本地静态引用、开发服务器路径与文档示例改用新路径或包导出。
+- **modal**: `onClose` 现在在所有关闭路径（确定、取消、关闭按钮、遮罩、Esc、实例 `close()`）统一触发，确定路径会把 `onConfirm` 的非 `false` 返回值作为参数透传；`onConfirm` 返回 `false` 保持打开。迁移：此前只在 X/Esc/`close()` 触发 `onClose` 的清理逻辑会新增收到确定/取消关闭，需要区分来源时在 `onConfirm` / `onCancel` 中处理。
+- **steps**: `change` 事件 detail 由 `{ current }` / `{ current, item }` 两种形状统一为 `{ current, index, item }` 超集；`item` 类型放开为可选（插槽模式越界或数据缺失时可能为 `undefined`）。迁移：`detail.current` 继续可用，精确下标读取 `detail.index`；TypeScript 调用方需处理 `item` 可能为 `undefined`。
+- **size**: `size` 体系收口为 `small` / `medium` / `large` 三档，`middle` / `default` 仅作兼容别名并统一归一为 `medium`，其它非法值也回退 `medium`。迁移：依赖 `size="middle"` / `size="default"` 生成独立类名或完整尺寸变量的自定义样式需改读 `medium`；`el.size` 属性读回值现在始终是三档之一。
+- **badge**: 移除 `title` 属性声明（运行时从未把它渲染为原生 `title` 提示，属死 API）。迁移：需要悬浮说明改用 `tooltip` 包裹，或在宿主元素上自行设置原生 `title`。
+- **runtime（F-10 / U-08）**: `removeAttribute` 现在把 prop 回落到声明的 `default`；未声明 `default` 的非布尔 prop 回落 `undefined`（此前保留旧值，`min` / `max` / `step` 等无法清空）。布尔属性仍回退 `default`（未声明则 `false`）；属性存在但值非法时保留旧值，不会误清空。迁移：依赖「移除后保留旧值」的代码改为显式重新赋值；清空受控状态直接移除 attribute 或赋 `undefined`。
+- **runtime**: property 赋 `null` / `undefined` 现在会移除同名镜像 attribute（此前跳过导致 DOM 残留旧值）；显式 `reflect: true` 的行为不变。迁移：清空后不要再依赖 `hasAttribute()` 判断旧状态。
+- **components**: 内置状态 / 操作图标统一为线性 SVG——`alert` / `progress` / `steps` / `checkbox` / `select` / `tree` / `empty` / `upload` / `message` / `modal` / `popconfirm` / `pagination` / `coordinate-input` / `tabs` / `tag` / `table` 不再以 `✓ ✕ ℹ ⚠ × ▼ 📭 ☁️` 等文字符号或系统 emoji 作为内置图标。用户通过 `icon` 属性、`icon` 插槽、`rate.character` 提供的自定义内容仍按原样渲染。迁移：依赖内置图标 `textContent` 的测试 / 代码改为查询 `svg.solely-linear-icon`。
+- **components**: number 类型 prop 收到非法字符串（如 `count="99+"`）时开发模式会输出可定位的警告，不再完全静默。
+
+### Added
+
+- **tabs**: 新增 `centered`（页签居中）与 `lazy`（惰性渲染非激活面板）属性；`TabItem` 支持 `icon`、`badge` 与 `tab-label-<key>` 具名插槽
+- **tabs**: 补齐 `tablist` / `tab` / `tabpanel` 语义与 `aria-controls` / `aria-labelledby` / `aria-selected` / `aria-disabled`，键盘支持 ←/→/↑/↓、Home、End、Enter/Space（roving tabindex）
+- **tree**: 新增 `checkStrictly`（父子勾选不联动）、`defaultExpandedKeys` / `defaultCheckedKeys` / `defaultSelectedKeys`、`loadData` 异步加载子节点（加载失败可重试）与节点级 `selectable`；节点标题支持 `node-<key>` 具名插槽
+- **tree**: 补齐 `treeitem` 语义（`aria-expanded` / `aria-level` / `aria-selected` / `aria-checked`）与 roving tabindex，键盘支持 ↑/↓、Home/End、←/→（折叠展开/父子跳转）、Enter、Space
+- **theme**: 新增导出 `deriveColorTokens()`；`setTheme()` 传入基础色时自动派生 `--solely-<key>-light` / `-hover` / `-active`，显式传入同名键优先；无法解析的颜色（颜色名、`var()`）跳过派生
+- **rate**: 新增 `tooltips`（JSON 数组或逗号分隔）与拖拽取值的指针位置精确计算；补齐 `radiogroup` / `radio` 语义与 `aria-checked` / `aria-label`，键盘支持 ←/→/↑/↓、Home、End、Enter/Space
+- **input**: 新增 `addonBefore` / `addonAfter`、`autosize`（textarea 随内容自适应高度）、`autocomplete` / `inputmode` / `enterkeyhint` / `spellcheck`、`min` / `max` / `step`；新增 `press-enter` 事件（search 类型同时派发 `search`）
+- **input**: 提示信息与输入控件通过 `aria-describedby` 关联；字数统计在未设置 `maxlength` 时不再输出空的最大值提示
+- **slider**: 新增 `range` 双滑块模式、`tooltipFormatter`、marks 支持 `{ label, style }` 对象；每个手柄独立维护 `aria-valuenow` / `aria-valuetext`，`range` 时容器为 `role="group"`；新增 `isRange()` / `getRangeValues()` 查询方法
+- **shared**: 新增导出 `createAriaId()` / `assertSameTree()` / `linkAria()`，用于跨 Shadow DOM 建立 ARIA IDREF 关联（声明式 tooltip 已使用）
+- **form**: `input` / `checkbox` / `switch` / `radio` / `select` 统一新增 `checkValidity()` / `reportValidity()` / `setCustomValidity()` 方法，以及 `invalidMessage`、`defaultValue`（input/select）、`defaultChecked`（checkbox/switch/radio）、`checkbox/switch.value`、`radio.group` 等表单属性
+- **input**: 补齐 `showPassword` / `showCount` / `selectAll` camelCase 属性别名（与既有全小写 attribute 等价）
+- **button**: 新增 `nativeType`（`button | submit | reset`），`submit` / `reset` 走原生表单 `requestSubmit()` / `reset()`
+- **select**: 新增声明式子组件 `<solely-select-option>`（导出 `SolelySelectOption`，支持 `value` / `label` / `disabled`）与 `open()` / `close()` / `clear()` / `setOptions()` / `getOptions()` 方法；新增 `clear` 事件（值实际清空时派发）；新增 `defaultValue` / `invalidMessage` 属性，并导出 `SelectValue` / `SelectMethods` 类型
+- **select**: 补齐 `combobox` / `listbox` / `option` 语义与 `aria-controls` / `aria-activedescendant` / `aria-selected` / `aria-disabled`，键盘支持 ↑/↓、Home/End、Enter/Esc
+- **alert**: 新增 `autoClose`（自动关闭毫秒数，`0` 不自动关闭）；`close` 事件改为可取消的自定义事件，`detail.source` 区分 `'user' | 'auto'`，`preventDefault()` 可阻止关闭
+- **tag**: `close` 事件改为可取消并携带 `detail.content`；关闭按钮支持 Enter/Space
+- **badge**: `offset` 支持 `"[x, y]"` / `"x, y"` / `"x y"` 字符串与 `[x, y]` 元组，`color` 支持内联背景色（数字/小红点/状态点均生效）
+- **progress**: `format` 支持模板字符串（`{percent}`）与 `(percent) => string` 函数，line / circle 均生效
+- **divider**: 默认插槽有实际内容时才渲染 `part="content"` 包裹层，空内容不再输出占位
+- **empty**: 新增 `description` 具名插槽，优先级高于 `description` 属性
+- **tooltip**: 新增 `content` 具名插槽；声明式模式自动通过 `linkAria` 建立 `aria-describedby` / `aria-label` 关联
+- **not-found**: 新增 `back` 事件；`subtitle` / `description` / `backText` 默认文案按最近 `[lang]` 或 `document.lang` 自动切换中英文
+- **table**: 新增 `selectable` / `selectionMode` / `selectedKeys` / `expandable` / `expandedKeys` / `expandRender` / `sort` / `filterValues` / `localSort` / `localFilter` / `remote` 属性；列配置新增 `render` / `sorter` / `filters`，`dataIndex` 支持 `user.name`、`items[0].name` 路径
+- **table**: 新增 `sort-change` / `filter-change` / `selection-change` / `expand-change` / `page-change` / `data-change` 事件
+- **table**: 新增 `getDisplayedDataSource()` / `getSortState()` / `setSort()` / `clearSort()` / `getFilterValues()` / `setFilter()` / `setFilterValues()` / `clearFilters()` / `getSelectedKeys()` / `getSelectedRows()` / `toggleRowSelection()` / `setSelectedKeys()` / `clearSelection()` / `getExpandedKeys()` / `toggleRowExpansion()` / `setExpandedKeys()` 方法
+- **table**: 新增 `empty` 插槽与 `cell-<key>` / `expand-<row-key>` 行动态插槽、选择列与展开列；表头补齐 `aria-sort` 与键盘排序/筛选操作
+- **upload**: 新增 `method` / `headers` / `name` / `withCredentials` / `data` / `timeout` / `maxConcurrency` / `beforeUpload` / `customRequest` 属性，`progress` / `cancel` 事件，以及 `abort(uid)` / `abortAll()` / `getOverallPercent()` 方法；触发区支持键盘操作
+- **popconfirm**: `onConfirm` 支持返回 Promise（pending 时按钮 loading，reject 时保持打开并在气泡内展示失败信息）；补齐 `dialog` / `aria-labelledby` / `aria-describedby` 语义
+- **pagination**: 补齐按钮语义与 `aria-current`，键盘支持 Home/End、方向键、跳页输入
+- **steps**: 补齐 `list` / `group` 与 `aria-current="step"` 语义，`clickable` 步骤支持 Enter/Space
+- **coordinate-input**: `placeholder` 统一作用于度/分/秒三个输入框；方向下拉补齐 `aria-expanded` / `aria-selected` 与 Enter/Space/Esc 键盘操作
+- **backtop**: 支持 Enter/Space 触发返回顶部
+- **docs**: 六个组件的 API 表、键盘支持与 ARIA 说明同步；`quickstart` 补充 `setTheme` 派生色与直接写 CSS 变量时的差异
+- **alert**: 新增 `icon`（覆盖内置图标）；`showIcon` 保持默认 `false`（默认不带图标），需要图标时显式写 `show-icon`
+- **empty / not-found / upload**: 新增 `show-icon`（默认 `true`），`show-icon="false"` 时不再渲染装饰图标节点（非 CSS 隐藏）
+- **modal / popconfirm / message**: 新增 `showIcon` 与 `icon` 选项；`showIcon: false` 不渲染状态图标且优先级最高，`icon: ''` 不渲染空占位，`icon` 支持字符串或 `HTMLElement`
+- **table**: 行在存在 `row-click` 监听或 `selectable` 时支持键盘触发（Enter/Space），可选行的复选框仍是唯一 Tab 停点
+- **a11y**: input / select / tree / switch / tabs / tooltip 的鼠标专属操作补齐键盘（Enter/Space）与 `aria-label` / `aria-disabled`
+- **skeleton / tooltip**: `titleWidth`、`maxWidth`、`color` 从声明未生效改为实际渲染（数字宽度按 px 处理）
+
+### Fixed
+
+- **tabs**: 竖向页签的激活条方向与内部排序此前未随 `position` 生效，补充 `tabs--pos-*` 类与对应样式；页签内容支持图标/徽标组合
+- **tree**: 节点 `selectable: false` 此前不生效（点击仍会选中），现已在点击与键盘选中路径统一拦截
+- **rate**: `allowHalf` 时鼠标移入与点击落在星星左半边此前仍按整星取值，改为按指针位置判定半星；反应式更新 `count` 后星星数量此前不会同步
+- **slider**: 垂直模式下刻度线位置对不齐、标签横向溢出，已按垂直轴重新定位
+- **table**: `setColumns()` 此前经 JSON 序列化会丢失函数字段，现改为结构化复制并保留 `render` / `format` 等函数（属修复，不是破坏性变更）
+- **empty**: `description` 默认值改为 `'暂无数据'`；显式 `description=""` 不再被模板兜底覆盖，属性读回与渲染一致
+- **message**: 非法 `type` 不再因 `ICON_MAP[type]` 为空抛 TypeError，统一回退为 `info` 并渲染 info 图标
+- **input**: 清除、密码切换、复制按钮此前写在 `ElseIf` 链中导致同时配置时只渲染一个，改为互不排斥的条件渲染；`readonly` 时不再显示清除按钮，`disabled` / fieldset 级联禁用时复制与密码切换退出 Tab 序列
+- **coordinate-input**: 根节点补充基础类 `coordinate-input`，恢复 `display:flex` 与横向布局（此前根节点 `display:block`，经纬度两组纵向堆叠）
+- **tabs**: `lazy` 模式下由 attribute 或挂载后切换 `active-key` 时未登记惰性面板，导致目标面板空白；现在属性同步路径同样登记，挂载时保留已登记面板
+- **upload**: `disabled` 时 `dragover` / `drop` / `handleFiles()` 未拦截拖拽上传，现统一在入口处守卫，禁用态不再接受文件
+- **form**: `<fieldset disabled>` 级联禁用此前不会禁用 shadow root 内的原生输入，`is-disabled` / `aria-disabled` 也未同步；现在表单禁用状态变化会重跑渲染，5 个表单控件读取统一的 `effectiveDisabled`
+- **tree**: 展开按钮与勾选框此前每节点额外产生 2 个 Tab 停点（叶节点还残留不可见幽灵按钮），整树现在只保留 1 个 roving 停点；`disabled` 时整树退出 Tab 序列且不可操作，叶节点展开按钮对读屏隐藏
+- **pagination**: `current` 越界时展示使用钳制值、高亮与 `aria-current` 使用原始值，导致无 active 页；现在高亮、`aria-current`、上/下一页禁用态统一使用 `getEffectiveCurrent()`
+- **tooltip**: 命令式 tooltip 在目标位于 shadow root 时改为复用 `linkAria` 建立可解析的 IDREF 代理；声明式 tooltip 的 `trigger="hover"` 补充 `focusin` / `focusout`，键盘聚焦可唤起并失焦关闭
+- **enum**: 新增统一的 `oneOf()` 白名单（`src/shared/enum.ts`）并接入 message / progress / coordinate-input / checkbox / radio / switch / select / tabs / steps / table / pagination / popconfirm / tooltip / drawer / modal 等 25 个组件；非法枚举值回退默认档位，不再拼出死类名、渲染空模板或抛 TypeError
+- **a11y**: `rate` / `slider` 禁用态与 `pagination` 上/下一页边界态退出 Tab 序列（`tabindex="-1"`，与 `aria-disabled` 保持一致）；`tabs` 关闭键固定 `tabindex="-1"`、`add` 键保留 1 个停点；`tree` 勾选框不再作为额外 Tab 停点；`fab` 在 `visible="false"` 时移出 Tab 序列并设 `aria-hidden="true"`，`visible="true"` 时恢复
+- **a11y**: `modal` / `drawer` 补齐 `aria-labelledby`（无标题时回退 `aria-label`），`popconfirm` / `input` / `select` / `pagination` / `table` / `tree` / `upload` / `rate` / `slider` / `progress` / `badge` / `card` / `breadcrumb` 补齐可访问名称或状态描述
+- **card**: `actions` 属性与 `actions` 具名插槽恢复真实渲染（此前声明未消费），操作项支持 Enter/Space 与 `aria-label`，`extra` / `actions` 插槽动态增删会触发重渲染
+- **renderer**: `:data-*` / `:aria-*` 绑定值为 `null` / `undefined` 时移除属性，不再输出空字符串属性（此前会渲染成 `aria-current=""` 之类）
+- **docs**: 骨架屏「加载完成」、rate 事件 demo、tree 默认展开后无法折叠、upload 除一个样例外全部上传失败、table 受控排序示例方法名与文档组件不一致等问题修复；文档 demo 不再依赖 `/api/upload` 后端或 `picsum.photos` 外部图床。
+- **components**: `rate` / `slider` 自定义 `value` setter 不再因 `readonly` / `disabled` 属性顺序丢掉初始值；`rate` 新增按住拖动连续预览；`tree` 的 `default-expand-all` 不再反复覆盖用户折叠状态，静态 HTML 下属性二次同步也不会抹掉默认展开。
+- **components**: 修复 `aria-hidden` 元素持有焦点导致的浏览器告警（tree switcher、fab 隐藏时移走焦点）；修复 select 清除按钮 / 下拉箭头、pagination 翻页图标、coordinate-input 下拉边角与横线对齐。
+- **components**: `card` / `empty` 的图片加载失败时回退到内置 SVG 占位图，避免破图。
+
 ## [0.7.1] - 2026-11-01
 
 ### Added
@@ -953,7 +1064,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/solelyjs/solely/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/solelyjs/solely/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/solelyjs/solely/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/solelyjs/solely/compare/v0.5.8...v0.6.0
