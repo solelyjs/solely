@@ -4,7 +4,8 @@
 
 export type SkeletonAvatarShape = 'circle' | 'square';
 export type SkeletonAvatarPosition = 'left' | 'right';
-export type SkeletonElement = 'avatar' | 'title' | 'paragraph' | 'button' | 'input' | 'image';
+/** 已实现的骨架元素种类；如需扩展需同步补齐模板与样式 */
+export type SkeletonElement = 'avatar' | 'title' | 'paragraph';
 
 export interface SkeletonProps {
     /** 是否显示动画效果 */

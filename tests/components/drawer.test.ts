@@ -18,14 +18,26 @@ const resetConfig = () => {
     });
 };
 
+/**
+ * jsdom 没有布局盒，overlay-stack 的可聚焦判定依赖 getClientRects() 非空。
+ * 返回合成矩形才能在测试中验证焦点进入/还原（与 overlay-stack.test.ts 一致）。
+ */
+const FAKE_RECT = { x: 0, y: 0, width: 1, height: 1, top: 0, left: 0, right: 1, bottom: 1, toJSON: () => ({}) };
+
 describe('Drawer command component', () => {
+    let rectsSpy: ReturnType<typeof vi.spyOn>;
+
     beforeEach(() => {
+        rectsSpy = vi
+            .spyOn(HTMLElement.prototype, 'getClientRects')
+            .mockImplementation(() => [FAKE_RECT] as unknown as DOMRectList);
         resetConfig();
     });
 
     afterEach(async () => {
         await Drawer.destroy();
         resetConfig();
+        rectsSpy.mockRestore();
     });
 
     it('should render title/content, add body scroll lock, and default to right placement', async () => {
@@ -41,8 +53,8 @@ describe('Drawer command component', () => {
         // 默认宽度 378px 应用到 drawer
         expect((document.querySelector('.solely-drawer') as HTMLElement).style.width).toBe('378px');
 
-        // 打开时锁定背景滚动
-        expect(document.body.classList.contains('solely-drawer-open')).toBe(true);
+        // 打开时锁定背景滚动（由基座 lockScroll() 引用计数实现，不再使用空类名）
+        expect(document.body.style.overflow).toBe('hidden');
     });
 
     it('should apply width for left/right and height for top/bottom', async () => {
@@ -86,8 +98,8 @@ describe('Drawer command component', () => {
 
         expect(document.querySelector('.solely-drawer-wrap')).toBeNull();
         expect(onClose).toHaveBeenCalledTimes(1);
-        // 所有抽屉关闭后移除背景锁定
-        expect(document.body.classList.contains('solely-drawer-open')).toBe(false);
+        // 所有抽屉关闭后释放背景锁定
+        expect(document.body.style.overflow).toBe('');
     });
 
     it('should close on mask click by default and not when maskClosable is false', async () => {
@@ -132,10 +144,73 @@ describe('Drawer command component', () => {
         Drawer.open({ title: 'a', content: '1' });
         Drawer.open({ title: 'b', content: '2' });
         expect(document.querySelectorAll('.solely-drawer-wrap').length).toBe(2);
-        expect(document.body.classList.contains('solely-drawer-open')).toBe(true);
+        expect(document.body.style.overflow).toBe('hidden');
 
         await Drawer.destroy();
         expect(document.querySelectorAll('.solely-drawer-wrap').length).toBe(0);
-        expect(document.body.classList.contains('solely-drawer-open')).toBe(false);
+        expect(document.body.style.overflow).toBe('');
+    });
+
+    it('should expose dialog semantics, move focus in, and close on Escape with focus restore', async () => {
+        const trigger = document.createElement('button');
+        document.body.appendChild(trigger);
+        trigger.focus();
+
+        const onClose = vi.fn();
+        Drawer.open({ title: 't', content: 'c', onClose });
+
+        const drawer = document.querySelector('.solely-drawer') as HTMLElement;
+        expect(drawer.getAttribute('role')).toBe('dialog');
+        expect(drawer.getAttribute('aria-modal')).toBe('true');
+        expect(document.activeElement).toBe(drawer);
+
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        await waitClose();
+
+        expect(document.querySelector('.solely-drawer-wrap')).toBeNull();
+        expect(onClose).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(trigger);
+        expect(document.body.style.overflow).toBe('');
+
+        trigger.remove();
+    });
+
+    it('should only close the topmost drawer on Escape', async () => {
+        Drawer.open({ title: 'first', content: '1' });
+        const firstDrawer = document.querySelector('.solely-drawer') as HTMLElement;
+
+        Drawer.open({ title: 'second', content: '2' });
+        const secondDrawer = document.querySelectorAll('.solely-drawer')[1] as HTMLElement;
+        expect(document.activeElement).toBe(secondDrawer);
+
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        await waitClose();
+
+        expect(document.querySelectorAll('.solely-drawer').length).toBe(1);
+        expect(document.activeElement).toBe(firstDrawer);
+    });
+
+    it('should update placement class and corresponding size via update()', async () => {
+        const instance = Drawer.open({ title: 't', content: 'c', placement: 'right', width: 400 });
+
+        instance.update({ placement: 'top', height: 200 });
+
+        const drawerEl = document.querySelector('.solely-drawer') as HTMLElement;
+        expect(drawerEl.classList.contains('solely-drawer--top')).toBe(true);
+        expect(drawerEl.classList.contains('solely-drawer--right')).toBe(false);
+        // 切换方向后旧方向的行内宽度被清理，并按新方向应用高度
+        expect(drawerEl.style.width).toBe('');
+        expect(drawerEl.style.height).toBe('200px');
+
+        // 保留自定义类名与当前方向修饰类
+        instance.update({ className: 'custom-drawer' });
+        expect(drawerEl.className).toBe('solely-drawer solely-drawer--top custom-drawer');
+    });
+
+    it('关闭按钮渲染线性 SVG 而不是 × 文本字符', () => {
+        Drawer.open({ title: 't', content: 'c' });
+        const close = document.querySelector('.solely-drawer__close') as HTMLElement;
+        expect(close.querySelector('svg.solely-linear-icon')).toBeTruthy();
+        expect(close.textContent?.trim()).toBe('');
     });
 });

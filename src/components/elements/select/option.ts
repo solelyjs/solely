@@ -1,15 +1,21 @@
 /**
  * SelectOption 组件
- * Select 的子组件，用于定义选项
+ * Select 的声明式子组件：<solely-select-option value="user">用户</solely-select-option>
+ *
+ * 标签协议（与父组件 collectSlotOptions 对齐）：
+ * - value：选项值；缺省为空字符串。
+ * - label：选中后展示的标签；缺省回退到元素文本内容（trim）。
+ * - disabled：禁用该选项。
+ *
+ * 自身不注入任何样式：外观完全由父组件的 `::slotted(solely-select-option)` 提供，
+ * 避免无 Shadow DOM 的组件把整份 select 样式重复注入 document.head。
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import styles from './style.css?inline';
 
 @CustomElement({
     tagName: 'solely-select-option',
-    styles: styles,
-    shadowDOM: { use: false }, // 不使用 Shadow DOM，以便插槽内容直接渲染
+    shadowDOM: { use: false }, // 不使用 Shadow DOM，以便子内容原样投影到父组件插槽
     props: [
         { name: 'value', type: 'string', default: '' },
         { name: 'label', type: 'string', default: '' },
@@ -37,4 +43,4 @@ class SelectOption extends BaseElement<{
 }
 
 export default SelectOption;
-export { SelectOption };
+export { SelectOption, SelectOption as SolelySelectOption };

@@ -21,7 +21,7 @@ export interface MessageOptions {
     /** 是否显示图标，默认 true */
     showIcon?: boolean;
     /** 自定义图标（字符串或 DOM 元素） */
-    icon?: string | HTMLElement;
+    icon?: string | Element;
     /** 辅助描述文本 */
     description?: string | HTMLElement;
     /** 自定义类名 */

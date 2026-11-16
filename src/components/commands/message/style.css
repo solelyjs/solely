@@ -64,6 +64,12 @@
 }
 
 /* ==================== 图标 ==================== */
+/* 状态图标在消息里放大一些，与 24px 容器匹配 */
+.solely-message__icon .solely-linear-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .solely-message__icon {
   display: inline-flex;
   align-items: center;
@@ -124,6 +130,19 @@
 }
 
 /* ==================== 关闭按钮 ==================== */
+/* 线性图标：关闭按钮与元素组件共用同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 .solely-message__close {
   display: inline-flex;
   align-items: center;
@@ -150,6 +169,12 @@
 
 .solely-message__close:active {
   color: var(--solely-text-primary);
+}
+
+/* 键盘焦点可见性 */
+.solely-message__close:focus-visible {
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
 }
 
 /* ==================== 动画 ==================== */

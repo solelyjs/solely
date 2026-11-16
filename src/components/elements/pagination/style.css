@@ -70,10 +70,34 @@
   user-select: none;
 }
 
+/* 上一页/下一页：与跳页步进、select 同一套线性 chevron，
+   SVG 是替换元素，flex 居中后不会再有文字符号的基线偏移 */
+.pagination__nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 .pagination__prev:hover:not(.pagination__item--disabled),
 .pagination__next:hover:not(.pagination__item--disabled) {
   color: var(--solely-primary);
   border-color: var(--solely-primary);
+}
+
+/* 键盘焦点可见性 */
+.pagination__item:focus-visible,
+.pagination__prev:focus-visible,
+.pagination__next:focus-visible,
+.pagination__jumper-up:focus-visible,
+.pagination__jumper-down:focus-visible {
+  outline: 2px solid var(--solely-primary);
+  outline-offset: 2px;
 }
 
 /* 省略号 */
@@ -155,12 +179,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
   color: var(--solely-text-secondary);
   background-color: var(--solely-component-bg);
   cursor: pointer;
   user-select: none;
   line-height: 1;
+}
+
+/* 上下按钮只有 12px 高，线性图标按 10px 收敛，形状与 select / input 一致 */
+.pagination__jumper-icon {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .pagination__jumper-up:hover,

@@ -66,13 +66,13 @@ describe('base/BaseElement public interface tests', () => {
         expect(el.$data.title).toBe('world');
     });
 
-    it('should maintain current value when removing attribute', () => {
-        // 移除 attribute 后，$data 保持当前值不变
+    it('should clear the value when removing an attribute without a declared default (F-10)', () => {
+        // F-10：无 default 的非布尔 prop 被移除后回落 undefined，组件能收到清空信号
         el.setAttribute('init-count', '100');
         expect(el.$data.initCount).toBe(100);
 
         el.removeAttribute('init-count');
-        expect(el.$data.initCount).toBe(100);
+        expect(el.$data.initCount).toBeUndefined();
     });
 
     it('should call created lifecycle hook asynchronously', async () => {
@@ -159,15 +159,22 @@ describe('base/BaseElement public interface tests', () => {
     });
 
     it('should handle invalid attribute values gracefully', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         // 验证无效值不会破坏 $data 默认值
         el.setAttribute('init-count', 'abc'); // 无法转换为 number
         expect(typeof el.$data.initCount).toBe('number');
+        // 非法数字不再静默回落，开发模式应给出可定位的警告
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('不是合法数字'));
 
         el.setAttribute('debug', 'notabool'); // 无法转换为 boolean
         expect(typeof el.$data.debug).toBe('boolean');
 
         el.setAttribute('config', 'invalid json'); // 无法解析 JSON
         expect(typeof el.$data.config).toBe('object');
+
+        warnSpy.mockRestore();
+        errorSpy.mockRestore();
     });
 });
 
@@ -379,6 +386,21 @@ class TestDefaultIsolationEl extends BaseElement<{
     label: string;
 }> {}
 
+/** default 工厂的宿主能力 */
+interface DefaultFactoryHost {
+    $data: { base?: number };
+}
+
+@CustomElement({
+    tagName: 'test-default-factory',
+    template: '<div></div>',
+    props: [
+        { name: 'base', type: 'number', default: 10 },
+        { name: 'derived', type: 'number', default: (host: DefaultFactoryHost) => (host.$data.base ?? 0) + 1 },
+    ],
+})
+class TestDefaultFactoryEl extends BaseElement<{ base: number; derived: number }> {}
+
 describe('base/BaseElement default value isolation', () => {
     it('should clone object/array defaults per instance', () => {
         const a = document.createElement('test-default-isolation') as TestDefaultIsolationEl;
@@ -441,5 +463,33 @@ describe('base/BaseElement default value isolation', () => {
         a.remove();
         b.remove();
         errorSpy.mockRestore();
+    });
+});
+
+describe('base/BaseElement default value factory', () => {
+    it('should resolve default factory per instance and keep mount silent', () => {
+        const el = document.createElement('test-default-factory') as TestDefaultFactoryEl;
+        document.body.append(el);
+
+        // 工厂在挂载时按实例求值
+        expect(el.$data.derived).toBe(11);
+        // 默认值不写 attribute
+        expect(el.hasAttribute('derived')).toBe(false);
+
+        el.remove();
+    });
+
+    it('should recompute factory default on removeAttribute', () => {
+        const el = document.createElement('test-default-factory') as TestDefaultFactoryEl;
+        document.body.append(el);
+
+        el.$data.base = 20;
+        el.setAttribute('derived', '30');
+        expect(el.$data.derived).toBe(30);
+
+        el.removeAttribute('derived');
+        expect(el.$data.derived).toBe(21);
+
+        el.remove();
     });
 });

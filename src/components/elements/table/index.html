@@ -1,26 +1,107 @@
 <div part="wrapper" class="table-wrapper">
-    <table part="base" class="table" :class="this.getTableClasses()">
+    <table part="base" class="table" :class="this.getTableClasses()"
+        :aria-busy="$data.loading ? 'true' : null">
         <thead part="head">
             <tr part="head-row">
+                <If condition="$data.selectable">
+                    <th part="head-cell" class="table__selection-cell" :class="this.getSelectionCellClasses()" scope="col">
+                        <If condition="this.getSelectionMode() !== 'single'">
+                            <input part="select-all" class="table__checkbox" type="checkbox" aria-label="全选"
+                                :checked="this.isAllDisplayedSelected()"
+                                :indeterminate="this.isSelectionIndeterminate()"
+                                :aria-checked="this.isSelectionIndeterminate() ? 'mixed' : (this.isAllDisplayedSelected() ? 'true' : 'false')"
+                                @click="this.handleSelectAllClick(event)" />
+                        </If>
+                    </th>
+                </If>
                 <For each="this.getParsedColumns()" item="col">
-                    <th part="head-cell" :class="this.getThClasses(col)"
-                        :style="col.width ? 'width: ' + (typeof col.width === 'number' ? col.width + 'px' : col.width) : ''">
-                        {{col.title}}
+                    <th part="head-cell" :class="this.getThClasses(col)" scope="col"
+                        :data-col-key="this.getColumnKey(col)"
+                        :style="col.width ? 'width: ' + (typeof col.width === 'number' ? col.width + 'px' : col.width) : ''"
+                        :tabindex="col.sortable ? 0 : undefined"
+                        :aria-sort="this.getAriaSort(col)"
+                        @click="this.handleHeaderClick(col)"
+                        @keydown="this.handleHeaderKeydown(col, event)">
+                        <span class="table__head-content">{{col.title}}<If condition="col.sortable"><span part="sort-icon" class="table__sort-icon" :class="this.getSortIconClasses(col)" aria-hidden="true">{{this.getSortIcon(col)}}</span></If></span>
                     </th>
                 </For>
+                <If condition="$data.expandable">
+                    <th part="head-cell" class="table__expand-cell" :class="this.getExpandCellClasses()" scope="col" aria-label="展开"></th>
+                </If>
             </tr>
+            <If condition="this.hasFilterableColumn()">
+                <tr part="filter-row" class="table__filter-row">
+                    <If condition="$data.selectable">
+                        <th part="filter-cell" class="table__selection-cell" :class="this.getSelectionCellClasses()" scope="col"></th>
+                    </If>
+                    <For each="this.getParsedColumns()" item="col">
+                        <th part="filter-cell" :class="this.getThClasses(col)" :data-col-key="this.getColumnKey(col)" scope="col">
+                            <If condition="(col.filters || []).length > 0">
+                                <div class="table__filter" :class="{ 'is-active': this.hasColumnFilter(col) }" role="group" :aria-label="'筛选：' + col.title">
+                                    <For each="col.filters" item="option">
+                                        <label part="filter-option" class="table__filter-option">
+                                            <input class="table__checkbox" type="checkbox"
+                                                :checked="this.isFilterOptionChecked(col, option)"
+                                                @change="this.handleFilterOptionChange(col, option, event)" />
+                                            <span>{{option.label}}</span>
+                                        </label>
+                                    </For>
+                                    <If condition="this.hasColumnFilter(col)">
+                                        <button type="button" part="filter-clear" class="table__filter-clear"
+                                            @click="this.clearFilters(this.getColumnKey(col))">清除</button>
+                                    </If>
+                                </div>
+                            </If>
+                        </th>
+                    </For>
+                    <If condition="$data.expandable">
+                        <th part="filter-cell" class="table__expand-cell" :class="this.getExpandCellClasses()" scope="col"></th>
+                    </If>
+                </tr>
+            </If>
         </thead>
         <tbody part="body">
-            <For each="this.getParsedDataSource()" item="row" index="rowIndex">
-                <tr part="row" @click="this.handleRowClick(row, rowIndex)">
-                    <For each="this.getParsedColumns()" item="col">
-                        <td part="cell" :class="this.getTdClasses(col)">
-                            <slot :name="'col-' + col.key + '-' + rowIndex">
-                                {{this.getCellValue(row, col)}}
-                            </slot>
+            <For each="this.getDisplayedDataSource()" item="row" index="rowIndex">
+                <tr part="row" role="row" :class="this.getRowClasses(row, rowIndex)" :data-row-key="this.getRowKey(row, rowIndex)"
+                    :aria-selected="$data.selectable ? (this.isRowSelected(row, rowIndex) ? 'true' : 'false') : null"
+                    :tabindex="this.getRowTabIndex()"
+                    @click="this.handleRowClick(row, rowIndex)"
+                    @keydown="this.handleRowKeydown(row, rowIndex, event)">
+                    <If condition="$data.selectable">
+                        <td part="cell" class="table__selection-cell align-center" :class="this.getSelectionCellClasses()">
+                            <input class="table__checkbox" type="checkbox"
+                                :checked="this.isRowSelected(row, rowIndex)"
+                                :aria-checked="this.isRowSelected(row, rowIndex) ? 'true' : 'false'"
+                                :aria-label="'选择第 ' + (rowIndex + 1) + ' 行'"
+                                @click="this.handleRowSelectClick(row, rowIndex, event)" />
                         </td>
+                    </If>
+                    <For each="this.getParsedColumns()" item="col">
+                        <td part="cell" :class="this.getTdClasses(col)" :data-col-key="this.getColumnKey(col)"><If condition="this.hasColumnRender(col)"><span part="cell-render" class="table__cell-render" :data-col-key="this.getColumnKey(col)" :data-row-index="rowIndex"></span></If><If condition="!this.hasColumnRender(col)"><slot :name="this.getCellSlotName(col, row, rowIndex)">{{this.getCellValue(row, col)}}</slot></If></td>
                     </For>
+                    <If condition="$data.expandable">
+                        <td part="cell" class="table__expand-cell align-center" :class="this.getExpandCellClasses()">
+                            <button type="button" part="expand-trigger" class="table__expand-trigger"
+                                :aria-expanded="this.isRowExpanded(row, rowIndex) ? 'true' : 'false'"
+                                :aria-label="this.isRowExpanded(row, rowIndex) ? '折叠行' : '展开行'"
+                                @click="this.handleExpandClick(row, rowIndex, event)">
+                                <If condition="this.isRowExpanded(row, rowIndex)"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 6 8 10.5 12.5 6"></path></svg></If><If condition="!this.isRowExpanded(row, rowIndex)"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3.5 10.5 8 6 12.5"></path></svg></If>
+                            </button>
+                        </td>
+                    </If>
                 </tr>
+                <If condition="this.isRowExpanded(row, rowIndex)">
+                    <tr part="expand-row" class="table__expand-row">
+                        <td part="cell" class="table__expand-detail">
+                            <div class="table__expand-content">
+                                <slot :name="this.getExpandSlotName(row, rowIndex)"></slot>
+                                <If condition="this.shouldRenderExpand(row, rowIndex)">
+                                    <span class="table__expand-render" :data-expand-index="rowIndex"></span>
+                                </If>
+                            </div>
+                        </td>
+                    </tr>
+                </If>
             </For>
         </tbody>
     </table>
@@ -32,10 +113,14 @@
         </div>
     </If>
 
-    <!-- 空状态 -->
-    <If condition="!$data.loading && this.getParsedDataSource().length === 0">
+    <!-- 空状态：复用 solely-empty，可通过 slot="empty" 自定义 -->
+    <If condition="this.isEmpty()">
         <div part="empty" class="table__empty">
-            暂无数据
+            <slot name="empty">
+                <solely-empty description="暂无数据">
+                    <span class="table__empty-sr">暂无数据</span>
+                </solely-empty>
+            </slot>
         </div>
     </If>
 </div>

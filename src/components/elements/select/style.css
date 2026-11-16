@@ -27,11 +27,22 @@
   cursor: pointer;
 }
 
+.select:focus {
+  outline: none;
+}
+
+.select:focus-visible .select__selector {
+  border-color: var(--solely-primary);
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
 /* 选择器容器 - 模拟 form-control 样式 */
 .select__selector {
   display: flex;
   align-items: center;
-  height: var(--solely-height-md);
+  /* 复杂自定义选项会整段回显到触发区（头像 + 双行文本 + 徽章），
+     固定 height 会把它裁掉，改用 min-height 让内容自然撑开。 */
+  min-height: var(--solely-height-md);
   padding: 0 var(--solely-spacing-md);
   font-family: var(--solely-font-family);
   font-size: var(--solely-font-size-md);
@@ -50,19 +61,76 @@
 
 /* 尺寸变体 */
 .select--sm .select__selector {
-  height: var(--solely-height-sm);
+  min-height: var(--solely-height-sm);
   padding: 0 var(--solely-spacing-sm);
   font-size: var(--solely-font-size-sm);
 }
 
 .select--lg .select__selector {
-  height: var(--solely-height-lg);
+  min-height: var(--solely-height-lg);
   padding: 0 var(--solely-spacing-lg);
   font-size: var(--solely-font-size-lg);
 }
 
-/* 选择器值显示 */
+/* 选择器值显示：占满触发区剩余宽度，避免自定义内容被压成窄列 */
 .select__value {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* 已选内容：与下拉选项复用同一套「图标 + 文本 / 自定义渲染」结构 */
+.select__value-content {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--solely-spacing-sm);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.select__value-content .select__option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 多选已选项标签 */
+.select--multiple .select__selector {
+  height: auto;
+  min-height: var(--solely-height-md);
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.select--multiple .select__value {
+  flex: 1;
+  overflow: visible;
+}
+
+.select--multiple .select__value-content {
+  flex-wrap: wrap;
+  row-gap: 2px;
+  overflow: visible;
+}
+
+.select__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  max-width: 100%;
+  padding: 0 var(--solely-spacing-xs);
+  color: var(--solely-primary);
+  background-color: var(--solely-primary-light);
+  border-radius: var(--solely-border-radius-sm);
+  font-size: var(--solely-font-size-sm);
+  line-height: 1.6;
+}
+
+.select__tag .select__option-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -72,13 +140,32 @@
   color: var(--solely-text-tertiary);
 }
 
-/* 下拉箭头 */
+/* 右侧图标：与 input 的 .form-control__action 同一套 20×20 盒子 + 16×16 线性图标，
+   避免 × / ▼ 这类文字符号的基线与字面高度不一致导致按钮高矮不齐 */
 .select__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
   margin-left: auto;
-  font-size: 12px;
+  flex-shrink: 0;
+  line-height: 1;
   color: var(--solely-text-tertiary);
   transition: transform var(--solely-transition-duration);
+}
+
+.select__action-icon {
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .select.is-open .select__arrow {
@@ -99,10 +186,20 @@
 
 /* 清除按钮 - 组件特有 */
 .select__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  /* 左 4px 隔开已选内容、右 4px 隔开下拉箭头；两个 20px 盒子里的图标自然留出 8px 空白 */
   margin-left: var(--solely-spacing-xs);
-  font-size: 14px;
+  margin-right: var(--solely-spacing-xs);
+  flex-shrink: 0;
+  line-height: 1;
   color: var(--solely-text-tertiary);
   cursor: pointer;
+  user-select: none;
   transition: color var(--solely-transition-duration);
 }
 
@@ -110,14 +207,18 @@
   color: var(--solely-text-secondary);
 }
 
+.select__clear:focus-visible {
+  outline: 2px solid var(--solely-primary);
+  outline-offset: 1px;
+  border-radius: var(--solely-border-radius-sm);
+}
+
 /* 下拉菜单定位 - 组件特有 */
 .select__dropdown {
-  position: absolute;
-  left: 0;
+  /* 由浮层基座用 fixed 坐标定位，避免被祖先 overflow 裁剪 */
+  position: fixed;
   width: auto;
-  /* 宽度由内容决定 */
-  min-width: 100%;
-  /* 至少与 select 同宽 */
+  min-width: 0;
   max-height: 400px;
   display: flex;
   flex-direction: column;
@@ -135,10 +236,8 @@
   min-height: 0;
 }
 
-/* 向下展开（默认） */
+/* 向下展开（仅用于动画方向，坐标由基座计算） */
 .select__dropdown--bottom {
-  top: 100%;
-  margin-top: 4px;
   animation: dropdown-in-bottom 0.2s ease-out;
 }
 
@@ -146,10 +245,8 @@
   animation: dropdown-out-bottom 0.2s ease-in forwards;
 }
 
-/* 向上展开 */
+/* 向上展开（仅用于动画方向，坐标由基座计算） */
 .select__dropdown--top {
-  bottom: 100%;
-  margin-bottom: 4px;
   animation: dropdown-in-top 0.2s ease-out;
 }
 
@@ -167,14 +264,22 @@
   min-width: 100%;
 }
 
-.select__option:hover:not(.select__option--disabled) {
+.select__option:hover:not(.select__option--disabled),
+.select__option--highlighted:not(.select__option--disabled) {
   background-color: var(--solely-primary-light);
 }
 
+/* 选中态独立编码：左侧实色边 + 对勾，不再与 hover/高亮共用浅色底 */
 .select__option--selected {
-  background-color: var(--solely-primary-light);
+  box-shadow: inset 3px 0 0 var(--solely-primary);
   color: var(--solely-primary);
   font-weight: 500;
+}
+
+/* 选中且 hover/高亮时仍保留左侧实色边，浅色底只表达指针位置 */
+.select__option--selected:hover:not(.select__option--disabled),
+.select__option--selected.select__option--highlighted:not(.select__option--disabled) {
+  background-color: var(--solely-primary-light);
 }
 
 .select__option--disabled {
@@ -183,40 +288,64 @@
   opacity: var(--solely-disabled-opacity);
 }
 
-/* 选项图标 */
+/* 选项内容（图标 + 文本，或自定义渲染） */
 .select__option {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--solely-spacing-sm);
+}
+
+.select__option-content {
+  display: flex;
+  align-items: center;
+  gap: var(--solely-spacing-sm);
+  flex: 1;
+  min-width: 0;
 }
 
 .select__option-icon {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
 }
 
-.select__option-icon--img {
+.select__option-icon>img,
+.select__option-icon>svg {
   width: 20px;
   height: 20px;
   object-fit: cover;
   border-radius: 4px;
 }
 
-.select__option-icon--class {
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-
 .select__option-label {
   flex: 1;
-  overflow: visible;
-  /* 允许内容超出 */
-  text-overflow: clip;
-  /* 不显示省略号 */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 线性图标：选中勾与 input / tree 等组件同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.select__option-check {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--solely-primary);
 }
 
 /* 插槽选项样式 */
@@ -241,22 +370,65 @@
 }
 
 .select__slot-options ::slotted([data-value]:hover:not([disabled])),
-.select__slot-options>[data-value]:hover:not([disabled]) {
+.select__slot-options>[data-value]:hover:not([disabled]),
+.select__slot-options ::slotted([data-value][data-highlighted]:not([disabled])),
+.select__slot-options>[data-value][data-highlighted]:not([disabled]) {
   background-color: var(--solely-primary-light);
 }
 
 .select__slot-options ::slotted([data-value][data-selected]),
 .select__slot-options>[data-value][data-selected] {
-  background-color: var(--solely-primary-light);
+  box-shadow: inset 3px 0 0 var(--solely-primary);
   color: var(--solely-primary);
   font-weight: 500;
 }
 
-.select__slot-options ::slotted([data-value][disabled]),
-.select__slot-options>[data-value][disabled] {
+.select__slot-options ::slotted([data-value][disabled]:not([disabled="false" i]):not([disabled="0" i])),
+.select__slot-options>[data-value][disabled]:not([disabled="false" i]):not([disabled="0" i]) {
   cursor: not-allowed;
   color: var(--solely-text-tertiary);
   opacity: var(--solely-disabled-opacity);
+}
+
+/* 声明式选项 <solely-select-option> 与 [data-value] 裸元素共用同一套外观 */
+.select__slot-options ::slotted(solely-select-option) {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  cursor: pointer;
+  transition: all var(--solely-transition-duration);
+  color: var(--solely-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.select__slot-options ::slotted(solely-select-option:hover:not([disabled])) {
+  background-color: var(--solely-primary-light);
+}
+
+.select__slot-options ::slotted(solely-select-option[data-highlighted]:not([disabled])) {
+  background-color: var(--solely-primary-light);
+}
+
+.select__slot-options ::slotted(solely-select-option[data-selected]) {
+  box-shadow: inset 3px 0 0 var(--solely-primary);
+  color: var(--solely-primary);
+  font-weight: 500;
+}
+
+.select__slot-options ::slotted(solely-select-option[disabled]:not([disabled="false" i]):not([disabled="0" i])) {
+  cursor: not-allowed;
+  color: var(--solely-text-tertiary);
+  opacity: var(--solely-disabled-opacity);
+}
+
+.select__slot-options ::slotted(solely-select-option[data-group]) {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  color: var(--solely-text-secondary);
+  font-size: var(--solely-font-size-sm);
+  font-weight: 600;
+  cursor: default;
+  background-color: transparent;
 }
 
 /* header 插槽 - 固定在顶部 */
@@ -289,6 +461,15 @@
 
 /* 非第一个分组标题，上方增加间距 */
 .select__slot-options>[data-group]:not(:first-child) {
+  margin-top: var(--solely-spacing-sm);
+}
+
+/* options 模式下的分组标题：不可点击、hover 不变色 */
+.select__option--group:hover {
+  background-color: transparent;
+}
+
+.select__option--group:not(:first-child) {
   margin-top: var(--solely-spacing-sm);
 }
 

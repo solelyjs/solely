@@ -29,9 +29,9 @@
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-progress ref="progress" percent="50"></solely-progress>
-                <div style="margin-top: 10px;">
+                <div style="margin-top: 10px">
                     <solely-button size="small" @click="this.decrease()">-</solely-button>
-                    <span style="margin: 0 10px;">{{$data.percent}}%</span>
+                    <span style="margin: 0 10px">{{$data.percent}}%</span>
                     <solely-button size="small" @click="this.increase()">+</solely-button>
                 </div>
             </div>
@@ -62,7 +62,10 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
     <!-- 进度条状态 -->
     <div class="demo-block">
         <h3 class="demo-block-title">进度条状态</h3>
-        <p class="demo-block-desc">使用 status 属性设置进度条状态。</p>
+        <p class="demo-block-desc">
+            使用 status 属性设置进度条状态。<strong>注意</strong>：<code>active</code> 目前只声明了 2s 循环动画，
+            但未设置 <code>background-image</code>，线性进度条视觉上与 <code>normal</code> 无差异；圆环模式也没有 <code>--active</code> 样式。
+        </p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-progress percent="50" status="normal"></solely-progress>
@@ -171,11 +174,11 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
                         font-weight: 600;
                         font-size: 14px;
                     }
-                    #progress-part-demo solely-progress[type="circle"]::part(circle-track) {
+                    #progress-part-demo solely-progress[type='circle']::part(circle-track) {
                         stroke: #f0f0f0;
                         stroke-width: 8;
                     }
-                    #progress-part-demo solely-progress[type="circle"]::part(circle-bar) {
+                    #progress-part-demo solely-progress[type='circle']::part(circle-bar) {
                         stroke: url(#gradient);
                         stroke-width: 8;
                         stroke-linecap: round;
@@ -184,8 +187,8 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
                 <svg width="0" height="0">
                     <defs>
                         <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                            <stop offset="0%" style="stop-color: #667eea; stop-opacity: 1" />
+                            <stop offset="100%" style="stop-color: #764ba2; stop-opacity: 1" />
                         </linearGradient>
                     </defs>
                 </svg>
@@ -227,9 +230,9 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-progress ref="circleProgress" type="circle" percent="75"></solely-progress>
-                <div style="margin-top: 10px;">
+                <div style="margin-top: 10px">
                     <solely-button size="small" @click="this.decreaseCircle()">-</solely-button>
-                    <span style="margin: 0 10px;">{{$data.circlePercent}}%</span>
+                    <span style="margin: 0 10px">{{$data.circlePercent}}%</span>
                     <solely-button size="small" @click="this.increaseCircle()">+</solely-button>
                 </div>
             </div>
@@ -267,7 +270,8 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -276,11 +280,13 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
             <tbody>
                 <tr>
                     <td>type</td>
+                    <td>type</td>
                     <td>进度条类型</td>
                     <td>'line' | 'circle'</td>
                     <td>'line'</td>
                 </tr>
                 <tr>
+                    <td>percent</td>
                     <td>percent</td>
                     <td>百分比（0-100）</td>
                     <td>number</td>
@@ -288,17 +294,20 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
                 </tr>
                 <tr>
                     <td>status</td>
-                    <td>状态</td>
+                    <td>status</td>
+                    <td>状态：<code>normal</code> 普通、<code>success</code> 成功（绿色）、<code>exception</code> 异常（红色）、<code>active</code> 进行中（主色；动画类已声明但当前无可见流动效果）</td>
                     <td>'normal' | 'success' | 'exception' | 'active'</td>
                     <td>'normal'</td>
                 </tr>
                 <tr>
+                    <td>show-info</td>
                     <td>showInfo</td>
-                    <td>是否显示进度数值或状态图标</td>
+                    <td>是否显示进度数值或状态图标；默认开启，<code>show-info="false"</code> 关闭</td>
                     <td>boolean</td>
                     <td>true</td>
                 </tr>
                 <tr>
+                    <td>stroke-width</td>
                     <td>strokeWidth</td>
                     <td>进度条线的宽度</td>
                     <td>number</td>
@@ -306,15 +315,59 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
                 </tr>
                 <tr>
                     <td>width</td>
+                    <td>width</td>
                     <td>圆形进度条画布宽度（仅在 type="circle" 时有效）</td>
                     <td>number</td>
                     <td>120</td>
                 </tr>
                 <tr>
                     <td>format</td>
-                    <td>内容的模板函数（仅在 type="line" 时有效）</td>
+                    <td>format</td>
+                    <td>内容的模板字符串（支持 {percent}）或格式化函数（line 与 circle 均有效）</td>
+                    <td>string | ((percent: number) =&gt; string)</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>label</td>
+                    <td>label</td>
+                    <td>进度条的可访问名称（映射到 <code>role="progressbar"</code> 的 <code>aria-label</code>）</td>
                     <td>string</td>
                     <td>''</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">ARIA 属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>动态更新</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>role="progressbar"</td>
+                    <td>根容器标识为进度条，读屏可识别</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>aria-valuemin / aria-valuemax</td>
+                    <td>进度范围，固定为 0 / 100</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>aria-valuenow</td>
+                    <td>当前进度值（已钳制到 0-100）</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-valuetext</td>
+                    <td>读屏文本，如 "60%"；仅在 type="circle" 时设置，线性模式不设置</td>
+                    <td>是</td>
                 </tr>
             </tbody>
         </table>
@@ -420,7 +473,7 @@ increaseBtn.<span class="code-method">addEventListener</span>(<span class="code-
   <span class="code-attr">showInfo</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否显示进度数值</span>
   <span class="code-attr">strokeWidth</span>?: <span class="code-type">number</span>;     <span class="code-comment">// 线条宽度</span>
   <span class="code-attr">width</span>?: <span class="code-type">number</span>;           <span class="code-comment">// 圆形进度条宽度</span>
-  <span class="code-attr">format</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 格式模板</span>
+  <span class="code-attr">format</span>?: <span class="code-type">string | ((percent: number) =&gt; string)</span>; <span class="code-comment">// 模板字符串或格式化函数</span>
 }</code></pre>
         </div>
     </div>

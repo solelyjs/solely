@@ -6,6 +6,12 @@
     :aria-label="'评分，当前 ' + ($data.value || 0) + ' 分'"
     :aria-disabled="$data.disabled ? 'true' : 'false'"
     :aria-readonly="$data.readonly ? 'true' : 'false'"
+    @keydown="this.handleKeyDown(event)"
+    @pointerdown="this.handlePointerDown(event)"
+    @pointermove="this.handlePointerMove(event)"
+    @pointerup="this.handlePointerUp(event)"
+    @pointercancel="this.handlePointerCancel(event)"
+    @mouseleave="this.handleMouseLeave()"
 >
     <For each="$data.starCount" item="i">
         <span
@@ -13,13 +19,15 @@
             class="rate__star"
             :class="this.getStarClasses(i)"
             :data-char="$data.character || '★'"
+            :data-index="i"
+            :title="this.getTooltip(i)"
             role="radio"
-            :aria-checked="i === ($data.value || 0) ? 'true' : 'false'"
-            :aria-label="i + ' 分'"
-            :tabindex="i === 1 ? '0' : '-1'"
-            @click="this.handleClick(i)"
+            :aria-checked="this.getStarAriaChecked(i)"
+            :aria-label="this.getTooltip(i)"
+            :tabindex="this.getStarTabindex(i)"
+            @click="this.handleClick(i, event)"
             @mouseenter="this.handleMouseEnter(i)"
-            @mouseleave="this.handleMouseLeave(i)"
+            @mousemove="this.handleMouseMove(i, event)"
         >
             {{$data.character || '★'}}
         </span>

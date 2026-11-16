@@ -19,6 +19,77 @@ let currentTheme: ThemeConfig = {
     theme: 'light',
 };
 
+interface Rgb {
+    r: number;
+    g: number;
+    b: number;
+}
+
+const WHITE: Rgb = { r: 255, g: 255, b: 255 };
+const BLACK: Rgb = { r: 0, g: 0, b: 0 };
+
+/**
+ * 解析颜色为 RGB。
+ * 支持 #rgb / #rrggbb 与 rgb() / rgba()；其他形式（颜色名、var() 等）返回 null。
+ */
+function parseColor(value: string): Rgb | null {
+    const input = value.trim();
+
+    const hexMatch = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(input);
+    if (hexMatch) {
+        const hex = hexMatch[1];
+        const full = hex.length === 3 ? `${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}` : hex;
+        return {
+            r: parseInt(full.slice(0, 2), 16),
+            g: parseInt(full.slice(2, 4), 16),
+            b: parseInt(full.slice(4, 6), 16),
+        };
+    }
+
+    const rgbMatch = /^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i.exec(input);
+    if (rgbMatch) {
+        const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));
+        return {
+            r: clamp(Number(rgbMatch[1])),
+            g: clamp(Number(rgbMatch[2])),
+            b: clamp(Number(rgbMatch[3])),
+        };
+    }
+
+    return null;
+}
+
+/**
+ * 按给定比例向目标色混合，返回 #rrggbb
+ */
+function mixColor(color: Rgb, target: Rgb, ratio: number): string {
+    const channel = (from: number, to: number) =>
+        Math.round(from + (to - from) * ratio)
+            .toString(16)
+            .padStart(2, '0');
+    return `#${channel(color.r, target.r)}${channel(color.g, target.g)}${channel(color.b, target.b)}`;
+}
+
+/**
+ * 由基础色派生 hover / active / light 三档色。
+ * 无法解析的颜色（颜色名、var()、渐变等）直接跳过，不覆盖用户已设置的值。
+ */
+export function deriveColorTokens(colors: Partial<Theme>): Record<string, string> {
+    const result: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(colors)) {
+        if (!value) continue;
+        const rgb = parseColor(value);
+        if (!rgb) continue;
+
+        result[`${key}-light`] = mixColor(rgb, WHITE, 0.9);
+        result[`${key}-hover`] = mixColor(rgb, WHITE, 0.2);
+        result[`${key}-active`] = mixColor(rgb, BLACK, 0.15);
+    }
+
+    return result;
+}
+
 /**
  * 设置主题
  * @param config 主题配置
@@ -34,9 +105,12 @@ export function setTheme(config: ThemeConfig): void {
     // 设置 data-theme 属性
     document.documentElement.setAttribute('data-theme', config.theme);
 
-    // 应用自定义颜色
+    // 应用自定义颜色：先写派生色，再写用户显式传入的值（显式值优先）
     if (config.colors) {
         const root = document.documentElement;
+        Object.entries(deriveColorTokens(config.colors)).forEach(([key, value]) => {
+            root.style.setProperty(`--solely-${key}`, value);
+        });
         Object.entries(config.colors).forEach(([key, value]) => {
             root.style.setProperty(`--solely-${key}`, value ?? '');
         });

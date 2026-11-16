@@ -97,8 +97,8 @@
         <h3 class="demo-block-title">显示十进制值</h3>
         <p class="demo-block-desc">添加 show-decimal 属性显示对应的十进制坐标值（默认不显示）。</p>
         <div class="demo-box">
-            <div class="demo-preview">
-                <solely-coordinate-input show-decimal latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <solely-coordinate-input block show-decimal latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-coordinate-input</span> <span class="code-attr">show-decimal</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-coordinate-input</span><span class="code-bracket">&gt;</span></code></pre>
@@ -110,8 +110,8 @@
         <h3 class="demo-block-title">显示方向选择</h3>
         <p class="demo-block-desc">添加 show-direction 属性显示 N/S/E/W 方向选择（默认不显示）。</p>
         <div class="demo-box">
-            <div class="demo-preview">
-                <solely-coordinate-input show-direction latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <solely-coordinate-input block show-direction latitude="39.9042" longitude="116.4074"></solely-coordinate-input>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- 添加 show-direction 属性显示方向选择 --&gt;</span>
@@ -359,7 +359,8 @@
             <table class="api-table">
                 <thead>
                     <tr>
-                        <th>属性名</th>
+                        <th>HTML 属性写法</th>
+                        <th>JS 属性写法</th>
                         <th>说明</th>
                         <th>类型</th>
                         <th>默认值</th>
@@ -368,11 +369,13 @@
                 <tbody>
                     <tr>
                         <td>type</td>
+                        <td>type</td>
                         <td>坐标类型：latitude（纬度）、longitude（经度）、both（两者）</td>
                         <td>string</td>
                         <td>'both'</td>
                     </tr>
                     <tr>
+                        <td>latitude</td>
                         <td>latitude</td>
                         <td>纬度值（十进制）</td>
                         <td>number</td>
@@ -380,11 +383,13 @@
                     </tr>
                     <tr>
                         <td>longitude</td>
+                        <td>longitude</td>
                         <td>经度值（十进制）</td>
                         <td>number</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td>—（attribute 不生效，仅 property）</td>
                         <td>value</td>
                         <td>坐标值对象（支持属性和方法操作）</td>
                         <td>{ latitude: number, longitude: number } | [number, number]</td>
@@ -392,29 +397,48 @@
                     </tr>
                     <tr>
                         <td>disabled</td>
+                        <td>disabled</td>
                         <td>是否禁用</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
                         <td>readonly</td>
+                        <td>readonly</td>
                         <td>是否只读</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>placeholder</td>
+                        <td>placeholder</td>
+                        <td>度 / 分 / 秒三个输入框的占位文案（统一生效），未设置时使用默认值 0 / 00 / 00.000</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>size</td>
                         <td>size</td>
                         <td>尺寸大小</td>
                         <td>'small' | 'medium' | 'large'</td>
                         <td>'medium'</td>
                     </tr>
                     <tr>
+                        <td>size 兼容别名</td>
+                        <td>size</td>
+                        <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                        <td>'middle' | 'default'</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>show-direction</td>
                         <td>showDirection</td>
                         <td>是否显示方向选择（N/S/E/W），添加属性即显示</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>show-decimal</td>
                         <td>showDecimal</td>
                         <td>是否显示十进制值，添加属性即显示</td>
                         <td>boolean</td>
@@ -422,11 +446,13 @@
                     </tr>
                     <tr>
                         <td>precision</td>
+                        <td>precision</td>
                         <td>秒输入精度（小数位数），控制秒的小数位数和自动跳转行为</td>
                         <td>number</td>
                         <td>3</td>
                     </tr>
                     <tr>
+                        <td>auto-tab</td>
                         <td>autoTab</td>
                         <td>是否自动跳转到下一个输入框，添加属性即开启</td>
                         <td>boolean</td>
@@ -434,12 +460,63 @@
                     </tr>
                     <tr>
                         <td>block</td>
+                        <td>block</td>
                         <td>是否块级显示，设置为 true 时宽度占满父容器</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">ARIA 属性</h4>
+            <p class="api-block-desc">方向开关与方向选项均可通过键盘操作；禁用 / 只读状态使用 aria-disabled 表达。</p>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>属性</th>
+                        <th>说明</th>
+                        <th>动态更新</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>role="button" / aria-haspopup="listbox"</td>
+                        <td>方向开关为按钮角色，并声明弹出 listbox</td>
+                        <td>否</td>
+                    </tr>
+                    <tr>
+                        <td>aria-expanded</td>
+                        <td>方向下拉是否展开</td>
+                        <td>是</td>
+                    </tr>
+                    <tr>
+                        <td>aria-label</td>
+                        <td>方向开关为 "纬度方向" / "经度方向"</td>
+                        <td>否</td>
+                    </tr>
+                    <tr>
+                        <td>aria-disabled</td>
+                        <td>disabled 或 readonly 时为 true；此时 tabindex 为 -1，不可聚焦</td>
+                        <td>是</td>
+                    </tr>
+                    <tr>
+                        <td>role="option" / tabindex="0"</td>
+                        <td>下拉中的 N/S、E/W 选项可聚焦</td>
+                        <td>否</td>
+                    </tr>
+                    <tr>
+                        <td>aria-selected</td>
+                        <td>选项是否当前选中</td>
+                        <td>是</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="api-block-desc" style="margin-top: 12px;">
+                键盘操作：方向开关按 <code>Enter</code> / <code>Space</code> 打开下拉；选项按
+                <code>Enter</code> / <code>Space</code> 选中。
+            </p>
         </div>
 
         <div class="api-block">
@@ -500,7 +577,7 @@
                     </tr>
                     <tr>
                         <td>change</td>
-                        <td>方向选择变化或调用 setValue 时触发（原生事件）</td>
+                        <td>度 / 分 / 秒输入框触发原生 change 时向外转发（原生事件，非 CustomEvent）；方向选择、<code>setValue()</code> 与写入 <code>value</code> 属性不会派发 change</td>
                         <td>Event</td>
                     </tr>
                     <tr>

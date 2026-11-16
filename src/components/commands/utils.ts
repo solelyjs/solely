@@ -274,3 +274,26 @@ export function observeTheme(getElements: () => HTMLElement | HTMLElement[] | nu
         maybeDisconnectThemeObserver();
     };
 }
+
+/**
+ * 16×16 线性图标路径（与 select / input / pagination 的 chevron 同一套几何）
+ */
+export const LINEAR_ICON_PATHS = {
+    close: 'M4.4 4.4 11.6 11.6 M11.6 4.4 4.4 11.6',
+} as const;
+
+/**
+ * 创建线性 SVG 图标元素，供命令式浮层的关闭按钮复用。
+ * 用 createElementNS 而不是 innerHTML，兼容严格 CSP。
+ */
+export function createLinearIcon(name: keyof typeof LINEAR_ICON_PATHS): SVGElement {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'solely-linear-icon');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', LINEAR_ICON_PATHS[name]);
+    svg.appendChild(path);
+    return svg;
+}

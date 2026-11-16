@@ -18,4 +18,6 @@ export interface NotFoundProps {
     backUrl?: string;
     /** 是否为嵌入模式（用于文档演示等场景），默认 false */
     embedded?: boolean;
+    /** 是否展示 404 中间的状态图标，默认 true；false 时仅隐藏图标，保留 404 数字 */
+    showIcon?: boolean;
 }

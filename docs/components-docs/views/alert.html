@@ -210,7 +210,8 @@
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -219,11 +220,13 @@
             <tbody>
                 <tr>
                     <td>type</td>
+                    <td>type</td>
                     <td>指定警告提示的样式，有四种选择：info、success、warning、error</td>
                     <td>string</td>
                     <td>info</td>
                 </tr>
                 <tr>
+                    <td>message</td>
                     <td>message</td>
                     <td>警告提示内容</td>
                     <td>string</td>
@@ -231,27 +234,45 @@
                 </tr>
                 <tr>
                     <td>description</td>
+                    <td>description</td>
                     <td>警告提示的辅助性文字介绍</td>
                     <td>string</td>
                     <td>-</td>
                 </tr>
                 <tr>
                     <td>closable</td>
+                    <td>closable</td>
                     <td>是否显示关闭按钮</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>show-icon</td>
                     <td>showIcon</td>
-                    <td>是否显示辅助图标</td>
+                    <td>是否显示辅助图标；默认 <code>false</code>（不带图标），需要图标时写 <code>show-icon</code> 或 <code>show-icon="true"</code>，<code>show-icon="false"</code> 保持关闭</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>icon</td>
+                    <td>icon</td>
+                    <td>自定义图标文本，需配合 <code>show-icon</code> 才显示；未设置（<code>null</code>）时按 <code>type</code> 使用内置线性 SVG 图标（info / success / warning / error）；<code>icon=""</code> 表示不渲染图标（存在 icon 插槽时仍显示插槽内容）</td>
+                    <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>block</td>
                     <td>block</td>
                     <td>是否块级显示</td>
                     <td>boolean</td>
                     <td>false</td>
+                </tr>
+                <tr>
+                    <td>auto-close</td>
+                    <td>autoClose</td>
+                    <td>自动关闭时长（毫秒），值为 <code>0</code> 时不自动关闭；关闭时派发 <code>close</code> 事件，<code>detail.source</code> 为 <code>'auto'</code></td>
+                    <td>number</td>
+                    <td>0</td>
                 </tr>
             </tbody>
         </table>
@@ -270,8 +291,8 @@
             <tbody>
                 <tr>
                     <td>close</td>
-                    <td>关闭时触发（自定义事件）</td>
-                    <td>CustomEvent</td>
+                    <td>关闭时触发（自定义事件，可取消）；点击关闭按钮时 <code>detail.source</code> 为 <code>'user'</code>，auto-close 自动关闭时为 <code>'auto'</code></td>
+                    <td>CustomEvent&lt;{ source: 'user' | 'auto' }&gt;</td>
                 </tr>
             </tbody>
         </table>
@@ -291,12 +312,12 @@
                 <tr>
                     <td>icon</td>
                     <td>自定义图标，需要设置 show-icon 属性才显示，优先级高于根据 type 自动选择的图标</td>
-                    <td>根据 type 自动选择：ℹ️ ✓ ⚠️ ✗</td>
+                    <td>根据 type 自动选择内置线性 SVG 图标（info / success / warning / error）</td>
                 </tr>
                 <tr>
                     <td>close-icon</td>
                     <td>自定义关闭按钮图标，需要设置 closable 属性才显示，优先级高于默认关闭图标</td>
-                    <td>×</td>
+                    <td>线性 × 图标</td>
                 </tr>
                 <tr>
                     <td>默认插槽</td>
@@ -346,7 +367,9 @@
     <span class="code-attr">description</span>?: <span class="code-type">string</span>;
     <span class="code-attr">closable</span>?: <span class="code-type">boolean</span>;
     <span class="code-attr">showIcon</span>?: <span class="code-type">boolean</span>;
+    <span class="code-attr">icon</span>?: <span class="code-type">string</span>;
     <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;
+    <span class="code-attr">autoClose</span>?: <span class="code-type">number</span>; <span class="code-comment">// 自动关闭时长（毫秒），0 表示不自动关闭</span>
 }</code></pre>
         </div>
     </div>

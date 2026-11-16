@@ -23,7 +23,11 @@
 
 import type { TooltipOptions, TooltipInstance, TooltipConfig } from './types';
 import { generateId, injectStyle, createElement, observeTheme } from '../utils';
-import type { Placement } from '../utils';
+import { computePosition, observePosition } from '../../../shared/floating/position';
+import { registerOverlay, type OverlayHandle } from '../../../shared/floating/overlay-stack';
+import type { Placement } from '../../../shared/floating/types';
+import { linkAria, type AriaLinkHandle } from '../../../shared/aria';
+import { oneOf, PLACEMENTS } from '../../../shared/enum';
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-tooltip-styles';
@@ -37,199 +41,111 @@ const globalConfig: TooltipConfig = {
 
 interface TooltipInfo {
     id: number;
+    tooltipId: string;
     element: HTMLElement;
     target: HTMLElement;
     placement: Placement;
-    scrollParents: HTMLElement[];
+    className: string;
+    /** 跨树 IDREF 链接句柄；释放时精确还原 target 原有 aria-describedby */
+    ariaLink: AriaLinkHandle | null;
     cleanupTheme: () => void;
+    overlay: OverlayHandle;
+    stopObserve: () => void;
 }
 
 const tooltipList: TooltipInfo[] = [];
-const boundTargets = new WeakSet<HTMLElement>();
+// 已绑定的目标元素 -> 实例。重复 bind 同一元素时复用已有实例。
+// 使用 WeakMap，避免长期持有已移除元素的引用。
+const boundInstances = new WeakMap<HTMLElement, TooltipInstance>();
 
 function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
 }
 
-function getScrollParents(element: HTMLElement): HTMLElement[] {
-    const parents: HTMLElement[] = [];
-    let el: Element | null = element.parentElement;
+/** 使用基座纯函数定位：fixed 坐标系，不受祖先 overflow 裁剪 */
+function positionTooltip(info: TooltipInfo): void {
+    const rect = info.target.getBoundingClientRect();
+    const floatingRect = info.element.getBoundingClientRect();
+    const result = computePosition(
+        rect,
+        {
+            // 入场动画带 transform: scale(...)，getBoundingClientRect() 会返回缩放后的尺寸；
+            // 定位必须用布局尺寸，否则首次 flip/shift 按偏小的尺寸钳制，滚动后才修正。
+            width: info.element.offsetWidth || floatingRect.width,
+            height: info.element.offsetHeight || floatingRect.height,
+        },
+        {
+            placement: info.placement,
+            // fixed 可用区域不含滚动条；jsdom 的 clientWidth 为 0，回退到 innerWidth
+            viewport: {
+                width: document.documentElement.clientWidth || window.innerWidth,
+                height: document.documentElement.clientHeight || window.innerHeight,
+            },
+            offset: 8,
+            boundaryPadding: 8,
+            flip: true,
+            shift: true,
+            strategy: 'fixed',
+        },
+    );
 
-    while (el && el !== document.body) {
-        const style = getComputedStyle(el);
-        if (
-            style.overflow === 'auto' ||
-            style.overflow === 'scroll' ||
-            style.overflowY === 'auto' ||
-            style.overflowY === 'scroll'
-        ) {
-            parents.push(el as HTMLElement);
-        }
-        el = el.parentElement;
+    info.element.className = ['solely-tooltip', `solely-tooltip--${result.placement}`, info.className]
+        .filter(Boolean)
+        .join(' ');
+
+    info.element.style.position = 'fixed';
+    info.element.style.top = `${result.top}px`;
+    info.element.style.left = `${result.left}px`;
+    info.element.style.bottom = 'auto';
+    info.element.style.right = 'auto';
+
+    const arrow = info.element.querySelector('.solely-tooltip__arrow') as HTMLElement | null;
+    if (arrow) {
+        // 同 popconfirm：用空串清空内联方位，避免 'auto' 覆盖 CSS 方位类的 top / left 定位
+        arrow.style.top = '';
+        arrow.style.left = '';
+        if (result.arrow.x !== undefined) arrow.style.left = `${result.arrow.x}px`;
+        if (result.arrow.y !== undefined) arrow.style.top = `${result.arrow.y}px`;
     }
-
-    return parents;
 }
 
-function calcPosition(target: HTMLElement, popupElement: HTMLElement, placement: Placement, gap: number = 8) {
-    const rect = target.getBoundingClientRect();
-    const w = popupElement.offsetWidth || 250;
-    const h = popupElement.offsetHeight || 100;
-    const pad = 8;
-
-    let top = 0;
-    let left = 0;
-    let arrowLeft: number | undefined;
-    let arrowTop: number | undefined;
-
-    switch (placement) {
-        case 'top':
-            top = rect.top - h - gap;
-            left = rect.left + (rect.width - w) / 2;
-            arrowLeft = w / 2 - 4;
-            break;
-        case 'topLeft':
-            top = rect.top - h - gap;
-            left = rect.left;
-            arrowLeft = 16;
-            break;
-        case 'topRight':
-            top = rect.top - h - gap;
-            left = rect.right - w;
-            arrowLeft = w - 24;
-            break;
-        case 'bottom':
-            top = rect.bottom + gap;
-            left = rect.left + (rect.width - w) / 2;
-            arrowLeft = w / 2 - 4;
-            break;
-        case 'bottomLeft':
-            top = rect.bottom + gap;
-            left = rect.left;
-            arrowLeft = 16;
-            break;
-        case 'bottomRight':
-            top = rect.bottom + gap;
-            left = rect.right - w;
-            arrowLeft = w - 24;
-            break;
-        case 'left':
-            top = rect.top + (rect.height - h) / 2;
-            left = rect.left - w - gap;
-            arrowTop = h / 2 - 4;
-            break;
-        case 'leftTop':
-            top = rect.top;
-            left = rect.left - w - gap;
-            arrowTop = 16;
-            break;
-        case 'leftBottom':
-            top = rect.bottom - h;
-            left = rect.left - w - gap;
-            arrowTop = h - 24;
-            break;
-        case 'right':
-            top = rect.top + (rect.height - h) / 2;
-            left = rect.right + gap;
-            arrowTop = h / 2 - 4;
-            break;
-        case 'rightTop':
-            top = rect.top;
-            left = rect.right + gap;
-            arrowTop = 16;
-            break;
-        case 'rightBottom':
-            top = rect.bottom - h;
-            left = rect.right + gap;
-            arrowTop = h - 24;
-            break;
-    }
-
-    top = Math.max(pad, Math.min(top, window.innerHeight - h - pad));
-    left = Math.max(pad, Math.min(left, window.innerWidth - w - pad));
-
-    return { top, left, arrowLeft, arrowTop };
-}
-
-function repositionAllTooltips(): void {
-    tooltipList.forEach(info => {
-        const el = info.element;
-        if (!el || !info.target) return;
-        const arrow = el.querySelector('.solely-tooltip__arrow') as HTMLElement;
-        const pos = calcPosition(info.target, el, info.placement);
-        el.style.top = `${pos.top}px`;
-        el.style.left = `${pos.left}px`;
-        if (arrow) {
-            if (pos.arrowLeft !== undefined) {
-                arrow.style.left = `${pos.arrowLeft}px`;
-                arrow.style.top = '';
-            }
-            if (pos.arrowTop !== undefined) {
-                arrow.style.top = `${pos.arrowTop}px`;
-                arrow.style.left = '';
-            }
-        }
+function applyDescribedBy(info: TooltipInfo): void {
+    // 复用基座：同树直接引用 tooltip id，跨 shadow 边界时在 target 树内生成代理，
+    // 保证 aria-describedby 的 IDREF 在引用方作用域内可解析。
+    info.ariaLink = linkAria(info.target, 'aria-describedby', info.element, {
+        id: info.tooltipId,
+        role: 'tooltip',
     });
 }
 
-let repositionRAF: number | null = null;
-let scrollListenersActive = false;
-
-function scheduleReposition(): void {
-    if (repositionRAF) return;
-    repositionRAF = requestAnimationFrame(() => {
-        repositionRAF = null;
-        repositionAllTooltips();
-    });
+function restoreDescribedBy(info: TooltipInfo): void {
+    info.ariaLink?.release();
+    info.ariaLink = null;
 }
 
-function bindScrollListeners(): void {
-    if (scrollListenersActive || tooltipList.length === 0) return;
-    scrollListenersActive = true;
-    window.addEventListener('resize', scheduleReposition);
-}
-
-function unbindScrollListeners(): void {
-    if (!scrollListenersActive) return;
-    scrollListenersActive = false;
-    window.removeEventListener('resize', scheduleReposition);
-    if (repositionRAF) {
-        cancelAnimationFrame(repositionRAF);
-        repositionRAF = null;
-    }
+function disposeTooltip(info: TooltipInfo): void {
+    info.stopObserve();
+    info.overlay.deactivate();
+    info.overlay.dispose();
+    restoreDescribedBy(info);
+    info.element.remove();
+    info.cleanupTheme();
 }
 
 async function hideTooltipById(id: number, callback?: () => void): Promise<void> {
     const index = tooltipList.findIndex(t => t.id === id);
     if (index === -1) return;
 
-    const info = tooltipList[index];
-
-    info.element.classList.add('is-closing');
-    info.element.remove();
-    info.cleanupTheme();
-
-    info.scrollParents.forEach(p => p.removeEventListener('scroll', scheduleReposition));
-    tooltipList.splice(index, 1);
-
-    if (tooltipList.length === 0) unbindScrollListeners();
+    const [info] = tooltipList.splice(index, 1);
+    disposeTooltip(info);
     callback?.();
 }
 
 function hideAllTooltipsSync(): void {
     if (tooltipList.length === 0) return;
 
-    const allScrollParents = new Set<HTMLElement>();
-    tooltipList.forEach(info => {
-        info.scrollParents.forEach(p => allScrollParents.add(p));
-        info.element.classList.add('is-closing');
-        info.element.remove();
-        info.cleanupTheme();
-    });
-
-    allScrollParents.forEach(p => p.removeEventListener('scroll', scheduleReposition));
-    tooltipList.length = 0;
-    unbindScrollListeners();
+    const all = tooltipList.splice(0, tooltipList.length);
+    all.forEach(disposeTooltip);
 }
 
 async function hideAllTooltips(callback?: () => void): Promise<void> {
@@ -237,28 +153,28 @@ async function hideAllTooltips(callback?: () => void): Promise<void> {
     callback?.();
 }
 
-function showTooltip(target: HTMLElement, options: TooltipOptions): number {
+function showTooltip(target: HTMLElement, options: TooltipOptions, onDismiss?: () => void): number {
     const id = generateId();
     ensureStylesInjected();
 
-    const placement = (options.placement ?? globalConfig.placement) as Placement;
+    const placement: Placement = oneOf(options.placement ?? globalConfig.placement, PLACEMENTS, 'top');
     const shouldClone = options.cloneElement ?? true;
 
     const existingIndex = tooltipList.findIndex(t => t.target === target);
     if (existingIndex !== -1) {
-        const existing = tooltipList[existingIndex];
-        existing.element.remove();
-        existing.cleanupTheme();
-        existing.scrollParents.forEach(p => p.removeEventListener('scroll', scheduleReposition));
-        tooltipList.splice(existingIndex, 1);
+        const [existing] = tooltipList.splice(existingIndex, 1);
+        disposeTooltip(existing);
     }
 
     if (globalConfig.singleton && tooltipList.length > 0) {
         hideAllTooltipsSync();
     }
 
+    // 前缀区分声明式 tooltip，避免两套计数器生成重复 id
+    const tooltipId = `solely-tooltip-cmd-${id}`;
     const tooltip = createElement('div', {
         className: `solely-tooltip solely-tooltip--${placement}${options.className ? ` ${options.className}` : ''}`,
+        attrs: { role: 'tooltip', id: tooltipId, 'aria-hidden': 'false' },
         styles: {
             ...(options.style as Partial<CSSStyleDeclaration>),
             ...(options.color ? { backgroundColor: options.color } : {}),
@@ -288,26 +204,58 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
 
     document.body.appendChild(tooltip);
 
-    requestAnimationFrame(() => {
-        const pos = calcPosition(target, tooltip, placement);
+    // 注册浮层：借用基座的 z-index 分配；焦点/滚动锁不参与，Esc 可关闭
+    const overlay = registerOverlay({
+        kind: 'tooltip',
+        container: tooltip,
+        trigger: target,
+        escClosable: true,
+        trapFocus: false,
+        lockScroll: false,
+        inertBackground: false,
+        autoFocus: false,
+        returnFocus: false,
+        onEscape: () => {
+            if (onDismiss) {
+                onDismiss();
+            } else {
+                void hideTooltipById(id, () => options.onVisibleChange?.(false));
+            }
+        },
+    });
+    overlay.activate();
 
-        tooltip.style.top = `${pos.top}px`;
-        tooltip.style.left = `${pos.left}px`;
+    const info: TooltipInfo = {
+        id,
+        tooltipId,
+        element: tooltip,
+        target,
+        placement,
+        className: options.className ?? '',
+        ariaLink: null,
+        cleanupTheme,
+        overlay,
+        stopObserve: () => undefined,
+    };
 
-        if (pos.arrowLeft !== undefined) {
-            arrow.style.left = `${pos.arrowLeft}px`;
-        }
-        if (pos.arrowTop !== undefined) {
-            arrow.style.top = `${pos.arrowTop}px`;
-        }
+    applyDescribedBy(info);
+
+    // 锚点/浮层变化时由基座统一批处理重定位（替代自研 scroll parent 监听）
+    info.stopObserve = observePosition({
+        anchor: target,
+        floating: tooltip,
+        update: () => positionTooltip(info),
+        onAnchorLost: () => {
+            void hideTooltipById(id);
+        },
     });
 
-    const scrollParents = getScrollParents(target);
-    scrollParents.forEach(p => p.addEventListener('scroll', scheduleReposition));
+    positionTooltip(info);
+    requestAnimationFrame(() => {
+        if (tooltip.isConnected) positionTooltip(info);
+    });
 
-    bindScrollListeners();
-
-    tooltipList.push({ id, element: tooltip, target, placement, scrollParents, cleanupTheme });
+    tooltipList.push(info);
 
     options.onVisibleChange?.(true);
 
@@ -315,21 +263,16 @@ function showTooltip(target: HTMLElement, options: TooltipOptions): number {
 }
 
 function bind(target: HTMLElement, options: TooltipOptions): TooltipInstance {
-    if (boundTargets.has(target)) {
-        return { show: () => {}, hide: () => {}, destroy: () => {} };
+    // 同一目标重复绑定：复用已有实例，避免返回静默失效的空实例
+    const existingInstance = boundInstances.get(target);
+    if (existingInstance) {
+        return existingInstance;
     }
 
-    boundTargets.add(target);
-
-    const trigger = options.trigger ?? globalConfig.trigger;
+    // 非法 trigger 不会绑定任何事件（气泡永远不出现），回退到默认 hover
+    const trigger = oneOf(options.trigger ?? globalConfig.trigger, ['hover', 'click', 'focus', 'manual'], 'hover');
     let visible = options.visible ?? options.defaultVisible ?? false;
     let currentTooltipId: number | null = null;
-
-    const show = () => {
-        if (visible) return;
-        visible = true;
-        currentTooltipId = showTooltip(target, options);
-    };
 
     const hide = () => {
         if (!visible || currentTooltipId === null) return;
@@ -341,9 +284,16 @@ function bind(target: HTMLElement, options: TooltipOptions): TooltipInstance {
         });
     };
 
+    const show = () => {
+        if (visible) return;
+        visible = true;
+        // Esc 关闭时走同一套 hide，确保 bind 的 visible 状态同步复位
+        currentTooltipId = showTooltip(target, options, () => hide());
+    };
+
     const destroy = () => {
         hide();
-        boundTargets.delete(target);
+        boundInstances.delete(target);
 
         if (trigger === 'hover') {
             target.removeEventListener('mouseenter', show);
@@ -385,10 +335,13 @@ function bind(target: HTMLElement, options: TooltipOptions): TooltipInstance {
     }
 
     if (visible) {
-        currentTooltipId = showTooltip(target, options);
+        currentTooltipId = showTooltip(target, options, () => hide());
     }
 
-    return { show, hide, destroy };
+    const instance: TooltipInstance = { show, hide, destroy };
+    boundInstances.set(target, instance);
+
+    return instance;
 }
 
 /**

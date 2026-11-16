@@ -6,7 +6,10 @@
 
 :host {
   display: block;
-  position: fixed;          /* right / bottom 由 JS 动态计算 */
+  position: fixed;
+  /* 文档模式使用默认右下角；容器模式由 JS 覆盖为相对容器的动态 inset */
+  right: 24px;
+  bottom: 24px;
   z-index: var(--solely-z-index-fixed);
   opacity: 0;
   visibility: hidden;

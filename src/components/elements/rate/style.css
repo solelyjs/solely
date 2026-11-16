@@ -37,6 +37,13 @@
   color: var(--solely-warning);
 }
 
+/* 键盘焦点可见性 */
+.rate__star:focus-visible {
+  outline: 2px solid var(--solely-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .rate__star--half {
   position: relative;
 }

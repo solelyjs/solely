@@ -10,7 +10,9 @@
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary" @click="this.openBasicModal()">打开对话框</solely-button>
-                <div ref="modalLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.modalLog.length > 0 ? $data.modalLog.join('\n') : '等待交互...'}}</div>
+                <div ref="modalLog" class="event-log" style="font-family: monospace; white-space: pre-wrap">
+                    {{$data.modalLog.length > 0 ? $data.modalLog.join('\n') : '等待交互...'}}
+                </div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-keyword">import</span> { <span class="code-type">Modal</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/commands'</span>;
@@ -171,7 +173,10 @@
 
     <div class="demo-block">
         <h3 class="demo-block-title">可点击遮罩关闭</h3>
-        <p class="demo-block-desc">设置 <code>maskClosable: true</code> 允许点击遮罩层关闭对话框。</p>
+        <p class="demo-block-desc">
+            点击遮罩层可关闭对话框（<code>maskClosable</code> 默认为 <code>true</code>；<code>Modal.confirm</code> 默认
+            <code>false</code>）。
+        </p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary" @click="this.openMaskClosableModal()">点击遮罩关闭</solely-button>
@@ -241,7 +246,9 @@
 
     <div class="demo-block">
         <h3 class="demo-block-title">自定义样式</h3>
-        <p class="demo-block-desc">通过 <code>className</code> 参数传入自定义类名，使用普通 CSS 选择器自定义 Modal 样式。</p>
+        <p class="demo-block-desc">
+            通过 <code>className</code> 参数传入自定义类名，使用普通 CSS 选择器自定义 Modal 样式。
+        </p>
         <div class="demo-box">
             <div class="demo-preview" id="modal-part-demo">
                 <solely-button type="primary" @click="this.openCustomPartModal()">自定义样式对话框</solely-button>
@@ -298,16 +305,24 @@
 
     <div class="demo-block">
         <h3 class="demo-block-title">与 Element 组件结合</h3>
-        <p class="demo-block-desc">在 Solely Element 组件中通过事件绑定触发 Modal，支持使用 <code>ref</code> 引用组件。</p>
+        <p class="demo-block-desc">
+            在 Solely Element 组件中通过事件绑定触发 Modal，支持使用 <code>ref</code> 引用组件。
+        </p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-button type="primary" ref="modalTriggerBtn" @click="this.openElementModal()">Element 触发</solely-button>
-                <solely-button type="default" @click="this.openModalWithElementContent()">Element 作为内容</solely-button>
+                <solely-button type="primary" ref="modalTriggerBtn" @click="this.openElementModal()"
+                    >Element 触发</solely-button
+                >
+                <solely-button type="default" @click="this.openModalWithElementContent()"
+                    >Element 作为内容</solely-button
+                >
                 <solely-button type="primary" @click="this.openCustomDomModal()">自定义 DOM 无图标</solely-button>
                 <solely-button type="success" @click="this.openModalWithFormData()">表单数据返回</solely-button>
                 <solely-button type="warning" @click="this.openModalWithCloneElement()">克隆元素</solely-button>
-                <div ref="clonePreview" style="margin-top: 12px; min-height: 40px;"></div>
-                <div ref="elementModalLog" class="event-log" style="font-family: monospace; white-space: pre-wrap;">{{$data.elementModalLog.length > 0 ? $data.elementModalLog.join('\n') : '等待交互...'}}</div>
+                <div ref="clonePreview" style="margin-top: 12px; min-height: 40px"></div>
+                <div ref="elementModalLog" class="event-log" style="font-family: monospace; white-space: pre-wrap">
+                    {{$data.elementModalLog.length > 0 ? $data.elementModalLog.join('\n') : '等待交互...'}}
+                </div>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-comment">// 通过 ref 获取 Element 组件触发 Modal</span>
@@ -382,7 +397,7 @@ content.<span class="code-attr">textContent</span> = <span class="code-value">'�
 
     <div class="api-block">
         <h3 class="api-block-title">API</h3>
-        
+
         <h4 class="api-block-subtitle">Modal.open(options)</h4>
         <table class="api-table">
             <thead>
@@ -426,9 +441,9 @@ content.<span class="code-attr">textContent</span> = <span class="code-value">'�
                 </tr>
                 <tr>
                     <td>maskClosable</td>
-                    <td>点击遮罩层是否关闭</td>
+                    <td>点击遮罩层是否关闭（Modal.confirm 默认 false）</td>
                     <td>boolean</td>
-                    <td>false</td>
+                    <td>true</td>
                 </tr>
                 <tr>
                     <td>closable</td>
@@ -438,9 +453,15 @@ content.<span class="code-attr">textContent</span> = <span class="code-value">'�
                 </tr>
                 <tr>
                     <td>showIcon</td>
-                    <td>是否显示图标</td>
+                    <td>是否显示状态图标；设为 false 时不渲染图标节点，优先级高于 icon</td>
                     <td>boolean</td>
                     <td>true</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>自定义图标，支持字符串或 Element（含 SVG）；<code>icon: ''</code> 表示不渲染图标；默认使用内置线性 SVG 状态图标</td>
+                    <td>string | Element</td>
+                    <td>-</td>
                 </tr>
                 <tr>
                     <td>okText</td>
@@ -492,8 +513,8 @@ content.<span class="code-attr">textContent</span> = <span class="code-value">'�
                 </tr>
                 <tr>
                     <td>onConfirm</td>
-                    <td>确定按钮回调（支持异步）。返回 <code>false</code> 阻止关闭，返回其他值作为结果数据</td>
-                    <td>() => void | false | any | Promise&lt;void | false | any&gt;</td>
+                    <td>确定按钮回调（支持异步）。返回 <code>false</code> 阻止关闭；返回其他值时，该值作为 <code>result</code> 透传给 <code>onClose</code>（不会作为 <code>Modal.open()</code> 的返回值）</td>
+                    <td>() =&gt; void | false | HTMLElement | Record&lt;string, unknown&gt; | Promise&lt;void | false | HTMLElement | Record&lt;string, unknown&gt;&gt;</td>
                     <td>-</td>
                 </tr>
                 <tr>
@@ -504,8 +525,8 @@ content.<span class="code-attr">textContent</span> = <span class="code-value">'�
                 </tr>
                 <tr>
                     <td>onClose</td>
-                    <td>关闭后回调</td>
-                    <td>() => void</td>
+                    <td>任何关闭方式（确定 / 取消 / 关闭按钮 / 遮罩 / Esc / <code>instance.close()</code>）都会触发一次；确定路径会把 <code>onConfirm</code> 的非 <code>false</code> 返回值作为 <code>result</code> 传入</td>
+                    <td>(result?: unknown) =&gt; void</td>
                     <td>-</td>
                 </tr>
             </tbody>
@@ -653,9 +674,9 @@ content.<span class="code-attr">textContent</span> = <span class="code-value">'�
                 </tr>
                 <tr>
                     <td>maskClosable</td>
-                    <td>默认是否可点击遮罩关闭</td>
+                    <td>默认是否可点击遮罩关闭（Modal.confirm 内置 false）</td>
                     <td>boolean</td>
-                    <td>false</td>
+                    <td>true</td>
                 </tr>
                 <tr>
                     <td>okText</td>

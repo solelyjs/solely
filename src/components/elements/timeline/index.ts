@@ -122,19 +122,23 @@ class SolelyTimeline extends BaseElement<TimelineProps> {
         this.refresh();
     }
 
+    /**
+     * 获取解析后的时间轴项
+     *
+     * reverse 对 attribute 字符串与 property 数组一视同仁；
+     * 反向时复制一份，避免修改调用方传入的数组。
+     */
     getParsedItems(): TimelineItem[] {
         const value = this.$data.items;
+        let items: TimelineItem[];
         if (Array.isArray(value)) {
-            return value;
+            items = value;
+        } else if (typeof value === 'string' && value) {
+            items = safeJsonParse(value, []);
+        } else {
+            return [];
         }
-        if (typeof value === 'string' && value) {
-            let items = safeJsonParse(value, []);
-            if (this.$data.reverse) {
-                items = items.reverse();
-            }
-            return items;
-        }
-        return [];
+        return this.$data.reverse ? items.slice().reverse() : items;
     }
 
     public setItems(items: TimelineItem[]): void {

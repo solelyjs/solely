@@ -109,6 +109,13 @@
   color: var(--solely-primary-hover);
 }
 
+/* 键盘焦点可见性 */
+.card__action:focus-visible {
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
+  border-radius: 2px;
+}
+
 /* ==================== 卡片特有样式 ==================== */
 /* 卡片尺寸变体 - 组件特有 */
 .card--sm .card__header {
@@ -121,6 +128,23 @@
 
 .card--sm .card__actions {
   padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+}
+
+/* 大尺寸：在 medium 基础上按既有 spacing / font scale 放大一档 */
+.card--lg .card__header {
+  padding: var(--solely-spacing-lg) var(--solely-spacing-xl);
+}
+
+.card--lg .card__title {
+  font-size: var(--solely-font-size-xl);
+}
+
+.card--lg .card__body {
+  padding: var(--solely-spacing-xl);
+}
+
+.card--lg .card__actions {
+  padding: var(--solely-spacing-lg) var(--solely-spacing-xl);
 }
 
 /* 封面图片 - 组件特有 */

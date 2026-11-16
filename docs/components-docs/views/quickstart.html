@@ -21,14 +21,63 @@ pnpm add solely</pre>
 </div>
 
 <div class="demo-block">
+    <h3 class="demo-block-title">浏览器支持基线</h3>
+    <p class="demo-block-desc">
+        组件库依赖原生 Web Components 能力：表单关联（<code>formAssociated</code> / <code>ElementInternals</code>）、
+        <code>WeakRef</code> 与 <code>requestSubmit</code>。支持基线为
+        <strong>Chrome / Edge 84+、Firefox 98+、Safari 16.4+</strong>；Safari 16.4 是首个支持表单关联自定义元素的版本，
+        也是本库的硬底线。
+    </p>
+    <p class="demo-block-desc">
+        低于基线时：模块仍可导入，但运行行为会失败——缺少 <code>WeakRef</code> 时响应式系统初始化直接抛
+        <code>TypeError</code>；缺少 <code>requestSubmit</code> 时 <code>nativeType="submit"</code> 的按钮点击后表单不会提交；
+        缺少 <code>formAssociated</code> / <code>ElementInternals</code> 时表单关联会告警并降级为不参与表单。
+        本库不提供 polyfill，也不做静默降级。
+    </p>
+    <p class="demo-block-desc">
+        评估结论：<strong>不为 <code>WeakRef</code> / <code>requestSubmit</code> 增加存在性守卫</strong>。两者在声明基线内均已受支持，
+        守卫只会覆盖基线以下的浏览器；而那类环境同时缺少 <code>ElementInternals</code>，无法获得可用的组件语义。
+        增加守卫会把「环境不达标」伪装成「组件静默失效」，反而增加排查成本。低于基线请升级浏览器。
+    </p>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">服务端渲染（SSR）限制</h3>
+    <p class="demo-block-desc">
+        <strong>服务端可以安全导入，但不能实例化。</strong>导入组件模块不会注册元素（装饰器检测到没有
+        <code>window</code> / <code>customElements</code> 时会跳过注册），主题自动注入也会检测 <code>document</code> 后跳过，
+        因此 Node 环境下 <code>import 'solely/components/elements/button'</code> 不会抛错。
+    </p>
+    <p class="demo-block-desc">
+        构造实例会立即失败：基类构造函数会调用 <code>this.attachShadow()</code>，Node 中没有 DOM，报
+        <code>attachShadow is not a function</code>；直接调用组件实例方法或主题 API 也可能访问 <code>document</code>。
+    </p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">// ✅ 服务端：只导入模块，输出 HTML 标签字符串</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/button'</span>;
+<span class="code-keyword">const</span> html = <span class="code-value">'&lt;solely-button type="primary"&gt;提交&lt;/solely-button&gt;'</span>;
+
+<span class="code-comment">// ❌ 服务端：不要实例化，也不要调用依赖 DOM 的 API</span>
+<span class="code-comment">// new SolelyButton();  // attachShadow is not a function</span></pre>
+        </div>
+    </div>
+    <p class="demo-block-desc">
+        推荐用法：服务端只做「导入 + 输出标签字符串」，把组件模块放到客户端入口（hydration 之前）导入；
+        Next.js / Nuxt 等框架中请在客户端侧注册组件，不要放进只在服务端执行的模块。当前版本不提供 SSR 适配层
+        （无声明式 shadow DOM 与 hydration 支持）。
+    </p>
+</div>
+
+<div class="demo-block">
     <h3 class="demo-block-title">引入组件</h3>
     <p class="demo-block-desc">你可以按需引入单个组件，也可以引入所有组件。</p>
     <div class="demo-box">
         <div class="demo-code">
             <pre><span class="code-comment">// 按需引入单个组件（推荐）</span>
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/input'</span>;
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/card'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/button'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/input'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/card'</span>;
 
 <span class="code-comment">// 或者引入所有组件</span>
 <span class="code-keyword">import</span> <span class="code-value">'solely/components'</span>;</pre>
@@ -38,15 +87,15 @@ pnpm add solely</pre>
 
 <div class="demo-block">
     <h3 class="demo-block-title">引入样式</h3>
-    <p class="demo-block-desc">组件库需要单独引入 CSS 主题文件，支持亮色/暗色模式。</p>
+    <p class="demo-block-desc">引入 <code>solely/components</code> 时会自动注入主题 CSS 变量，无需额外操作；仅按需引入单个组件、或站点启用严格 CSP（禁止内联样式）时，才需要手动引入主题文件。</p>
     <div class="demo-box">
         <div class="demo-code">
-            <pre><span class="code-comment">// 引入主题 CSS 变量（必需）</span>
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
+            <pre><span class="code-comment">// 引入全部组件：主题 CSS 变量自动注入</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components'</span>;
 
-<span class="code-comment">// 按需引入组件样式</span>
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/button/style.css'</span>;
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/input/style.css'</span>;</pre>
+<span class="code-comment">// 仅按需引入单个组件时，手动引入主题 CSS（必需）</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/button'</span>;</pre>
         </div>
     </div>
 </div>
@@ -68,6 +117,40 @@ pnpm add solely</pre>
 &lt;/<span class="code-type">solely-button</span>&gt;</pre>
         </div>
     </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">属性写法：HTML 与 JavaScript</h3>
+    <p class="demo-block-desc">
+        HTML 中直接写在标签上的属性必须使用 <strong>kebab-case</strong>（短横线小写）写法，组件文档属性表的「HTML 属性写法」列即为此列；
+        通过 JavaScript 读写组件实例时使用同名的 <strong>camelCase</strong> 属性（property），对应「JS 属性写法」列。
+        单词型属性（如 <code>size</code>、<code>disabled</code>）两种写法一致。
+    </p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">&lt;!-- HTML：kebab-case --&gt;</span>
+&lt;<span class="code-type">solely-pagination</span> <span class="code-attr">show-total</span> <span class="code-attr">total</span>=<span class="code-value">"100"</span>&gt;&lt;/<span class="code-type">solely-pagination</span>&gt;
+
+<span class="code-comment">// JavaScript：camelCase property</span>
+<span class="code-keyword">const</span> <span class="code-attr">pagination</span> = <span class="code-attr">document</span>.<span class="code-attr">querySelector</span>(<span class="code-value">'solely-pagination'</span>);
+<span class="code-attr">pagination</span>.<span class="code-attr">showTotal</span> = <span class="code-keyword">true</span>;
+
+<span class="code-comment">// 动态绑定同样使用 JS 属性写法（绑定表达式直接写入 property）</span>
+&lt;<span class="code-type">solely-tabs</span> <span class="code-attr">:activeKey</span>=<span class="code-value">"this.$data.currentKey"</span>&gt;&lt;/<span class="code-type">solely-tabs</span>&gt;</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
+    <h3 class="demo-block-title">布尔属性：写值即可关闭</h3>
+    <p class="demo-block-desc">
+        布尔属性同时支持「出现即开启」和「按值解析」：<code>disabled</code>、<code>disabled=""</code>、<code>disabled="true"</code> 为开启；
+        <code>disabled="false"</code> / <code>disabled="0"</code>（大小写不敏感、首尾空白忽略）为关闭；移除属性回退到组件默认值。
+        默认开启的属性（如 <code>progress</code> 的 <code>show-info</code>、<code>table</code> 的 <code>local-sort</code> /
+        <code>local-filter</code>）用 <code>="false"</code> 真正关闭。
+        注意 <code>="false"</code> 从 0.8.0 起不再按「存在即 true」处理，旧代码中写 <code>disabled="false"</code> 期望禁用的写法需要改为
+        <code>disabled</code> / <code>disabled="true"</code>。
+    </p>
 </div>
 
 <div class="demo-block">
@@ -106,6 +189,29 @@ drawer.<span class="code-attr">close</span>();</pre>
 </div>
 
 <div class="demo-block">
+    <h3 class="demo-block-title">生命周期与资源释放</h3>
+    <p class="demo-block-desc">
+        组件从 DOM 移除（<code>remove()</code>、父节点被删除或框架卸载）时，<code>disconnectedCallback</code> 只停止当前渲染调度，
+        <strong>不会销毁渲染树、响应式 observer 与内部监听器</strong>；临时移出后再插回，组件仍可继续使用。
+    </p>
+    <p class="demo-block-desc">
+        确认组件不再使用时，请调用公开的 <code>dispose()</code> 彻底释放。命令式浮层（Modal / Drawer / Tooltip / Popconfirm）
+        会在关闭动画结束后自动 <code>dispose()</code>；其他场景请在永久移除前显式调用。
+    </p>
+    <div class="demo-box">
+        <div class="demo-code">
+            <pre><span class="code-comment">// 临时移出：稍后插回可复用，无需 dispose</span>
+container.<span class="code-attr">removeChild</span>(myButton);
+container.<span class="code-attr">appendChild</span>(myButton);
+
+<span class="code-comment">// 永久移除：调用 dispose() 释放渲染树、observer 与内部监听器</span>
+myButton.<span class="code-attr">dispose</span>();
+myButton.<span class="code-attr">remove</span>();</pre>
+        </div>
+    </div>
+</div>
+
+<div class="demo-block">
     <h3 class="demo-block-title">TypeScript 支持</h3>
     <p class="demo-block-desc">Solely UI 提供完整的 TypeScript 类型定义。</p>
     <div class="demo-box">
@@ -135,12 +241,16 @@ drawer.<span class="code-attr">close</span>();</pre>
 
 <div class="demo-block">
     <h3 class="demo-block-title">主题定制</h3>
-    <p class="demo-block-desc">通过 CSS 变量自定义主题。</p>
+    <p class="demo-block-desc">通过 CSS 变量自定义主题。直接写 CSS 变量时，派生色（hover / active / light）需要自己一并提供。</p>
     <div class="demo-box">
         <div class="demo-code">
             <pre><span class="code-comment">/* 自定义主题变量 */</span>
 <span class="code-bracket">:root</span> {
   <span class="code-attr">--solely-primary</span>: <span class="code-value">#1890ff</span>;
+  <span class="code-comment">/* 派生色需同步提供，否则组件仍使用默认主题的派生色 */</span>
+  <span class="code-attr">--solely-primary-hover</span>: <span class="code-value">#46a6ff</span>;
+  <span class="code-attr">--solely-primary-active</span>: <span class="code-value">#147ad9</span>;
+  <span class="code-attr">--solely-primary-light</span>: <span class="code-value">#e8f4ff</span>;
   <span class="code-attr">--solely-success</span>: <span class="code-value">#52c41a</span>;
   <span class="code-attr">--solely-warning</span>: <span class="code-value">#faad14</span>;
   <span class="code-attr">--solely-error</span>: <span class="code-value">#f5222d</span>;
@@ -167,11 +277,20 @@ drawer.<span class="code-attr">close</span>();</pre>
 
 <span class="code-comment">// 按需引入时需要先导入主题 CSS</span>
 <span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/button'</span>;
 
 <span class="code-comment">// 主题只在首次导入时初始化，之后需要时通过 API 手动切换</span>
 <span class="code-keyword">import</span> { <span class="code-type">setTheme</span>, <span class="code-type">toggleTheme</span> } <span class="code-keyword">from</span> <span class="code-value">'solely/components/theme'</span>;
-<span class="code-type">toggleTheme</span>(); <span class="code-comment">// 切换明暗主题</span></pre>
+<span class="code-type">toggleTheme</span>(); <span class="code-comment">// 切换明暗主题</span>
+
+<span class="code-comment">// setTheme 接收一个配置对象；主色放在 colors 中，会自动派生 hover / active / light 三个变量</span>
+<span class="code-type">setTheme</span>({ <span class="code-attr">theme</span>: <span class="code-value">'light'</span>, <span class="code-attr">colors</span>: { <span class="code-attr">primary</span>: <span class="code-value">'#1890ff'</span> } });
+<span class="code-comment">// 等价于写入：--solely-primary-hover: #46a6ff</span>
+<span class="code-comment">//           --solely-primary-active: #147ad9</span>
+<span class="code-comment">//           --solely-primary-light: #e8f4ff</span>
+
+<span class="code-comment">// 显式传入同名派生变量时以显式值为准；var(--x) 或颜色名无法解析，不派生</span>
+<span class="code-type">setTheme</span>({ <span class="code-attr">theme</span>: <span class="code-value">'light'</span>, <span class="code-attr">colors</span>: { <span class="code-attr">primary</span>: <span class="code-value">'#1890ff'</span>, <span class="code-attr">'primary-hover'</span>: <span class="code-value">'#40a9ff'</span> } });</pre>
         </div>
     </div>
 </div>

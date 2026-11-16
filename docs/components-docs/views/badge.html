@@ -35,7 +35,7 @@
 
     <div class="demo-block">
         <h3 class="demo-block-title">封顶数字</h3>
-        <p class="demo-block-desc">超过 overflowCount 会显示为 ${overflowCount}+。</p>
+        <p class="demo-block-desc">超过 <code>overflowCount</code> 时显示为「封顶值 +」，例如封顶 99 时 100 显示为 <code>99+</code>。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-badge count="99" overflow-count="99">
@@ -178,7 +178,7 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
                         <span style="font-size: 20px;">👤</span>
                     </div>
                 </solely-badge>
-                <solely-badge count="99+">
+                <solely-badge count="100">
                     <span style="padding: 8px 16px; background: var(--solely-primary-light); color: var(--solely-primary); border-radius: 4px; font-size: 14px;">消息中心</span>
                 </solely-badge>
             </div>
@@ -199,7 +199,7 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span>
 
 <span class="code-comment">&lt;!-- 包裹文字标签 --&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"99+"</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-badge</span> <span class="code-attr">count</span>=<span class="code-value">"100"</span><span class="code-bracket">&gt;</span>
     <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">style</span>=<span class="code-value">"padding: 8px 16px; ..."</span><span class="code-bracket">&gt;</span>消息中心<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-badge</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
@@ -268,7 +268,8 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -277,17 +278,20 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
             <tbody>
                 <tr>
                     <td>count</td>
-                    <td>显示的数字，大于 overflowCount 时显示为 ${overflowCount}+</td>
+                    <td>count</td>
+                    <td>显示的数字，大于 <code>overflowCount</code> 时显示为「封顶值 +」（如封顶 99 时显示 <code>99+</code>）</td>
                     <td>number</td>
                     <td>0</td>
                 </tr>
                 <tr>
+                    <td>dot</td>
                     <td>dot</td>
                     <td>不展示数字，只有一个小红点</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>overflow-count</td>
                     <td>overflowCount</td>
                     <td>展示封顶的数字值</td>
                     <td>number</td>
@@ -295,11 +299,13 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
                 </tr>
                 <tr>
                     <td>status</td>
+                    <td>status</td>
                     <td>设置状态点的颜色，可选：success、processing、default、error、warning</td>
                     <td>string</td>
                     <td>-</td>
                 </tr>
                 <tr>
+                    <td>text</td>
                     <td>text</td>
                     <td>在设置了 status 的前提下有效，设置状态点的文本</td>
                     <td>string</td>
@@ -307,8 +313,16 @@ badge.hideDot();   <span class="code-comment">// 隐藏红点</span></code></pre
                 </tr>
                 <tr>
                     <td>color</td>
+                    <td>color</td>
                     <td>自定义背景颜色</td>
                     <td>string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>offset</td>
+                    <td>offset</td>
+                    <td>数字/小红点相对默认位置的偏移（像素），支持 <code>"[x, y]"</code>、<code>"x, y"</code>、<code>"x y"</code> 写法；JS 中也可直接传入元组</td>
+                    <td>string | [number, number]</td>
                     <td>-</td>
                 </tr>
             </tbody>

@@ -14,4 +14,6 @@ export interface BreadcrumbProps {
     items: BreadcrumbItem[];
     /** 分隔符 */
     separator: string;
+    /** 导航地标的可访问名称（aria-label） */
+    label: string;
 }

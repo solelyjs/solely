@@ -4,7 +4,8 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { FabProps, FabRefs, FabPosition } from './types';
+import { normalizeSize, type SizeInput } from '../../../shared/size';
+import type { FabProps, FabRefs, FabPosition, FabSize } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
 
@@ -29,6 +30,15 @@ import template from './index.html?solely';
     ],
 })
 class SolelyFab extends BaseElement<FabProps, FabRefs> {
+    /** 统一尺寸语义：middle / default 归一为 medium */
+    get size(): FabSize {
+        return normalizeSize(this.$data.size);
+    }
+
+    set size(value: SizeInput) {
+        this.$data.size = normalizeSize(value);
+    }
+
     /**
      * 获取 FAB class 对象
      */
@@ -74,9 +84,11 @@ class SolelyFab extends BaseElement<FabProps, FabRefs> {
     getFabStyles(): Record<string, string> {
         const styles: Record<string, string> = {};
 
-        // 偏移距离
-        styles['--fab-offset-x'] = `${this.$data.offsetX || 24}px`;
-        styles['--fab-offset-y'] = `${this.$data.offsetY || 24}px`;
+        // 偏移距离（0 是合法值，不能用 || 回退到默认值）
+        const offsetX = this.$data.offsetX;
+        const offsetY = this.$data.offsetY;
+        styles['--fab-offset-x'] = `${Number.isFinite(offsetX) ? offsetX : 24}px`;
+        styles['--fab-offset-y'] = `${Number.isFinite(offsetY) ? offsetY : 24}px`;
 
         // z-index
         if (this.$data.zIndex) {
@@ -113,21 +125,34 @@ class SolelyFab extends BaseElement<FabProps, FabRefs> {
      * 显示 FAB
      */
     public show(): void {
-        this.$data.visible = true;
+        this.setVisible(true);
     }
 
     /**
      * 隐藏 FAB
      */
     public hide(): void {
-        this.$data.visible = false;
+        this.setVisible(false);
     }
 
     /**
      * 切换显示/隐藏
      */
     public toggle(): void {
-        this.$data.visible = !this.$data.visible;
+        this.setVisible(!this.$data.visible);
+    }
+
+    /**
+     * 统一处理可见性：隐藏会加上 aria-hidden，必须先移走焦点。
+     * 否则点击隐藏（hideOnClick）时按钮仍持有焦点，Chrome 会拦下 aria-hidden 并告警。
+     */
+    private setVisible(next: boolean): void {
+        if (!next) {
+            const button = this.$refs.buttonRef as HTMLElement | undefined;
+            const active = (this.shadowRoot ?? document).activeElement;
+            if (button && active === button) button.blur();
+        }
+        this.$data.visible = next;
     }
 
     /**
@@ -148,8 +173,8 @@ class SolelyFab extends BaseElement<FabProps, FabRefs> {
     /**
      * 聚焦按钮
      */
-    public focus(): void {
-        this.$refs.buttonRef?.focus();
+    public focus(options?: FocusOptions): void {
+        this.$refs.buttonRef?.focus(options);
     }
 
     /**

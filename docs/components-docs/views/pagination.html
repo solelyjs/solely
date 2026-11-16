@@ -75,20 +75,20 @@
         </div>
     </div>
 
-    <!-- 小尺寸 -->
+    <!-- 不同尺寸 -->
     <div class="demo-block">
-        <h3 class="demo-block-title">小尺寸</h3>
-        <p class="demo-block-desc">设置 size="small" 使用小尺寸分页。</p>
+        <h3 class="demo-block-title">不同尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种真实档位，按钮高度与字号逐档增大。</p>
         <div class="demo-box">
-            <div class="demo-preview">
+            <div class="demo-preview" style="flex-direction: column; align-items: flex-start; gap: 16px;">
                 <solely-pagination current="1" total="50" size="small"></solely-pagination>
+                <solely-pagination current="1" total="50" size="medium"></solely-pagination>
+                <solely-pagination current="1" total="50" size="large"></solely-pagination>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-pagination</span>
-  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
-  <span class="code-attr">total</span>=<span class="code-value">"50"</span>
-  <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span></code></pre>
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-pagination</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span> <span class="code-attr">total</span>=<span class="code-value">"50"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-pagination</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span> <span class="code-attr">total</span>=<span class="code-value">"50"</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-pagination</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span> <span class="code-attr">total</span>=<span class="code-value">"50"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
     </div>
@@ -125,6 +125,24 @@
   <span class="code-attr">total</span>=<span class="code-value">"1000"</span>
   <span class="code-attr">show-total</span>
   <span class="code-attr">show-quick-jumper</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 简单模式 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">简单模式</h3>
+        <p class="demo-block-desc">设置 simple 属性后只保留首页、当前页和末页，中间页码用省略号压缩，并移除页码边框。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-pagination current="5" total="1000" simple></solely-pagination>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-pagination</span>
+  <span class="code-attr">current</span>=<span class="code-value">"5"</span>
+  <span class="code-attr">total</span>=<span class="code-value">"1000"</span>
+  <span class="code-attr">simple</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-pagination</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
@@ -274,7 +292,8 @@ pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) =
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性名</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -283,17 +302,20 @@ pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) =
             <tbody>
                 <tr>
                     <td>current</td>
+                    <td>current</td>
                     <td>当前页码</td>
                     <td>number</td>
                     <td>1</td>
                 </tr>
                 <tr>
                     <td>total</td>
+                    <td>total</td>
                     <td>数据总数</td>
                     <td>number</td>
                     <td>0</td>
                 </tr>
                 <tr>
+                    <td>page-size</td>
                     <td>pageSize</td>
                     <td>每页条数</td>
                     <td>number</td>
@@ -301,35 +323,55 @@ pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) =
                 </tr>
                 <tr>
                     <td>size</td>
-                    <td>组件尺寸，可选值为 default、small</td>
-                    <td>string</td>
-                    <td>default</td>
+                    <td>size</td>
+                    <td>组件尺寸，可选值为 small、medium、large</td>
+                    <td>'small' | 'medium' | 'large'</td>
+                    <td>'medium'</td>
                 </tr>
                 <tr>
+                    <td>size 兼容别名</td>
+                    <td>size</td>
+                    <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                    <td>'middle' | 'default'</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>simple</td>
+                    <td>simple</td>
+                    <td>是否使用简单模式（只显示首页、当前页、末页，中间用省略号压缩）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>show-total</td>
                     <td>showTotal</td>
                     <td>是否显示总数据数</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>show-quick-jumper</td>
                     <td>showQuickJumper</td>
                     <td>是否显示快速跳转</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>show-size-changer</td>
                     <td>showSizeChanger</td>
                     <td>是否显示每页条数选择器</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>page-size-options</td>
                     <td>pageSizeOptions</td>
-                    <td>每页条数选项（JSON字符串）</td>
+                    <td>每页条数选项（JSON字符串）。当前 <code>page-size</code> 不在选项中时会自动并入并升序排列，保证下拉显示值始终与实际每页条数一致</td>
                     <td>string</td>
                     <td>[10, 20, 50, 100]</td>
                 </tr>
                 <tr>
+                    <td>disabled</td>
                     <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
@@ -352,12 +394,17 @@ pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) =
             <tbody>
                 <tr>
                     <td>change</td>
-                    <td>页码改变时触发</td>
+                    <td>页码或每页条数改变时触发；挂载初始化与 attribute 同步不派发</td>
                     <td>CustomEvent&lt;{ current: number; pageSize: number }&gt;</td>
                 </tr>
                 <tr>
                     <td>size-change</td>
-                    <td>每页条数改变时触发（兼容旧名称 show-size-change）</td>
+                    <td>通过每页条数选择器改变时触发（与 change 同时派发）</td>
+                    <td>CustomEvent&lt;{ current: number; pageSize: number }&gt;</td>
+                </tr>
+                <tr>
+                    <td>show-size-change</td>
+                    <td>已废弃：size-change 的旧别名，内容完全相同，后续大版本移除</td>
                     <td>CustomEvent&lt;{ current: number; pageSize: number }&gt;</td>
                 </tr>
             </tbody>
@@ -473,7 +520,7 @@ pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) =
         <h4 class="api-block-title">类型定义</h4>
         <div class="demo-code">
             <pre><code><span class="code-comment">// 分页尺寸</span>
-<span class="code-keyword">type</span> <span class="code-type">PaginationSize</span> = <span class="code-value">'default'</span> | <span class="code-value">'small'</span>;
+<span class="code-keyword">type</span> <span class="code-type">PaginationSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>; <span class="code-comment">// middle / default 为兼容别名 → medium</span>
 
 <span class="code-comment">// 分页属性接口</span>
 <span class="code-keyword">interface</span> <span class="code-type">PaginationProps</span> {
@@ -481,6 +528,7 @@ pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) =
   <span class="code-attr">total</span>?: <span class="code-type">number</span>;             <span class="code-comment">// 数据总数</span>
   <span class="code-attr">pageSize</span>?: <span class="code-type">number</span>;          <span class="code-comment">// 每页条数</span>
   <span class="code-attr">size</span>?: <span class="code-type">PaginationSize</span>;    <span class="code-comment">// 组件尺寸</span>
+  <span class="code-attr">simple</span>?: <span class="code-type">boolean</span>;          <span class="code-comment">// 是否使用简单模式</span>
   <span class="code-attr">showTotal</span>?: <span class="code-type">boolean</span>;       <span class="code-comment">// 是否显示总数</span>
   <span class="code-attr">showQuickJumper</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否显示快速跳转</span>
   <span class="code-attr">showSizeChanger</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否显示条数选择</span>

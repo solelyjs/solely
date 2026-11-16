@@ -248,7 +248,8 @@
             <table class="api-table">
                 <thead>
                     <tr>
-                        <th>属性</th>
+                        <th>HTML 属性写法</th>
+                        <th>JS 属性写法</th>
                         <th>说明</th>
                         <th>类型</th>
                         <th>默认值</th>
@@ -257,17 +258,27 @@
                 <tbody>
                     <tr>
                         <td>type</td>
+                        <td>type</td>
                         <td>按钮类型</td>
                         <td>'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default'</td>
                         <td>'primary'</td>
                     </tr>
                     <tr>
                         <td>size</td>
+                        <td>size</td>
                         <td>按钮尺寸</td>
                         <td>'small' | 'medium' | 'large'</td>
                         <td>'medium'</td>
                     </tr>
                     <tr>
+                        <td>size 兼容别名</td>
+                        <td>size</td>
+                        <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                        <td>'middle' | 'default'</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>shape</td>
                         <td>shape</td>
                         <td>按钮形状</td>
                         <td>'circle' | 'square' | 'rounded'</td>
@@ -275,17 +286,20 @@
                     </tr>
                     <tr>
                         <td>position</td>
+                        <td>position</td>
                         <td>悬浮位置</td>
                         <td>'top-left' | 'top-center' | 'top-right' | 'left-center' | 'center' | 'right-center' | 'bottom-left' | 'bottom-center' | 'bottom-right'</td>
                         <td>'bottom-right'</td>
                     </tr>
                     <tr>
+                        <td>offset-x</td>
                         <td>offsetX</td>
                         <td>水平偏移量（像素）</td>
                         <td>number</td>
                         <td>24</td>
                     </tr>
                     <tr>
+                        <td>offset-y</td>
                         <td>offsetY</td>
                         <td>垂直偏移量（像素）</td>
                         <td>number</td>
@@ -293,11 +307,34 @@
                     </tr>
                     <tr>
                         <td>icon</td>
-                        <td>图标内容</td>
+                        <td>icon</td>
+                        <td>图标内容，未设置时默认显示 <code>+</code></td>
                         <td>string</td>
-                        <td>'+'</td>
+                        <td>''</td>
                     </tr>
                     <tr>
+                        <td>visible</td>
+                        <td>visible</td>
+                        <td>是否显示悬浮按钮；默认 <code>true</code>，隐藏可写 <code>visible="false"</code> 或通过 JS 设置 <code>visible = false</code>。隐藏时按钮移出 Tab 序列（<code>tabindex="-1"</code>）并对读屏隐藏（<code>aria-hidden="true"</code>），重新显示后恢复</td>
+                        <td>boolean</td>
+                        <td>true</td>
+                    </tr>
+                    <tr>
+                        <td>hide-on-click</td>
+                        <td>hideOnClick</td>
+                        <td>点击后是否自动隐藏</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>z-index</td>
+                        <td>zIndex</td>
+                        <td>悬浮按钮的层叠顺序</td>
+                        <td>number</td>
+                        <td>1000</td>
+                    </tr>
+                    <tr>
+                        <td>absolute</td>
                         <td>absolute</td>
                         <td>是否使用绝对定位（用于演示）</td>
                         <td>boolean</td>

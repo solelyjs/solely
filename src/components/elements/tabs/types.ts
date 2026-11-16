@@ -13,6 +13,10 @@ export interface TabItem {
     key: string;
     /** 是否禁用 */
     disabled?: boolean;
+    /** 标题前方的图标（字符串，通常是图标字符或 SVG 片段） */
+    icon?: string;
+    /** 标题后方的徽标文本，例如未读数量 */
+    badge?: string;
 }
 
 export interface TabsProps {
@@ -30,6 +34,12 @@ export interface TabsProps {
     closable: boolean;
     /** 是否可新增 */
     addable: boolean;
+    /** 标签栏是否居中 */
+    centered: boolean;
+    /** 是否懒渲染非激活面板（首次激活后才挂载面板插槽） */
+    lazy: boolean;
+    /** 标签栏的可访问名称（aria-label） */
+    label: string;
 }
 
 /** close 事件 detail */

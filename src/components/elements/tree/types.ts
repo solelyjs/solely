@@ -28,8 +28,8 @@ export interface TreeNode {
 }
 
 export interface TreeProps {
-    /** 树形数据（JSON字符串，如 '[{"key":"1","title":"Node 1"}]'） */
-    treeData?: string;
+    /** 树形数据，支持 JSON 字符串（如 '[{"key":"1","title":"Node 1"}]'）或节点数组 */
+    treeData?: string | TreeNode[];
     /** 是否显示连接线 */
     showLine?: boolean;
     /** 是否支持多选 */
@@ -46,6 +46,20 @@ export interface TreeProps {
     searchValue?: string;
     /** 是否撑满父容器宽度 */
     block?: boolean;
+    /** 勾选是否父子不关联（true 时勾选节点不影响子节点与父节点） */
+    checkStrictly?: boolean;
+    /** 默认展开的节点 key（JSON 数组或逗号分隔，如 '["1","2"]' / '1,2'） */
+    defaultExpandedKeys?: string;
+    /** 默认勾选的节点 key（JSON 数组或逗号分隔） */
+    defaultCheckedKeys?: string;
+    /** 默认选中的节点 key（JSON 数组或逗号分隔） */
+    defaultSelectedKeys?: string;
+    /** 当前勾选的节点 key（受控；HTML 属性写法为 JSON 数组） */
+    checkedKeys?: string[];
+    /** 当前展开的节点 key（受控；HTML 属性写法为 JSON 数组） */
+    expandedKeys?: string[];
+    /** 树的可见名称（aria-label） */
+    label?: string;
 }
 
 /** select 事件 detail */
@@ -62,8 +76,8 @@ export interface TreeCheckEventDetail {
     node: TreeNode;
 }
 
-/** expand 事件 detail */
+/** expand 事件 detail；expandAll()/collapseAll() 时 node 缺省 */
 export interface TreeExpandEventDetail {
     expandedKeys: string[];
-    node: TreeNode;
+    node?: TreeNode;
 }

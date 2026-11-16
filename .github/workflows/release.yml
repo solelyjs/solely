@@ -25,11 +25,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 发布前门禁：tag 版本必须与 package.json version 完全一致（v0.8.0 → 0.8.0）
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${PKG_VERSION}"
+            exit 1
+          fi
+          echo "Version ${PKG_VERSION} matches tag ${GITHUB_REF_NAME}"
+
+      - name: Run type check
+        run: npm run typecheck
+
+      - name: Run linter
+        run: npm run lint
+
       - name: Run tests
         run: npm test
 
       - name: Build project
         run: npm run build
+
+      # F-8：发布前确认 dist 与当前源码一致（构建指纹门禁）
+      - name: Verify dist freshness
+        run: npm run check:dist-fresh
 
       - name: Publish to npm
         run: npm publish --provenance --access public

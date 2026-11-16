@@ -12,7 +12,7 @@
                         type="number"
                         min="0"
                         max="90"
-                        placeholder="0"
+                        :placeholder="this.getFieldPlaceholder('degrees')"
                         :value="this.getDmsDisplayValue('latitude', 'degrees')"
                         :disabled="$data.disabled"
                         :readonly="$data.readonly"
@@ -29,7 +29,7 @@
                         type="number"
                         min="0"
                         max="59"
-                        placeholder="00"
+                        :placeholder="this.getFieldPlaceholder('minutes')"
                         :value="this.getDmsDisplayValue('latitude', 'minutes')"
                         :disabled="$data.disabled"
                         :readonly="$data.readonly"
@@ -45,7 +45,7 @@
                         class="dms-input__field dms-input__field--seconds"
                         type="text"
                         inputmode="decimal"
-                        :placeholder="this.getSecondsPlaceholder()"
+                        :placeholder="this.getFieldPlaceholder('seconds')"
                         :disabled="$data.disabled"
                         :readonly="$data.readonly"
                         @blur="this.handleSecondsBlur('latitude', event)"
@@ -59,21 +59,39 @@
                     <div
                         part="direction"
                         :class="this.getDirectionClasses('latitude')"
-                        :disabled="$data.disabled"
+                        role="button"
+                        :tabindex="$data.disabled || $data.readonly ? '-1' : '0'"
+                        :aria-disabled="$data.disabled || $data.readonly ? 'true' : 'false'"
+                        :aria-expanded="$data.latitudeDirectionOpen ? 'true' : 'false'"
+                        aria-haspopup="listbox"
+                        aria-label="纬度方向"
                         @click="this.toggleDirection('latitude')"
+                        @keydown="this.handleDirectionKeydown('latitude', event)"
                         ref="latitudeDirectionInput"
                     >
                         <span class="dms-input__direction-value">{{this.getDmsDisplayValue('latitude', 'direction')}}</span>
-                        <span class="dms-input__direction-arrow">▼</span>
+                        <span class="dms-input__direction-arrow" aria-hidden="true">
+                            <svg class="dms-input__direction-icon" viewBox="0 0 16 16" focusable="false">
+                                <path d="M3.5 6 8 10.5 12.5 6"></path>
+                            </svg>
+                        </span>
                         <If test="$data.latitudeDirectionOpen">
-                            <div class="dms-input__direction-dropdown" @click="this.handleDropdownClick(event)">
+                            <div class="dms-input__direction-dropdown" role="listbox" aria-label="纬度方向选项" @click="this.handleDropdownClick(event)">
                                 <div
                                     :class="this.getDirectionOptionClasses('latitude', 'N')"
+                                    role="option"
+                                    tabindex="0"
+                                    :aria-selected="this.getDmsDisplayValue('latitude', 'direction') === 'N' ? 'true' : 'false'"
                                     @click="this.selectDirection('latitude', 'N')"
+                                    @keydown="this.handleDirectionOptionKeydown('latitude', 'N', event)"
                                 >N</div>
                                 <div
                                     :class="this.getDirectionOptionClasses('latitude', 'S')"
+                                    role="option"
+                                    tabindex="0"
+                                    :aria-selected="this.getDmsDisplayValue('latitude', 'direction') === 'S' ? 'true' : 'false'"
                                     @click="this.selectDirection('latitude', 'S')"
+                                    @keydown="this.handleDirectionOptionKeydown('latitude', 'S', event)"
                                 >S</div>
                             </div>
                         </If>
@@ -99,7 +117,7 @@
                         type="number"
                         min="0"
                         max="180"
-                        placeholder="0"
+                        :placeholder="this.getFieldPlaceholder('degrees')"
                         :value="this.getDmsDisplayValue('longitude', 'degrees')"
                         :disabled="$data.disabled"
                         :readonly="$data.readonly"
@@ -116,7 +134,7 @@
                         type="number"
                         min="0"
                         max="59"
-                        placeholder="00"
+                        :placeholder="this.getFieldPlaceholder('minutes')"
                         :value="this.getDmsDisplayValue('longitude', 'minutes')"
                         :disabled="$data.disabled"
                         :readonly="$data.readonly"
@@ -132,7 +150,7 @@
                         class="dms-input__field dms-input__field--seconds"
                         type="text"
                         inputmode="decimal"
-                        :placeholder="this.getSecondsPlaceholder()"
+                        :placeholder="this.getFieldPlaceholder('seconds')"
                         :disabled="$data.disabled"
                         :readonly="$data.readonly"
                         @blur="this.handleSecondsBlur('longitude', event)"
@@ -146,21 +164,39 @@
                     <div
                         part="direction"
                         :class="this.getDirectionClasses('longitude')"
-                        :disabled="$data.disabled"
+                        role="button"
+                        :tabindex="$data.disabled || $data.readonly ? '-1' : '0'"
+                        :aria-disabled="$data.disabled || $data.readonly ? 'true' : 'false'"
+                        :aria-expanded="$data.longitudeDirectionOpen ? 'true' : 'false'"
+                        aria-haspopup="listbox"
+                        aria-label="经度方向"
                         @click="this.toggleDirection('longitude')"
+                        @keydown="this.handleDirectionKeydown('longitude', event)"
                         ref="longitudeDirectionInput"
                     >
                         <span class="dms-input__direction-value">{{this.getDmsDisplayValue('longitude', 'direction')}}</span>
-                        <span class="dms-input__direction-arrow">▼</span>
+                        <span class="dms-input__direction-arrow" aria-hidden="true">
+                            <svg class="dms-input__direction-icon" viewBox="0 0 16 16" focusable="false">
+                                <path d="M3.5 6 8 10.5 12.5 6"></path>
+                            </svg>
+                        </span>
                         <If test="$data.longitudeDirectionOpen">
-                            <div class="dms-input__direction-dropdown" @click="this.handleDropdownClick(event)">
+                            <div class="dms-input__direction-dropdown" role="listbox" aria-label="经度方向选项" @click="this.handleDropdownClick(event)">
                                 <div
                                     :class="this.getDirectionOptionClasses('longitude', 'E')"
+                                    role="option"
+                                    tabindex="0"
+                                    :aria-selected="this.getDmsDisplayValue('longitude', 'direction') === 'E' ? 'true' : 'false'"
                                     @click="this.selectDirection('longitude', 'E')"
+                                    @keydown="this.handleDirectionOptionKeydown('longitude', 'E', event)"
                                 >E</div>
                                 <div
                                     :class="this.getDirectionOptionClasses('longitude', 'W')"
+                                    role="option"
+                                    tabindex="0"
+                                    :aria-selected="this.getDmsDisplayValue('longitude', 'direction') === 'W' ? 'true' : 'false'"
                                     @click="this.selectDirection('longitude', 'W')"
+                                    @keydown="this.handleDirectionOptionKeydown('longitude', 'W', event)"
                                 >W</div>
                             </div>
                         </If>

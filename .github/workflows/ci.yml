@@ -45,6 +45,10 @@ jobs:
       - name: Verify package exports
         run: npm run check:exports
 
+      # F-8：确认构建产物带有与源码一致的构建指纹（防止构建步骤被跳过或产物被替换）
+      - name: Verify dist freshness
+        run: npm run check:dist-fresh
+
   coverage:
     runs-on: ubuntu-latest
     needs: test

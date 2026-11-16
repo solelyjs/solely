@@ -13,7 +13,6 @@ export interface TimelineItem {
     title: string;
     content?: string;
     time?: string;
-    label?: string;
     color?: string;
     position?: TimelineItemPosition;
     verticalPosition?: TimelineItemVerticalPosition;

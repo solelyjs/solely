@@ -3,14 +3,19 @@
     class="checkbox"
     :class="this.getCheckboxClasses()"
     @click="this.handleClick(event)"
-    tabindex="0"
+    :tabindex="this.getTabIndex()"
     @keydown="this.handleKeyDown(event)"
     role="checkbox"
-    :aria-checked="$data.checked ? 'true' : 'false'"
-    :aria-disabled="$data.disabled ? 'true' : 'false'"
+    :aria-checked="$data.indeterminate ? 'mixed' : $data.checked ? 'true' : 'false'"
+    :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
+    :aria-label="$data.ariaLabel || undefined"
 >
     <span part="input" class="checkbox__input">
-        <span part="icon" class="checkbox__icon">✓</span>
+        <span part="icon" class="checkbox__icon">
+            <svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M3.5 8.5 6.8 11.5 12.5 4.8"></path>
+            </svg>
+        </span>
         <span part="indeterminate" class="checkbox__indeterminate"></span>
     </span>
     <span part="content" class="checkbox__content">

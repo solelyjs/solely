@@ -4,7 +4,9 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { CardProps, CardRefs } from './types';
+import { normalizeSize, type SizeInput } from '../../../shared/size';
+import { fallbackBrokenImage } from '../utils/helpers';
+import type { CardProps, CardRefs, CardSize } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
 
@@ -20,11 +22,29 @@ import template from './index.html?solely';
         { name: 'loading', type: 'boolean', default: false },
         { name: 'hoverable', type: 'boolean', default: false },
         { name: 'cover', type: 'string', default: '' },
+        { name: 'coverAlt', type: 'string', default: '' },
         { name: 'actions', type: 'array', default: [] },
         { name: 'extra', type: 'string', default: '' },
     ],
 })
 class SolelyCard extends BaseElement<CardProps, CardRefs> {
+    /** 统一尺寸语义：middle / default 归一为 medium */
+    get size(): CardSize {
+        return normalizeSize(this.$data.size);
+    }
+
+    set size(value: SizeInput) {
+        this.$data.size = normalizeSize(value);
+    }
+
+    /** 封面图加载失败时回退到内置占位图，避免破图 */
+    handleCoverError(event: Event): void {
+        fallbackBrokenImage(event);
+    }
+
+    /** 监听 light DOM 变化，动态插入/移除 extra、actions 插槽后重新渲染 */
+    private slotObserver?: MutationObserver;
+
     /**
      * 获取 card class 对象
      */
@@ -48,6 +68,30 @@ class SolelyCard extends BaseElement<CardProps, CardRefs> {
      */
     mounted(): void {
         this.refresh();
+        this.slotObserver = new MutationObserver(() => {
+            this.refresh();
+        });
+        this.slotObserver.observe(this, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['slot'],
+        });
+    }
+
+    /**
+     * 组件卸载时释放观察器
+     */
+    unmounted(): void {
+        this.slotObserver?.disconnect();
+        this.slotObserver = undefined;
+    }
+
+    /**
+     * 检查是否存在指定名称的插槽
+     */
+    hasNamedSlot(name: string): boolean {
+        return this.querySelector(`[slot="${name}"]`) !== null;
     }
 
     /**
@@ -62,6 +106,16 @@ class SolelyCard extends BaseElement<CardProps, CardRefs> {
      */
     public setTitle(title: string): void {
         this.$data.title = title;
+    }
+
+    /**
+     * 操作项键盘事件（Enter / Space 等价于点击）
+     */
+    handleActionKeydown(index: number, event: KeyboardEvent): void {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.handleActionClick(index, event);
+        }
     }
 
     /**

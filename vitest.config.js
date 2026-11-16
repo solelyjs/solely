@@ -25,17 +25,33 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'html', 'lcov'],
       include: ['src/**/*.ts'],
+      // 只排除纯转发入口与类型声明；各组件目录下的 index.ts 是组件实现本体，必须计入。
+      // （F-7：过去用 src/**/index.ts + src/components/**/* 把组件整体排除，组件覆盖率不可见）
       exclude: [
         'src/vite-env.d.ts',
-        'src/**/index.ts',
         'src/**/*.d.ts',
-        'src/components/**/*',
+        // 纯类型文件没有可执行语句，计入会把整体覆盖率稀释成假数字；
+        // 组件实现本体（各目录 index.ts）仍然完整计入。
+        'src/**/types.ts',
+        'src/**/*-types.ts',
         'src/types/**/*',
+        'src/index.ts',
+        'src/runtime/index.ts',
+        'src/runtime/component/index.ts',
+        'src/runtime/reactivity/index.ts',
+        'src/runtime/renderer/index.ts',
+        'src/shared/index.ts',
+        'src/compiler/index.ts',
+        'src/compiler/ir/index.ts',
+        'src/compiler/parser/index.ts',
+        'src/plugins/index.ts',
+        'src/router/index.ts',
+        'src/components/index.ts',
+        'src/components/elements/index.ts',
+        'src/components/commands/index.ts',
       ],
-      // 覆盖率门禁：略低于当前实际值（87.42/80.66/91.80/87.42），
-      // 作为防劣化底线，后续随测试补充逐步上调
-      // 注意：src/components/** 暂不计入（组件库测试骨架已建立，全量纳入会稀释总体指标，
-      // 待组件覆盖率提升后再调整）
+      // 覆盖率门禁保持不降：组件纳入统计后如低于阈值，应如实报告并补测试，
+      // 而不是调低阈值掩盖。
       thresholds: {
         statements: 80,
         branches: 75,

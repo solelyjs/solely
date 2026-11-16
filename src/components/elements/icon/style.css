@@ -57,7 +57,8 @@
 }
 
 /* 禁用状态 */
-:host([disabled]) {
+/* disabled="false" / "0" 在新解析规则下为启用，不应命中禁用样式 */
+:host([disabled]:not([disabled="false" i]):not([disabled="0" i])) {
   cursor: not-allowed;
   opacity: var(--solely-disabled-opacity, 0.6);
 }

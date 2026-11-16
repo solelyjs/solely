@@ -5,7 +5,9 @@
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
 import { sanitizeSvg } from '../../../shared/svg-sanitize';
-import type { IconProps, IconRefs, IconSpin } from './types';
+import { IS_DEV } from '../../../shared/env';
+import type { SizeAlias } from '../../../shared/size';
+import type { IconProps, IconRefs, IconSpin, IconSize } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
 
@@ -13,6 +15,9 @@ const iconRegistry = new Map<string, string>();
 
 const svgSpriteCache: Map<string, { viewBox: string; content: string }> = new Map();
 let spriteLoadingPromise: Promise<void> | null = null;
+
+/** 开发期已提示过的缺失图标名，避免每次渲染刷屏 */
+const warnedMissingIcons = new Set<string>();
 
 export async function loadIconSprite(path: string): Promise<void> {
     if (spriteLoadingPromise) return spriteLoadingPromise;
@@ -126,6 +131,28 @@ export function getRegisteredIcons(): string[] {
     return Array.from(new Set([...iconRegistry.keys(), ...svgSpriteCache.keys()]));
 }
 
+/**
+ * 把属性/属性值归一化为旋转配置
+ *
+ * 兼容 attribute 的字符串写法：
+ * - 无值 / "" / "true" / "clockwise" → clockwise
+ * - "false" / "0" → 不旋转
+ * - "counterclockwise" → 逆时针
+ */
+function normalizeSpin(value: unknown): IconSpin {
+    if (value === true) return 'clockwise';
+    if (value === false || value === null || value === undefined) return false;
+
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (normalized === 'false' || normalized === '0') return false;
+        if (normalized === 'counterclockwise') return 'counterclockwise';
+        return 'clockwise';
+    }
+
+    return false;
+}
+
 @CustomElement({
     tagName: 'solely-icon',
     template,
@@ -134,14 +161,40 @@ export function getRegisteredIcons(): string[] {
     props: [
         { name: 'name', type: 'string', default: '' },
         { name: 'size', type: 'string', default: 'medium' },
-        { name: 'color', type: 'string', default: '' },
-        { name: 'spin', type: 'string', default: '' },
+        { name: 'color', type: 'string', default: 'currentColor' },
+        { name: 'spin', type: 'string', default: false },
         { name: 'spinDuration', type: 'number', default: 1 },
         { name: 'disabled', type: 'boolean', default: false },
         { name: 'sprite', type: 'string', default: '' },
     ],
 })
 class SolelyIcon extends BaseElement<IconProps, IconRefs> {
+    /**
+     * 尺寸语义：middle / default 归一为 medium；数字保持自定义像素值。
+     */
+    get size(): IconSize {
+        const value = this.$data.size as IconSize | SizeAlias | undefined;
+        if (value === 'middle' || value === 'default') return 'medium';
+        return value ?? 'medium';
+    }
+
+    set size(value: IconSize | SizeAlias) {
+        this.$data.size = value === 'middle' || value === 'default' ? 'medium' : value;
+    }
+
+    /**
+     * 旋转配置
+     *
+     * 使用自定义访问器把 attribute 的字符串值（如 "false"）归一化为布尔/方向语义。
+     */
+    get spin(): IconSpin {
+        return normalizeSpin(this.$data.spin);
+    }
+
+    set spin(value: IconSpin) {
+        this.$data.spin = normalizeSpin(value);
+    }
+
     /**
      * 获取图标 SVG 内容
      */
@@ -171,7 +224,7 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
      * 获取图标尺寸
      */
     getIconSize(): string {
-        const size = this.$data.size || 'medium';
+        const size = this.size || 'medium';
         const sizeMap: Record<string, string> = {
             small: '12px',
             medium: '16px',
@@ -196,7 +249,7 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
      * 获取旋转样式
      */
     getSpinStyle(): string {
-        const spin = this.$data.spin as IconSpin;
+        const spin = this.spin;
         if (!spin) return '';
         const duration = this.$data.spinDuration || 1;
         const direction = spin === 'counterclockwise' ? 'reverse' : 'normal';
@@ -218,7 +271,7 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
     getIconClasses(): Record<string, boolean> {
         const classes: Record<string, boolean> = {
             icon: true,
-            'is-spinning': !!this.$data.spin,
+            'is-spinning': !!this.spin,
         };
 
         // 尺寸类
@@ -242,7 +295,26 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
         if (spriteLoadingPromise) return true;
         // 如果有 sprite 属性，返回 true（会触发加载）
         if (this.$data.sprite) return true;
+
+        this.warnMissingIcon(this.$data.name);
         return false;
+    }
+
+    /**
+     * 图标未注册且未配置 sprite 时，开发期给出一次性告警。
+     *
+     * 组件不会默认加载包内 sprite：包发布时排除了 dist/icons（sprite 约 1.1MB），
+     * 且模块内 URL 在打包器/SSR 下无法可靠解析。调用方需显式
+     * `setIconSpritePath()` / `registerIcon()`，或通过 `sprite` 属性指定路径。
+     */
+    private warnMissingIcon(name: string): void {
+        if (!IS_DEV || warnedMissingIcons.has(name)) return;
+        warnedMissingIcons.add(name);
+        console.warn(
+            `[Solely Icon] 图标 "${name}" 未注册，也未配置 sprite，当前渲染为占位空白。\n` +
+                `请使用 registerIcon('${name}', svgContent) 注册，或调用 setIconSpritePath('/icons/bootstrap-icons.svg')，` +
+                `或在该元素上设置 sprite="<路径>"。`,
+        );
     }
 
     /**
@@ -258,7 +330,7 @@ class SolelyIcon extends BaseElement<IconProps, IconRefs> {
             this.style.removeProperty('--icon-color');
         }
 
-        const spin = this.$data.spin as IconSpin;
+        const spin = this.spin;
         if (spin) {
             const duration = this.$data.spinDuration || 1;
             const direction = spin === 'counterclockwise' ? 'reverse' : 'normal';

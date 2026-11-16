@@ -1,7 +1,8 @@
 /**
  * Solely Tooltip 组件样式（声明式）
  * 基于 BEM 命名规范
- * 纯 CSS 定位，无需 JavaScript 计算
+ * 定位已由 JS 用 position:fixed + top/left 接管，并用内联 transform:none 覆盖方位类；
+ * 下方遗留的 translateX(-50%) / scale 声明是纯 CSS 定位时代的产物，运行时不生效。
  */
 
 /* ==================== 包裹容器 ==================== */
@@ -41,8 +42,10 @@
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity var(--solely-transition-duration) var(--solely-transition-timing),
-                transform var(--solely-transition-duration) var(--solely-transition-timing);
+    /* 只能过渡 opacity：JS 会用内联 transform:none 覆盖方位类的 translateX(-50%)，
+       若把 transform 也纳入过渡，首帧会从 translateX(-50%) 插值到 none，气泡横向滑动半个宽度，
+       要等过渡结束（或滚动触发一次重定位）才停到正确位置。 */
+    transition: opacity var(--solely-transition-duration) var(--solely-transition-timing);
     transform: scale(0.8);
 }
 

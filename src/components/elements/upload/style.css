@@ -24,6 +24,19 @@
   width: 100%;
 }
 
+/* 线性图标：与 alert / select 等组件同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 .upload {
   font-family: var(--solely-font-family);
 }
@@ -48,7 +61,15 @@
   color: var(--solely-primary);
 }
 
-.upload.is-disabled .upload__button {
+.upload__button:focus-visible,
+.upload__drag:focus-visible,
+.upload__list-remove:focus-visible {
+  outline: 2px solid var(--solely-primary);
+  outline-offset: 2px;
+}
+
+.upload.is-disabled .upload__button,
+.upload.is-disabled .upload__drag {
   cursor: not-allowed;
   opacity: var(--solely-disabled-opacity);
 }
@@ -78,9 +99,14 @@
 }
 
 .upload__drag-icon {
-  font-size: 48px;
   color: var(--solely-text-tertiary);
   margin-bottom: var(--solely-spacing-md);
+}
+
+.upload__drag-icon .solely-linear-icon {
+  width: 48px;
+  height: 48px;
+  stroke-width: 1;
 }
 
 .upload__drag-text {
@@ -151,9 +177,20 @@
   margin-top: 2px;
 }
 
+.upload__list-error {
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-error);
+  margin-top: 2px;
+  line-height: var(--solely-line-height-sm);
+}
+
 .upload__list-status {
   margin-left: var(--solely-spacing-sm);
   font-size: var(--solely-font-size-sm);
+}
+
+.upload__list-status--waiting {
+  color: var(--solely-text-tertiary);
 }
 
 .upload__list-status--uploading {
@@ -166,6 +203,23 @@
 
 .upload__list-status--error {
   color: var(--solely-error);
+}
+
+.upload__list-status--cancelled {
+  color: var(--solely-text-tertiary);
+}
+
+/* 线性图标：与 input / select 的关闭按钮同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
 }
 
 .upload__list-remove {
@@ -255,7 +309,7 @@
   top: 4px;
   right: 4px;
   margin-left: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--solely-mask-bg);
   color: var(--solely-white);
   border-radius: 50%;
   width: 20px;
@@ -267,7 +321,7 @@
 }
 
 .upload--picture-card .upload__list-remove:hover {
-  background-color: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 0 1px var(--solely-white);
   color: var(--solely-white);
 }
 

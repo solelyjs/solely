@@ -7,7 +7,7 @@
     <!-- 基础用法 -->
     <div class="demo-block">
         <h3 class="demo-block-title">基础用法</h3>
-        <p class="demo-block-desc">最简单的用法，点击上传文件。</p>
+        <p class="demo-block-desc">最简单的用法，点击上传文件。文档站没有后端，已统一注入 mock 上传（进度 → 成功）；组件在未配置 action 或 customRequest 时会把文件标记为失败，见「无上传目标与自定义请求」样例。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-upload></solely-upload>
@@ -109,7 +109,7 @@
     <!-- 限制大小 -->
     <div class="demo-block">
         <h3 class="demo-block-title">限制大小</h3>
-        <p class="demo-block-desc">通过 max-size 属性限制单个文件大小（字节）。</p>
+        <p class="demo-block-desc">通过 max-size 属性限制单个文件大小（字节）。max-size=0（或负数、未设置）表示不限制大小，保留旧版语义。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-upload max-size="1048576" button-text="单个文件不超过1MB"></solely-upload>
@@ -117,6 +117,87 @@
             <div class="demo-code">
                 <pre><code><span class="code-comment">&lt;!-- 1MB = 1024 * 1024 = 1048576 字节 --&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> <span class="code-attr">max-size</span>=<span class="code-value">"1048576"</span> <span class="code-attr">button-text</span>=<span class="code-value">"单个文件不超过1MB"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 请求配置 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">请求配置</h3>
+        <p class="demo-block-desc">通过 action、method、headers、name、data、with-credentials、timeout 对接真实后端。默认方法为 POST，默认字段名为 file。文档站没有 /api/upload 后端，已注入 mock 上传让示例可成功演示；真实项目移除 mock 后由 action 发起请求。未配置 action 或 custom-request 时按失败处理（error 事件 + 列表错误信息），见 0.8.0 样例。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-upload
+                    action="/api/upload"
+                    method="PUT"
+                    name="avatar"
+                    headers='{"Authorization":"Bearer demo-token","X-Trace":"docs"}'
+                    data='{"biz":"demo"}'
+                    with-credentials
+                    timeout="10000"
+                    multiple
+                    button-text="带请求配置上传"
+                ></solely-upload>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span>
+  <span class="code-attr">action</span>=<span class="code-value">"/api/upload"</span>
+  <span class="code-attr">method</span>=<span class="code-value">"PUT"</span>
+  <span class="code-attr">name</span>=<span class="code-value">"avatar"</span>
+  <span class="code-attr">headers</span>=<span class="code-value">'{"Authorization":"Bearer demo-token"}'</span>
+  <span class="code-attr">data</span>=<span class="code-value">'{"biz":"demo"}'</span>
+  <span class="code-attr">with-credentials</span>
+  <span class="code-attr">timeout</span>=<span class="code-value">"10000"</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">&lt;!-- 额外表单字段会与文件一起以 multipart/form-data 提交 --&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- before-upload 与 custom-request -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">before-upload / custom-request</h3>
+        <p class="demo-block-desc">
+            两个钩子只能通过 JS 属性赋值（不支持 HTML attribute）。before-upload 可返回 false 拒绝、返回 Promise 等待、或返回一个新的 File 替换待上传文件；
+            custom-request 可完全接管上传过程，由实现主动调用 onProgress / onSuccess / onError，并可返回 { abort } 供组件取消。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px; align-items: flex-start;">
+                <solely-upload ref="hooksUpload" button-text="带钩子上传"></solely-upload>
+                <div style="padding: 12px; border: 1px dashed var(--solely-border); border-radius: 6px; color: var(--solely-text-secondary); font-size: 13px;">
+                    两个钩子只能通过 JS 属性赋值（不支持 HTML attribute）。文档站已给这个实例注入 beforeUpload（拒绝 .exe）与 customRequest（模拟进度 / 成功），选文件即可看到完整流程；代码见右侧。
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-keyword">const</span> upload = document.querySelector(<span class="code-value">'solely-upload'</span>);
+
+<span class="code-comment">// 1. before-upload：校验 / 等待 / 替换文件</span>
+upload.beforeUpload = <span class="code-keyword">async</span> (file) => {
+  <span class="code-keyword">if</span> (file.name.endsWith(<span class="code-value">'.exe'</span>)) <span class="code-keyword">return</span> <span class="code-value">false</span>;           <span class="code-comment">// 拒绝，组件派发 error</span>
+  <span class="code-keyword">await</span> checkPermission(file);                                    <span class="code-comment">// 返回 Promise 时等待</span>
+  <span class="code-keyword">return</span> file;                                                     <span class="code-comment">// 也可 return new File(...) 替换</span>
+};
+
+<span class="code-comment">// 2. custom-request：完全接管上传</span>
+upload.customRequest = ({ file, uploadFile, action, method, headers, name, data, withCredentials, onProgress, onSuccess, onError }) => {
+  <span class="code-keyword">const</span> controller = <span class="code-keyword">new</span> AbortController();
+  fetch(action, {
+    method,
+    headers,
+    body: buildFormData({ file, name, data }),
+    credentials: withCredentials ? <span class="code-value">'include'</span> : <span class="code-value">'same-origin'</span>,
+    signal: controller.signal,
+  })
+    .then(response => {
+      <span class="code-keyword">if</span> (!response.ok) <span class="code-keyword">throw new</span> Error(<span class="code-value">`HTTP ${response.status}`</span>);
+      <span class="code-keyword">return</span> response.json();
+    })
+    .then(data => onSuccess(data))
+    .catch(error => onError(error));
+
+  <span class="code-keyword">return</span> { abort: () => controller.abort() };
+};</code></pre>
             </div>
         </div>
     </div>
@@ -143,10 +224,10 @@
         <p class="demo-block-desc">设置 block 属性可使上传按钮宽度撑满父容器。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; gap: 16px;">
-                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px;">
+                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px; box-sizing: border-box;">
                     <solely-upload block button-text="Block 上传按钮"></solely-upload>
                 </div>
-                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px;">
+                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px; box-sizing: border-box;">
                     <solely-upload block drag></solely-upload>
                 </div>
             </div>
@@ -217,14 +298,16 @@
     <!-- 事件处理 -->
     <div class="demo-block">
         <h3 class="demo-block-title">事件处理</h3>
-        <p class="demo-block-desc">监听 change、success、error、remove 事件处理上传逻辑。</p>
+        <p class="demo-block-desc">监听 change、progress、success、error、cancel、remove 事件处理上传逻辑。progress 事件同时携带单文件 percent 与 overallPercent（整体进度）。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; gap: 12px;">
                 <solely-upload 
                     multiple
                     @change="this.handleUploadChange(event)"
+                    @progress="this.handleUploadProgress(event)"
                     @success="this.handleUploadSuccess(event)"
                     @error="this.handleUploadError(event)"
+                    @cancel="this.handleUploadCancel(event)"
                     @remove="this.handleUploadRemove(event)"
                 ></solely-upload>
                 <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
@@ -236,8 +319,10 @@
                 <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-upload</span> 
   <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span>
+  <span class="code-attr">@progress</span>=<span class="code-value">"handleProgress(event)"</span>
   <span class="code-attr">@success</span>=<span class="code-value">"handleSuccess(event)"</span>
   <span class="code-attr">@error</span>=<span class="code-value">"handleError(event)"</span>
+  <span class="code-attr">@cancel</span>=<span class="code-value">"handleCancel(event)"</span>
   <span class="code-attr">@remove</span>=<span class="code-value">"handleRemove(event)"</span>
 <span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-upload</span><span class="code-bracket">&gt;</span>
 
@@ -250,14 +335,24 @@ uploadEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
   console.log(<span class="code-value">'文件列表:'</span>, fileList);
 });
 
-<span class="code-comment">// success 事件 - 上传成功时触发</span>
-uploadEl.addEventListener(<span class="code-value">'success'</span>, (e) => {
-  console.log(<span class="code-value">'上传成功:'</span>, e.detail.file);
+<span class="code-comment">// progress 事件 - 单个文件进度（0-100，单调不减）</span>
+uploadEl.addEventListener(<span class="code-value">'progress'</span>, (e) => {
+  console.log(<span class="code-value">'进度:'</span>, e.detail.file.name, <span class="code-value">`${e.detail.percent}%`</span>, <span class="code-value">`整体 ${e.detail.overallPercent}%`</span>);
 });
 
-<span class="code-comment">// error 事件 - 上传失败时触发</span>
+<span class="code-comment">// success 事件 - 上传成功时触发</span>
+uploadEl.addEventListener(<span class="code-value">'success'</span>, (e) => {
+  console.log(<span class="code-value">'上传成功:'</span>, e.detail.file, e.detail.response);
+});
+
+<span class="code-comment">// error 事件 - 上传失败 / 校验拒绝时触发，reason 说明来源</span>
 uploadEl.addEventListener(<span class="code-value">'error'</span>, (e) => {
-  console.log(<span class="code-value">'上传失败:'</span>, e.detail.message);
+  console.log(<span class="code-value">'上传失败:'</span>, e.detail.message, e.detail.reason);
+});
+
+<span class="code-comment">// cancel 事件 - abort / abortAll 取消上传时触发</span>
+uploadEl.addEventListener(<span class="code-value">'cancel'</span>, (e) => {
+  console.log(<span class="code-value">'已取消:'</span>, e.detail.file);
 });
 
 <span class="code-comment">// remove 事件 - 移除文件时触发</span>
@@ -265,6 +360,29 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
   console.log(<span class="code-value">'移除文件:'</span>, e.detail.file);
 });</code></pre>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 0.8.0 新增特性验收样例 ===== -->
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">无上传目标与自定义请求（0.8.0）</h3>
+        <p class="demo-block-desc">左侧不配 <code>action</code> / <code>customRequest</code>，选文件后应显示 error；右侧用 <code>customRequest</code> 模拟进度、完成与取消。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <div><div class="demo-subtitle">未配置上传目标（应 error）</div>
+                    <solely-upload ref="noTargetUpload"></solely-upload></div>
+                <div><div class="demo-subtitle">customRequest 模拟上传（进度 / 完成 / 取消）</div>
+                    <solely-upload ref="featureMockUpload"></solely-upload></div>
+            </div>
+            <div class="demo-code"><pre><code>upload.customRequest = ({ file, onProgress, onSuccess, onError, signal }) =&gt; {
+  let p = 0;
+  const timer = setInterval(() =&gt; { p += 25; onProgress(p);
+    if (p &gt;= 100) { clearInterval(timer); onSuccess({ url: 'mock://done' }); } }, 300);
+  signal.addEventListener('abort', () =&gt; clearInterval(timer));
+  return { abort: () =&gt; { clearInterval(timer); onError('已取消'); } };
+};</code></pre></div>
         </div>
     </div>
 </div>
@@ -278,7 +396,8 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性名</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -287,11 +406,76 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>action</td>
+                    <td>action</td>
                     <td>上传地址</td>
                     <td>string</td>
                     <td>-</td>
                 </tr>
                 <tr>
+                    <td>method</td>
+                    <td>method</td>
+                    <td>请求方法（默认实现使用 XHR）</td>
+                    <td>string</td>
+                    <td>POST</td>
+                </tr>
+                <tr>
+                    <td>headers</td>
+                    <td>headers</td>
+                    <td>额外请求头（JSON 对象 / JS 对象）</td>
+                    <td>Record&lt;string, string&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td>name</td>
+                    <td>文件字段名</td>
+                    <td>string</td>
+                    <td>file</td>
+                </tr>
+                <tr>
+                    <td>with-credentials</td>
+                    <td>withCredentials</td>
+                    <td>是否携带 Cookie</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>data</td>
+                    <td>data</td>
+                    <td>额外表单字段（JSON 对象 / JS 对象）</td>
+                    <td>Record&lt;string, unknown&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>timeout</td>
+                    <td>timeout</td>
+                    <td>超时时间（毫秒）</td>
+                    <td>number</td>
+                    <td>0（不限制）</td>
+                </tr>
+                <tr>
+                    <td>max-concurrency</td>
+                    <td>maxConcurrency</td>
+                    <td>最大并发上传数，超出的文件进入等待队列</td>
+                    <td>number</td>
+                    <td>0（不限制）</td>
+                </tr>
+                <tr>
+                    <td>before-upload</td>
+                    <td>beforeUpload</td>
+                    <td>上传前置钩子，仅支持 JS 属性赋值；返回 false 拒绝、Promise 等待、File 替换</td>
+                    <td>(file, fileList) =&gt; boolean | File | Promise&lt;...&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>custom-request</td>
+                    <td>customRequest</td>
+                    <td>自定义上传实现，仅支持 JS 属性赋值；暴露 onProgress / onSuccess / onError / abort</td>
+                    <td>(options) =&gt; { abort? } | void | Promise&lt;...&gt;</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>accept</td>
                     <td>accept</td>
                     <td>接受上传的文件类型</td>
                     <td>string</td>
@@ -299,17 +483,20 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>multiple</td>
+                    <td>multiple</td>
                     <td>是否支持多选</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>file-list</td>
                     <td>fileList</td>
                     <td>上传文件列表（JSON字符串）</td>
                     <td>string</td>
                     <td>[]</td>
                 </tr>
                 <tr>
+                    <td>list-type</td>
                     <td>listType</td>
                     <td>上传列表的内建样式（text/picture/picture-card）</td>
                     <td>string</td>
@@ -317,17 +504,20 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>disabled</td>
+                    <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>show-upload-list</td>
                     <td>showUploadList</td>
-                    <td>是否显示上传列表</td>
+                    <td>是否显示上传列表；默认开启，<code>show-upload-list="false"</code> 关闭</td>
                     <td>boolean</td>
                     <td>true</td>
                 </tr>
                 <tr>
+                    <td>button-text</td>
                     <td>buttonText</td>
                     <td>上传按钮文字</td>
                     <td>string</td>
@@ -335,23 +525,34 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>drag</td>
+                    <td>drag</td>
                     <td>是否支持拖拽上传</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>show-icon</td>
+                    <td>showIcon</td>
+                    <td>拖拽上传区是否显示装饰图标；<code>show-icon="false"</code> 时不渲染图标节点</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>max-count</td>
                     <td>maxCount</td>
                     <td>最大文件数量</td>
                     <td>number</td>
                     <td>Infinity</td>
                 </tr>
                 <tr>
+                    <td>max-size</td>
                     <td>maxSize</td>
-                    <td>文件大小限制（字节）</td>
+                    <td>文件大小限制（字节）。0、负数或未设置表示不限制大小</td>
                     <td>number</td>
                     <td>Infinity</td>
                 </tr>
                 <tr>
+                    <td>block</td>
                     <td>block</td>
                     <td>是否撑满父容器宽度</td>
                     <td>boolean</td>
@@ -374,18 +575,28 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>change</td>
-                    <td>文件列表变化时触发</td>
+                    <td>一次文件选择只派发一次汇总 change；clear()/移除文件时各派发一次</td>
                     <td>Event</td>
                 </tr>
                 <tr>
                     <td>success</td>
-                    <td>上传成功时触发</td>
-                    <td>CustomEvent&lt;{ file: UploadFile; fileList: UploadFile[] }&gt;</td>
+                    <td>上传成功时触发，不派发 change</td>
+                    <td>CustomEvent&lt;{ file: UploadFile; fileList: UploadFile[]; response?: unknown }&gt;</td>
                 </tr>
                 <tr>
                     <td>error</td>
-                    <td>上传失败时触发</td>
-                    <td>CustomEvent&lt;{ file: UploadFile; message: string }&gt;</td>
+                    <td>上传失败 / 校验拒绝 / before-upload 拒绝 / 未配置上传目标（reason=missing-action）时触发，reason 说明来源</td>
+                    <td>CustomEvent&lt;{ file: UploadFile; message: string; reason: string }&gt;</td>
+                </tr>
+                <tr>
+                    <td>progress</td>
+                    <td>单个文件进度变化时触发，percent 与 overallPercent 均为 0-100 且单调不减</td>
+                    <td>CustomEvent&lt;{ file: UploadFile; percent: number; overallPercent: number }&gt;</td>
+                </tr>
+                <tr>
+                    <td>cancel</td>
+                    <td>abort(uid) / abortAll() 取消上传时触发；移除文件或 clear() 时为静默取消</td>
+                    <td>CustomEvent&lt;{ file: UploadFile; fileList: UploadFile[] }&gt;</td>
                 </tr>
                 <tr>
                     <td>remove</td>
@@ -468,6 +679,11 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
                     <td>&lt;div&gt;</td>
                 </tr>
                 <tr>
+                    <td>error</td>
+                    <td>文件错误信息</td>
+                    <td>&lt;div&gt;</td>
+                </tr>
+                <tr>
                     <td>progress</td>
                     <td>上传进度条容器</td>
                     <td>&lt;div&gt;</td>
@@ -511,9 +727,33 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>clear()</td>
-                    <td>清空文件列表</td>
+                    <td>清空文件列表（会取消进行中的上传并回收 URL）</td>
                     <td>-</td>
                     <td>void</td>
+                </tr>
+                <tr>
+                    <td>abort(uid)</td>
+                    <td>取消单个上传，文件保留且状态变为 cancelled</td>
+                    <td>uid: string</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>abortAll()</td>
+                    <td>取消全部进行中 / 排队中的上传</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getOverallPercent()</td>
+                    <td>获取整体上传进度（0-100）</td>
+                    <td>-</td>
+                    <td>number</td>
+                </tr>
+                <tr>
+                    <td>isUploading()</td>
+                    <td>是否存在上传中 / 等待中的文件</td>
+                    <td>-</td>
+                    <td>boolean</td>
                 </tr>
             </tbody>
         </table>
@@ -522,31 +762,41 @@ uploadEl.addEventListener(<span class="code-value">'remove'</span>, (e) => {
     <div class="api-block">
         <h4 class="api-block-title">类型定义</h4>
         <div class="demo-code">
-            <pre><code><span class="code-comment">// 上传文件类型</span>
+            <pre><code><span class="code-comment">// 上传文件类型（fileList 中不要求是 File 实例，可只提供 name/url/status）</span>
 <span class="code-keyword">interface</span> <span class="code-type">UploadFile</span> {
-  <span class="code-attr">uid</span>: <span class="code-type">string</span>;           <span class="code-comment">// 文件唯一标识</span>
+  <span class="code-attr">uid</span>: <span class="code-type">string</span>;           <span class="code-comment">// 文件唯一标识（外部数据缺失时自动补齐）</span>
   <span class="code-attr">name</span>: <span class="code-type">string</span>;          <span class="code-comment">// 文件名</span>
   <span class="code-attr">size</span>?: <span class="code-type">number</span>;         <span class="code-comment">// 文件大小</span>
   <span class="code-attr">type</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 文件类型</span>
-  <span class="code-attr">status</span>?: <span class="code-type">'uploading' | 'done' | 'error' | 'removed'</span>;
-  <span class="code-attr">percent</span>?: <span class="code-type">number</span>;      <span class="code-comment">// 上传进度</span>
+  <span class="code-attr">status</span>?: <span class="code-type">'waiting' | 'uploading' | 'done' | 'error' | 'removed' | 'cancelled'</span>;
+  <span class="code-attr">percent</span>?: <span class="code-type">number</span>;      <span class="code-comment">// 上传进度（0-100）</span>
   <span class="code-attr">url</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 文件URL</span>
   <span class="code-attr">error</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 错误信息</span>
+  <span class="code-attr">response</span>?: <span class="code-type">unknown</span>;    <span class="code-comment">// 服务端响应</span>
 }
 
-<span class="code-comment">// 组件属性接口</span>
+<span class="code-comment">// 组件属性接口（beforeUpload / customRequest 仅支持 JS 属性赋值）</span>
 <span class="code-keyword">interface</span> <span class="code-type">UploadProps</span> {
   <span class="code-attr">action</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 上传地址</span>
+  <span class="code-attr">method</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 请求方法，默认 POST</span>
+  <span class="code-attr">headers</span>?: <span class="code-type">Record&lt;string, string&gt;</span>;
+  <span class="code-attr">name</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 文件字段名，默认 file</span>
+  <span class="code-attr">withCredentials</span>?: <span class="code-type">boolean</span>;
+  <span class="code-attr">data</span>?: <span class="code-type">Record&lt;string, unknown&gt;</span>;
+  <span class="code-attr">timeout</span>?: <span class="code-type">number</span>;      <span class="code-comment">// 毫秒，0 表示不限制</span>
+  <span class="code-attr">maxConcurrency</span>?: <span class="code-type">number</span>; <span class="code-comment">// 0 表示不限制</span>
+  <span class="code-attr">beforeUpload</span>?: <span class="code-type">UploadBeforeUpload</span>;
+  <span class="code-attr">customRequest</span>?: <span class="code-type">UploadCustomRequest</span>;
   <span class="code-attr">accept</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 接受上传的文件类型</span>
   <span class="code-attr">multiple</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否支持多选</span>
-  <span class="code-attr">fileList</span>?: <span class="code-type">string</span>;   <span class="code-comment">// 上传文件列表（JSON字符串）</span>
+  <span class="code-attr">fileList</span>?: <span class="code-type">string | UploadFile[]</span>; <span class="code-comment">// JSON字符串或 JS 数组</span>
   <span class="code-attr">listType</span>?: <span class="code-type">'text' | 'picture' | 'picture-card'</span>;
   <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;   <span class="code-comment">// 是否禁用</span>
   <span class="code-attr">showUploadList</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否显示上传列表</span>
   <span class="code-attr">buttonText</span>?: <span class="code-type">string</span>;  <span class="code-comment">// 上传按钮文字</span>
   <span class="code-attr">drag</span>?: <span class="code-type">boolean</span>;       <span class="code-comment">// 是否支持拖拽上传</span>
   <span class="code-attr">maxCount</span>?: <span class="code-type">number</span>;   <span class="code-comment">// 最大文件数量</span>
-  <span class="code-attr">maxSize</span>?: <span class="code-type">number</span>;    <span class="code-comment">// 文件大小限制（字节）</span>
+  <span class="code-attr">maxSize</span>?: <span class="code-type">number</span>;    <span class="code-comment">// 字节；0 表示不限制</span>
   <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;      <span class="code-comment">// 是否撑满父容器宽度</span>
 }</code></pre>
         </div>

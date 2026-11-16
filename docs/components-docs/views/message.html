@@ -334,31 +334,31 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                 <tr>
                     <td>Message.info</td>
                     <td>信息提示</td>
-                    <td>content: string, duration?: number</td>
+                    <td>content: string | HTMLElement, options?: number | Partial&lt;Omit&lt;MessageOptions, 'content' | 'type'&gt;&gt;</td>
                     <td>MessageInstance</td>
                 </tr>
                 <tr>
                     <td>Message.success</td>
                     <td>成功提示</td>
-                    <td>content: string, duration?: number</td>
+                    <td>content: string | HTMLElement, options?: number | Partial&lt;Omit&lt;MessageOptions, 'content' | 'type'&gt;&gt;</td>
                     <td>MessageInstance</td>
                 </tr>
                 <tr>
                     <td>Message.warning</td>
                     <td>警告提示</td>
-                    <td>content: string, duration?: number</td>
+                    <td>content: string | HTMLElement, options?: number | Partial&lt;Omit&lt;MessageOptions, 'content' | 'type'&gt;&gt;</td>
                     <td>MessageInstance</td>
                 </tr>
                 <tr>
                     <td>Message.error</td>
                     <td>错误提示</td>
-                    <td>content: string, duration?: number</td>
+                    <td>content: string | HTMLElement, options?: number | Partial&lt;Omit&lt;MessageOptions, 'content' | 'type'&gt;&gt;</td>
                     <td>MessageInstance</td>
                 </tr>
                 <tr>
                     <td>Message.loading</td>
                     <td>加载中提示（默认不自动关闭）</td>
-                    <td>content: string, duration?: number</td>
+                    <td>content: string | HTMLElement, options?: number | Partial&lt;Omit&lt;MessageOptions, 'content' | 'type'&gt;&gt;</td>
                     <td>MessageInstance</td>
                 </tr>
                 <tr>
@@ -375,6 +375,9 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                 </tr>
             </tbody>
         </table>
+        <p class="api-block-desc" style="margin-top: 12px;">
+            快捷方法的第二个参数：传 <code>number</code> 等价于 <code>{ duration }</code>；传对象时可覆盖除 <code>content</code> / <code>type</code> 外的任意 <code>MessageOptions</code>。
+        </p>
 
         <h4 class="api-block-subtitle">MessageOptions</h4>
         <table class="api-table">
@@ -407,14 +410,14 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                 </tr>
                 <tr>
                     <td>showIcon</td>
-                    <td>是否显示图标</td>
+                    <td>是否显示图标；设为 false 时不渲染图标节点，优先级高于 icon</td>
                     <td>boolean</td>
                     <td>true</td>
                 </tr>
                 <tr>
                     <td>icon</td>
-                    <td>自定义图标</td>
-                    <td>string | HTMLElement</td>
+                    <td>自定义图标，支持字符串或 Element（含 SVG）；<code>icon: ''</code> 表示不渲染图标；默认使用内置线性 SVG 状态图标</td>
+                    <td>string | Element</td>
                     <td>-</td>
                 </tr>
                 <tr>
@@ -440,6 +443,12 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>自定义样式</td>
                     <td>Partial&lt;CSSStyleDeclaration&gt;</td>
                     <td>-</td>
+                </tr>
+                <tr>
+                    <td>cloneElement</td>
+                    <td>是否克隆传入的 HTMLElement 内容（<code>content</code> / <code>description</code> / <code>icon</code>）；设为 <code>false</code> 时会直接移动原节点</td>
+                    <td>boolean</td>
+                    <td>true</td>
                 </tr>
                 <tr>
                     <td>onClose</td>

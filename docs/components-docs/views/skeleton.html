@@ -35,9 +35,9 @@
 <span class="code-comment">// JavaScript</span>
 <span class="code-keyword">const</span> skeleton = document.<span class="code-method">getElementById</span>(<span class="code-value">'skeleton'</span>);
 skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'paragraph-rows'</span>, <span class="code-value">'3'</span>);
-<span class="code-comment">// 控制加载状态（布尔属性：存在即为 true）</span>
+<span class="code-comment">// 控制加载状态（布尔属性：写 loading 或 loading="true" 开启，loading="false" 关闭）</span>
 skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'loading'</span>, <span class="code-value">''</span>);      <span class="code-comment">// 显示骨架屏</span>
-skeleton.<span class="code-method">removeAttribute</span>(<span class="code-value">'loading'</span>); <span class="code-comment">// 显示真实内容</span></code></pre>
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'loading'</span>, <span class="code-value">'false'</span>); <span class="code-comment">// 显示真实内容（默认 true，移除属性会回到加载中）</span></code></pre>
             </div>
         </div>
     </div>
@@ -267,7 +267,7 @@ skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">
 skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'active'</span>, <span class="code-value">''</span>);
 <span class="code-comment">// 控制加载状态</span>
 skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'loading'</span>, <span class="code-value">''</span>);      <span class="code-comment">// 显示骨架屏</span>
-skeleton.<span class="code-method">removeAttribute</span>(<span class="code-value">'loading'</span>); <span class="code-comment">// 显示真实内容</span></code></pre>
+skeleton.<span class="code-method">setAttribute</span>(<span class="code-value">'loading'</span>, <span class="code-value">'false'</span>); <span class="code-comment">// 显示真实内容（默认 true，移除属性会回到加载中）</span></code></pre>
             </div>
         </div>
     </div>
@@ -282,7 +282,8 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -291,11 +292,13 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
             <tbody>
                 <tr>
                     <td>active</td>
+                    <td>active</td>
                     <td>是否显示动画效果</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>avatar</td>
                     <td>avatar</td>
                     <td>是否显示头像占位图</td>
                     <td>boolean</td>
@@ -303,23 +306,27 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
                 </tr>
                 <tr>
                     <td>avatar-shape</td>
+                    <td>avatarShape</td>
                     <td>头像形状</td>
                     <td>'circle' | 'square'</td>
                     <td>'circle'</td>
                 </tr>
                 <tr>
                     <td>avatar-size</td>
+                    <td>avatarSize</td>
                     <td>头像大小</td>
                     <td>number</td>
                     <td>40</td>
                 </tr>
                 <tr>
                     <td>avatar-position</td>
+                    <td>avatarPosition</td>
                     <td>头像位置</td>
                     <td>'left' | 'right'</td>
                     <td>'left'</td>
                 </tr>
                 <tr>
+                    <td>title</td>
                     <td>title</td>
                     <td>是否显示标题占位图</td>
                     <td>boolean</td>
@@ -327,19 +334,22 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
                 </tr>
                 <tr>
                     <td>title-width</td>
-                    <td>标题宽度</td>
-                    <td>string | number</td>
+                    <td>titleWidth</td>
+                    <td>标题宽度，需带单位的字符串（如 <code>'60%'</code>、<code>'200px'</code>、<code>'12rem'</code>）；直接传数字会被转成无单位字符串（如 <code>200</code> → <code>"200"</code>，浏览器忽略），请写成 <code>'200px'</code></td>
+                    <td>string</td>
                     <td>''</td>
                 </tr>
                 <tr>
                     <td>paragraph-rows</td>
+                    <td>paragraphRows</td>
                     <td>段落行数</td>
                     <td>number</td>
                     <td>3</td>
                 </tr>
                 <tr>
                     <td>loading</td>
-                    <td>是否显示加载结束后的内容</td>
+                    <td>loading</td>
+                    <td>是否处于加载中：<code>true</code> 渲染骨架屏，<code>false</code> 渲染默认插槽的真实内容。默认值为 <code>true</code>，关闭请用 <code>loading="false"</code> 或 <code>setLoading(false)</code>；<code>removeAttribute('loading')</code> 会回退到默认值 <code>true</code></td>
                     <td>boolean</td>
                     <td>true</td>
                 </tr>
@@ -360,6 +370,26 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
                 <tr>
                     <td>默认插槽</td>
                     <td>加载完成后显示的真实内容</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">ARIA 属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>动态更新</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>aria-busy（宿主元素）</td>
+                    <td><code>loading="true"</code> 时为 <code>"true"</code>，否则为 <code>"false"</code>，用于告知辅助技术该区域仍在加载</td>
+                    <td>是</td>
                 </tr>
             </tbody>
         </table>
@@ -464,7 +494,7 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
 <span class="code-keyword">type</span> <span class="code-type">SkeletonAvatarPosition</span> = <span class="code-value">'left'</span> | <span class="code-value">'right'</span>;
 
 <span class="code-comment">// 骨架屏元素类型</span>
-<span class="code-keyword">type</span> <span class="code-type">SkeletonElement</span> = <span class="code-value">'avatar'</span> | <span class="code-value">'title'</span> | <span class="code-value">'paragraph'</span> | <span class="code-value">'button'</span> | <span class="code-value">'input'</span> | <span class="code-value">'image'</span>;
+<span class="code-keyword">type</span> <span class="code-type">SkeletonElement</span> = <span class="code-value">'avatar'</span> | <span class="code-value">'title'</span> | <span class="code-value">'paragraph'</span>;
 
 <span class="code-comment">// 骨架屏属性接口</span>
 <span class="code-keyword">interface</span> <span class="code-type">SkeletonProps</span> {
@@ -474,7 +504,7 @@ skeleton.<span class="code-method">removeAttribute</span>(<span class="code-valu
   <span class="code-attr">avatarSize</span>?: <span class="code-type">number</span>;            <span class="code-comment">// 头像大小</span>
   <span class="code-attr">avatarPosition</span>?: <span class="code-type">SkeletonAvatarPosition</span>; <span class="code-comment">// 头像位置</span>
   <span class="code-attr">title</span>?: <span class="code-type">boolean</span>;               <span class="code-comment">// 是否显示标题</span>
-  <span class="code-attr">titleWidth</span>?: <span class="code-type">string</span> | <span class="code-type">number</span>; <span class="code-comment">// 标题宽度</span>
+  <span class="code-attr">titleWidth</span>?: <span class="code-type">string</span>; <span class="code-comment">// 标题宽度，需带单位（如 '60%'、'200px'）</span>
   <span class="code-attr">paragraphRows</span>?: <span class="code-type">number</span>;        <span class="code-comment">// 段落行数</span>
   <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;           <span class="code-comment">// 是否加载中</span>
 }</code></pre>

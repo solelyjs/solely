@@ -1,8 +1,28 @@
-<div part="wrapper" class="tooltip-wrapper" @mouseenter="this.handleMouseEnter(event)" @mouseleave="this.handleMouseLeave(event)" @click="this.handleClick(event)">
+<div
+    part="wrapper"
+    class="tooltip-wrapper"
+    :tabindex="this.getWrapperTabIndex()"
+    @mouseenter="this.handleMouseEnter(event)"
+    @mouseleave="this.handleMouseLeave(event)"
+    @focusin="this.handleWrapperFocusIn(event)"
+    @focusout="this.handleWrapperFocusOut(event)"
+    @click="this.handleClick(event)"
+    @keydown="this.handleWrapperKeydown(event)"
+>
     <slot></slot>
     <If test="$data.visible">
-        <div ref="tooltipRef" part="base" class="tooltip" :class="this.getTooltipClasses()">
-            <div part="content" class="tooltip__content">{{ $data.content }}</div>
+        <div
+            ref="tooltipRef"
+            part="base"
+            class="tooltip"
+            role="tooltip"
+            :aria-hidden="$data.visible ? 'false' : 'true'"
+            :class="this.getTooltipClasses()"
+            :style="this.getTooltipStyle()"
+        >
+            <div part="content" class="tooltip__content">
+                <slot name="content">{{ $data.content }}</slot>
+            </div>
             <div ref="arrowRef" part="arrow" class="tooltip__arrow"></div>
         </div>
     </If>

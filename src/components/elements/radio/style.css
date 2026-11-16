@@ -10,6 +10,9 @@
 :host {
   display: inline-flex;
   align-items: center;
+  /* 选中态会多出内部圆点，按默认 baseline 对齐时同行两个单选框会错开约 4px；
+     统一用中线对齐，避免选中后视觉上「下沉」。 */
+  vertical-align: middle;
 }
 
 :host([block]) {

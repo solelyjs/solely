@@ -257,6 +257,86 @@ describe('畸形保存值', () => {
     });
 });
 
+describe('主题派生色', () => {
+    beforeEach(() => {
+        beforeunloadHandlers = [];
+        clearThemeDom();
+        localStorage.clear();
+
+        Object.defineProperty(window, 'addEventListener', {
+            configurable: true,
+            writable: true,
+            value: (
+                type: string,
+                listener: EventListenerOrEventListenerObject,
+                options?: boolean | AddEventListenerOptions,
+            ) => {
+                if (type === 'beforeunload' && typeof listener === 'function') {
+                    beforeunloadHandlers.push(listener);
+                }
+                realAddEventListener.call(window, type, listener, options);
+            },
+        });
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+        beforeunloadHandlers.forEach(h => window.removeEventListener('beforeunload', h));
+        beforeunloadHandlers = [];
+        delete (window as unknown as Record<string, unknown>).addEventListener;
+        clearThemeDom();
+        localStorage.clear();
+    });
+
+    it('应由 primary 派生 hover / active / light 三档色', async () => {
+        const theme = await importTheme();
+        theme.setTheme({ theme: 'light', colors: { primary: '#1890ff' } });
+
+        const style = document.documentElement.style;
+        expect(style.getPropertyValue('--solely-primary')).toBe('#1890ff');
+        expect(style.getPropertyValue('--solely-primary-hover')).toBe('#46a6ff');
+        expect(style.getPropertyValue('--solely-primary-active')).toBe('#147ad9');
+        expect(style.getPropertyValue('--solely-primary-light')).toBe('#e8f4ff');
+    });
+
+    it('显式传入的 hover 值应覆盖派生值', async () => {
+        const theme = await importTheme();
+        theme.setTheme({ theme: 'light', colors: { primary: '#1890ff', 'primary-hover': '#ff0000' } });
+
+        expect(document.documentElement.style.getPropertyValue('--solely-primary-hover')).toBe('#ff0000');
+        // 未显式覆盖的仍走派生
+        expect(document.documentElement.style.getPropertyValue('--solely-primary-active')).not.toBe('');
+    });
+
+    it('无法解析的颜色（var()/颜色名）跳过派生，不覆盖已有值', async () => {
+        const theme = await importTheme();
+        document.documentElement.style.setProperty('--solely-primary-hover', 'keep-me');
+        theme.setTheme({ theme: 'light', colors: { primary: 'var(--my-primary)' } });
+
+        expect(document.documentElement.style.getPropertyValue('--solely-primary')).toBe('var(--my-primary)');
+        expect(document.documentElement.style.getPropertyValue('--solely-primary-hover')).toBe('keep-me');
+    });
+
+    it('支持 3 位十六进制与 rgb() 输入', async () => {
+        const theme = await importTheme();
+        theme.setTheme({ theme: 'light', colors: { primary: '#abc' } });
+        expect(document.documentElement.style.getPropertyValue('--solely-primary-hover')).toBe('#bbc9d6');
+
+        theme.setTheme({ theme: 'dark', colors: { primary: 'rgb(24, 144, 255)' } });
+        // 深色主题同样派生，切主题不会丢失派生链
+        expect(document.documentElement.style.getPropertyValue('--solely-primary-hover')).toBe('#46a6ff');
+        expect(document.documentElement.style.getPropertyValue('--solely-primary-light')).toBe('#e8f4ff');
+    });
+
+    it('派生色不写回 getTheme 状态，仅保留用户原始 colors', async () => {
+        const theme = await importTheme();
+        theme.setTheme({ theme: 'dark', colors: { primary: '#1890ff' } });
+
+        expect(theme.getTheme()).toEqual({ theme: 'dark', colors: { primary: '#1890ff' } });
+    });
+});
+
 describe('主题持久化', () => {
     beforeEach(() => {
         beforeunloadHandlers = [];

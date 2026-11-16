@@ -24,8 +24,6 @@ export interface TooltipOptions {
     className?: string;
     /** 自定义样式 */
     style?: Partial<CSSStyleDeclaration>;
-    /** 浮层渲染节点 */
-    getPopupContainer?: () => HTMLElement;
     /** 是否克隆传入的 HTMLElement 内容（默认 true） */
     cloneElement?: boolean;
 }

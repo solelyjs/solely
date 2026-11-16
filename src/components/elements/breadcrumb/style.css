@@ -26,6 +26,16 @@
   align-items: center;
 }
 
+.breadcrumb__link,
+.breadcrumb__current {
+  display: inline-block;
+  max-width: var(--solely-breadcrumb-item-max-width, 200px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 .breadcrumb__link {
   color: var(--solely-text-secondary);
   text-decoration: none;
@@ -35,6 +45,11 @@
 
 .breadcrumb__link:hover {
   color: var(--solely-primary);
+}
+
+.breadcrumb__link:focus-visible {
+  outline: 2px solid var(--solely-primary);
+  outline-offset: 2px;
 }
 
 .breadcrumb__separator {

@@ -21,10 +21,13 @@ import {
     generateId,
     injectStyle,
     createElement,
+    createLinearIcon,
     addClosingAnimation,
     observeTheme,
     ANIMATION_DURATION,
 } from '../utils';
+import { registerOverlay, type OverlayHandle } from '../../../shared/floating/overlay-stack';
+import { oneOf } from '../../../shared/enum';
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-drawer-styles';
@@ -42,6 +45,7 @@ interface DrawerInfo {
     element: HTMLElement;
     options: DrawerOptions;
     cleanup?: () => void;
+    overlay?: OverlayHandle;
 }
 
 const drawerList: DrawerInfo[] = [];
@@ -61,6 +65,10 @@ async function closeDrawerById(id: number): Promise<void> {
         if (index === -1) return;
 
         const drawerInfo = drawerList[index];
+
+        // 关闭动画开始：出栈并停止 Esc / Tab 陷阱（焦点与锁在动画结束后释放）
+        drawerInfo.overlay?.deactivate();
+
         const mask = drawerInfo.element.querySelector('.solely-drawer-mask') as HTMLElement;
         const drawer = drawerInfo.element.querySelector('.solely-drawer') as HTMLElement;
 
@@ -79,10 +87,8 @@ async function closeDrawerById(id: number): Promise<void> {
             drawerList.splice(currentIndex, 1);
         }
 
-        // 所有 Drawer 关闭后移除背景滚动锁定类
-        if (drawerList.length === 0) {
-            document.body.classList.remove('solely-drawer-open');
-        }
+        // 动画结束：还原焦点、释放 scroll lock 与 inert
+        drawerInfo.overlay?.dispose();
     } finally {
         closingIds.delete(id);
     }
@@ -93,14 +99,18 @@ function open(options: DrawerOptions): DrawerInstance {
 
     ensureStylesInjected();
 
-    const placement = options.placement || 'right';
+    // 非法 placement 会拼出无 CSS 的类名，抽屉定位完全失效
+    const placement = oneOf(options.placement, ['left', 'right', 'top', 'bottom'], 'right');
     const width = options.width ?? globalConfig.width;
     const height = options.height ?? globalConfig.height;
     const mask = options.mask ?? globalConfig.mask;
     const maskClosable = options.maskClosable ?? globalConfig.maskClosable;
     const closable = options.closable ?? globalConfig.closable;
 
-    const wrap = createElement('div', { className: 'solely-drawer-wrap' });
+    const wrap = createElement('div', {
+        className: 'solely-drawer-wrap',
+        attrs: { tabIndex: '-1' },
+    });
 
     // 主题适配（使用共享观察者）
     const cleanupTheme = observeTheme(() => wrap);
@@ -123,8 +133,18 @@ function open(options: DrawerOptions): DrawerInstance {
         wrap.appendChild(maskEl);
     }
 
+    const titleId = `solely-drawer-title-${id}`;
+    const hasTitle =
+        typeof options.title === 'string' ? (options.title || '').trim() !== '' : options.title instanceof HTMLElement;
+
     const drawer = createElement('div', {
         className: `solely-drawer solely-drawer--${placement}${options.className ? ` ${options.className}` : ''}`,
+        attrs: {
+            role: 'dialog',
+            'aria-modal': 'true',
+            tabIndex: '-1',
+            ...(hasTitle ? { 'aria-labelledby': titleId } : { 'aria-label': '抽屉' }),
+        },
         styles: options.style as Partial<CSSStyleDeclaration>,
     });
 
@@ -140,6 +160,7 @@ function open(options: DrawerOptions): DrawerInstance {
         if (options.title) {
             const title = createElement('h3', {
                 className: 'solely-drawer__title',
+                attrs: { id: titleId },
             });
 
             // 支持字符串和 DOM 元素作为标题
@@ -155,9 +176,9 @@ function open(options: DrawerOptions): DrawerInstance {
         if (closable !== false) {
             const close = createElement('button', {
                 className: 'solely-drawer__close',
-                textContent: '×',
                 attrs: { type: 'button', 'aria-label': '关闭' },
             });
+            close.appendChild(createLinearIcon('close'));
             const handleCloseClick = () => {
                 closeDrawerById(id);
                 options.onClose?.();
@@ -187,8 +208,24 @@ function open(options: DrawerOptions): DrawerInstance {
 
     document.body.appendChild(wrap);
 
-    // 添加背景滚动锁定类
-    document.body.classList.add('solely-drawer-open');
+    // 注册浮层：z-index / Esc / 焦点陷阱 / scroll lock / 背景 inert 统一由基座接管
+    const overlay = registerOverlay({
+        kind: 'drawer',
+        // wrap 是遮罩+抽屉的浮层根节点，嵌套浮层时基座据此排除其它层
+        container: wrap,
+        trigger: null,
+        escClosable: true,
+        trapFocus: true,
+        lockScroll: true,
+        inertBackground: true,
+        autoFocus: true,
+        initialFocus: drawer,
+        onEscape: () => {
+            closeDrawerById(id);
+            options.onClose?.();
+        },
+    });
+    overlay.activate();
 
     // 创建清理函数
     const cleanup = () => {
@@ -198,7 +235,10 @@ function open(options: DrawerOptions): DrawerInstance {
         cleanupTheme();
     };
 
-    drawerList.push({ id, element: wrap, options, cleanup });
+    drawerList.push({ id, element: wrap, options, cleanup, overlay });
+
+    // 记录当前方向，供 update() 更新修饰类与尺寸
+    let currentPlacement = placement;
 
     return {
         close: () => {
@@ -256,10 +296,24 @@ function open(options: DrawerOptions): DrawerInstance {
                 }
             }
 
-            // 更新宽度/高度
+            // 更新方向/尺寸
             const drawerEl = wrap.querySelector('.solely-drawer') as HTMLElement;
             if (drawerEl) {
-                const currentPlacement = newOptions.placement || options.placement || 'right';
+                // 方向变化时同步切换 BEM 修饰类
+                if (newOptions.placement !== undefined && newOptions.placement !== currentPlacement) {
+                    currentPlacement = newOptions.placement;
+                    drawerEl.classList.remove(
+                        'solely-drawer--left',
+                        'solely-drawer--right',
+                        'solely-drawer--top',
+                        'solely-drawer--bottom',
+                    );
+                    drawerEl.classList.add(`solely-drawer--${currentPlacement}`);
+                    // 清理旧方向遗留的行内尺寸，避免切换方向后尺寸失效
+                    drawerEl.style.width = '';
+                    drawerEl.style.height = '';
+                }
+
                 if (newOptions.width !== undefined && (currentPlacement === 'left' || currentPlacement === 'right')) {
                     drawerEl.style.width =
                         typeof newOptions.width === 'number' ? `${newOptions.width}px` : newOptions.width;
@@ -270,12 +324,11 @@ function open(options: DrawerOptions): DrawerInstance {
                 }
             }
 
-            // 更新类名
+            // 更新类名（保留当前方向修饰类）
             if (newOptions.className !== undefined) {
                 if (drawerEl) {
-                    const currentPlacement = options.placement || 'right';
-                    drawerEl.className =
-                        `solely-drawer solely-drawer--${currentPlacement} ${newOptions.className}`.trim();
+                    const classNames = ['solely-drawer', `solely-drawer--${currentPlacement}`, newOptions.className];
+                    drawerEl.className = classNames.filter(Boolean).join(' ');
                 }
             }
 

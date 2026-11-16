@@ -19,8 +19,10 @@ export interface CardProps {
     hoverable: boolean;
     /** 封面图片 URL */
     cover: string;
-    /** 底部操作区内容（JSON 数组字符串） */
-    actions: string;
+    /** 封面图片替代文本（无障碍） */
+    coverAlt: string;
+    /** 底部操作区内容（字符串数组；HTML 属性写法为 JSON 数组） */
+    actions: string[];
     /** 右上角额外操作区 */
     extra: string;
 }

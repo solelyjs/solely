@@ -11,6 +11,19 @@
 }
 
 /* ==================== Host 样式 ==================== */
+/* 线性图标：勾选标记与全库状态图标同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 :host {
   display: inline-flex;
   align-items: center;

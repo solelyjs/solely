@@ -2,9 +2,15 @@
     part="base"
     class="progress"
     :class="this.getProgressClasses()"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    :aria-valuenow="this.clampedPercent"
+    :aria-valuetext="this.getAriaValueText()"
+    :aria-label="$data.label || undefined"
 >
     <!-- 线性进度条 -->
-    <If test="$data.type === 'line'">
+    <If test="this.getType() === 'line'">
         <div part="outer" class="progress__outer" :style="'height: ' + ($data.strokeWidth || 8) + 'px'">
             <div
                 part="inner"
@@ -14,12 +20,12 @@
             ></div>
         </div>
         <If test="$data.showInfo">
-            <span part="text" class="progress__text">{{this.getText()}}</span>
+            <span part="text" class="progress__text"><If test="this.hasStatusIcon()"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path :d="this.getStatusIconPath()"></path></svg></If><If test="!this.hasStatusIcon()">{{this.getText()}}</If></span>
         </If>
     </If>
 
     <!-- 圆形进度条 -->
-    <If test="$data.type === 'circle'">
+    <If test="this.getType() === 'circle'">
         <svg
             part="circle"
             class="progress__circle"
@@ -48,7 +54,7 @@
             />
         </svg>
         <If test="$data.showInfo">
-            <span part="circle-text" class="progress__circle-text">{{this.getText()}}</span>
+            <span part="circle-text" class="progress__circle-text"><If test="this.hasStatusIcon()"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path :d="this.getStatusIconPath()"></path></svg></If><If test="!this.hasStatusIcon()">{{this.getText()}}</If></span>
         </If>
     </If>
 </div>

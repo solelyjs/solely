@@ -55,6 +55,29 @@ export class DocsSlider extends BaseElement<SliderDocData> {
             this.$refs.eventLog.textContent = logs.join('\n');
         }
     }
+
+    /** 0.8.0 新增特性样例：range 值 / 提示格式 / 刻度只支持 JS property 赋值 */
+    mounted(): void {
+        const range = this.$refs.featureRangeSlider as unknown as { value: [number, number] } | undefined;
+        if (range) range.value = [20, 70];
+
+        const fmt = this.$refs.featureFmtSlider as unknown as
+            | { tooltipFormatter?: (value: number) => string }
+            | undefined;
+        if (fmt) fmt.tooltipFormatter = value => `${value}%`;
+
+        const marks = this.$refs.featureMarksSlider as unknown as
+            | (HTMLElement & { marksData?: Record<string, unknown> })
+            | undefined;
+        if (marks) {
+            marks.setAttribute('marks', '');
+            marks.marksData = {
+                0: '0℃',
+                50: { label: '中点', style: 'color:#dc2626;font-weight:600' },
+                100: '100℃',
+            };
+        }
+    }
 }
 
 export default DocsSlider;

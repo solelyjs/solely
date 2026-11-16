@@ -13,7 +13,12 @@ export interface PropDescriptor {
     name: string;
     /** 输入转换类型 */
     type?: PropType;
-    /** 渲染兜底值（非状态） */
+    /**
+     * 渲染兜底值（非状态）
+     *
+     * 传函数时视为工厂：在挂载 / attribute 移除回退时以当前元素实例为参数求值，
+     * 用于语言环境或依赖其它 prop 的动态默认值。
+     */
     default?: unknown;
     /** 是否同步回 HTML Attribute */
     reflect?: boolean;

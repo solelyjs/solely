@@ -74,12 +74,34 @@ describe('Message command component', () => {
         expect(document.querySelector('.solely-message--error')).not.toBeNull();
         expect(document.querySelector('.solely-message--loading')).not.toBeNull();
 
-        // success 图标为字符串 ✓
-        expect(document.querySelector('.solely-message--success .solely-message__icon')?.textContent).toBe('✓');
+        // success 图标为线性 SVG（不再是 ✓ 字符）
+        expect(
+            document.querySelector('.solely-message--success .solely-message__icon svg.solely-linear-icon'),
+        ).not.toBeNull();
         // loading 图标为旋转 spinner 元素
         expect(
             loading && document.querySelector('.solely-message--loading .solely-message__loading-spinner'),
         ).not.toBeNull();
+    });
+
+    it('icon 可覆盖默认图标；icon="" 与 showIcon=false 均不渲染图标', () => {
+        Message.open({ content: '自定义', type: 'success', icon: '★' });
+        Message.open({ content: '空图标', type: 'info', icon: '' });
+        Message.open({ content: '关闭图标', type: 'info', showIcon: false });
+
+        const msgs = document.querySelectorAll('.solely-message');
+        expect(msgs.length).toBe(3);
+        expect(msgs[0].querySelector('.solely-message__icon')!.textContent).toBe('★');
+        expect(msgs[1].querySelector('.solely-message__icon')).toBeNull();
+        expect(msgs[2].querySelector('.solely-message__icon')).toBeNull();
+    });
+
+    it('非法 type 回退 info，不抛 TypeError 且渲染 info 图标', () => {
+        expect(() => Message.open({ content: '未知类型', type: 'foo' as any })).not.toThrow();
+
+        const msg = document.querySelector('.solely-message')!;
+        expect(msg.classList.contains('solely-message--info')).toBe(true);
+        expect(msg.querySelector('.solely-message__icon svg.solely-linear-icon')).not.toBeNull();
     });
 
     it('duration 到期后消息自动关闭', async () => {

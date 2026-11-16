@@ -4,9 +4,22 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { CoordinateInputProps, CoordinateInputRefs, DMS, Coordinate, DMSCoordinate, Direction } from './types';
+import { normalizeSize, type SizeInput } from '../../../shared/size';
+import { oneOf } from '../../../shared/enum';
+import type {
+    CoordinateInputProps,
+    CoordinateInputRefs,
+    CoordinateType,
+    DMS,
+    Coordinate,
+    DMSCoordinate,
+    Direction,
+} from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
+
+/** 类型白名单：非法值回退到 both，避免模板三个分支都不渲染 */
+const COORDINATE_TYPES: readonly CoordinateType[] = ['latitude', 'longitude', 'both'];
 
 @CustomElement({
     tagName: 'solely-coordinate-input',
@@ -31,6 +44,24 @@ import template from './index.html?solely';
     ],
 })
 class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, CoordinateInputRefs> {
+    /** 统一尺寸语义：middle / default 归一为 medium */
+    get size(): 'small' | 'medium' | 'large' {
+        return normalizeSize(this.$data.size);
+    }
+
+    set size(value: SizeInput) {
+        this.$data.size = normalizeSize(value);
+    }
+
+    /** 统一类型语义：非法值回退到 both，保证模板始终渲染有效分支 */
+    get type(): CoordinateType {
+        return oneOf(this.$data.type, COORDINATE_TYPES, 'both');
+    }
+
+    set type(value: CoordinateType) {
+        this.$data.type = oneOf(value, COORDINATE_TYPES, 'both');
+    }
+
     /** 纬度 DMS 值 */
     #latitudeDms: DMS = { degrees: 0, minutes: 0, seconds: 0, direction: 'N' };
     /** 经度 DMS 值 */
@@ -40,6 +71,9 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
 
     /** 外部点击关闭处理器引用 */
     #closeHandler: ((e: MouseEvent) => void) | null = null;
+
+    /** 延迟注册外部点击监听器的定时器 */
+    #closeTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
      * 组件挂载后
@@ -53,6 +87,8 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
      * 组件卸载前
      */
     unmounted(): void {
+        this.clearCloseTimer();
+
         if (this.#closeHandler) {
             document.removeEventListener('click', this.#closeHandler);
             this.#closeHandler = null;
@@ -60,10 +96,21 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
     }
 
     /**
+     * 清理延迟注册定时器
+     */
+    private clearCloseTimer(): void {
+        if (this.#closeTimer !== null) {
+            clearTimeout(this.#closeTimer);
+            this.#closeTimer = null;
+        }
+    }
+
+    /**
      * 注册外部点击关闭事件
      */
     private registerCloseHandler(): void {
-        // 先移除旧的处理器
+        // 先清理上一次的定时器和处理器
+        this.clearCloseTimer();
         if (this.#closeHandler) {
             document.removeEventListener('click', this.#closeHandler);
         }
@@ -87,7 +134,8 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
         };
 
         // 延迟添加监听器，避免当前点击事件立即触发
-        setTimeout(() => {
+        this.#closeTimer = setTimeout(() => {
+            this.#closeTimer = null;
             if (this.#closeHandler) {
                 document.addEventListener('click', this.#closeHandler);
             }
@@ -163,9 +211,10 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
      * 获取容器 class
      */
     getContainerClasses(): string {
-        const classes: string[] = [];
-        const size = this.$data.size || 'medium';
-        const type = this.$data.type || 'both';
+        // 基础类必须保留：style.css 的 display:flex / gap / 布局规则挂在 .coordinate-input 上
+        const classes: string[] = ['coordinate-input'];
+        const size = this.size;
+        const type = this.type;
 
         // 尺寸映射
         if (size === 'small') {
@@ -232,6 +281,21 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
             return '00';
         }
         return '00.' + '0'.repeat(precision);
+    }
+
+    /**
+     * 获取度 / 分 / 秒输入框的 placeholder
+     *
+     * 提供了 placeholder 属性时三个字段统一使用该文案；未提供时沿用各自默认值。
+     */
+    getFieldPlaceholder(field: 'degrees' | 'minutes' | 'seconds'): string {
+        if (this.$data.placeholder) {
+            return this.$data.placeholder;
+        }
+        if (field === 'seconds') {
+            return this.getSecondsPlaceholder();
+        }
+        return field === 'degrees' ? '0' : '00';
     }
 
     /**
@@ -423,7 +487,7 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
         if (!nextField) return;
 
         const refName = `${coordType}${nextField}Input`;
-        const nextInput = this.$refs[refName] as HTMLInputElement | HTMLSelectElement;
+        const nextInput = this.$refs[refName] as HTMLElement | undefined;
         if (nextInput) {
             nextInput.focus();
             if (nextInput instanceof HTMLInputElement) {
@@ -460,6 +524,46 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
      */
     handleDropdownClick(event: Event): void {
         event.stopPropagation();
+    }
+
+    /**
+     * 方向开关键盘事件（Enter / Space 切换，Escape 关闭）
+     */
+    handleDirectionKeydown(coordType: 'latitude' | 'longitude', event: KeyboardEvent): void {
+        if (event.key === 'Escape') {
+            if (!this.$data.latitudeDirectionOpen && !this.$data.longitudeDirectionOpen) return;
+            event.preventDefault();
+            event.stopPropagation();
+            this.$data.latitudeDirectionOpen = false;
+            this.$data.longitudeDirectionOpen = false;
+            this.refresh();
+            return;
+        }
+
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            this.toggleDirection(coordType);
+        }
+    }
+
+    /**
+     * 方向选项键盘事件（Enter / Space 选择，选择后焦点回到开关）
+     */
+    handleDirectionOptionKeydown(
+        coordType: 'latitude' | 'longitude',
+        direction: Direction,
+        event: KeyboardEvent,
+    ): void {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+
+        // 阻止冒泡，避免同时触发方向开关的键盘处理逻辑
+        event.preventDefault();
+        event.stopPropagation();
+        this.selectDirection(coordType, direction);
+
+        const refName = coordType === 'latitude' ? 'latitudeDirectionInput' : 'longitudeDirectionInput';
+        (this.$refs[refName] as HTMLElement | undefined)?.focus();
     }
 
     /**

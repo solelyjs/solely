@@ -30,8 +30,10 @@ export interface ModalOptions {
     maskClosable?: boolean;
     /** 是否显示关闭按钮 */
     closable?: boolean;
-    /** 是否显示图标，默认 true */
+    /** 是否显示图标，默认 true；false 优先级最高，即使传了 icon 也不渲染 */
     showIcon?: boolean;
+    /** 自定义图标；空字符串表示不要图标；未设置时按 type 使用内置图标 */
+    icon?: string | Element;
     /** 确定按钮文字 */
     okText?: string | HTMLElement;
     /** 取消按钮文字 */
@@ -58,8 +60,11 @@ export interface ModalOptions {
         | Promise<void | false | HTMLElement | Record<string, unknown>>;
     /** 取消按钮回调 */
     onCancel?: () => void;
-    /** 关闭后回调 */
-    onClose?: () => void;
+    /**
+     * 关闭后回调：任何关闭方式都会触发（确定/取消/关闭按钮/遮罩/Esc/实例 close()）。
+     * 确定路径会透传 onConfirm 的非 false 返回值。
+     */
+    onClose?: (result?: unknown) => void;
     /** 自定义类名 */
     className?: string;
     /** 自定义样式 */

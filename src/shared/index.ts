@@ -7,3 +7,5 @@ export * from './url';
 export * from './env';
 export * from './case-convert';
 export * from './svg-sanitize';
+export * from './aria';
+export * from './size';

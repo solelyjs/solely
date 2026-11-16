@@ -1,6 +1,15 @@
 <h1 class="page-title">Icon 图标</h1>
 <p class="page-desc">语义化的矢量图形，支持 SVG Sprite、自定义图标和第三方图标库，提供灵活的尺寸、颜色和旋转控制。</p>
 
+<div class="alert alert-info">
+    <span class="alert-icon">💡</span>
+    <div class="alert-content">
+        <strong>使用前必须注册图标或配置 sprite。</strong>
+        <code>name</code> 对应的图标未注册、且没有通过 <code>setIconSpritePath()</code>、<code>sprite</code> 属性或 <code>registerIcon()</code> 提供内容时，组件只会渲染空白占位；开发环境会输出一条 <code>console.warn</code> 提示。
+        组件包不内置 sprite 文件，请把 <code>public/icons/bootstrap-icons.svg</code> 一并复制到项目的 public 目录。
+    </div>
+</div>
+
 <div class="component-section" id="icon">
     <div class="demo-block">
         <h3 class="demo-block-title">SVG Sprite 方式（推荐）</h3>
@@ -105,13 +114,13 @@ registerIcons({
             <div class="demo-preview">
                 <solely-icon name="arrow-clockwise" spin="clockwise" size="large"></solely-icon>
                 <solely-icon name="arrow-repeat" spin="counterclockwise" size="large"></solely-icon>
-                <solely-icon name="arrow-clockwise" spin="clockwise" size="large" spinDuration="2"></solely-icon>
+                <solely-icon name="arrow-clockwise" spin="clockwise" size="large" spin-duration="2"></solely-icon>
                 <solely-icon name="gear-fill" spin="clockwise" size="large" color="#1890ff"></solely-icon>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"arrow-clockwise"</span> <span class="code-attr">spin</span>=<span class="code-value">"clockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"arrow-repeat"</span> <span class="code-attr">spin</span>=<span class="code-value">"counterclockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"arrow-clockwise"</span> <span class="code-attr">spin</span>=<span class="code-value">"clockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">spinDuration</span>=<span class="code-value">"2"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"arrow-clockwise"</span> <span class="code-attr">spin</span>=<span class="code-value">"clockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">spin-duration</span>=<span class="code-value">"2"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-icon</span> <span class="code-attr">name</span>=<span class="code-value">"gear-fill"</span> <span class="code-attr">spin</span>=<span class="code-value">"clockwise"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">color</span>=<span class="code-value">"#1890ff"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-icon</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
@@ -195,7 +204,8 @@ registerIcons({
         <table>
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -204,17 +214,27 @@ registerIcons({
             <tbody>
                 <tr>
                     <td>name</td>
+                    <td>name</td>
                     <td>图标名称</td>
                     <td>string</td>
                     <td>-</td>
                 </tr>
                 <tr>
                     <td>size</td>
+                    <td>size</td>
                     <td>图标尺寸，可选值：small、medium、large 或自定义数值</td>
                     <td>string | number</td>
-                    <td>medium</td>
+                    <td>'medium'</td>
                 </tr>
                 <tr>
+                    <td>size 兼容别名</td>
+                    <td>size</td>
+                    <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                    <td>'middle' | 'default'</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>color</td>
                     <td>color</td>
                     <td>图标颜色，支持 CSS 变量或具体颜色值</td>
                     <td>string</td>
@@ -222,11 +242,13 @@ registerIcons({
                 </tr>
                 <tr>
                     <td>spin</td>
+                    <td>spin</td>
                     <td>旋转方向，可选值：clockwise、counterclockwise</td>
                     <td>string</td>
                     <td>-</td>
                 </tr>
                 <tr>
+                    <td>spin-duration</td>
                     <td>spinDuration</td>
                     <td>旋转一圈所需时间（秒）</td>
                     <td>number</td>
@@ -234,11 +256,13 @@ registerIcons({
                 </tr>
                 <tr>
                     <td>disabled</td>
+                    <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>sprite</td>
                     <td>sprite</td>
                     <td>SVG Sprite 文件路径（优先级高于全局设置）</td>
                     <td>string</td>
@@ -263,6 +287,16 @@ registerIcons({
                     <td>click</td>
                     <td>点击图标时触发</td>
                     <td>(event: MouseEvent)</td>
+                </tr>
+                <tr>
+                    <td>sprite-loaded</td>
+                    <td>配置的 SVG Sprite 加载成功并完成图标渲染时触发（原生事件，无 detail；bubbles 且 composed，可穿透 Shadow DOM）</td>
+                    <td>Event</td>
+                </tr>
+                <tr>
+                    <td>sprite-error</td>
+                    <td>SVG Sprite 加载失败时触发（原生事件，无 detail；bubbles 且 composed，可穿透 Shadow DOM）</td>
+                    <td>Event</td>
                 </tr>
             </tbody>
         </table>

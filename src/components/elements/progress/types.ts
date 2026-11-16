@@ -18,6 +18,8 @@ export interface ProgressProps {
     strokeWidth: number;
     /** 进度条线的宽度（仅在 type="circle" 时有效） */
     width: number;
-    /** 内容的模板函数（仅在 type="line" 时有效） */
-    format: string;
+    /** 内容的模板字符串（支持 {percent}）或格式化函数（line 与 circle 均有效） */
+    format: string | ((percent: number) => string);
+    /** 进度条的可访问名称（aria-label） */
+    label: string;
 }

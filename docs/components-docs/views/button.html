@@ -61,19 +61,19 @@
 
     <div class="demo-block">
         <h3 class="demo-block-title">按钮形状</h3>
-        <p class="demo-block-desc">支持默认、圆角、圆形、胶囊四种形状。</p>
+        <p class="demo-block-desc">实际生效的形状为默认、<code>round</code>（圆角）、<code>circle</code>（圆形）；<code>pill</code> 虽在实现中会输出 class，但没有对应 CSS，视觉等同默认形状，请暂勿使用。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-button type="primary">Default</solely-button>
                 <solely-button type="primary" shape="round">Round</solely-button>
                 <solely-button type="primary" shape="circle">C</solely-button>
-                <solely-button type="primary" shape="pill">Pill Button</solely-button>
+
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span><span class="code-content">Default</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">shape</span>=<span class="code-value">"round"</span><span class="code-bracket">&gt;</span><span class="code-content">Round</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">shape</span>=<span class="code-value">"circle"</span><span class="code-bracket">&gt;</span><span class="code-content">C</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">shape</span>=<span class="code-value">"pill"</span><span class="code-bracket">&gt;</span><span class="code-content">Pill Button</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span></code></pre>
+</code></pre>
             </div>
         </div>
     </div>
@@ -372,7 +372,8 @@
             <table class="api-table">
                 <thead>
                     <tr>
-                        <th>属性</th>
+                        <th>HTML 属性写法</th>
+                        <th>JS 属性写法</th>
                         <th>说明</th>
                         <th>类型</th>
                         <th>默认值</th>
@@ -381,23 +382,34 @@
                 <tbody>
                     <tr>
                         <td>type</td>
+                        <td>type</td>
                         <td>按钮类型</td>
                         <td>'primary' | 'secondary' | 'default' | 'dashed' | 'text' | 'link' | 'success' | 'warning' | 'error'</td>
                         <td>'default'</td>
                     </tr>
                     <tr>
                         <td>size</td>
+                        <td>size</td>
                         <td>按钮尺寸</td>
                         <td>'small' | 'medium' | 'large'</td>
                         <td>'medium'</td>
                     </tr>
                     <tr>
-                        <td>shape</td>
-                        <td>按钮形状</td>
-                        <td>'default' | 'round' | 'circle' | 'pill'</td>
-                        <td>'default'</td>
+                        <td>size 兼容别名</td>
+                        <td>size</td>
+                        <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                        <td>'middle' | 'default'</td>
+                        <td>—</td>
                     </tr>
                     <tr>
+                        <td>shape</td>
+                        <td>shape</td>
+                        <td>按钮形状；<code>pill</code> 无对应 CSS（视觉等同默认形状），当前有效值为 default / round / circle</td>
+                        <td>'default' | 'round' | 'circle'</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>disabled</td>
                         <td>disabled</td>
                         <td>是否禁用</td>
                         <td>boolean</td>
@@ -405,11 +417,13 @@
                     </tr>
                     <tr>
                         <td>loading</td>
+                        <td>loading</td>
                         <td>是否加载中</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>ghost</td>
                         <td>ghost</td>
                         <td>幽灵按钮</td>
                         <td>boolean</td>
@@ -417,11 +431,13 @@
                     </tr>
                     <tr>
                         <td>danger</td>
+                        <td>danger</td>
                         <td>危险按钮</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>block</td>
                         <td>block</td>
                         <td>块级按钮</td>
                         <td>boolean</td>
@@ -429,29 +445,41 @@
                     </tr>
                     <tr>
                         <td>icon</td>
+                        <td>icon</td>
                         <td>左侧图标</td>
                         <td>string</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td>content</td>
+                        <td>content</td>
+                        <td>按钮文本，无默认插槽内容时作为兜底</td>
+                        <td>string</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
                         <td>icon-right</td>
+                        <td>iconRight</td>
                         <td>右侧图标</td>
                         <td>string</td>
                         <td>-</td>
                     </tr>
                     <tr>
                         <td>icon-only</td>
+                        <td>iconOnly</td>
                         <td>是否仅显示图标</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
                         <td>loading-icon</td>
+                        <td>loadingIcon</td>
                         <td>自定义加载图标</td>
                         <td>string</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td>href</td>
                         <td>href</td>
                         <td>链接地址，设置后渲染为 a 标签</td>
                         <td>string</td>
@@ -459,9 +487,24 @@
                     </tr>
                     <tr>
                         <td>target</td>
+                        <td>target</td>
                         <td>链接打开方式</td>
                         <td>string</td>
                         <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>native-type</td>
+                        <td>nativeType</td>
+                        <td>原生按钮类型，可选 button、submit、reset；非链接按钮才会应用，非法值回退为 button</td>
+                        <td>'button' | 'submit' | 'reset'</td>
+                        <td>'button'</td>
+                    </tr>
+                    <tr>
+                        <td>label</td>
+                        <td>label</td>
+                        <td>可访问名称（<code>aria-label</code>）；纯图标按钮必填</td>
+                        <td>string</td>
+                        <td>''</td>
                     </tr>
                 </tbody>
             </table>
@@ -603,7 +646,7 @@
 <span class="code-keyword">type</span> <span class="code-type">ButtonSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>;
 
 <span class="code-comment">// 按钮形状</span>
-<span class="code-keyword">type</span> <span class="code-type">ButtonShape</span> = <span class="code-value">'default'</span> | <span class="code-value">'round'</span> | <span class="code-value">'circle'</span> | <span class="code-value">'pill'</span>;
+<span class="code-keyword">type</span> <span class="code-type">ButtonShape</span> = <span class="code-value">'default'</span> | <span class="code-value">'round'</span> | <span class="code-value">'circle'</span>;
 
 <span class="code-comment">// 按钮属性接口</span>
 <span class="code-keyword">interface</span> <span class="code-type">ButtonProps</span> {

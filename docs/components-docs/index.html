@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solely UI - 组件库文档</title>
-    <!-- 导入 Solely 主题 CSS 变量 -->
-    <link rel="stylesheet" href="/components/theme/variables.css">
+    <!-- 站点图标：复用 public/ 下已有的品牌 SVG（Vite 把 public 映射到站点根目录） -->
+    <link rel="icon" type="image/svg+xml" href="/solely.svg">
+    <!-- 导入 Solely 主题 CSS 变量（源文件位置；发布包对应 solely/components/theme/variables.css） -->
+    <link rel="stylesheet" href="/src/components/theme/variables.css">
     <style>
         * {
             margin: 0;
@@ -17,7 +19,9 @@
         html,
         body {
             height: 100%;
-            /* 确保根元素有高度 */
+            /* 文档站是单页应用，滚动只交给 sidebar / content 两个容器；
+               若根元素也参与滚动会多出一条页面级滚动条。 */
+            overflow: hidden;
         }
 
         body {

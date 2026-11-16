@@ -13,8 +13,8 @@ npm ci
 npm run verify
 ```
 
-`verify` = `typecheck` → `lint` → `format:check` → `test:run` → `build` → `check:exports`。
-全部通过即说明静态检查、467 个单测、构建与导出入口都没问题；失败会在对应步骤直接停下。
+`verify` = `typecheck` → `lint` → `format:check` → `test:run` → `build` → `check:exports` → `check:dist-fresh`。
+全部通过即说明静态检查、1683 个单测、构建、导出入口与产物指纹都没问题；失败会在对应步骤直接停下。
 
 **人工直观验证**：`npm run dev` 后打开 `http://localhost:5173/examples/regression/index.html`。
 页面会自动跑完 12 个用例，每项给出「预期 / 实际 / 结论」，顶部显示 `12/12 通过`；
@@ -23,17 +23,19 @@ URL 与共享数据用例会把预期告警各输出 1 条到控制台（方便�
 
 **当前基线**
 
-| 项                             | 通过标准                                                                                 |
-| ------------------------------ | ---------------------------------------------------------------------------------------- |
-| `tsc --noEmit`                 | exit 0，无输出                                                                           |
-| `eslint .`                     | **0 error / 0 warning**（`examples/`、`docs/` 已放宽 `no-console` 与 `no-explicit-any`） |
-| `prettier --check src`         | All matched files use Prettier code style                                                |
-| `vitest run`                   | **467 passed / 1 skipped**（30 个文件）                                                  |
-| 覆盖率                         | statements 87.42 / branches 80.66 / functions 91.80（阈值 80/75/85）                     |
-| `vite build` + `check:exports` | 140 个导出目标全部存在                                                                   |
-| `build:examples`               | 构建成功，无报错                                                                         |
+| 项                                                  | 当前实测（基线）                                                                                |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `tsc --noEmit`                                      | exit 0，无输出                                                                                  |
+| `eslint .`                                          | 0 error / 5 warning（均非阻断；`examples/`、`docs/` 已放宽 `no-console` 与 `no-explicit-any`）  |
+| `npm run format:check`                              | All matched files use Prettier code style                                                       |
+| `vitest run`                                        | **1683 passed / 3 skipped**（60 个文件）                                                        |
+| 覆盖率                                              | statements 88.97 / branches 81.29 / functions 91.09 / lines 88.97（阈值 80/75/85/80，全部达标） |
+| `vite build` + `check:exports` + `check:dist-fresh` | 140 个导出目标全部存在，199 个构建输入指纹一致                                                  |
+| `build:examples`                                    | 构建成功，无报错                                                                                |
 
-> 上表是 2026-11-07 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
+> 上表是 2026-11-16 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
+>
+> 覆盖率口径（F-7）：已纳入 `src/components/**`（各组件目录的 `index.ts` 为组件本体），仅排除纯转发入口与 `types.ts` / `*-types.ts` 类型文件。阈值保持 80/75/85/80 未下调，四项均已达标。
 
 > 若只想快速确认，跑 `npm run verify` 即可；下面的手工项用于覆盖单测覆盖不到的真实浏览器行为。
 
@@ -201,14 +203,14 @@ createRouter({ routes, maxKeepAlive: 1 });
 
 ```bash
 npm run pack:local
-# 会先 build + check:exports，再产出 solely-0.7.1.tgz
+# 会先 build + check:exports + check:dist-fresh，再产出 solely-0.8.0.tgz
 ```
 
 然后在一个空目录安装并验证所有入口（Node 20/22）：
 
 ```bash
 mkdir -p /tmp/solely-smoke && cd /tmp/solely-smoke && npm init -y
-npm i /path/to/solely/solely-0.7.1.tgz
+npm i /path/to/solely/solely-0.8.0.tgz
 
 node --input-type=module -e "import('solely').then(m=>console.log('main', typeof m.BaseElement, typeof m.buildIR))"
 node --input-type=module -e "import('solely/compiler').then(m=>console.log('compiler', typeof m.buildIR))"
@@ -222,7 +224,7 @@ node -e "const s=require('solely'); console.log('cjs', typeof s.BaseElement)"
 再确认 tarball 里关键入口齐全：
 
 ```bash
-tar -tf solely-0.7.1.tgz | grep -E "package/dist/(index|plugin|compiler/index|components/elements/button/index)"
+tar -tf solely-0.8.0.tgz | grep -E "package/dist/(index|plugin|compiler/index|components/elements/button/index)"
 ```
 
 ---
@@ -263,7 +265,7 @@ diff -r dist-b1 dist-b2 && echo IDENTICAL
 - Node 下所有入口都可 **import**（本轮已修复），但**渲染/实例化仍需要 DOM**；项目没有 SSR 渲染器。
 - `:innerHTML` 仍不拦截（显式高危指令，README 有警告）。
 - `<For>` 没有 `key`，列表重排按索引复用 DOM。
-- 组件库覆盖率仍未纳入门禁（`src/components/**` 被 exclude）。
+- 组件库覆盖率已纳入统计（`src/components/**` 不再 exclude，各组件目录的 `index.ts` 计入），但门禁阈值仍按全量指标执行；代码审阅时请直接看 `npm run test:coverage` 的组件明细。
 
 ---
 
@@ -318,3 +320,27 @@ diff -r dist-b1 dist-b2 && echo IDENTICAL
 
 > 说明：组件源码里没有声明 `reflect: true` 的 prop，文档 demo 也基本通过 attribute 传数组/对象，
 > 所以「数组 reflect」和「默认值克隆」在文档页不会触发，属于单测与回归页覆盖范围。
+
+---
+
+## 8. jsdom 能验 / 必须真浏览器（F-7 验收清单）
+
+单测环境是 jsdom（无真实布局、无命中测试、无无障碍树）。下列结论按能力拆分，**标 ❌ 的项不得用 jsdom 桩测试代替**。
+
+| 结论                                                              | jsdom                                                                | 真浏览器（Playwright）           |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------- |
+| 挂载期（默认值 / attribute→state / 属性升级）不派发业务事件       | ✅ `contract-matrix.test.ts` 逐组件验证                              | —                                |
+| attribute / property 两条写值路径同值同类型                       | ✅ 逐 prop 表驱动                                                    | —                                |
+| `data-*` / `aria-*` 绑定置 `null` / `undefined` 移除属性          | ✅ renderIR 探针                                                     | —                                |
+| ARIA IDREF 在同一棵树内可解析、跨树代理节点创建/释放              | ✅ 结构层断言                                                        | 读屏实际播报仍需真浏览器 + AT    |
+| FormData 收集、`:invalid` 状态、表单 reset / disabled 回调        | ⚠️ 只能验证是否调用 `setFormValue` / `setValidity`（替身 internals） | ✅ 必须                          |
+| 浮层 flip / shift、溢出祖先裁剪、滚动跟随                         | ❌ 无布局                                                            | ✅ 必须                          |
+| 可聚焦判定（`getClientRects` 非空）、Tab 焦点陷阱、Esc 栈、滚动锁 | ❌ 只能桩验证代码路径                                                | ✅ 必须                          |
+| 命中测试、真实点击区域、元素尺寸                                  | ❌                                                                   | ✅ 必须                          |
+| CSS 层叠、`adoptedStyleSheets`、伪元素与动画                      | ❌                                                                   | ✅ 必须                          |
+| 无障碍树（role / name / description 实际计算）                    | ❌                                                                   | ✅ 必须（axe-core / Playwright） |
+
+**当前自动化落点**
+
+- jsdom 项：`npm run test:run`（`tests/components/contract-matrix.test.ts` 为跨组件矩阵）。
+- 必须真浏览器项：后续新增 Playwright 套件，建议单独脚本（如 `test:browser`），不并入日常单测。

@@ -89,14 +89,14 @@
                 <solely-button>Default</solely-button>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-comment">// 引入主题 CSS（必需）</span>
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
-
-<span class="code-comment">// 引入单个组件</span>
-<span class="code-keyword">import</span> <span class="code-value">'solely/components/button'</span>;
-
-<span class="code-comment">// 或者引入所有组件</span>
+                <pre><code><span class="code-comment">// 引入全部组件：主题 CSS 变量会自动注入</span>
 <span class="code-keyword">import</span> <span class="code-value">'solely/components'</span>;
+
+<span class="code-comment">// 仅按需引入单个组件时，需手动引入主题 CSS</span>
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/theme/variables.css'</span>;
+<span class="code-keyword">import</span> <span class="code-value">'solely/components/elements/button'</span>;
+
+<span class="code-comment">// 严格 CSP（禁止内联样式）下同样改为手动引入 variables.css</span>
 
 <span class="code-comment">// 在 HTML 中使用</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span><span class="code-bracket">&gt;</span><span class="code-content">Primary Button</span><span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>

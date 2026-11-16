@@ -4,7 +4,8 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { TagProps } from './types';
+import { normalizeSize, type SizeInput } from '../../../shared/size';
+import type { TagProps, TagSize } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
 
@@ -24,6 +25,15 @@ import template from './index.html?solely';
     ],
 })
 class SolelyTag extends BaseElement<TagProps> {
+    /** 统一尺寸语义：middle / default 归一为 medium */
+    get size(): TagSize {
+        return normalizeSize(this.$data.size);
+    }
+
+    set size(value: SizeInput) {
+        this.$data.size = normalizeSize(value);
+    }
+
     /**
      * 获取 tag class 对象
      */
@@ -53,17 +63,37 @@ class SolelyTag extends BaseElement<TagProps> {
     /**
      * 关闭事件处理
      */
-    handleClose(event: MouseEvent): void {
+    handleClose(event: Event): void {
         event.stopPropagation();
 
         if (this.$data.disabled) return;
 
-        this.emit('close', {
-            content: this.$data.content,
-        });
+        // close 事件为可取消事件：业务方调用 preventDefault() 可阻止标签被移除
+        const allowed = this.dispatchEvent(
+            new CustomEvent('close', {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                detail: {
+                    content: this.$data.content,
+                },
+            }),
+        );
+
+        if (!allowed) return;
 
         // 从 DOM 中移除
         this.remove();
+    }
+
+    /**
+     * 关闭按钮键盘事件（Enter / Space 等价于点击）
+     */
+    handleCloseKeydown(event: KeyboardEvent): void {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.handleClose(event);
+        }
     }
 
     /**

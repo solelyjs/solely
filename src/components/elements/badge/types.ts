@@ -15,10 +15,8 @@ export interface BadgeProps {
     status: BadgeStatus;
     /** 在设置了 status 的前提下有效，设置状态点的文本 */
     text: string;
-    /** 自定义标题，当鼠标悬停时显示 */
-    title: string;
-    /** 内容的偏移量，格式为 [x, y] */
-    offset: string;
+    /** 内容的偏移量，支持 [x, y] 数组或 "x, y"/"x y" 字符串 */
+    offset: string | [number, number];
     /** 背景颜色 */
     color: string;
 }

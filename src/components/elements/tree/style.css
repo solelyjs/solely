@@ -28,6 +28,35 @@
   font-size: var(--solely-font-size-md);
 }
 
+/* 内置搜索框 */
+.tree__search {
+  margin-bottom: var(--solely-spacing-sm);
+}
+
+.tree__search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  border: 1px solid var(--solely-border-color);
+  border-radius: var(--solely-border-radius-md);
+  background-color: var(--solely-component-bg);
+  color: var(--solely-text-primary);
+  font-family: inherit;
+  font-size: var(--solely-font-size-md);
+  line-height: var(--solely-line-height-md);
+  transition: border-color var(--solely-transition-duration);
+}
+
+.tree__search-input::placeholder {
+  color: var(--solely-text-tertiary);
+}
+
+.tree__search-input:focus {
+  outline: none;
+  border-color: var(--solely-primary);
+  box-shadow: 0 0 0 2px var(--solely-primary-light);
+}
+
 .tree__list {
   margin: 0;
   padding: 0;
@@ -61,8 +90,12 @@
   color: var(--solely-text-tertiary);
 }
 
-/* 展开/折叠图标 */
+/* 展开/折叠图标：线性 chevron 按状态切换 DOM，箭头本身不带 transform、也不加 transition。
+   flattenTree 会重建扁平列表，For 按索引复用 DOM；插入/删除节点时复用的箭头
+   一旦 class 从 --expanded 变成非展开，带 transform 过渡就会把 90° 的旋转重放一遍，
+   表现为「同级别的三角按钮一起动一下」。切换 DOM 没有任何补间动画。 */
 .tree__switcher {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -71,16 +104,66 @@
   margin-right: 4px;
   color: var(--solely-text-tertiary);
   cursor: pointer;
-  transition: transform var(--solely-transition-duration);
-  font-size: 12px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
-.tree__switcher--expanded {
-  transform: rotate(90deg);
+/* 线性图标：与 select / input / pagination 同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.tree__switcher .solely-linear-icon {
+  width: 12px;
+  height: 12px;
+  stroke-width: 1.6;
 }
 
 .tree__switcher--leaf {
   visibility: hidden;
+}
+
+/* 异步拉取子节点：箭头换成独立的旋转圆环，作为即时反馈。
+   动画只作用在 ::after 上，既不旋转箭头，也不会波及同级的其它箭头。 */
+.tree__switcher--loading {
+  color: var(--solely-primary);
+}
+
+.tree__switcher--loading .solely-linear-icon {
+  visibility: hidden;
+}
+
+.tree__switcher--loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  box-sizing: border-box;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: solely-tree-loading-spin 0.8s linear infinite;
+}
+
+@keyframes solely-tree-loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 复选框 */
@@ -107,22 +190,14 @@
   border-color: var(--solely-primary);
 }
 
-.tree__checkbox--checked::after {
-  content: '✓';
+.tree__checkbox--checked,
+.tree__checkbox--half-checked {
   color: var(--solely-white);
-  font-size: 12px;
 }
 
 .tree__checkbox--half-checked {
   background-color: var(--solely-primary);
   border-color: var(--solely-primary);
-}
-
-.tree__checkbox--half-checked::after {
-  content: '';
-  width: 8px;
-  height: 2px;
-  background-color: var(--solely-component-bg);
 }
 
 .tree__checkbox--disabled {
@@ -144,13 +219,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* 子节点列表 */
-.tree__children {
-  margin: 0;
-  padding: 0 0 0 24px;
-  list-style: none;
 }
 
 /* 连接线样式 */
@@ -196,26 +264,7 @@
   display: none;
 }
 
-/* 动态层级连接线支持 - 使用CSS变量 */
-.tree--show-line .tree__node--level-1 {
-  --level: 1;
-}
-
-.tree--show-line .tree__node--level-2 {
-  --level: 2;
-}
-
-.tree--show-line .tree__node--level-3 {
-  --level: 3;
-}
-
-.tree--show-line .tree__node--level-4 {
-  --level: 4;
-}
-
-.tree--show-line .tree__node--level-5 {
-  --level: 5;
-}
+/* 层级由节点内联 style 写入 --level，支持任意深度（不再限制 5 层） */
 
 /* 搜索高亮 */
 .tree__title--highlight {

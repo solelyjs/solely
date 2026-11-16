@@ -6,6 +6,8 @@
     :class="this.getFabClasses()"
     :style="this.getFabStyles()"
     :disabled="$data.disabled"
+    :tabindex="$data.visible ? 0 : -1"
+    :aria-hidden="$data.visible ? null : 'true'"
     @click="this.handleClick(event)"
 >
     <If test="this.hasIconSlot()">

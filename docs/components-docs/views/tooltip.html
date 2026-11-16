@@ -237,6 +237,23 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
         </div>
     </div>
 
+<!-- ===== 0.8.0 新增特性验收样例 ===== -->
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">Shadow DOM 内的目标（0.8.0）</h3>
+        <p class="demo-block-desc">命令式 <code>Tooltip.bind</code> 在目标位于 shadow root 内时，会通过 IDREF 代理建立可解析的 <code>aria-describedby</code> 关联；悬停下方按钮看提示与 aria 属性。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <div ref="featureShadowHost"></div>
+                <pre id="shadowIdrefLog">等待悬停…</pre>
+            </div>
+            <div class="demo-code"><pre><code>const root = host.attachShadow({ mode: 'open' });
+root.innerHTML = '&lt;button&gt;shadow 内的按钮&lt;/button&gt;';
+Tooltip.bind(root.querySelector('button'), { content: '跨 shadow 边界的提示' });</code></pre></div>
+        </div>
+    </div>
+</div>
+
     <div class="api-block">
     <h3 class="api-block-title">API</h3>
 
@@ -244,6 +261,12 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
         Tooltip 提供两种使用方式：<br>
         • <strong>声明式</strong>：使用 <code>&lt;solely-tooltip&gt;</code> 自定义元素，适合在模板中绑定（见上方示例）；<br>
         • <strong>命令式</strong>：通过 <code>Tooltip.bind</code>（手动控制显隐）或 <code>Tooltip.showOnce</code>（一次性自动消失）调用，适合在脚本中动态触发。
+    </p>
+
+    <p class="demo-block-desc">
+        说明：命令式 Tooltip 的浮层固定挂载到 <code>document.body</code>，不支持自定义挂载节点（原
+        <code>getPopupContainer</code> 选项从未实现，已从类型中移除）。同一个目标元素重复调用
+        <code>bind()</code> 会复用首次返回的实例，需重新绑定请先调用该实例的 <code>destroy()</code>。
     </p>
 
     <h4 class="api-block-subtitle">Tooltip.bind(target, options)</h4>
@@ -278,8 +301,8 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
             </tr>
             <tr>
                 <td>trigger</td>
-                <td>触发方式</td>
-                <td>'hover' | 'click' | 'focus'</td>
+                <td>触发方式：<code>hover</code> / <code>click</code> / <code>focus</code>，以及 <code>manual</code>（不绑定任何原生事件，需配合 <code>visible</code> 或实例方法手动控制）</td>
+                <td>'hover' | 'click' | 'focus' | 'manual'</td>
                 <td>'hover'</td>
             </tr>
             <tr>
@@ -334,8 +357,8 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
             </tr>
             <tr>
                 <td>content</td>
-                <td>提示内容</td>
-                <td>string</td>
+                <td>提示内容；传 HTMLElement 时按内容节点插入</td>
+                <td>string | HTMLElement</td>
                 <td>-</td>
             </tr>
             <tr>
@@ -487,6 +510,12 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>number</td>
                     <td>3000</td>
                 </tr>
+                <tr>
+                    <td>singleton</td>
+                    <td>是否单例模式（新 tooltip 显示时自动关闭其他提示）</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
             </tbody>
         </table>
 
@@ -503,8 +532,8 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
             <tbody>
                 <tr>
                     <td>content</td>
-                    <td>提示内容</td>
-                    <td>string</td>
+                    <td>提示内容；传 HTMLElement 时按内容节点插入</td>
+                    <td>string | HTMLElement</td>
                     <td>-</td>
                 </tr>
                 <tr>
@@ -515,7 +544,7 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                 </tr>
                 <tr>
                     <td>trigger</td>
-                    <td>触发方式</td>
+                    <td>触发方式（含 <code>manual</code> 手动模式）</td>
                     <td>TooltipTrigger</td>
                     <td>'hover'</td>
                 </tr>
@@ -533,9 +562,15 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                 </tr>
                 <tr>
                     <td>color</td>
-                    <td>背景颜色</td>
+                    <td>背景颜色，写入 <code>--solely-inverted-bg</code></td>
                     <td>string</td>
                     <td>-</td>
+                </tr>
+                <tr>
+                    <td>maxWidth</td>
+                    <td>提示内容最大宽度；数字按 px 处理，字符串原样使用</td>
+                    <td>string | number</td>
+                    <td>250</td>
                 </tr>
                 <tr>
                     <td>className</td>
@@ -554,6 +589,12 @@ customContent.<span class="code-attr">innerHTML</span> = <span class="code-value
                     <td>显示隐藏回调</td>
                     <td>(visible: boolean) => void</td>
                     <td>-</td>
+                </tr>
+                <tr>
+                    <td>singleton</td>
+                    <td>是否单例模式：新的命令式 tooltip 显示时自动关闭其他 tooltip（继承全局 config）</td>
+                    <td>boolean</td>
+                    <td>true</td>
                 </tr>
             </tbody>
         </table>

@@ -4,8 +4,10 @@
     :class="this.getRadioClasses()"
     role="radio"
     :aria-checked="$data.checked ? 'true' : 'false'"
-    :aria-disabled="$data.disabled ? 'true' : 'false'"
+    :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
+    :aria-label="$data.ariaLabel || undefined"
     @click="this.handleClick(event)"
+    @keydown="this.handleKeyDown(event)"
 >
     <span part="input" class="radio__input"></span>
     <span part="content" class="radio__content">

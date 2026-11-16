@@ -2,11 +2,14 @@
     part="base"
     class="alert"
     :class="this.getAlertClasses()"
+    role="alert"
+    @mouseenter="this.handlePauseAutoClose()"
+    @mouseleave="this.handleResumeAutoClose()"
+    @focusin="this.handlePauseAutoClose()"
+    @focusout="this.handleFocusOut(event)"
 >
-    <If test="$data.showIcon">
-        <span part="icon" class="alert__icon">
-            <slot name="icon">{{this.getIcon($data.type)}}</slot>
-        </span>
+    <If test="this.shouldRenderIcon()">
+        <span part="icon" class="alert__icon"><slot name="icon"><If test="this.hasCustomIcon()">{{this.getIconText()}}</If><If test="!this.hasCustomIcon()"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path :d="this.getIcon(this.getType())"></path></svg></If></slot></span>
     </If>
     <div part="content" class="alert__content">
         <If test="$data.message">
@@ -21,9 +24,13 @@
         <span
             part="close"
             class="alert__close"
+            role="button"
+            tabindex="0"
+            aria-label="关闭"
             @click="this.handleClose()"
+            @keydown="this.handleCloseKeydown(event)"
         >
-            <slot name="close-icon">×</slot>
+            <slot name="close-icon"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.4 4.4 11.6 11.6 M11.6 4.4 4.4 11.6"></path></svg></slot>
         </span>
     </If>
 </div>

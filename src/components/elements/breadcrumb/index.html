@@ -1,4 +1,4 @@
-<nav part="base" class="breadcrumb">
+<nav part="base" class="breadcrumb" :aria-label="$data.label || undefined">
     <For each="$data.items" item="item" index="index">
         <span part="item" class="breadcrumb__item">
             <If test="item.href && index < $data.items.length - 1">
@@ -15,15 +15,32 @@
                 <span
                     part="link"
                     class="breadcrumb__link"
+                    role="link"
+                    tabindex="0"
                     @click="this.handleClick(item, event)"
+                    @keydown="this.handleItemKeydown(item, event)"
                 >
                     {{item.title}}
                 </span>
             </If>
             <If test="index === $data.items.length - 1">
-                <span part="current" class="breadcrumb__current">
-                    {{item.title}}
-                </span>
+                <!-- 末项带 href 时渲染为可点击链接，同时保留 aria-current="page" -->
+                <If test="item.href">
+                    <a
+                        part="current link"
+                        class="breadcrumb__current breadcrumb__link"
+                        :href="item.href"
+                        aria-current="page"
+                        @click="this.handleClick(item, event)"
+                    >
+                        {{item.title}}
+                    </a>
+                </If>
+                <Else>
+                    <span part="current" class="breadcrumb__current" aria-current="page">
+                        {{item.title}}
+                    </span>
+                </Else>
             </If>
             <If test="index < $data.items.length - 1">
                 <span part="separator" class="breadcrumb__separator">

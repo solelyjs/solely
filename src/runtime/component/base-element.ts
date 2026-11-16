@@ -1,4 +1,5 @@
 import { camelToKebab, IS_DEV, isObject, SOLELY_VERSION } from '../../shared';
+import { parseBooleanAttribute } from '../../shared/boolean';
 import { InternalManifest, Manifest, PropDescriptor, PropType } from './decorators';
 import { createRender, IRRenderInstance } from '../renderer';
 import { observe } from '../reactivity';
@@ -44,6 +45,99 @@ function cloneDefaultValue<T>(value: T): T {
     }
 }
 
+/**
+ * 解析 props 的默认值
+ *
+ * `default` 为函数时视为工厂：以当前元素实例为参数求值后再按实例克隆。
+ * 用于语言环境（如 not-found 文案）或依赖其它 prop 的默认值（如 slider.value）。
+ */
+function resolveDefaultValue(value: unknown, host: unknown): unknown {
+    const resolved = typeof value === 'function' ? (value as (host: unknown) => unknown)(host) : value;
+    return cloneDefaultValue(resolved);
+}
+
+/**
+ * property → attribute 镜像时排除的 prop 名单
+ *
+ * 这些 prop 由组件自行管理 attribute 语义（例如 input/select 在用户交互中
+ * 维护 value），框架若在 property 写入后回写 attribute，会覆盖组件的写入，
+ * 或在输入过程中产生高频 attribute 抖动。
+ */
+const MIRROR_EXCLUDED_PROPS = new Set(['value']);
+
+/**
+ * 把写入值规整为 manifest 声明的类型
+ *
+ * attribute 路径的转换见 `#convertAttrValue`；property 路径（`el.rows = '4'`）
+ * 过去完全不做转换，导致同一个 prop 因写法不同而得到不同类型。这里让两条路径
+ * 共用同一套语义：
+ * - `number`：数字字符串转 number，无法转换时保留原值（不静默改成默认值）。
+ * - `boolean`：`'false' / '0'`（trim、大小写不敏感）→ false，`''` 及其他字符串 → true（HTML 语义）。
+ * - `array` / `object`：字符串按 JSON 解析，解析失败保留原值。
+ * - `string`：number/boolean 转字符串，其余原样保留。
+ *
+ * 已是目标类型的值原样返回，因此对 attribute 路径的重复调用是幂等的。
+ */
+function normalizePropValue(desc: PropDescriptor, value: unknown): unknown {
+    if (value === null || value === undefined) return value;
+
+    switch (desc.type) {
+        case 'number': {
+            if (typeof value === 'string') {
+                if (value.trim() === '') return value;
+                const n = Number(value);
+                if (Number.isNaN(n)) {
+                    if (IS_DEV) {
+                        console.warn(`[Solely] number prop 收到非法字符串 "${value}"，已保留原值。`);
+                    }
+                    return value;
+                }
+                return n;
+            }
+            return value;
+        }
+
+        case 'boolean': {
+            if (typeof value === 'string') {
+                const s = value.trim().toLowerCase();
+                // 空字符串是 HTML 布尔属性的标准写法（disabled=""）：与 attribute 路径一致，视为 true
+                return s !== 'false' && s !== '0';
+            }
+            return Boolean(value);
+        }
+
+        case 'array': {
+            if (typeof value === 'string') {
+                try {
+                    const parsed = JSON.parse(value);
+                    if (Array.isArray(parsed)) return parsed;
+                } catch {
+                    // 解析失败：保留原值，由组件或调用方决定如何处理
+                }
+            }
+            return value;
+        }
+
+        case 'object': {
+            if (typeof value === 'string') {
+                try {
+                    const parsed = JSON.parse(value);
+                    if (isObject(parsed)) return parsed;
+                } catch {
+                    // 同上
+                }
+            }
+            return value;
+        }
+
+        case 'string':
+            return typeof value === 'number' || typeof value === 'boolean' ? String(value) : value;
+
+        default:
+            return value;
+    }
+}
+
 /* -------------------- 类型定义 -------------------- */
 declare interface BaseElement<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -84,6 +178,9 @@ class BaseElement<
     #updateScheduled = false;
     #isAttributeUpdate = false;
 
+    // 框架驱动写入 prop 的嵌套深度（初始化默认值 / attribute → state / 属性升级）
+    #propSyncDepth = 0;
+
     #createdCalled = false;
     #isActive = false;
     #needsRefresh = false;
@@ -91,6 +188,11 @@ class BaseElement<
 
     // reflect ↔ attributeChangedCallback 循环保护
     #reflectingAttrs = new Set<string>();
+
+    // attributeChanged 钩子执行期间抑制 property → attribute 镜像
+    // 钩子内部可能为「属性别名」重建 $data（如 input 的 show-password/showpassword），
+    // 若此时镜像回去会把组件刚移除的 attribute 重新写回，造成双属性互相复活。
+    #attributeHookDepth = 0;
 
     // dispose 后禁止 reconnect
     #disposed = false;
@@ -185,7 +287,15 @@ class BaseElement<
 
             if (setterDesc?.set) {
                 delete this[key as keyof this];
-                (this as DataRecord)[key] = value;
+                // 属性升级发生在挂载阶段，属于框架写入：保持静默，避免组件 setter 误派发事件
+                this.#propSyncDepth++;
+                try {
+                    // 挂载前写入的值同样要按 manifest 类型规整（与 property 写入一致）
+                    const propDesc = (this.#manifest as InternalManifest).propMap?.get(key);
+                    (this as DataRecord)[key] = propDesc ? normalizePropValue(propDesc, value) : value;
+                } finally {
+                    this.#propSyncDepth--;
+                }
             }
         }
     }
@@ -214,8 +324,18 @@ class BaseElement<
 
                 const desc = manifest.propMap?.get(propKey);
 
-                if (desc?.reflect) {
-                    this.#reflectToAttribute(desc, newValue);
+                if (desc) {
+                    if (desc.reflect === true) {
+                        // 显式声明 reflect：保持原有行为（含 object/array 的 JSON 反射）
+                        this.#reflectToAttribute(desc, newValue);
+                    } else if (
+                        this.#propSyncDepth === 0 &&
+                        this.#attributeHookDepth === 0 &&
+                        this.#shouldMirrorAttribute(desc)
+                    ) {
+                        // 用户/property 写入：按默认规则镜像 attribute
+                        this.#mirrorToAttribute(desc, newValue);
+                    }
                 }
             }
 
@@ -258,6 +378,69 @@ class BaseElement<
         }
     }
 
+    /**
+     * 判断某个 prop 在 property 写入后是否镜像回 attribute（默认镜像规则）
+     *
+     * attribute 与 property 两条写值路径不对称时，`el.name = 'x'` 只写 property，
+     * 导致 `querySelectorAll('[name]')`、`getAttribute('name')` 等 attribute 视角的
+     * 消费者（radio 分组、外部选择器、DevTools/SSR 调试）看不到这个值。
+     *
+     * 不镜像清单（新增组件时无需重复判断）：
+     * 1. `reflect: false`：manifest 显式关闭反射（优先级最高）。
+     * 2. `object` / `array`：复杂类型不把 JSON 写回 attribute，避免每次赋值产生大字符串，
+     *    以及深层字段变更引发整段序列化。
+     * 3. `MIRROR_EXCLUDED_PROPS`（当前为 `value`）：由组件自行管理 attribute 语义。
+     * 4. 框架驱动的写入（`#propSyncDepth > 0`）：初始化默认值、attribute → state、属性升级
+     *    都以 attribute 为源头，再镜像回去会让所有带空字符串默认值的 prop 凭空多出空
+     *    attribute，也可能覆盖用户手写的 attribute。该条件在调用处判断。
+     * 5. 说明：`null` / `undefined` **不**属于排除项——`#mirrorToAttribute` 会移除同名
+     *    attribute，保证「清空 property」时 DOM 与内部状态一致（F-10 / U-08）。
+     * 6. `attributeChanged` 钩子执行期间（`#attributeHookDepth > 0`）：钩子可能基于
+     *    attribute 组合重建 $data（属性别名），此时镜像会把组件刚移除的 attribute 写回。
+     *    该条件同样在调用处判断。
+     */
+    #shouldMirrorAttribute(desc: PropDescriptor): boolean {
+        if (desc.reflect === false) return false;
+        if (desc.type === 'object' || desc.type === 'array') return false;
+        return !MIRROR_EXCLUDED_PROPS.has(desc.name);
+    }
+
+    /**
+     * 把 property 值镜像到 attribute
+     *
+     * 写入期间占用 `#reflectingAttrs`，`attributeChangedCallback` 会直接返回，
+     * 因此不会形成 property → attribute → property 的回环，也不会重复触发
+     * `attributeChanged` 钩子。
+     */
+    #mirrorToAttribute(desc: PropDescriptor, value: unknown) {
+        const attrName = camelToKebab(desc.name);
+        if (this.#reflectingAttrs.has(attrName)) return;
+
+        this.#reflectingAttrs.add(attrName);
+        try {
+            // F-10 / U-08：清空 property 时同步移除镜像 attribute，保证 DOM 与内部状态一致，
+            // 与显式 reflect 的 #reflectToAttribute 对齐；写入期间 reflectingAttrs 防止回环。
+            if (value === null || value === undefined) {
+                if (this.hasAttribute(attrName)) this.removeAttribute(attrName);
+                return;
+            }
+            if (desc.type === 'boolean') {
+                // HTML 布尔属性语义：false = 属性不存在
+                if (value) {
+                    this.setAttribute(attrName, '');
+                } else {
+                    this.removeAttribute(attrName);
+                }
+                return;
+            }
+
+            const strValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+            this.setAttribute(attrName, strValue);
+        } finally {
+            this.#reflectingAttrs.delete(attrName);
+        }
+    }
+
     #initTemplate(manifest: InternalManifest) {
         // 直接读取装饰器预处理好的 ir
         if (manifest.ir) {
@@ -292,14 +475,34 @@ class BaseElement<
      * 写入 prop 值
      * - 用户自定义了 setter：走 setter，保证其校验/格式化/派生逻辑不被绕过
      * - 否则：直接写入 $data
+     *
+     * 写入前按 manifest 声明的类型规整，保证 attribute 路径（初始化默认值、
+     * attribute → state、属性升级）与 property 路径拿到同一种类型的值。
      */
     #writeProp(desc: PropDescriptor, value: unknown) {
-        const accessor = this.#getCustomAccessor(desc.name);
-        if (accessor?.set) {
-            (this as Record<string, unknown>)[desc.name] = value;
-        } else {
-            (this.$data as DataRecord)[desc.name] = value;
+        const next = normalizePropValue(desc, value);
+
+        this.#propSyncDepth++;
+        try {
+            const accessor = this.#getCustomAccessor(desc.name);
+            if (accessor?.set) {
+                (this as Record<string, unknown>)[desc.name] = next;
+            } else {
+                (this.$data as DataRecord)[desc.name] = next;
+            }
+        } finally {
+            this.#propSyncDepth--;
         }
+    }
+
+    /**
+     * 框架是否正在同步 prop（组件初始化默认值、attribute → state、属性升级）
+     *
+     * 组件自定义 setter 可据此区分「框架写入」与「用户显式赋值」：
+     * 初始化阶段应保持静默，避免挂载时派发 change 等事件。
+     */
+    protected get isSyncingProps(): boolean {
+        return this.#propSyncDepth > 0;
     }
 
     #installReactiveProps() {
@@ -310,28 +513,31 @@ class BaseElement<
             // 跳过非响应式
             if (desc.reactive === false) continue;
 
+            // 在覆盖前，先取出实例上可能存在的自有数据属性值。
+            // 必须在自定义 accessor 分支之前处理，否则挂载期默认值会写入该自有属性，
+            // 随后属性升级读到的是已被覆盖的默认值。
+            const instanceDesc = Object.getOwnPropertyDescriptor(this, desc.name);
+            if (instanceDesc && 'value' in instanceDesc) {
+                // 预先赋的值直接同步到 $data（先规整类型，与 property 写入路径一致）
+                (this.$data as DataRecord)[desc.name] = normalizePropValue(desc, instanceDesc.value);
+                delete this[desc.name as keyof this];
+            }
+
             // 用户自定义 getter/setter：保持用户实现，不覆盖
             if (this.#getCustomAccessor(desc.name)) {
                 continue;
-            } else {
-                // 在覆盖前，先取出实例上可能存在的自有数据属性值
-                const instanceDesc = Object.getOwnPropertyDescriptor(this, desc.name);
-                if (instanceDesc && 'value' in instanceDesc) {
-                    // 预先赋的值直接同步到 $data
-                    (this.$data as DataRecord)[desc.name] = instanceDesc.value;
-                    delete this[desc.name as keyof this];
-                }
-
-                // 无用户自定义：生成标准 getter/setter
-                Object.defineProperty(this, desc.name, {
-                    get: () => (this.$data as DataRecord)[desc.name],
-                    set: val => {
-                        (this.$data as DataRecord)[desc.name] = val;
-                    },
-                    configurable: true,
-                    enumerable: true,
-                });
             }
+
+            // 无用户自定义：生成标准 getter/setter
+            Object.defineProperty(this, desc.name, {
+                get: () => (this.$data as DataRecord)[desc.name],
+                set: val => {
+                    // property 写入也走类型规整：el.rows = '4' 应得到 number 4
+                    (this.$data as DataRecord)[desc.name] = normalizePropValue(desc, val);
+                },
+                configurable: true,
+                enumerable: true,
+            });
         }
     }
 
@@ -356,22 +562,31 @@ class BaseElement<
         this.#scheduleRefresh();
     }
 
-    #convertAttrValue(value: string | null, defaultValue: unknown, type?: PropType) {
+    #convertAttrValue(value: string | null, defaultValue: unknown, type?: PropType, attrName?: string) {
         if (value === null) {
-            // 对于布尔值，属性不存在即为 false（HTML 标准语义）
-            // 对于其他类型，保持当前值（defaultValue）
-            return type === 'boolean' ? false : defaultValue;
+            // 属性被移除：布尔回退到 default（未声明则 false，HTML 语义）；
+            // 非布尔回退到 default（未声明则 undefined，F-10 清空语义）
+            if (type === 'boolean') {
+                return parseBooleanAttribute(null, typeof defaultValue === 'boolean' ? defaultValue : false);
+            }
+            return defaultValue;
         }
 
         switch (type) {
             case 'boolean':
-                // 只要属性存在（value 不为 null），在 HTML 语义下就是 true
-                // 这里的 value 可能是 "" (例如 <my-el active>) 或 "active"
-                return true;
+                // 与 property 路径的 normalizePropValue 对齐：
+                // "false" / "0"（大小写不敏感、trim 后）表示 false，
+                // "" 及其他字符串仍按 HTML 语义视为 true。
+                return parseBooleanAttribute(value);
 
             case 'number': {
                 const n = Number(value);
-                return isNaN(n) ? defaultValue : n;
+                if (isNaN(n)) {
+                    // 非法数字（如 count="99+"）不再静默回落，开发模式给出可定位的警告
+                    this.warn(true, `attribute ${attrName ?? ''}="${value}" 不是合法数字，已回落到默认值 / 保留原值。`);
+                    return defaultValue;
+                }
+                return n;
             }
 
             case 'object':
@@ -535,14 +750,19 @@ class BaseElement<
 
                 if (this.hasAttribute(attrName)) {
                     const raw = this.getAttribute(attrName);
-                    const value = this.#convertAttrValue(raw, cloneDefaultValue(desc.default), desc.type);
+                    const value = this.#convertAttrValue(
+                        raw,
+                        resolveDefaultValue(desc.default, this),
+                        desc.type,
+                        attrName,
+                    );
                     this.#writeProp(desc, value);
                 } else if ('default' in desc) {
                     // 只有在 property 没有被设置过（比如通过 s-model）的情况下才使用默认值
                     // 检查 $data 中是否已经有值（非 undefined），有则保留，无则使用默认值
                     const currentValue = (this.$data as DataRecord)[propName];
                     if (currentValue === undefined) {
-                        this.#writeProp(desc, cloneDefaultValue(desc.default));
+                        this.#writeProp(desc, resolveDefaultValue(desc.default, this));
                         // 对于布尔类型，如果默认值是 true，同步设置到 HTML 属性
                         if (desc.type === 'boolean' && desc.default === true) {
                             this.setAttribute(attrName, '');
@@ -588,8 +808,18 @@ class BaseElement<
         const oldDataValue = (this.$data as DataRecord)[propName];
 
         // 2. 转换值
-        const fallback = desc.default !== undefined ? cloneDefaultValue(desc.default) : oldDataValue;
-        const next = this.#convertAttrValue(newValue, fallback, desc.type);
+        // F-10：属性移除时回落到声明的默认值；未声明 default 的非布尔 prop 回落到
+        // undefined（真正清空），不再沿用旧值；布尔属性未声明 default 时回落 false。
+        // 属性存在但解析失败（如 number="abc"）时仍保留旧值，避免非法字符串误清空状态。
+        const hasDefault = desc.default !== undefined;
+        const resolvedDefault = hasDefault ? resolveDefaultValue(desc.default, this) : undefined;
+        let fallback: unknown;
+        if (newValue === null) {
+            fallback = hasDefault ? resolvedDefault : desc.type === 'boolean' ? false : undefined;
+        } else {
+            fallback = hasDefault ? resolvedDefault : oldDataValue;
+        }
+        const next = this.#convertAttrValue(newValue, fallback, desc.type, name);
 
         // 3. 避免 primitive 类型的无意义更新（object/array 不适用 deep comparison）
         if (oldDataValue === next) return;
@@ -607,7 +837,14 @@ class BaseElement<
         // 说明：这里假设 setter 同步写入 $data。若 setter 异步写入，复位后那次写入会走普通刷新，
         // 不再归类为 attribute 更新（不会悬挂，也不会误触发属性钩子）。
 
-        this.attributeChanged(name, oldDataValue, next);
+        // 钩子内可能基于 attribute 组合重建 $data（属性别名等），此时不应镜像回 attribute，
+        // 否则会把组件刚移除的 attribute 重新写回（show-password/showpassword 会互相复活）。
+        this.#attributeHookDepth++;
+        try {
+            this.attributeChanged(name, oldDataValue, next);
+        } finally {
+            this.#attributeHookDepth--;
+        }
     }
 
     /* -------------------- created 保障 -------------------- */

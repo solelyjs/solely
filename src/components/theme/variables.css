@@ -116,6 +116,13 @@
     --solely-shadow-2xl: 0 16px 48px rgba(0, 0, 0, 0.24);
     --solely-shadow-primary: 0 0 0 4px rgba(24, 144, 255, 0.2);
 
+    /* 品牌/功能色光晕阴影（带颜色的投影，用于按钮、图标等本身有色的元素） */
+    --solely-shadow-primary-glow-sm: 0 2px 8px rgba(24, 144, 255, 0.25);
+    --solely-shadow-primary-glow-md: 0 4px 16px rgba(24, 144, 255, 0.3);
+    --solely-shadow-primary-glow-lg: 0 6px 24px rgba(24, 144, 255, 0.4);
+    --solely-shadow-error-glow-sm: 0 4px 16px rgba(238, 90, 111, 0.2);
+    --solely-shadow-error-glow-lg: 0 8px 32px rgba(238, 90, 111, 0.3);
+
     /* ==================== 字体 - 统一命名 xs/sm/md/lg/xl/2xl ==================== */
     --solely-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --solely-font-size-xs: 10px;
@@ -168,6 +175,13 @@
     --solely-focus-ring-error: 0 0 0 2px var(--solely-error-light);
     --solely-focus-ring-warning: 0 0 0 2px var(--solely-warning-light);
     --solely-focus-ring-success: 0 0 0 2px var(--solely-success-light);
+
+    /* 键盘焦点环（outline 方案，供 :focus-visible 引用）
+       颜色与宽度是默认值；需要外扩/内嵌的组件可局部覆盖 --solely-focus-ring-offset。
+       颜色引用 --solely-primary，暗色主题下会随之解析，无需重复声明。 */
+    --solely-focus-ring-width: 2px;
+    --solely-focus-ring-color: var(--solely-primary);
+    --solely-focus-ring-offset: 2px;
 
     /* ==================== 品牌渐变 ==================== */
     --solely-gradient-brand: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
@@ -322,4 +336,11 @@
     --solely-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.45);
     --solely-shadow-2xl: 0 16px 48px rgba(0, 0, 0, 0.5);
     --solely-shadow-primary: 0 0 0 4px rgba(23, 125, 220, 0.25);
+
+    /* 品牌/功能色光晕阴影（暗色背景需要更高浓度才可见） */
+    --solely-shadow-primary-glow-sm: 0 2px 8px rgba(23, 125, 220, 0.4);
+    --solely-shadow-primary-glow-md: 0 4px 16px rgba(23, 125, 220, 0.45);
+    --solely-shadow-primary-glow-lg: 0 6px 24px rgba(23, 125, 220, 0.6);
+    --solely-shadow-error-glow-sm: 0 4px 16px rgba(211, 32, 41, 0.35);
+    --solely-shadow-error-glow-lg: 0 8px 32px rgba(211, 32, 41, 0.5);
 }

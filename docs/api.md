@@ -67,6 +67,17 @@ interface PropDescriptor {
 }
 ```
 
+> **布尔属性的 attribute 解析**：与 property 路径一致，`type: 'boolean'` 的 prop 按值解析——
+> `"false"` / `"0"`（大小写不敏感、trim 后）为 `false`，`""` 及其它字符串为 `true`；
+> `removeAttribute` 回退到 `default`（未声明默认值时为 `false`）。因此 `disabled="false"` 表示**启用**，
+> 需要禁用时写 `disabled`、`disabled=""` 或 `disabled="true"`。
+
+> **属性移除（`removeAttribute`）语义**：属性被移除时，prop 回落到 manifest 声明的 `default`；
+> **未声明 `default` 的非布尔 prop 回落 `undefined`**（真正清空），布尔 prop 回落 `false`。
+> 此前未声明 `default` 的非布尔 prop 会保留旧值，导致 `min` / `max` / `step` 等无法被移除清空。
+> 把 property 赋 `null` / `undefined` 也会同步移除同名 attribute，保证 DOM 与内部状态一致。
+> 属性存在但值非法（如 `count="abc"`）时保留旧值，不会误清空。
+
 **示例：**
 
 ```typescript

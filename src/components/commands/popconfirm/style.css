@@ -15,17 +15,17 @@
 
 /* ==================== 遮罩层样式 ==================== */
 .solely-popconfirm-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  min-height: 100%;
+  position: fixed;
+  inset: 0;
   z-index: var(--solely-z-index-popover);
 }
 
 /* ==================== 确认框容器 ==================== */
 .solely-popconfirm {
-  position: absolute;
+  position: fixed;
+  /* 与 tooltip 一致：固定为内容宽度。fixed + width:auto 时 shrink-to-fit 会随 left 变化，
+     设置左坐标后气泡被压缩（先宽后窄、文字多换行、右侧留边界残影）。 */
+  width: max-content;
   background-color: var(--solely-component-bg);
   border-radius: var(--solely-border-radius-md);
   box-shadow: var(--solely-shadow-lg);
@@ -95,6 +95,24 @@
   margin-bottom: var(--solely-spacing-md);
 }
 
+/* 线性图标：状态图标与操作图标统一绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.solely-popconfirm__icon .solely-linear-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .solely-popconfirm__icon {
   color: var(--solely-warning);
   font-size: var(--solely-font-size-lg);
@@ -118,6 +136,17 @@
   line-height: var(--solely-line-height-sm);
 }
 
+.solely-popconfirm__error {
+  font-size: var(--solely-font-size-sm);
+  color: var(--solely-error);
+  margin-top: var(--solely-spacing-xs);
+  line-height: var(--solely-line-height-sm);
+}
+
+.solely-popconfirm--error {
+  border: 1px solid var(--solely-error);
+}
+
 /* ==================== 按钮组 ==================== */
 .solely-popconfirm__buttons {
   display: flex;
@@ -134,6 +163,41 @@
   border: 1px solid transparent;
   font-family: var(--solely-font-family);
   line-height: var(--solely-line-height-sm);
+  outline: none;
+}
+
+/* 键盘焦点可见性 */
+.solely-popconfirm__btn:focus-visible {
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
+}
+
+/* 异步确认 pending 态：禁用交互并显示 loading */
+.solely-popconfirm__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.solely-popconfirm__btn.is-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+}
+
+.solely-popconfirm__btn.is-loading::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: solely-popconfirm-spin 0.8s linear infinite;
+}
+
+@keyframes solely-popconfirm-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 取消按钮 */
@@ -160,6 +224,18 @@
   border-color: var(--solely-primary-hover);
 }
 
+/* 默认按钮（中性视觉，与 primary 区分） */
+.solely-popconfirm__btn--default {
+  background-color: var(--solely-component-bg);
+  border-color: var(--solely-border-color);
+  color: var(--solely-text-primary);
+}
+
+.solely-popconfirm__btn--default:hover {
+  border-color: var(--solely-primary);
+  color: var(--solely-primary);
+}
+
 /* 危险按钮 */
 .solely-popconfirm__btn--danger {
   background-color: var(--solely-error);
@@ -172,24 +248,21 @@
 }
 
 /* ==================== 动画定义 ==================== */
+/* 与命令式 tooltip 同理：气泡锚定触发元素，只做透明度，避免缩放期间相对锚点漂移。 */
 @keyframes solely-popconfirm-fade-in {
   from {
     opacity: 0;
-    transform: scale(0.9);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
 @keyframes solely-popconfirm-fade-out {
   from {
     opacity: 1;
-    transform: scale(1);
   }
   to {
     opacity: 0;
-    transform: scale(0.9);
   }
 }

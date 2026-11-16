@@ -129,8 +129,36 @@
   text-align: center;
 }
 
+/* 垂直模式的刻度：刻度点对齐轨道中心，标签放到右侧 */
+.slider--vertical .slider__marks {
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
 .slider--vertical .slider__mark {
+  left: 50%;
   transform: translateY(50%);
+  white-space: nowrap;
+}
+
+.slider--vertical .slider__mark-dot {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.slider--vertical .slider__mark-label {
+  display: inline-block;
+  margin-top: 0;
+  margin-left: 12px;
+}
+
+/* 键盘焦点可见性 */
+.slider__rail:focus-visible,
+.slider__handle:focus-visible {
+  outline: 2px solid var(--solely-primary);
+  outline-offset: 2px;
 }
 
 .slider__mark-dot {

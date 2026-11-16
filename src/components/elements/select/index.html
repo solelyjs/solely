@@ -3,26 +3,57 @@
     class="select"
     :class="this.getSelectClasses()"
     role="combobox"
+    aria-haspopup="listbox"
     :aria-expanded="$data.isOpen ? 'true' : 'false'"
-    :aria-disabled="$data.disabled ? 'true' : 'false'"
+    :aria-disabled="this.getAriaDisabled()"
+    :aria-controls="this.getAriaControls()"
+    :aria-activedescendant="this.getActiveDescendantId()"
+    :aria-label="$data.placeholder || '选择'"
+    :tabindex="this.getTabindex()"
     @click="this.handleClick(event)"
+    @keydown="this.handleKeydown(event)"
 >
     <div part="selector" class="select__selector">
         <If test="!$data.selectedLabel">
             <span part="placeholder" class="select__placeholder">{{$data.placeholder || '请选择'}}</span>
         </If>
         <If test="$data.selectedLabel">
-            <span part="value" class="select__value">{{$data.selectedLabel}}</span>
+            <span part="value" class="select__value">
+                <span part="value-content" class="select__value-content"></span>
+            </span>
         </If>
-        <If test="$data.clearable && $data.selectedLabel && !$data.disabled">
-            <span part="clear" class="select__clear" @click="this.handleClear(event)">×</span>
+        <If test="$data.clearable && $data.selectedLabel && this.getAriaDisabled() !== 'true'">
+            <!-- 与 input 的装饰按钮一致：20×20 盒子 + 16×16 线性图标，避免文字符号基线不齐 -->
+            <span
+                part="clear"
+                class="select__clear"
+                role="button"
+                tabindex="0"
+                aria-label="清除选择"
+                @click="this.handleClear(event)"
+                @keydown="this.handleClearKeydown(event)"
+            >
+                <svg class="select__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M4.4 4.4 11.6 11.6 M11.6 4.4 4.4 11.6"></path>
+                </svg>
+            </span>
         </If>
-        <span part="arrow" class="select__arrow">▼</span>
+        <span part="arrow" class="select__arrow" aria-hidden="true">
+            <svg class="select__action-icon" viewBox="0 0 16 16" focusable="false">
+                <path d="M3.5 6 8 10.5 12.5 6"></path>
+            </svg>
+        </span>
     </div>
 
     <!-- 下拉菜单 -->
     <If test="$data.isOpen">
-        <div part="dropdown" class="select__dropdown" :class="this.getDropdownClasses()" role="listbox">
+        <div
+            part="dropdown"
+            class="select__dropdown"
+            :class="this.getDropdownClasses()"
+            :id="this.getListboxId()"
+            role="listbox"
+        >
             <!-- header 插槽 - 固定顶部 -->
             <If test="$data.hasHeaderSlot">
                 <div part="header" class="select__header" @click="this.handleHeaderFooterClick(event)">
@@ -37,16 +68,22 @@
                     <If test="$data.parsedOptions.length === 0">
                         <div part="empty" class="select__empty">暂无数据</div>
                     </If>
-                    <For each="$data.parsedOptions" item="option">
+                    <For each="$data.parsedOptions" item="option" index="index">
                         <div
                             part="option"
                             class="select__option"
-                            :class="this.getOptionClasses(option)"
-                            role="option"
-                            :aria-selected="option.value === $data.value ? 'true' : 'false'"
+                            :class="this.getOptionClasses(option, index)"
+                            :id="this.getOptionId(option, index)"
+                            :role="option.isGroup ? 'presentation' : 'option'"
+                            :aria-selected="option.isGroup ? null : (this.isSelected(option.value) ? 'true' : 'false')"
                             @click="this.handleSelect(option, event)"
                         >
-                            <span part="option-label" class="select__option-label">{{option.label}}</span>
+                            <span part="option-content" class="select__option-content"></span>
+                            <If test="!option.isGroup && this.isSelected(option.value)">
+                                <span part="option-check" class="select__option-check" aria-hidden="true">
+                                    <svg class="solely-linear-icon" viewBox="0 0 16 16" focusable="false"><path d="M3.5 8.5 6.8 11.5 12.5 4.8"></path></svg>
+                                </span>
+                            </If>
                         </div>
                     </For>
                 </If>

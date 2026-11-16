@@ -60,38 +60,20 @@
         </div>
     </div>
 
-    <!-- 小尺寸 -->
+    <!-- 不同尺寸 -->
     <div class="demo-block">
-        <h3 class="demo-block-title">小尺寸</h3>
-        <p class="demo-block-desc">设置 size="small" 使用小尺寸步骤条。</p>
+        <h3 class="demo-block-title">不同尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种真实档位，图标与标题字号逐档增大。</p>
         <div class="demo-box">
-            <div class="demo-preview">
+            <div class="demo-preview" style="flex-direction: column; gap: 24px;">
                 <solely-steps size="small" current="1" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'></solely-steps>
-            </div>
-            <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
-  <span class="code-attr">size</span>=<span class="code-value">"small"</span>
-  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
-  <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
-            </div>
-        </div>
-    </div>
-
-    <!-- 大尺寸 -->
-    <div class="demo-block">
-        <h3 class="demo-block-title">大尺寸</h3>
-        <p class="demo-block-desc">设置 size="large" 使用大尺寸步骤条。</p>
-        <div class="demo-box">
-            <div class="demo-preview">
+                <solely-steps size="medium" current="1" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'></solely-steps>
                 <solely-steps size="large" current="1" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]'></solely-steps>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
-  <span class="code-attr">size</span>=<span class="code-value">"large"</span>
-  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
-  <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">current</span>=<span class="code-value">"1"</span> <span class="code-attr">items</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
     </div>
@@ -185,16 +167,39 @@
         </div>
     </div>
 
-    <!-- 禁用状态 -->
+    <!-- 可点击步骤 -->
     <div class="demo-block">
-        <h3 class="demo-block-title">禁用状态</h3>
-        <p class="demo-block-desc">设置 disabled: true 禁用特定步骤的点击。</p>
+        <h3 class="demo-block-title">可点击步骤</h3>
+        <p class="demo-block-desc">
+            步骤条默认是纯展示组件（clickable 为 false），点击步骤不会切换，这是预期行为。需要让用户直接点击步骤切换时，加上
+            clickable 属性：点击或用 Tab 聚焦后按 Enter / Space 均可切换并派发 change 事件。开启后容器语义由 role="list" 变为
+            role="group"，每个可交互步骤为 role="button" tabindex="0"；禁用步骤仍为 listitem 且不可聚焦。
+        </p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-steps current="0" items='[{"title":"当前步骤"},{"title":"已禁用","disabled":true},{"title":"未解锁","disabled":true}]'></solely-steps>
+                <solely-steps clickable current="1" items='[{"title":"填写信息"},{"title":"验证身份"},{"title":"完成"}]'></solely-steps>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">clickable</span>
+  <span class="code-attr">current</span>=<span class="code-value">"1"</span>
+  <span class="code-attr">items</span>=<span class="code-value">'[{"title":"填写信息"},{"title":"验证身份"},{"title":"完成"}]'</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-steps</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 禁用状态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">禁用状态</h3>
+        <p class="demo-block-desc">配合 clickable 使用，设置 disabled: true 可禁用特定步骤的点击；禁用步骤会降低不透明度且无法聚焦。</p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-steps clickable current="0" items='[{"title":"当前步骤"},{"title":"已禁用","disabled":true},{"title":"未解锁","disabled":true}]'></solely-steps>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span>
+  <span class="code-attr">clickable</span>
   <span class="code-attr">current</span>=<span class="code-value">"0"</span>
   <span class="code-attr">items</span>=<span class="code-value">'[
   {"title":"当前步骤"},
@@ -279,7 +284,7 @@ steps.setCurrent(2);</code></pre>
         <p class="demo-block-desc">点击步骤查看事件触发情况。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; gap: 16px;">
-                <solely-steps current="0" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]' @change="this.handleChange(event)"></solely-steps>
+                <solely-steps clickable current="0" items='[{"title":"步骤一"},{"title":"步骤二"},{"title":"步骤三"}]' @change="this.handleChange(event)"></solely-steps>
                 <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
                     <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
                     <div ref="eventLog" style="font-family: monospace; white-space: pre-wrap;">等待交互...</div>
@@ -372,7 +377,7 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
     <!-- 使用插槽 -->
     <div class="demo-block">
         <h3 class="demo-block-title">使用插槽</h3>
-        <p class="demo-block-desc">通过插槽自定义每个步骤的内容，支持自定义图标和布局。</p>
+        <p class="demo-block-desc">通过插槽自定义每个步骤的图标内容；未提供图标内容时回退到线性 SVG 状态图标（完成勾 / 出错叉）或序号，不会出现空圆圈。data-color 与 items 模式的 color 语义一致，支持预设色或自定义色值。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-steps current="1">
@@ -409,14 +414,14 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
         <p class="demo-block-desc">在插槽元素上添加 disabled 属性可禁用该步骤。</p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-steps current="0">
+                <solely-steps clickable current="0">
                     <div data-step="1" data-title="当前步骤">1</div>
                     <div data-step="2" data-title="已禁用" disabled>🔒</div>
                     <div data-step="3" data-title="未解锁" disabled>🔒</div>
                 </solely-steps>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">current</span>=<span class="code-value">"0"</span><span class="code-bracket">&gt;</span>
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-steps</span> <span class="code-attr">clickable</span> <span class="code-attr">current</span>=<span class="code-value">"0"</span><span class="code-bracket">&gt;</span>
   <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"1"</span> <span class="code-attr">data-title</span>=<span class="code-value">"当前步骤"</span><span class="code-bracket">&gt;</span>1<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
   <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"2"</span> <span class="code-attr">data-title</span>=<span class="code-value">"已禁用"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span>🔒<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
   <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">data-step</span>=<span class="code-value">"3"</span> <span class="code-attr">data-title</span>=<span class="code-value">"未解锁"</span> <span class="code-attr">disabled</span><span class="code-bracket">&gt;</span>🔒<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
@@ -435,7 +440,8 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性名</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -444,11 +450,13 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>current</td>
+                    <td>current</td>
                     <td>当前步骤，从 0 开始</td>
                     <td>number</td>
                     <td>0</td>
                 </tr>
                 <tr>
+                    <td>direction</td>
                     <td>direction</td>
                     <td>步骤条方向，可选值为 horizontal、vertical</td>
                     <td>string</td>
@@ -456,19 +464,39 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>size</td>
-                    <td>尺寸，可选值为 default、small、large</td>
-                    <td>string</td>
-                    <td>default</td>
+                    <td>size</td>
+                    <td>尺寸，可选值为 small、medium、large</td>
+                    <td>'small' | 'medium' | 'large'</td>
+                    <td>'medium'</td>
                 </tr>
                 <tr>
+                    <td>size 兼容别名</td>
+                    <td>size</td>
+                    <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                    <td>'middle' | 'default'</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>items</td>
                     <td>items</td>
                     <td>步骤数据（JSON字符串）</td>
                     <td>string</td>
                     <td>[]</td>
                 </tr>
                 <tr>
+                    <td>progress-dot</td>
                     <td>progressDot</td>
                     <td>是否使用点状步骤条</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>clickable</td>
+                    <td>clickable</td>
+                    <td>
+                        是否允许点击 / 键盘切换步骤。默认 false，此时为纯展示，点击无响应；开启后点击或 Enter / Space
+                        可切换并派发 change，容器 role 由 list 变为 group，可交互步骤为 role="button" tabindex="0"
+                    </td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
@@ -489,8 +517,8 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>change</td>
-                    <td>点击步骤时触发</td>
-                    <td>CustomEvent&lt;StepsChangeEventDetail&gt;</td>
+                    <td>点击步骤、键盘操作或通过 <code>next()</code> / <code>prev()</code> / <code>setCurrent()</code> / <code>el.current = n</code> 改变步骤时触发，<code>detail</code> 统一为 <code>{ current, index, item }</code>（<code>current</code> 与 <code>index</code> 相同）；通过 <code>current</code> attribute 写入走框架同步路径，不派发；挂载初始化与值未变化不派发</td>
+                    <td>CustomEvent&lt;{ current: number; index: number; item?: StepItem | StepsSlotItem }&gt;</td>
                 </tr>
             </tbody>
         </table>
@@ -626,12 +654,14 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
   <span class="code-attr">description</span>?: <span class="code-type">string</span>;
   <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;
   <span class="code-attr">iconHtml</span>: <span class="code-type">string</span>;  <span class="code-comment">// 图标 HTML</span>
+  <span class="code-attr">color</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 图标配色：blue / green / red / orange / gray 或任意 CSS 颜色值</span>
 }
 
-<span class="code-comment">// change 事件 detail</span>
+<span class="code-comment">// change 事件 detail（运行时实际派发）</span>
 <span class="code-keyword">interface</span> <span class="code-type">StepsChangeEventDetail</span> {
-  <span class="code-attr">index</span>: <span class="code-type">number</span>;                    <span class="code-comment">// 步骤索引</span>
-  <span class="code-attr">item</span>: <span class="code-type">StepItem | StepsSlotItem</span>; <span class="code-comment">// 步骤数据</span>
+  <span class="code-attr">current</span>: <span class="code-type">number</span>; <span class="code-comment">// 当前步骤索引</span>
+  <span class="code-attr">index</span>: <span class="code-type">number</span>; <span class="code-comment">// 与 current 相同，保留兼容</span>
+  <span class="code-attr">item</span>?: <span class="code-type">StepItem | StepsSlotItem</span>; <span class="code-comment">// 对应的步骤数据</span>
 }
 
 <span class="code-comment">// 步骤状态</span>
@@ -641,7 +671,7 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
 <span class="code-keyword">type</span> <span class="code-type">StepsDirection</span> = <span class="code-value">'horizontal'</span> | <span class="code-value">'vertical'</span>;
 
 <span class="code-comment">// 步骤条尺寸</span>
-<span class="code-keyword">type</span> <span class="code-type">StepsSize</span> = <span class="code-value">'default'</span> | <span class="code-value">'small'</span> | <span class="code-value">'large'</span>;</code></pre>
+<span class="code-keyword">type</span> <span class="code-type">StepsSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>; <span class="code-comment">// middle / default 为兼容别名 → medium</span></code></pre>
         </div>
     </div>
 
@@ -663,6 +693,7 @@ steps.addEventListener(<span class="code-value">'change'</span>, (e) => {
                         <code>data-step</code>: 步骤序号（从1开始）<br>
                         <code>data-title</code>: 步骤标题<br>
                         <code>data-description</code>: 步骤描述<br>
+                        <code>data-color</code>: 图标配色（blue / green / red / orange / gray 或自定义色值，需同时提供图标内容）<br>
                         <code>disabled</code>: 禁用该步骤
                     </td>
                 </tr>

@@ -1,7 +1,11 @@
 <div
     part="base"
     class="backtop"
+    role="button"
+    tabindex="0"
+    aria-label="回到顶部"
     @click="this.handleClick()"
+    @keydown="this.handleKeyDown(event)"
 >
-    <span part="icon" class="backtop__icon">↑</span>
+    <span part="icon" class="backtop__icon"><slot name="icon">↑</slot></span>
 </div>

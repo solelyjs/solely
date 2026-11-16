@@ -107,3 +107,14 @@
     opacity: 1;
   }
 }
+
+/* 尊重系统“减少动态效果”偏好：关闭闪烁与淡入动画 */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton.is-active .skeleton__element {
+    animation: none;
+  }
+
+  .skeleton__real-content {
+    animation: none;
+  }
+}

@@ -59,22 +59,13 @@ export class DocsBreadcrumb extends BaseElement<{ title: string }> {
         // 点击事件示例
         const breadcrumb5 = this.$refs.breadcrumb5 as HTMLElement;
         if (breadcrumb5) {
-            const items5 = [
-                {
-                    title: '首页',
-                    onClick: () => this.logClick('首页'),
-                },
-                {
-                    title: '组件',
-                    onClick: () => this.logClick('组件'),
-                },
-                { title: '面包屑' },
-            ];
+            // items 走 JSON 属性，函数无法序列化；点击回调统一由 item-click 事件承载
+            const items5 = [{ title: '首页' }, { title: '组件' }, { title: '面包屑' }];
             breadcrumb5.setAttribute('items', JSON.stringify(items5));
 
-            // 监听点击事件
-            breadcrumb5.addEventListener('click', () => {
-                const item = (breadcrumb5 as any).clickedItem;
+            // 监听点击事件（item-click 为自定义事件，不会与原生 click 混淆）
+            breadcrumb5.addEventListener('item-click', (event: Event) => {
+                const item = (event as CustomEvent<{ item: { title: string } }>).detail?.item;
                 if (item) {
                     this.logClick(item.title);
                 }

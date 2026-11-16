@@ -4,7 +4,9 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { ButtonProps, ButtonRefs } from './types';
+import { normalizeSize, type SizeInput } from '../../../shared/size';
+import { oneOf } from '../../../shared/enum';
+import type { ButtonProps, ButtonRefs, ButtonSize, ButtonType, ButtonShape } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
 
@@ -29,9 +31,21 @@ import template from './index.html?solely';
         { name: 'loadingIcon', type: 'string', default: '' },
         { name: 'href', type: 'string', default: '' },
         { name: 'target', type: 'string', default: '' },
+        // 原生 type：button | submit | reset（与视觉 type 区分，避免破坏既有 API）
+        { name: 'nativeType', type: 'string', default: 'button' },
+        { name: 'label', type: 'string', default: '' },
     ],
 })
 class SolelyButton extends BaseElement<ButtonProps, ButtonRefs> {
+    /** 统一尺寸语义：middle / default 归一为 medium */
+    get size(): ButtonSize {
+        return normalizeSize(this.$data.size);
+    }
+
+    set size(value: SizeInput) {
+        this.$data.size = normalizeSize(value);
+    }
+
     /**
      * 组件挂载后
      */
@@ -40,25 +54,43 @@ class SolelyButton extends BaseElement<ButtonProps, ButtonRefs> {
         this.refresh();
     }
 
+    /** 视觉类型（非法值回退 default） */
+    getType(): ButtonType {
+        return oneOf(
+            this.$data.type,
+            ['primary', 'secondary', 'default', 'dashed', 'text', 'link', 'success', 'warning', 'error'],
+            'default',
+        );
+    }
+
+    /** 形状（非法值回退 default） */
+    getShape(): ButtonShape {
+        return oneOf(this.$data.shape, ['default', 'circle', 'round', 'pill'], 'default');
+    }
+
+    /**
+     * 获取原生按钮类型（非法值回退为 button，避免浏览器按默认 submit 处理）
+     */
+    getNativeButtonType(): 'button' | 'submit' | 'reset' {
+        const type = this.$data.nativeType;
+        return type === 'submit' || type === 'reset' ? type : 'button';
+    }
+
     /**
      * 获取按钮 class 对象
      */
     getButtonClasses(): Record<string, boolean> {
         const classes: Record<string, boolean> = {};
-        // 默认按钮类型（没有指定 type 或 type 为 default）
-        if (!this.$data.type || this.$data.type === 'default') {
-            classes['btn--default'] = true;
-        } else {
-            classes[`btn--${this.$data.type}`] = true;
-        }
+        classes[`btn--${this.getType()}`] = true;
         // 尺寸
         if (this.$data.size === 'small') {
             classes['btn--sm'] = true;
         } else if (this.$data.size === 'large') {
             classes['btn--lg'] = true;
         }
-        if (this.$data.shape && this.$data.shape !== 'default') {
-            classes[`btn--shape-${this.$data.shape}`] = true;
+        const shape = this.getShape();
+        if (shape !== 'default') {
+            classes[`btn--shape-${shape}`] = true;
         }
         classes['is-disabled'] = !!this.$data.disabled;
         classes['is-loading'] = !!this.$data.loading;
@@ -117,6 +149,21 @@ class SolelyButton extends BaseElement<ButtonProps, ButtonRefs> {
             event.preventDefault();
             event.stopPropagation();
             return;
+        }
+
+        // 非链接按钮才具备原生表单提交/重置语义
+        if (this.getTagName() !== 'button') return;
+
+        const nativeType = this.$data.nativeType;
+        if (nativeType !== 'submit' && nativeType !== 'reset') return;
+
+        const form = this.closest('form');
+        if (!form) return;
+
+        if (nativeType === 'submit') {
+            form.requestSubmit();
+        } else {
+            form.reset();
         }
     }
 

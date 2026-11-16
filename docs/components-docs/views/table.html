@@ -96,17 +96,17 @@ table.setDataSource([
     <!-- 不同尺寸 -->
     <div class="demo-block">
         <h3 class="demo-block-title">不同尺寸</h3>
-        <p class="demo-block-desc">支持 small、middle、default 三种尺寸。</p>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种真实档位，每档的内边距与字号均不同。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-table size="small" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
-                <solely-table size="middle" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
-                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
+                <solely-table size="medium" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
+                <solely-table size="large" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[{"name":"张三","age":28},{"name":"李四","age":32}]'></solely-table>
             </div>
             <div class="demo-code">
                 <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">size</span>=<span class="code-value">"middle"</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
     </div>
@@ -187,7 +187,7 @@ table.setDataSource([
     <!-- 可点击行 -->
     <div class="demo-block">
         <h3 class="demo-block-title">可点击行</h3>
-        <p class="demo-block-desc">设置 row-clickable 属性使表格行可点击，点击时触发 row-click 事件。</p>
+        <p class="demo-block-desc">设置 row-clickable 属性使表格行可点击，点击时触发 row-click 事件；行同时可聚焦，键盘 Enter/Space 与点击等价，触发 row-click。开启 selectable 且未开启 row-clickable 时，行聚焦后 Enter/Space 切换该行选中状态。开启 selectable 时复选框仍是唯一的 Tab 停点，行聚焦使用 <code>tabindex="-1"</code>，不会与复选框重复。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; gap: 12px;">
                 <solely-table row-clickable @row-click="this.handleRowClick(event)" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"},{"title":"地址","dataIndex":"address","key":"address"}]' data-source='[{"name":"张三","age":28,"address":"北京市"},{"name":"李四","age":32,"address":"上海市"},{"name":"王五","age":24,"address":"广州市"}]'></solely-table>
@@ -212,6 +212,234 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
   <span class="code-keyword">const</span> { row, index } = e.detail;
   console.log(<span class="code-value">'点击了第'</span>, index + 1, <span class="code-value">'行:'</span>, row);
 });</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排序 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">排序（本地）</h3>
+        <p class="demo-block-desc">
+            列设置 <code>sortable</code> 后可点击表头排序，顺序为 <strong>升序 → 降序 → 取消</strong>。
+            表头支持 Enter / Space 键操作，并输出 <code>aria-sort</code>。
+            默认在组件内本地排序并派发 <code>sort-change</code>；远端排序请设置 <code>remote</code>，组件只管理状态并派发事件。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table row-key="id" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age","sortable":true,"width":100},{"title":"得分","dataIndex":"score","key":"score","sortable":true,"width":100}]' data-source='[{"id":1,"name":"张三","age":28,"score":88},{"id":2,"name":"李四","age":32,"score":72},{"id":3,"name":"王五","age":24,"score":95},{"id":4,"name":"赵六","age":35,"score":64}]'></solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 列级 sortable，默认本地排序 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span>
+  <span class="code-attr">row-key</span>=<span class="code-value">"id"</span>
+  <span class="code-attr">columns</span>=<span class="code-value">'[{"title":"年龄","dataIndex":"age","key":"age","sortable":true}]'</span>
+  <span class="code-attr">data-source</span>=<span class="code-value">"..."</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 监听排序变化</span>
+table.addEventListener(<span class="code-value">'sort-change'</span>, (e) => {
+  <span class="code-comment">// e.detail: { column, order, sort }</span>
+  <span class="code-comment">// order: 'asc' | 'desc' | ''</span>
+});</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 筛选 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">筛选（内置筛选行 + API）</h3>
+        <p class="demo-block-desc">
+            列级 <code>filters</code> 声明可选值后，表头下方会渲染内置筛选行（复选框 + 清除），默认在组件内本地过滤；
+            也可以继续用 API 设置/清除筛选。远端筛选请设置 <code>remote</code>，组件只派发 <code>filter-change</code>。
+            筛选与排序可以同时生效。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table ref="filterTable" row-key="id" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age","sortable":true,"width":100},{"title":"状态","dataIndex":"status","key":"status","filters":[{"label":"活跃","value":"active"},{"label":"禁用","value":"inactive"}]}]' data-source='[{"id":1,"name":"张三","age":28,"status":"active"},{"id":2,"name":"李四","age":32,"status":"active"},{"id":3,"name":"王五","age":24,"status":"inactive"},{"id":4,"name":"赵六","age":35,"status":"inactive"}]'></solely-table>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <solely-button type="primary" size="small" @click="this.filterActive()">仅看活跃</solely-button>
+                    <solely-button size="small" @click="this.sortByAge()">年龄升序</solely-button>
+                    <solely-button size="small" @click="this.clearTableFilter()">清除筛选</solely-button>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// 设置单列筛选（传空值等于清除该列）</span>
+table.setFilter(<span class="code-value">'status'</span>, <span class="code-value">'active'</span>);
+table.setFilter(<span class="code-value">'status'</span>, [<span class="code-value">'active'</span>, <span class="code-value">'inactive'</span>]);
+
+<span class="code-comment">// 批量设置 / 清除</span>
+table.setFilterValues({ status: [<span class="code-value">'active'</span>] });
+table.clearFilters();
+table.clearFilters(<span class="code-value">'status'</span>);
+
+<span class="code-comment">// 与排序同时生效</span>
+table.setSort(<span class="code-value">'age'</span>, <span class="code-value">'asc'</span>);
+table.clearSort();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 受控排序与筛选 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">受控排序与筛选</h3>
+        <p class="demo-block-desc">
+            传入 <code>sort</code> / <code>filter-values</code> 即进入受控模式：组件只派发事件、不修改内部状态，
+            需要把事件 detail 回写到属性上。属性存在即受控；切换回非受控请通过 property 赋值为 <code>undefined</code>。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table row-key="id"
+                    :sort="$data.controlledSort"
+                    :filterValues="$data.controlledFilters"
+                    @sort-change="this.handleControlledSort(event)"
+                    @filter-change="this.handleControlledFilter(event)"
+                    :columns="$data.controlledColumns"
+                    data-source='[{"id":1,"name":"张三","age":28,"status":"active"},{"id":2,"name":"李四","age":32,"status":"active"},{"id":3,"name":"王五","age":24,"status":"inactive"},{"id":4,"name":"赵六","age":35,"status":"inactive"}]'></solely-table>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <solely-button type="primary" size="small" @click="this.setControlledFilter('active')">筛选活跃</solely-button>
+                    <solely-button size="small" @click="this.setControlledFilter('inactive')">筛选禁用</solely-button>
+                    <solely-button size="small" @click="this.setControlledFilter(null)">清除筛选</solely-button>
+                </div>
+                <div style="font-size: 12px; color: var(--solely-text-secondary);">
+                    当前受控状态：sort = {{$data.controlledSort ? $data.controlledSort.column + ' / ' + $data.controlledSort.order : '无'}}，
+                    filters = {{$data.controlledFilterText}}
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span>
+  <span class="code-attr">:sort</span>=<span class="code-value">"$data.controlledSort"</span>
+  <span class="code-attr">:filterValues</span>=<span class="code-value">"$data.controlledFilters"</span>
+  <span class="code-attr">@sort-change</span>=<span class="code-value">"this.handleControlledSort(event)"</span>
+  <span class="code-attr">@filter-change</span>=<span class="code-value">"this.handleControlledFilter(event)"</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 事件 detail 即「期望的下一个状态」，回写后生效；与左侧实际 demo 的方法名一致</span>
+handleControlledSort(e) { this.$data.controlledSort = e.detail.sort ?? { column: '', order: '' }; }
+handleControlledFilter(e) { this.$data.controlledFilters = e.detail.filters ?? {}; }</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 行选择 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">行选择</h3>
+        <p class="demo-block-desc">
+            设置 <code>selectable</code> 显示选择列，<code>row-key</code> 用于跨数据刷新保留选择；
+            多选模式支持表头全选与半选（<code>indeterminate</code>），<code>selection-mode="single"</code> 为单选。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table ref="selectTable" selectable row-key="id"
+                    @selection-change="this.handleSelectionChange(event)"
+                    columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age","width":100}]'
+                    data-source='[{"id":1,"name":"张三","age":28},{"id":2,"name":"李四","age":32},{"id":3,"name":"王五","age":24}]'></solely-table>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <solely-button size="small" @click="this.clearDemoSelection()">清空选择</solely-button>
+                    <span style="font-size: 12px; color: var(--solely-text-secondary);">{{$data.selectionSummary}}</span>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span>
+  <span class="code-attr">selectable</span>
+  <span class="code-attr">row-key</span>=<span class="code-value">"id"</span>
+  <span class="code-attr">selection-mode</span>=<span class="code-value">"multiple"</span>
+  <span class="code-attr">@selection-change</span>=<span class="code-value">"this.handleSelectionChange(event)"</span>
+<span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// e.detail: { selectedKeys, selectedRows, row?, selected? }</span>
+<span class="code-comment">// 受控：设置 selected-keys 后只派发事件，不修改内部状态</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 展开行 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">展开行</h3>
+        <p class="demo-block-desc">
+            设置 <code>expandable</code> 后每行出现展开按钮；展开内容优先使用 <code>expand-{key}</code> 插槽
+            （未配置 rowKey 时为 <code>expand-{rowIndex}</code>），也可以通过 <code>expandRender</code> 渲染函数提供。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table expandable row-key="id"
+                    @expand-change="this.handleExpandChange(event)"
+                    columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age","width":100}]'
+                    data-source='[{"id":1,"name":"张三","age":28},{"id":2,"name":"李四","age":32},{"id":3,"name":"王五","age":24}]'>
+                    <div slot="expand-1" style="color: var(--solely-text-secondary);">工号：A001 · 部门：研发部</div>
+                    <div slot="expand-2" style="color: var(--solely-text-secondary);">工号：A002 · 部门：市场部</div>
+                    <div slot="expand-3" style="color: var(--solely-text-secondary);">工号：A003 · 部门：设计部</div>
+                </solely-table>
+                <span style="font-size: 12px; color: var(--solely-text-secondary);">{{$data.expandSummary}}</span>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">expandable</span> <span class="code-attr">row-key</span>=<span class="code-value">"id"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"expand-1"</span><span class="code-bracket">&gt;</span>第一行的展开内容<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span>
+
+<span class="code-comment">// 或使用渲染函数（property 赋值）</span>
+table.expandRender = (row, index) =&gt; {
+  const el = document.createElement(<span class="code-value">'div'</span>);
+  el.textContent = <span class="code-value">`${row.name} 的详情`</span>;
+  return el; <span class="code-comment">// 返回 Node；返回字符串按纯文本插入</span>
+};</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义空态 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">自定义空态</h3>
+        <p class="demo-block-desc">
+            无数据时复用 <code>solely-empty</code>，可通过 <code>slot="empty"</code> 完全自定义；
+            默认本地筛选下，筛选结果为空也会展示空态；<code>remote</code> 模式由使用方决定传入的数据。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview">
+                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]' data-source='[]'>
+                    <div slot="empty" style="padding: 24px; text-align: center; color: var(--solely-text-secondary);">
+                        暂无员工数据，请先添加
+                    </div>
+                </solely-table>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">data-source</span>=<span class="code-value">"[]"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">div</span> <span class="code-attr">slot</span>=<span class="code-value">"empty"</span><span class="code-bracket">&gt;</span>暂无员工数据，请先添加<span class="code-bracket">&lt;/</span><span class="code-tag">div</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分页联动 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">与分页联动</h3>
+        <p class="demo-block-desc">
+            table 不执行分页逻辑。监听 pagination 的 <code>change</code>，自行加载/切片数据并调用
+            <code>table.handlePaginationChange(event.detail)</code>，table 会把分页事件转出为 <code>page-change</code>；
+            数据源替换时还会派发 <code>data-change</code>（包含 total）供外部同步分页总数。
+            这里把每页条数选项设为 <code>[2, 4, 6]</code>，下拉显示值始终与 <code>page-size</code> 一致。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 12px;">
+                <solely-table ref="pageTable" row-key="id"
+                    :columns="$data.pageColumns"
+                    :dataSource="$data.pageData"
+                    @page-change="this.handleTablePageChange(event)"></solely-table>
+                <solely-pagination current="1" total="6" page-size="2" page-size-options="[2, 4, 6]" show-size-changer
+                    @change="this.handlePageChange(event)"></solely-pagination>
+                <span style="font-size: 12px; color: var(--solely-text-secondary);">{{$data.pageSummary}}</span>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">// pagination 的 change 事件 detail: { current, pageSize }</span>
+handlePageChange(event) {
+  <span class="code-keyword">const</span> { current, pageSize } = event.detail;
+  <span class="code-keyword">const</span> start = (current - 1) * pageSize;
+  <span class="code-keyword">const</span> rows = allRows.slice(start, start + pageSize);
+
+  table.setDataSource(rows);              <span class="code-comment">// 触发 data-change</span>
+  table.handlePaginationChange(event.detail); <span class="code-comment">// 转出 page-change</span>
+}
+
+<span class="code-comment">// 远端分页时同理：拿到页码后请求接口，再 setDataSource</span></code></pre>
             </div>
         </div>
     </div>
@@ -278,27 +506,75 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
     <!-- 自定义单元格内容 -->
     <div class="demo-block">
         <h3 class="demo-block-title">自定义单元格内容</h3>
-        <p class="demo-block-desc">通过插槽自定义特定单元格的渲染内容，插槽名格式为 <code>col-{key}-{rowIndex}</code>。</p>
+        <p class="demo-block-desc">
+            推荐在列定义中声明 <code>render(row, index)</code>：返回 Node 直接挂载，返回字符串按纯文本插入（防 XSS），
+            可按行拿到数据；也可使用插槽：列级 <code>slot</code>（所有行共用同一内容）或行级稳定插槽
+            <code>col-{key}-{rowKey}</code>（需配置 <code>row-key</code>，排序/筛选/分页后仍跟随原数据行）。
+            旧的 <code>col-{key}-{rowIndex}</code> 按展示索引定位，仅作兼容回退。
+            优先级为 <code>render</code> &gt; <code>slot</code> &gt; 稳定插槽 &gt; 旧版插槽 &gt; 字段值；稳定与旧版同时存在时稳定插槽优先。
+        </p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-table columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"状态","dataIndex":"status","key":"status"},{"title":"操作","dataIndex":"action","key":"action"}]' data-source='[{"name":"张三","status":"active"},{"name":"李四","status":"inactive"}]'>
-                    <span slot="col-status-0" style="color: #52c41a;">● 活跃</span>
-                    <span slot="col-status-1" style="color: #ff4d4f;">● 禁用</span>
-                    <solely-button slot="col-action-0" type="primary" size="small">编辑</solely-button>
-                    <solely-button slot="col-action-1" size="small">查看</solely-button>
+                <solely-table row-key="id" columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"状态","dataIndex":"status","key":"status"},{"title":"操作","dataIndex":"action","key":"action"}]' data-source='[{"id":1,"name":"张三","status":"active"},{"id":2,"name":"李四","status":"inactive"}]'>
+                    <span slot="col-status-1" style="color: #52c41a;">● 活跃</span>
+                    <span slot="col-status-2" style="color: #ff4d4f;">● 禁用</span>
+                    <solely-button slot="col-action-1" type="primary" size="small">编辑</solely-button>
+                    <solely-button slot="col-action-2" size="small">查看</solely-button>
                 </solely-table>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
-  <span class="code-comment">&lt;!-- col-status-0: 第一行 status 列 --&gt;</span>
-  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"col-status-0"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #52c41a;"</span><span class="code-bracket">&gt;</span>● 活跃<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
-  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"col-status-1"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #ff4d4f;"</span><span class="code-bracket">&gt;</span>● 禁用<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+                <pre><code><span class="code-comment">// 推荐：列级 render（可通过 property / setColumns 传入函数）</span>
+table.setColumns([
+  { title: <span class="code-value">'状态'</span>, dataIndex: <span class="code-value">'status'</span>, key: <span class="code-value">'status'</span>,
+    render: (row) =&gt; row.status === <span class="code-value">'active'</span> ? <span class="code-value">'● 活跃'</span> : <span class="code-value">'● 禁用'</span> },
+  { title: <span class="code-value">'操作'</span>, dataIndex: <span class="code-value">'action'</span>, key: <span class="code-value">'action'</span>,
+    render: (row, index) =&gt; {
+      const button = document.createElement(<span class="code-value">'solely-button'</span>);
+      button.textContent = <span class="code-value">'编辑'</span>;
+      return button;
+    } },
+]);
+
+<span class="code-comment">&lt;!-- 或者使用插槽 --&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-table</span> <span class="code-attr">row-key</span>=<span class="code-value">"id"</span> <span class="code-attr">columns</span>=<span class="code-value">"..."</span> <span class="code-attr">data-source</span>=<span class="code-value">"..."</span><span class="code-bracket">&gt;</span>
+  <span class="code-comment">&lt;!-- col-status-1: 稳定定位到 id=1 的行的 status 列 --&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"col-status-1"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #52c41a;"</span><span class="code-bracket">&gt;</span>● 活跃<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">span</span> <span class="code-attr">slot</span>=<span class="code-value">"col-status-2"</span> <span class="code-attr">style</span>=<span class="code-value">"color: #ff4d4f;"</span><span class="code-bracket">&gt;</span>● 禁用<span class="code-bracket">&lt;/</span><span class="code-tag">span</span><span class="code-bracket">&gt;</span>
   
-  <span class="code-comment">&lt;!-- col-action-0: 第一行 action 列 --&gt;</span>
-  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">slot</span>=<span class="code-value">"col-action-0"</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>编辑<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
-  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">slot</span>=<span class="code-value">"col-action-1"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>查看<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+  <span class="code-comment">&lt;!-- col-action-1: 稳定定位到 id=1 的行的 action 列 --&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">slot</span>=<span class="code-value">"col-action-1"</span> <span class="code-attr">type</span>=<span class="code-value">"primary"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>编辑<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-button</span> <span class="code-attr">slot</span>=<span class="code-value">"col-action-2"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>查看<span class="code-bracket">&lt;/</span><span class="code-tag">solely-button</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-table</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 0.8.0 新增特性验收样例 ===== -->
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">固定列（0.8.0）</h3>
+        <p class="demo-block-desc">列配置里指定 <code>fixed: 'left' | 'right'</code>；横向滚动时固定列应保持在原位、不错位。下面把表格放进 420px 容器制造横向滚动。操作列用行级稳定插槽放入真正的 <code>solely-button</code>，验证自定义内容在固定列里也能正常渲染，而不是退化成纯文本。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <div style="width: 420px; max-width: 100%;">
+                    <solely-table row-key="id"
+                        columns='[{"title":"姓名","dataIndex":"name","key":"name","width":120,"fixed":"left"},{"title":"年龄","dataIndex":"age","key":"age","width":100},{"title":"城市","dataIndex":"city","key":"city","width":160},{"title":"部门","dataIndex":"dept","key":"dept","width":160},{"title":"入职年份","dataIndex":"year","key":"year","width":140},{"title":"邮箱","dataIndex":"mail","key":"mail","width":220},{"title":"操作","dataIndex":"op","key":"op","width":120,"fixed":"right"}]'
+                        data-source='[{"id":1,"name":"张三","age":28,"city":"北京市","dept":"研发部","year":2020,"mail":"zhang@example.com"},{"id":2,"name":"李四","age":32,"city":"上海市","dept":"产品部","year":2019,"mail":"li@example.com"},{"id":3,"name":"王五","age":24,"city":"广州市","dept":"设计部","year":2022,"mail":"wang@example.com"}]'>
+                        <solely-button slot="col-op-1" type="primary" size="small">编辑</solely-button>
+                        <solely-button slot="col-op-2" type="primary" size="small">编辑</solely-button>
+                        <solely-button slot="col-op-3" type="primary" size="small">编辑</solely-button>
+                    </solely-table>
+                </div>
+            </div>
+            <div class="demo-code"><pre><code>&lt;solely-table row-key="id"
+  columns='[{"title":"姓名","fixed":"left",...},{"title":"操作","key":"op","fixed":"right",...}]'
+  data-source='[{"id":1,...},{"id":2,...},{"id":3,...}]'&gt;
+  &lt;solely-button slot="col-op-1" type="primary" size="small"&gt;编辑&lt;/solely-button&gt;
+  &lt;solely-button slot="col-op-2" type="primary" size="small"&gt;编辑&lt;/solely-button&gt;
+  &lt;solely-button slot="col-op-3" type="primary" size="small"&gt;编辑&lt;/solely-button&gt;
+&lt;/solely-table&gt;
+&lt;!-- 横向滚动时首尾列固定；行级稳定插槽 col-{key}-{rowKey} 跟随原数据行 --&gt;</code></pre></div>
         </div>
     </div>
 </div>
@@ -312,7 +588,8 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性名</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -321,11 +598,13 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>columns</td>
+                    <td>columns</td>
                     <td>表格列配置（JSON字符串）</td>
                     <td>string</td>
                     <td>[]</td>
                 </tr>
                 <tr>
+                    <td>data-source</td>
                     <td>dataSource</td>
                     <td>表格数据（JSON字符串）</td>
                     <td>string</td>
@@ -333,11 +612,20 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>size</td>
-                    <td>表格尺寸（small/middle/default）</td>
-                    <td>string</td>
-                    <td>default</td>
+                    <td>size</td>
+                    <td>表格尺寸，可选值为 small、medium、large</td>
+                    <td>'small' | 'medium' | 'large'</td>
+                    <td>'medium'</td>
                 </tr>
                 <tr>
+                    <td>size 兼容别名</td>
+                    <td>size</td>
+                    <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                    <td>'middle' | 'default'</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>bordered</td>
                     <td>bordered</td>
                     <td>是否显示边框</td>
                     <td>boolean</td>
@@ -345,27 +633,108 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>loading</td>
+                    <td>loading</td>
                     <td>是否加载中</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
                     <td>striped</td>
+                    <td>striped</td>
                     <td>是否显示斑马纹</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>row-clickable</td>
                     <td>rowClickable</td>
                     <td>是否可点击行</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>row-key</td>
                     <td>rowKey</td>
-                    <td>行数据的唯一标识字段名</td>
+                    <td>行数据的唯一标识字段名（支持 <code>user.id</code> 这类嵌套路径）；选择/展开状态与行级单元格插槽定位（<code>col-&#123;key&#125;-&#123;rowKey&#125;</code>）都按此字段保留。未配置时按行对象引用生成稳定 id（排序/筛选不漂移），并在开发环境提示一次；推荐始终配置。注意：展开行插槽名 <code>expand-&#123;key&#125;</code> 只按扁平字段取值，嵌套路径请用 <code>expandRender</code></td>
                     <td>string</td>
                     <td>-</td>
+                </tr>
+                <tr>
+                    <td>selectable</td>
+                    <td>selectable</td>
+                    <td>是否显示选择列（默认关闭）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>selection-mode</td>
+                    <td>selectionMode</td>
+                    <td>选择模式，multiple：多选；single：单选</td>
+                    <td>'multiple' | 'single'</td>
+                    <td>'multiple'</td>
+                </tr>
+                <tr>
+                    <td>selected-keys</td>
+                    <td>selectedKeys</td>
+                    <td>受控选中行 key 列表。设置后只派发 selection-change，需回写</td>
+                    <td>string[]</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>expandable</td>
+                    <td>expandable</td>
+                    <td>是否显示展开列（默认关闭）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>expanded-keys</td>
+                    <td>expandedKeys</td>
+                    <td>受控展开行 key 列表。设置后只派发 expand-change，需回写</td>
+                    <td>string[]</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>—（函数，无法通过 attribute 传入）</td>
+                    <td>expandRender</td>
+                    <td>展开内容渲染函数，返回 Node 直接挂载，返回字符串按纯文本插入；slot 优先。需通过 property 赋值</td>
+                    <td>(row, index) =&gt; Node | string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>sort</td>
+                    <td>sort</td>
+                    <td>受控排序状态 <code>{ column, order }</code>。设置后点击表头只派发 sort-change，需回写</td>
+                    <td>TableSortState | string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>filter-values</td>
+                    <td>filterValues</td>
+                    <td>受控筛选值 <code>{ [columnKey]: value | value[] }</code>。设置后 API 调整只派发 filter-change，需回写</td>
+                    <td>Record&lt;string, string[]&gt; | string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>local-sort</td>
+                    <td>localSort</td>
+                    <td>是否在组件内对展示数据排序；默认开启，传了 sortable 即生效。关闭推荐设置 <code>remote</code>，或使用 attribute <code>local-sort="false"</code></td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>local-filter</td>
+                    <td>localFilter</td>
+                    <td>是否在组件内对展示数据按筛选值过滤；默认开启，传了 filters 即生效。关闭推荐设置 <code>remote</code>，或使用 attribute <code>local-filter="false"</code></td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>remote</td>
+                    <td>remote</td>
+                    <td>远端模式：排序/筛选只管理状态并派发事件，不在组件内变换数据（优先于 localSort/localFilter）</td>
+                    <td>boolean</td>
+                    <td>false</td>
                 </tr>
             </tbody>
         </table>
@@ -384,13 +753,43 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>click</td>
-                    <td>点击行时触发（rowClickable 为 true 时）</td>
+                    <td>原生点击事件，从行冒泡到宿主元素（仅一次，组件不再额外派发）</td>
                     <td>MouseEvent</td>
                 </tr>
                 <tr>
                     <td>row-click</td>
-                    <td>点击行时触发的自定义事件</td>
+                    <td>点击行时触发的自定义事件（rowClickable 为 true 时；与原生 click 各一次）</td>
                     <td>CustomEvent&lt;{ row: Record&lt;string, unknown&gt;; index: number }&gt;</td>
+                </tr>
+                <tr>
+                    <td>sort-change</td>
+                    <td>排序变化（点击表头或 API 设置）</td>
+                    <td>CustomEvent&lt;{ column: string | null; order: 'asc' | 'desc' | ''; sort: TableSortState | null }&gt;</td>
+                </tr>
+                <tr>
+                    <td>filter-change</td>
+                    <td>筛选值变化</td>
+                    <td>CustomEvent&lt;{ filters: Record&lt;string, string[]&gt;; column: string | null; values: string[] | null }&gt;</td>
+                </tr>
+                <tr>
+                    <td>selection-change</td>
+                    <td>行选择变化（含表头全选）</td>
+                    <td>CustomEvent&lt;{ selectedKeys: string[]; selectedRows: Record&lt;string, unknown&gt;[]; row?: Record&lt;string, unknown&gt;; selected?: boolean }&gt;</td>
+                </tr>
+                <tr>
+                    <td>expand-change</td>
+                    <td>行展开/收起</td>
+                    <td>CustomEvent&lt;{ expandedKeys: string[]; expanded?: boolean; row?: Record&lt;string, unknown&gt;; index?: number }&gt;</td>
+                </tr>
+                <tr>
+                    <td>data-change</td>
+                    <td>数据源被替换（setDataSource 或 data-source 属性变化），可用于同步分页总数</td>
+                    <td>CustomEvent&lt;{ dataSource: Record&lt;string, unknown&gt;[]; total: number }&gt;</td>
+                </tr>
+                <tr>
+                    <td>page-change</td>
+                    <td>调用 handlePaginationChange 后转出的分页事件</td>
+                    <td>CustomEvent&lt;{ current: number; pageSize: number }&gt;</td>
                 </tr>
             </tbody>
         </table>
@@ -422,9 +821,111 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>getDataSource()</td>
-                    <td>获取数据源</td>
+                    <td>获取原始数据源（未经过本地筛选/排序）</td>
                     <td>-</td>
                     <td>Record&lt;string, unknown&gt;[]</td>
+                </tr>
+                <tr>
+                    <td>getDisplayedDataSource()</td>
+                    <td>获取最终展示数据（经过 localFilter / localSort 后）</td>
+                    <td>-</td>
+                    <td>Record&lt;string, unknown&gt;[]</td>
+                </tr>
+                <tr>
+                    <td>getSortState()</td>
+                    <td>获取当前生效的排序状态（受控优先）</td>
+                    <td>-</td>
+                    <td>TableSortState | null</td>
+                </tr>
+                <tr>
+                    <td>setSort(column, order?)</td>
+                    <td>设置排序，order 默认 'asc'</td>
+                    <td>column: string; order?: 'asc' | 'desc'</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>clearSort()</td>
+                    <td>清除排序</td>
+                    <td>-</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getFilterValues()</td>
+                    <td>获取当前筛选值（受控优先）</td>
+                    <td>-</td>
+                    <td>Record&lt;string, string[]&gt;</td>
+                </tr>
+                <tr>
+                    <td>setFilter(column, values, silent?)</td>
+                    <td>设置单列筛选值，传空值等于清除该列；silent 为 true 时不派发事件</td>
+                    <td>column: string; values: string | string[]; silent?: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>setFilterValues(values, silent?)</td>
+                    <td>批量设置筛选值</td>
+                    <td>values: Record&lt;string, string[]&gt;; silent?: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>clearFilters(column?, silent?)</td>
+                    <td>清除全部或指定列的筛选</td>
+                    <td>column?: string; silent?: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getSelectedKeys()</td>
+                    <td>获取选中行 key</td>
+                    <td>-</td>
+                    <td>string[]</td>
+                </tr>
+                <tr>
+                    <td>getSelectedRows()</td>
+                    <td>获取当前数据中仍存在的选中行</td>
+                    <td>-</td>
+                    <td>Record&lt;string, unknown&gt;[]</td>
+                </tr>
+                <tr>
+                    <td>setSelectedKeys(keys, silent?)</td>
+                    <td>设置选中行 key</td>
+                    <td>keys: string[]; silent?: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>clearSelection(silent?)</td>
+                    <td>清空选择</td>
+                    <td>silent?: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>toggleRowSelection(row, index)</td>
+                    <td>切换指定行的选中状态</td>
+                    <td>row: Record&lt;string, unknown&gt;; index: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>getExpandedKeys()</td>
+                    <td>获取展开行 key</td>
+                    <td>-</td>
+                    <td>string[]</td>
+                </tr>
+                <tr>
+                    <td>setExpandedKeys(keys, silent?)</td>
+                    <td>设置展开行 key</td>
+                    <td>keys: string[]; silent?: boolean</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>toggleRowExpansion(row, index)</td>
+                    <td>切换指定行的展开状态</td>
+                    <td>row: Record&lt;string, unknown&gt;; index: number</td>
+                    <td>void</td>
+                </tr>
+                <tr>
+                    <td>handlePaginationChange(detailOrEvent)</td>
+                    <td>接收 pagination 的 change 事件/detail，转出为 page-change；不做分页计算</td>
+                    <td>{ current, pageSize } | Event</td>
+                    <td>void</td>
                 </tr>
             </tbody>
         </table>
@@ -496,6 +997,51 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
                     <td>空状态提示</td>
                     <td>&lt;div&gt;</td>
                 </tr>
+                <tr>
+                    <td>select-all</td>
+                    <td>表头全选复选框</td>
+                    <td>&lt;input type="checkbox"&gt;</td>
+                </tr>
+                <tr>
+                    <td>sort-icon</td>
+                    <td>可排序表头的排序图标</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>filter-row</td>
+                    <td>表头筛选行</td>
+                    <td>&lt;tr&gt;</td>
+                </tr>
+                <tr>
+                    <td>filter-cell</td>
+                    <td>筛选行单元格</td>
+                    <td>&lt;th&gt;</td>
+                </tr>
+                <tr>
+                    <td>filter-option</td>
+                    <td>筛选选项标签</td>
+                    <td>&lt;label&gt;</td>
+                </tr>
+                <tr>
+                    <td>filter-clear</td>
+                    <td>清除筛选按钮</td>
+                    <td>&lt;button&gt;</td>
+                </tr>
+                <tr>
+                    <td>cell-render</td>
+                    <td>使用 <code>render</code> 自定义渲染的单元格内容容器</td>
+                    <td>&lt;span&gt;</td>
+                </tr>
+                <tr>
+                    <td>expand-trigger</td>
+                    <td>展开行触发按钮</td>
+                    <td>&lt;button&gt;</td>
+                </tr>
+                <tr>
+                    <td>expand-row</td>
+                    <td>展开详情行</td>
+                    <td>&lt;tr&gt;</td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -511,11 +1057,46 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
             </thead>
             <tbody>
                 <tr>
+                    <td>col-&#123;key&#125;-&#123;rowKey&#125;</td>
+                    <td>按行自定义单元格内容（推荐）：key 为列的 key，rowKey 为稳定的行标识。例如配置 <code>row-key="id"</code> 后，<code>col-name-1</code> 始终指向 id=1 的行，排序/筛选/分页后不会漂移</td>
+                </tr>
+                <tr>
                     <td>col-&#123;key&#125;-&#123;rowIndex&#125;</td>
-                    <td>自定义单元格内容，key 为列的 key，rowIndex 为行索引。例如：col-name-0 表示第一行 name 列的插槽</td>
+                    <td>旧版按展示索引定位的单元格插槽（兼容保留）；索引会随排序/筛选/分页变化，推荐改用上面的稳定写法。稳定插槽与它同时存在时稳定插槽优先</td>
+                </tr>
+                <tr>
+                    <td>&#123;col.slot&#125;</td>
+                    <td>列级具名插槽：在列定义声明 <code>slot</code> 后，所有行共用同一插槽内容（模板引擎无作用域插槽，拿不到行数据）；按行动态渲染请用 <code>render</code></td>
+                </tr>
+                <tr>
+                    <td>expand-&#123;key&#125; / expand-&#123;rowIndex&#125;</td>
+                    <td>
+                        展开行内容。配置了 rowKey 时插槽名为 expand-4（4 为行 key），否则为 expand-0（0 为行索引）；与 expandRender 同时存在时 slot 优先。
+                        <br>
+                        <strong>限制</strong>：展开插槽名按 <code>row[key]</code> 直接取字段，<code>rowKey</code> 为嵌套路径（如 <code>user.id</code>）时取不到值会回退为行索引；
+                        嵌套 rowKey 场景请改用 <code>expandRender</code>，或把 rowKey 改为扁平字段（单元格插槽 <code>col-&#123;key&#125;-&#123;rowKey&#125;</code> 支持嵌套路径）。
+                    </td>
+                </tr>
+                <tr>
+                    <td>empty</td>
+                    <td>自定义空态内容；未提供时复用 solely-empty 显示「暂无数据」</td>
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">受控语义与已知限制</h4>
+        <ul style="margin: 0; padding-left: 20px; line-height: 1.9; color: var(--solely-text-secondary);">
+            <li><strong>受控判定</strong>：<code>sort</code> / <code>filterValues</code> / <code>selectedKeys</code> / <code>expandedKeys</code> 一旦有值即进入受控模式；组件只派发事件，不修改内部状态，需要把事件 detail 回写。清除受控请通过 property 赋值为 <code>undefined</code>（移除 attribute 会被框架回落为旧值）。</li>
+            <li><strong>排序 / 筛选默认本地生效</strong>：传了 <code>sortable</code> 点击表头即本地排序；传了 <code>filters</code> 会渲染内置筛选行并本地过滤。远端排序/筛选请设置 <code>remote</code>，组件只管理状态并派发事件。</li>
+            <li><strong>本地比较规则</strong>：优先使用列级 <code>sorter</code>；否则数字按数值、Date 按时间、其余按字符串 <code>localeCompare</code>。本地筛选按 <code>String(cell) === String(value)</code> 匹配，多值之间为「或」关系；<code>dataIndex</code> 支持 <code>user.name</code>、<code>items[0].name</code>、<code>items.0.name</code>。</li>
+            <li><strong>行标识</strong>：选择/展开以及行级单元格插槽定位（<code>col-&#123;key&#125;-&#123;rowKey&#125;</code>）都按 <code>rowKey</code> 保留；未配置 rowKey 时按行对象引用生成稳定 id，排序/筛选后身份不变，但整体替换数据源（新对象）后仍会变化，建议开启这些能力时始终配置 <code>rowKey</code>。开发环境会提示一次。</li>
+            <li><strong>固定列</strong>：多个左/右固定列会按列宽累加偏移；选择列随左固定列贴左、展开列随右固定列贴右。建议为固定列显式设置 <code>width</code>，无法解析的宽度会在运行时按实测宽度补足。</li>
+            <li><strong>性能（已知限制）</strong>：表格仍是整表重渲染，每次刷新都会重建所有行的 DOM。大数据量（例如几千行）建议配合分页/虚拟滚动使用；未引入增量更新，以避免破坏现有渲染与测试契约。</li>
+            <li><strong>展开内容</strong>：<code>expandRender</code> 返回字符串按纯文本插入（防 XSS），需要富文本/组件请使用 slot；渲染函数会在每次刷新后重新执行，返回新 Node 时旧节点会被替换。</li>
+            <li><strong>分页</strong>：table 不做分页计算，仅通过 <code>handlePaginationChange</code> 转出 <code>page-change</code>；数据源替换时派发 <code>data-change</code>，其 total 为当前数据源条数。</li>
+        </ul>
     </div>
 
     <div class="api-block">
@@ -524,24 +1105,49 @@ tableEl.addEventListener(<span class="code-value">'row-click'</span>, (e) => {
             <pre><code><span class="code-comment">// 表格列配置</span>
 <span class="code-keyword">interface</span> <span class="code-type">TableColumn</span> {
   <span class="code-attr">title</span>: <span class="code-type">string</span>;           <span class="code-comment">// 列标题</span>
-  <span class="code-attr">dataIndex</span>: <span class="code-type">string</span>;       <span class="code-comment">// 列数据字段</span>
+  <span class="code-attr">dataIndex</span>: <span class="code-type">string</span>;       <span class="code-comment">// 列数据字段，支持 user.name / items[0].name</span>
   <span class="code-attr">key</span>: <span class="code-type">string</span>;           <span class="code-comment">// 列标识</span>
   <span class="code-attr">width</span>?: <span class="code-type">number | string</span>; <span class="code-comment">// 列宽度</span>
   <span class="code-attr">fixed</span>?: <span class="code-type">'left' | 'right'</span>; <span class="code-comment">// 是否固定列</span>
   <span class="code-attr">align</span>?: <span class="code-type">'left' | 'center' | 'right'</span>; <span class="code-comment">// 对齐方式</span>
-  <span class="code-attr">slot</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 自定义渲染（使用 slot 名称）</span>
+  <span class="code-attr">render</span>?: <span class="code-type">(row, index) =&gt; string | Node | null</span>; <span class="code-comment">// 列级渲染，字符串按纯文本插入</span>
+  <span class="code-attr">slot</span>?: <span class="code-type">string</span>;         <span class="code-comment">// 列级具名插槽（所有行共用）</span>
+  <span class="code-attr">sortable</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否可点击表头排序</span>
+  <span class="code-attr">sorter</span>?: <span class="code-type">(a, b) =&gt; number</span>; <span class="code-comment">// 自定义比较（本地排序时生效，需 property 传入）</span>
+  <span class="code-attr">filters</span>?: <span class="code-type">TableFilterOption[]</span>; <span class="code-comment">// 可选筛选值，声明后渲染内置筛选行</span>
+}
+
+<span class="code-comment">// 排序 / 筛选状态</span>
+<span class="code-keyword">interface</span> <span class="code-type">TableSortState</span> {
+  <span class="code-attr">column</span>: <span class="code-type">string</span>;         <span class="code-comment">// 列 key</span>
+  <span class="code-attr">order</span>: <span class="code-type">'asc' | 'desc'</span>;   <span class="code-comment">// 方向</span>
+}
+<span class="code-keyword">interface</span> <span class="code-type">TableFilterOption</span> {
+  <span class="code-attr">label</span>: <span class="code-type">string</span>;
+  <span class="code-attr">value</span>: <span class="code-type">string | number | boolean</span>;
 }
 
 <span class="code-comment">// 组件属性接口</span>
 <span class="code-keyword">interface</span> <span class="code-type">TableProps</span> {
   <span class="code-attr">columns</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 表格列配置（JSON字符串）</span>
   <span class="code-attr">dataSource</span>?: <span class="code-type">string</span>;   <span class="code-comment">// 表格数据（JSON字符串）</span>
-  <span class="code-attr">size</span>?: <span class="code-type">'small' | 'middle' | 'default'</span>; <span class="code-comment">// 表格尺寸</span>
+  <span class="code-attr">size</span>?: <span class="code-type">'small' | 'medium' | 'large'</span>; <span class="code-comment">// 表格尺寸（middle / default 为兼容别名 → medium）</span>
   <span class="code-attr">bordered</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否显示边框</span>
   <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否加载中</span>
   <span class="code-attr">striped</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否显示斑马纹</span>
   <span class="code-attr">rowClickable</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否可点击行</span>
-  <span class="code-attr">rowKey</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 行数据的唯一标识字段名</span>
+  <span class="code-attr">rowKey</span>?: <span class="code-type">string</span>;       <span class="code-comment">// 行标识：选择/展开/单元格插槽 col-{key}-{rowKey} 定位</span>
+  <span class="code-attr">selectable</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否显示选择列</span>
+  <span class="code-attr">selectionMode</span>?: <span class="code-type">'multiple' | 'single'</span>;
+  <span class="code-attr">selectedKeys</span>?: <span class="code-type">string[]</span>; <span class="code-comment">// 受控选择</span>
+  <span class="code-attr">expandable</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否显示展开列</span>
+  <span class="code-attr">expandedKeys</span>?: <span class="code-type">string[]</span>; <span class="code-comment">// 受控展开</span>
+  <span class="code-attr">expandRender</span>?: <span class="code-type">(row, index) =&gt; Node | string</span>;
+  <span class="code-attr">sort</span>?: <span class="code-type">TableSortState | string</span>; <span class="code-comment">// 受控排序</span>
+  <span class="code-attr">filterValues</span>?: <span class="code-type">Record&lt;string, string[]&gt; | string</span>; <span class="code-comment">// 受控筛选</span>
+  <span class="code-attr">localSort</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 组件内排序，默认 true</span>
+  <span class="code-attr">localFilter</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 组件内过滤，默认 true</span>
+  <span class="code-attr">remote</span>?: <span class="code-type">boolean</span>;       <span class="code-comment">// 远端模式，关闭本地排序/筛选</span>
 }</code></pre>
         </div>
     </div>

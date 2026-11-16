@@ -12,6 +12,7 @@ module.exports = [
             'dist/',
             'dist-examples/',
             'dist-verify/',
+            'dist-verify-base/',
             'node_modules/',
             '*.config.*',
             'tests/',

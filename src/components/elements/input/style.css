@@ -151,47 +151,43 @@
 }
 
 /* ==================== 输入框特有样式 ==================== */
-/* 清除按钮 - 组件特有尺寸 */
-.form-control__clear {
+/* 三个装饰按钮共用一个盒子：同样的 20×20 尺寸、flex 垂直居中、line-height:1。
+   早期分别用 emoji 与文字符号且 font-size 各不相同（14 / 12 / 16px），
+   inline span 又按基线对齐，彩色 emoji 字面框比其它两个高出一截，
+   视觉上就是「按钮高度不统一」。现在统一为 16×16 currentColor 线性 SVG。 */
+.form-control__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   width: 20px;
   height: 20px;
   margin-left: var(--solely-spacing-xs);
-  font-size: 16px;
-}
-
-/* 密码切换按钮 - 组件特有 */
-.form-control__password-toggle {
-  width: 20px;
-  height: 20px;
-  margin-left: var(--solely-spacing-xs);
-  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1;
   color: var(--solely-text-tertiary);
   cursor: pointer;
-  transition: color var(--solely-transition-duration);
-  flex-shrink: 0;
   user-select: none;
+  transition: color var(--solely-transition-duration);
 }
 
-.form-control__password-toggle:hover {
+.form-control__action:hover {
   color: var(--solely-text-secondary);
 }
 
-/* 复制按钮 - 组件特有 */
-.form-control__copy {
-  width: 20px;
-  height: 20px;
-  margin-left: var(--solely-spacing-xs);
-  font-size: 12px;
-  color: var(--solely-text-tertiary);
-  cursor: pointer;
-  transition: color var(--solely-transition-duration);
+.form-control__action-icon {
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
-  user-select: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
-.form-control__copy:hover {
-  color: var(--solely-text-secondary);
-}
+/* 三个按钮各自的独立类名保留作样式钩子与测试选择器，尺寸一律由 .form-control__action 决定 */
 
 /* 字数统计 - 组件特有 */
 .form-control__count {
@@ -301,4 +297,55 @@
 .form-control__suffix ::slotted(*) {
   display: inline-flex;
   align-items: center;
+}
+
+/* ==================== 分组与附加内容（addonBefore / addonAfter） ==================== */
+.form-control-group {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+}
+
+:host([block]) .form-control-group {
+  display: flex;
+  width: 100%;
+}
+
+.form-control__addon {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--solely-spacing-md);
+  font-family: var(--solely-font-family);
+  font-size: var(--solely-font-size-md);
+  color: var(--solely-text-secondary);
+  background-color: var(--solely-gray-2);
+  border: 1px solid var(--solely-border-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.form-control__addon--before {
+  border-right: none;
+  border-radius: var(--solely-border-radius-md) 0 0 var(--solely-border-radius-md);
+}
+
+.form-control__addon--after {
+  border-left: none;
+  border-radius: 0 var(--solely-border-radius-md) var(--solely-border-radius-md) 0;
+}
+
+.form-control-group--addon-before .form-control {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.form-control-group--addon-after .form-control {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* ==================== textarea 自动高度 ==================== */
+.form-control--autosize .form-control__textarea {
+  resize: none;
+  overflow: hidden;
 }

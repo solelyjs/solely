@@ -1,11 +1,134 @@
 import { defineConfig } from 'vite';
+import type { Plugin } from 'vite';
 import dtsPlugin from 'vite-plugin-dts';
+import ts from 'typescript';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { solelyVitePlugin } from './src/plugins/solely-vite-plugin.ts';
+import { writeBuildMeta } from './scripts/dist-freshness.mjs';
 import pkg from './package.json';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * 把主题变量 CSS 复制到 dist/components/theme/variables.css。
+ *
+ * 该文件是 package.json 导出的稳定路径（`solely/components/theme/variables.css`），
+ * 同时被 `src/components/theme/auto-inject.ts` 以 `?inline` 内联注入。
+ * 源文件放在 src 而不是 public，避免两份内容各自漂移；这里在构建结束时补齐产物。
+ */
+function copyThemeVariablesPlugin(outDir: string): Plugin {
+    return {
+        name: 'solely:copy-theme-variables',
+        apply: 'build',
+        closeBundle() {
+            const source = path.resolve(__dirname, 'src/components/theme/variables.css');
+            const target = path.join(outDir, 'components/theme/variables.css');
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.copyFileSync(source, target);
+            console.log(`[solely:copy-theme-variables] 已复制 ${path.relative(__dirname, target)}`);
+        },
+    };
+}
+
+/**
+ * F-8：构建结束时写入 dist/build-meta.json（源码内容指纹 + 版本 + git 信息）。
+ * scripts/check-dist-fresh.mjs 依赖它判断产物是否落后于源码；放在 Vite 插件里而不是
+ * npm postbuild，是为了让 `vite build`、watch 重建、CI 直调都能拿到指纹。
+ */
+function buildMetaPlugin(outDir: string): Plugin {
+    return {
+        name: 'solely:build-meta',
+        apply: 'build',
+        closeBundle() {
+            const target = writeBuildMeta({ root: __dirname, outDir, version: pkg.version });
+            console.log(`[solely:build-meta] 已写入 ${path.relative(__dirname, target)}`);
+        },
+    };
+}
+
+/**
+ * B-2：`.d.ts` 的相对说明符必须带扩展名，否则 `moduleResolution: node16/nodenext`
+ * 的消费端无法解析（TypeScript 在 Node ESM 语义下不会自动补全）。
+ *
+ * 这里在 dts 写盘前用 TypeScript AST 改写：
+ *   - `./router` → `./router/index.js`（源码为 `<dir>/index.ts`）
+ *   - `./button/types` → `./button/types.js`（源码为 `types.ts`）
+ * 只改 import/export/import() 的模块说明符，注释与字符串内容不参与解析。
+ *
+ * 为什么同时兼容 `bundler`：TypeScript 在 node16、nodenext、bundler 三种
+ * moduleResolution 下都会把 `.js` 说明符映射回 `.d.ts`，因此带扩展名的产物
+ * 在三者下都能解析，不存在"修好 NodeNext 就打断 bundler"的问题。
+ */
+const SPECIFIER_WITH_EXTENSION = /\.(?:js|mjs|cjs|json|css|html)$/;
+
+/** 把相对说明符映射到实际产物路径；无法定位时返回 null，保持原样。 */
+function resolveDeclarationSpecifier(specifier: string, sourceFilePath: string): string | null {
+    if (SPECIFIER_WITH_EXTENSION.test(specifier)) return specifier;
+
+    const base = path.resolve(path.dirname(sourceFilePath), specifier);
+    const candidates: Array<[string, string]> = [
+        [`${base}.ts`, `${specifier}.js`],
+        [`${base}.tsx`, `${specifier}.js`],
+        [path.join(base, 'index.ts'), `${specifier}/index.js`],
+        [path.join(base, 'index.tsx'), `${specifier}/index.js`],
+        [`${base}.d.ts`, `${specifier}.js`],
+        [path.join(base, 'index.d.ts'), `${specifier}/index.js`],
+    ];
+
+    for (const [candidate, rewritten] of candidates) {
+        if (fs.existsSync(candidate)) return rewritten;
+    }
+    return null;
+}
+
+/** 改写单个类型声明文件内容；`outputFilePath` 为 dist 内的目标路径。 */
+function rewriteDeclarationSpecifiers(content: string, outputFilePath: string, outDir: string): string {
+    const relative = path.relative(outDir, outputFilePath).replace(/\\/g, '/');
+    const sourceFilePath = path.join(__dirname, 'src', relative);
+
+    const sourceFile = ts.createSourceFile(outputFilePath, content, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
+
+    const edits: Array<{ start: number; end: number; text: string }> = [];
+    const collect = (node: ts.Node): void => {
+        const literal = getModuleSpecifier(node);
+        if (literal && literal.text.startsWith('.')) {
+            const rewritten = resolveDeclarationSpecifier(literal.text, sourceFilePath);
+            if (rewritten) {
+                edits.push({
+                    start: literal.getStart(sourceFile),
+                    end: literal.getEnd(),
+                    text: `'${rewritten}'`,
+                });
+            }
+        }
+        ts.forEachChild(node, collect);
+    };
+    collect(sourceFile);
+
+    let result = content;
+    for (const edit of edits.reverse()) {
+        result = `${result.slice(0, edit.start)}${edit.text}${result.slice(edit.end)}`;
+    }
+    return result;
+}
+
+/** 取出 import/export/import() 的模块说明符字面量。 */
+function getModuleSpecifier(node: ts.Node): ts.StringLiteral | undefined {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+        const specifier = node.moduleSpecifier;
+        return specifier && ts.isStringLiteral(specifier) ? specifier : undefined;
+    }
+    if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+        const literal = node.argument.literal;
+        return ts.isStringLiteral(literal) ? literal : undefined;
+    }
+    if (ts.isExternalModuleReference(node) && node.expression && ts.isStringLiteral(node.expression)) {
+        return node.expression;
+    }
+    return undefined;
+}
 
 // 定义所有入口点 - 支持按需加载
 const entries = {
@@ -128,12 +251,14 @@ export default defineConfig(({ command, mode }) => {
                     declarationMap: false,
                     emitDeclarationOnly: true,
                 },
-                // 类型生成前的钩子 - 用于调试
-                beforeWriteFile: (filePath, content) => {
-                    // 确保类型文件路径正确
-                    return { filePath, content };
-                },
+                // 写盘前为相对说明符补扩展名（node16/nodenext 消费端可解析）
+                beforeWriteFile: (filePath, content) => ({
+                    filePath,
+                    content: rewriteDeclarationSpecifiers(content, filePath, outDir),
+                }),
             }),
+            buildMetaPlugin(outDir),
+            copyThemeVariablesPlugin(outDir),
         ],
 
         resolve: {

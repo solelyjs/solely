@@ -73,7 +73,7 @@
                 <solely-slider marks marks-data='{"0":"0","25":"25","50":"50","75":"75","100":"100"}' value="50"></solely-slider>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">marks</span> <span class="code-attr">marksData</span>=<span class="code-value">'{"0":"0","25":"25","50":"50","75":"75","100":"100"}'</span> <span class="code-attr">value</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-slider</span> <span class="code-attr">marks</span> <span class="code-attr">marks-data</span>=<span class="code-value">'{"0":"0","25":"25","50":"50","75":"75","100":"100"}'</span> <span class="code-attr">value</span>=<span class="code-value">"50"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-slider</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
     </div>
@@ -84,7 +84,7 @@
         <p class="demo-block-desc">设置 block 属性可使滑块宽度撑满父容器。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; gap: 16px;">
-                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px;">
+                <div style="width: 100%; border: 1px dashed #ddd; padding: 16px; box-sizing: border-box;">
                     <solely-slider block value="40"></solely-slider>
                 </div>
             </div>
@@ -192,6 +192,30 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
     </div>
 </div>
 
+<!-- ===== 0.8.0 新增特性验收样例 ===== -->
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">范围选择与自定义提示（0.8.0）</h3>
+        <p class="demo-block-desc"><code>range</code> 双滑块（value 用 property 赋数组）、<code>tooltipFormatter</code> 自定义提示格式、<code>marksData</code> 刻度支持 <code>{label, style}</code>。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <div><div class="demo-subtitle">range 双滑块（[20, 70]）</div>
+                    <solely-slider ref="featureRangeSlider" range block></solely-slider></div>
+                <div><div class="demo-subtitle">tooltipFormatter（百分比）</div>
+                    <solely-slider ref="featureFmtSlider" value="40" tooltip-visible block></solely-slider></div>
+                <div><div class="demo-subtitle">marksData（自定义刻度文字与颜色）</div>
+                    <solely-slider ref="featureMarksSlider" value="50" block></solely-slider></div>
+            </div>
+            <div class="demo-code"><pre><code>const range = document.querySelector('#range');
+range.value = [20, 70];
+document.querySelector('#fmt').tooltipFormatter = v =&gt; v + '%';
+const marks = document.querySelector('#marks');
+marks.setAttribute('marks', '');
+marks.marksData = { 0: '0℃', 50: { label: '中点', style: 'color:#dc2626' }, 100: '100℃' };</code></pre></div>
+        </div>
+    </div>
+</div>
+
 <!-- API 文档 -->
 <div class="api-section">
     <h2 class="api-title">API</h2>
@@ -201,7 +225,8 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性名</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -210,11 +235,13 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>value</td>
-                    <td>当前值（支持属性读写）</td>
-                    <td>number</td>
+                    <td>value</td>
+                    <td>当前值（支持属性读写）；range 模式下为 <code>[起始值, 结束值]</code></td>
+                    <td>number | number[]</td>
                     <td>min</td>
                 </tr>
                 <tr>
+                    <td>min</td>
                     <td>min</td>
                     <td>最小值</td>
                     <td>number</td>
@@ -222,11 +249,13 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>max</td>
+                    <td>max</td>
                     <td>最大值</td>
                     <td>number</td>
                     <td>100</td>
                 </tr>
                 <tr>
+                    <td>step</td>
                     <td>step</td>
                     <td>步长</td>
                     <td>number</td>
@@ -234,35 +263,55 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>disabled</td>
+                    <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>tooltip-visible</td>
                     <td>tooltipVisible</td>
-                    <td>是否显示 Tooltip</td>
+                    <td>是否显示 Tooltip；默认开启，<code>tooltip-visible="false"</code> 关闭</td>
                     <td>boolean</td>
                     <td>true</td>
                 </tr>
                 <tr>
+                    <td>range</td>
+                    <td>range</td>
+                    <td>是否双滑块范围选择（value 为 [起始值, 结束值]）</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>—（函数，无法通过 attribute 传入）</td>
+                    <td>tooltipFormatter</td>
+                    <td>Tooltip 文案与 aria-valuetext 的格式化函数（属性赋值：<code>el.tooltipFormatter = v =&gt; v + '%'</code>）</td>
+                    <td>(value: number) =&gt; string</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>marks</td>
                     <td>marks</td>
                     <td>是否显示刻度标记</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>marks-data</td>
                     <td>marksData</td>
-                    <td>刻度标记数据（JSON字符串）</td>
-                    <td>string</td>
+                    <td>刻度标记数据；HTML 属性传入 JSON 字符串（自动解析为对象），JS 属性可直接赋对象。键为刻度数值，值可为字符串 / 数字 / <code>{ label, style }</code></td>
+                    <td>Record&lt;string, string | number | { label?: string; style?: string }&gt;</td>
                     <td>-</td>
                 </tr>
                 <tr>
+                    <td>vertical</td>
                     <td>vertical</td>
                     <td>是否垂直模式</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>block</td>
                     <td>block</td>
                     <td>是否撑满父容器宽度</td>
                     <td>boolean</td>
@@ -309,6 +358,19 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             </thead>
             <tbody>
                 <tr>
+                    <td>role</td>
+                    <td>
+                        单值模式：轨道为 <code>role="slider"</code> 且 <code>tabindex="0"</code>，手柄 <code>tabindex="-1"</code>；
+                        range 模式：轨道为 <code>role="group"</code> 且 <code>tabindex="-1"</code>，每个手柄为 <code>role="slider"</code> 且 <code>tabindex="0"</code>
+                    </td>
+                    <td>是（随 range）</td>
+                </tr>
+                <tr>
+                    <td>aria-label</td>
+                    <td>当前未提供可访问名称入参（实现缺口，见审计报告），读屏依赖 <code>aria-valuetext</code> 描述数值</td>
+                    <td>—</td>
+                </tr>
+                <tr>
                     <td>aria-valuenow</td>
                     <td>当前值</td>
                     <td>是</td>
@@ -324,9 +386,46 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                     <td>否</td>
                 </tr>
                 <tr>
+                    <td>aria-valuetext</td>
+                    <td>可读值文本，取自 tooltipFormatter（range 模式下每个滑块单独设置）</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-orientation</td>
+                    <td>按 vertical 输出 horizontal / vertical</td>
+                    <td>是</td>
+                </tr>
+                <tr>
                     <td>aria-disabled</td>
                     <td>表示禁用状态</td>
                     <td>是</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="api-note">range 模式下轨道为 <code>role="group"</code>，两个滑块各自为 <code>role="slider"</code> 并独立维护 aria-valuenow / aria-valuetext。</p>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">键盘支持</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>按键</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ArrowRight / ArrowUp</td>
+                    <td>增加步长（range 模式作用于当前聚焦滑块）</td>
+                </tr>
+                <tr>
+                    <td>ArrowLeft / ArrowDown</td>
+                    <td>减少步长（range 模式作用于当前聚焦滑块）</td>
+                </tr>
+                <tr>
+                    <td>Home / End</td>
+                    <td>跳到最小 / 最大值（range 模式受另一滑块位置约束）</td>
                 </tr>
             </tbody>
         </table>
@@ -432,7 +531,7 @@ sliderEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
   <span class="code-attr">disabled</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否禁用</span>
   <span class="code-attr">tooltipVisible</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否显示 Tooltip</span>
   <span class="code-attr">marks</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否显示刻度标记</span>
-  <span class="code-attr">marks-data</span>?: <span class="code-type">string</span>;     <span class="code-comment">// 刻度标记数据（JSON字符串）</span>
+  <span class="code-attr">marksData</span>?: <span class="code-type">Record</span>&lt;<span class="code-type">string</span>, <span class="code-type">string</span> | <span class="code-type">number</span> | { <span class="code-attr">label</span>?: <span class="code-type">string</span>; <span class="code-attr">style</span>?: <span class="code-type">string</span> }&gt;; <span class="code-comment">// 刻度标记数据；HTML 属性以 JSON 字符串传入</span>
   <span class="code-attr">vertical</span>?: <span class="code-type">boolean</span>;     <span class="code-comment">// 是否垂直模式</span>
   <span class="code-attr">block</span>?: <span class="code-type">boolean</span>;        <span class="code-comment">// 是否撑满父容器宽度</span>
 }</code></pre>

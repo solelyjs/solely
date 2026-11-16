@@ -92,6 +92,19 @@
   line-height: var(--solely-line-height-md);
 }
 
+/* 线性图标：与 input / select 的关闭按钮同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 .alert__close {
   display: inline-flex;
   align-items: center;

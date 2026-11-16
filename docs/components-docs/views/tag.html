@@ -84,7 +84,7 @@
     <!-- 禁用状态 -->
     <div class="demo-block">
         <h3 class="demo-block-title">禁用状态</h3>
-        <p class="demo-block-desc">使用 disabled 属性设置禁用状态，禁用后关闭按钮不可用。</p>
+        <p class="demo-block-desc">使用 disabled 属性设置禁用状态；禁用后即使同时设置 <code>closable</code> 也不会渲染关闭按钮（不是“按钮置灰”，而是直接隐藏）。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-tag type="primary" disabled content="禁用标签"></solely-tag>
@@ -206,7 +206,8 @@
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -215,17 +216,27 @@
             <tbody>
                 <tr>
                     <td>type</td>
+                    <td>type</td>
                     <td>标签类型</td>
                     <td>'default' | 'primary' | 'success' | 'warning' | 'error'</td>
                     <td>'default'</td>
                 </tr>
                 <tr>
                     <td>size</td>
+                    <td>size</td>
                     <td>标签尺寸</td>
                     <td>'small' | 'medium' | 'large'</td>
                     <td>'medium'</td>
                 </tr>
                 <tr>
+                    <td>size 兼容别名</td>
+                    <td>size</td>
+                    <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                    <td>'middle' | 'default'</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>content</td>
                     <td>content</td>
                     <td>标签内容</td>
                     <td>string</td>
@@ -233,11 +244,13 @@
                 </tr>
                 <tr>
                     <td>closable</td>
+                    <td>closable</td>
                     <td>是否可关闭</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>disabled</td>
                     <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
@@ -245,11 +258,13 @@
                 </tr>
                 <tr>
                     <td>round</td>
+                    <td>round</td>
                     <td>是否为圆角</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>color</td>
                     <td>color</td>
                     <td>自定义颜色</td>
                     <td>string</td>
@@ -257,6 +272,40 @@
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">ARIA 属性</h4>
+        <p class="api-block-desc">当 closable 为 true 时，关闭按钮是一个可聚焦的按钮角色，键盘可直接操作。</p>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>动态更新</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>role="button"</td>
+                    <td>关闭图标标识为按钮角色（原先仅为 span，键盘不可达）</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>tabindex="0"</td>
+                    <td>可通过 Tab 聚焦，聚焦时显示焦点环</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>aria-label</td>
+                    <td>固定为 "关闭"，供读屏播报按钮用途</td>
+                    <td>否</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="api-block-desc" style="margin-top: 12px;">
+            键盘操作：聚焦关闭按钮后按 <code>Enter</code> 或 <code>Space</code> 等价于点击，会触发 close 事件。
+        </p>
     </div>
 
     <div class="api-block">

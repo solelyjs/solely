@@ -7,6 +7,8 @@
         :href="$data.href"
         :target="$data.target"
         :aria-disabled="$data.disabled || $data.loading ? 'true' : 'false'"
+        :aria-label="$data.label || undefined"
+        :tabindex="$data.disabled || $data.loading ? '-1' : undefined"
         @click="this.handleClick(event)"
     >
         <If test="$data.loading">
@@ -57,8 +59,10 @@
         type="button"
         class="btn"
         :class="this.getButtonClasses()"
+        :type="this.getNativeButtonType()"
         :disabled="$data.disabled || $data.loading"
         :aria-disabled="$data.disabled || $data.loading ? 'true' : 'false'"
+        :aria-label="$data.label || undefined"
         @click="this.handleClick(event)"
     >
         <If test="$data.loading">

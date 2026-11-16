@@ -85,24 +85,22 @@
 }
 
 /* ==================== 动画定义 ==================== */
+/* 入场/出场只做透明度：气泡是 fixed 定位并锚定到触发元素，缩放动画会让气泡边缘
+   在动画期间相对锚点漂移（scale(0.8) 时约 20%），视觉上像「出现后滑一下才定位」。 */
 @keyframes solely-tooltip-fade-in {
   from {
     opacity: 0;
-    transform: scale(0.8);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
 @keyframes solely-tooltip-fade-out {
   from {
     opacity: 1;
-    transform: scale(1);
   }
   to {
     opacity: 0;
-    transform: scale(0.8);
   }
 }

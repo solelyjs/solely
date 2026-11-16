@@ -95,16 +95,16 @@ export interface CoordinateInputRefs extends Record<string, Element> {
     latitudeMinutesInput: HTMLInputElement;
     /** 纬度秒输入框 */
     latitudeSecondsInput: HTMLInputElement;
-    /** 纬度方向选择 */
-    latitudeDirectionSelect: HTMLSelectElement;
+    /** 纬度方向选择（自定义下拉开关） */
+    latitudeDirectionInput: HTMLElement;
     /** 经度度输入框 */
     longitudeDegreesInput: HTMLInputElement;
     /** 经度分输入框 */
     longitudeMinutesInput: HTMLInputElement;
     /** 经度秒输入框 */
     longitudeSecondsInput: HTMLInputElement;
-    /** 经度方向选择 */
-    longitudeDirectionSelect: HTMLSelectElement;
+    /** 经度方向选择（自定义下拉开关） */
+    longitudeDirectionInput: HTMLElement;
 }
 
 /**

@@ -47,6 +47,10 @@ export interface ButtonProps {
     target: '_blank' | '_self' | '_parent' | '_top';
     /** 自定义加载图标 */
     loadingIcon: string;
+    /** 原生按钮类型（不影响视觉 type） */
+    nativeType: 'button' | 'submit' | 'reset';
+    /** 可访问名称（aria-label，icon-only 按钮必填） */
+    label: string;
 }
 
 /** Button 组件 refs 定义 */

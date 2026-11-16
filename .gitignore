@@ -44,3 +44,10 @@ dist-examples
 # 开发工具
 dev-tool/
 vscode-extension/ROADMAP.md
+
+# 本地审计与评审材料：缺口清单、契约原文、性能评估等，不属于发布内容
+/docs/internal/
+
+# 工具生成的临时产物：浏览器验证截图与 HTML 分享包，不属于发布内容
+/.screenshots/
+/.trae-html-share-packages/

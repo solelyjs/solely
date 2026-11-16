@@ -9,9 +9,13 @@
         <span
             part="close"
             class="tag__close"
+            role="button"
+            tabindex="0"
+            aria-label="关闭"
             @click="this.handleClose(event)"
+            @keydown="this.handleCloseKeydown(event)"
         >
-            <slot name="close-icon">×</slot>
+            <slot name="close-icon"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.4 4.4 11.6 11.6 M11.6 4.4 4.4 11.6"></path></svg></slot>
         </span>
     </If>
 </span>

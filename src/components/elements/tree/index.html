@@ -1,16 +1,40 @@
-<div part="base" class="tree" :class="this.getTreeClasses()" role="tree">
+<div
+    part="base"
+    class="tree"
+    :class="this.getTreeClasses()"
+    role="tree"
+    :aria-label="$data.label || undefined"
+    :aria-disabled="$data.disabled ? 'true' : 'false'"
+>
+    <If condition="$data.searchable">
+        <div part="search" class="tree__search">
+            <input
+                part="search-input"
+                class="tree__search-input"
+                type="search"
+                placeholder="搜索节点..."
+                aria-label="搜索节点"
+                :value="$data.searchValue || ''"
+                :disabled="$data.disabled"
+                @input="this.handleSearchInput(event)"
+            />
+        </div>
+    </If>
     <ul part="list" class="tree__list">
         <For each="$data.flattenedTree" item="node">
             <li
                 part="node"
                 class="tree__node"
                 :class="this.getNodeClasses(node)"
-                :style="'padding-left: ' + (node.level * 24 + 12) + 'px'"
+                :style="'padding-left: ' + (node.level * 24 + 12) + 'px; --level: ' + node.level"
+                :data-key="node.key"
                 role="treeitem"
+                :tabindex="this.getNodeTabindex(node)"
                 :aria-expanded="node.children && node.children.length > 0 ? (node.expanded ? 'true' : 'false') : undefined"
                 :aria-selected="node.selected ? 'true' : 'false'"
                 :aria-disabled="node.disabled ? 'true' : 'false'"
                 :aria-level="node.level + 1"
+                @keydown="this.handleNodeKeydown(event, node)"
             >
                 <div
                     part="content"
@@ -18,17 +42,28 @@
                     :class="this.getContentClasses(node)"
                     @click="this.handleNodeClick(node)"
                 >
-                    <!-- 展开/折叠图标 -->
+                    <!-- 展开/折叠图标：装饰性控件，展开状态由 treeitem 的 aria-expanded + 方向键承载。
+                         线性 chevron 按状态切换 DOM，不用 transform 过渡，避免 For 按索引复用
+                         DOM 时同级箭头重放旋转动画；加载反馈仍由独立的 ::after 圆环承载。
+                         不设 tabindex：aria-hidden 元素一旦可聚焦（哪怕 tabindex="-1" 的鼠标点击聚焦），
+                         Chrome 会报 "Blocked aria-hidden ... retained focus"；键盘切换由 treeitem 负责。 -->
                     <span
                         part="switcher"
                         class="tree__switcher"
                         :class="this.getSwitcherClasses(node)"
+                        aria-hidden="true"
                         @click="this.handleToggle(node, event)"
-                        role="button"
-                        :aria-label="node.expanded ? '折叠' : '展开'"
-                        tabindex="0"
                     >
-                        ▶
+                        <If condition="node.expanded">
+                            <svg class="solely-linear-icon" viewBox="0 0 16 16" focusable="false">
+                                <path d="M3.5 6 8 10.5 12.5 6"></path>
+                            </svg>
+                        </If>
+                        <If condition="!node.expanded">
+                            <svg class="solely-linear-icon" viewBox="0 0 16 16" focusable="false">
+                                <path d="M6 3.5 10.5 8 6 12.5"></path>
+                            </svg>
+                        </If>
                     </span>
 
                     <!-- 复选框 -->
@@ -38,11 +73,20 @@
                             class="tree__checkbox"
                             :class="this.getCheckboxClasses(node)"
                             @click="this.handleCheck(node, event)"
+                            @keydown="this.handleCheckKeydown(event, node)"
                             role="checkbox"
                             :aria-checked="node.halfChecked ? 'mixed' : (node.checked ? 'true' : 'false')"
                             :aria-disabled="node.disabled ? 'true' : 'false'"
-                            tabindex="0"
-                        ></span>
+                            :aria-label="'选择 ' + node.title"
+                            tabindex="-1"
+                        >
+                            <If condition="node.halfChecked">
+                                <svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 8h8"></path></svg>
+                            </If>
+                            <If condition="node.checked && !node.halfChecked">
+                                <svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 8.5 6.8 11.5 12.5 4.8"></path></svg>
+                            </If>
+                        </span>
                     </If>
 
                     <!-- 节点图标 -->
@@ -50,8 +94,10 @@
                         <span part="icon" class="tree__icon">{{node.icon}}</span>
                     </If>
 
-                    <!-- 节点标题 -->
-                    <span part="title" class="tree__title">{{node.title}}</span>
+                    <!-- 节点标题（支持 node-{key} 插槽自定义渲染） -->
+                    <span part="title" class="tree__title" :class="this.getTitleClasses(node)">
+                        <slot :name="'node-' + node.key">{{node.title}}</slot>
+                    </span>
                 </div>
             </li>
         </For>

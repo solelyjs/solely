@@ -201,11 +201,13 @@
                 <pre><code><span class="code-comment">&lt;!-- HTML --&gt;</span>
 <span class="code-bracket">&lt;</span><span class="code-tag">solely-switch</span> <span class="code-attr">@change</span>=<span class="code-value">"handleChange(event)"</span><span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-switch</span><span class="code-bracket">&gt;</span>
 
-<span class="code-comment">&lt;!-- JavaScript - 原生事件监听 --&gt;</span>
+<span class="code-comment">&lt;!-- JavaScript - change 为 CustomEvent --&gt;</span>
 <span class="code-keyword">const</span> switchEl = document.querySelector(<span class="code-value">'solely-switch'</span>);
-switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
-  <span class="code-comment">// 通过 target.checked 获取状态</span>
-  console.log(<span class="code-value">'checked:'</span>, e.target.checked);
+switchEl.addEventListener(<span class="code-value">'change'</span>, (event) => {
+  <span class="code-comment">// detail: { name, value, checked, previousChecked, source }</span>
+  <span class="code-comment">// checked 未变化时不派发</span>
+  <span class="code-keyword">const</span> { checked, previousChecked } = event.detail;
+  console.log(<span class="code-value">'checked:'</span>, checked, <span class="code-value">'previous:'</span>, previousChecked);
 });</code></pre>
             </div>
         </div>
@@ -299,7 +301,8 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -308,17 +311,34 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>checked</td>
+                    <td>checked</td>
                         <td>指定当前是否选中（支持属性读写）</td>
                         <td>boolean</td>
                         <td>false</td>
                 </tr>
                 <tr>
+                    <td>default-checked</td>
+                    <td>defaultChecked</td>
+                    <td>表单重置时回到的默认开关状态</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>size</td>
                     <td>size</td>
                     <td>开关大小</td>
                     <td>'small' | 'medium' | 'large'</td>
                     <td>'medium'</td>
                 </tr>
                 <tr>
+                    <td>size 兼容别名</td>
+                    <td>size</td>
+                    <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                    <td>'middle' | 'default'</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>type</td>
                     <td>type</td>
                     <td>开关颜色类型</td>
                     <td>'primary' | 'success' | 'warning' | 'error'</td>
@@ -326,30 +346,90 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>disabled</td>
+                    <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>required</td>
+                    <td>required</td>
+                    <td>是否必选；未开启时阻断表单提交</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>loading</td>
                     <td>loading</td>
                     <td>是否加载中</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>checked-children</td>
                     <td>checkedChildren</td>
                     <td>选中时的内容（文字或图标）</td>
                     <td>string</td>
                     <td>''</td>
                 </tr>
                 <tr>
+                    <td>un-checked-children</td>
                     <td>unCheckedChildren</td>
                     <td>非选中时的内容（文字或图标）</td>
                     <td>string</td>
                     <td>''</td>
                 </tr>
+                <tr>
+                    <td>name</td>
+                    <td>name</td>
+                    <td>表单 name 属性</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>value</td>
+                    <td>value</td>
+                    <td>提交到表单的值；未设置或为空时开启后按 <code>'on'</code> 提交（与原生复选框一致）</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>invalid-message</td>
+                    <td>invalidMessage</td>
+                    <td>自定义校验失败提示</td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>aria-label</td>
+                    <td>ariaLabel</td>
+                    <td>开关的可访问名称（作用于 <code>role="switch"</code> 元素）</td>
+                    <td>string</td>
+                    <td>'开关'</td>
+                </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">表单关联</h4>
+        <p class="api-block-desc">
+            设置 <code>name</code> 后，<code>solely-switch</code> 作为表单关联自定义元素参与提交：
+            仅开启时提交一个条目，关闭不产生条目；<code>value</code> 未设置或为空时，按原生复选框语义以 <code>'on'</code> 提交。
+            <code>required</code> 未满足时会阻断提交，<code>formResetCallback</code> 回到 <code>default-checked</code>，
+            所属 <code>fieldset</code> 禁用时会同步清空提交值并锁定交互。
+        </p>
+        <div class="demo-code">
+            <pre><code><span class="code-comment">&lt;!-- 开启后以 name=notify、value=email 提交 --&gt;</span>
+&lt;<span class="code-tag">form</span>&gt;
+  &lt;<span class="code-tag">solely-switch</span> <span class="code-attr">name</span>=<span class="code-value">"notify"</span> <span class="code-attr">value</span>=<span class="code-value">"email"</span> <span class="code-attr">default-checked</span>&gt;邮件通知&lt;/<span class="code-tag">solely-switch</span>&gt;
+  &lt;<span class="code-tag">button</span> <span class="code-attr">type</span>=<span class="code-value">"submit"</span>&gt;提交&lt;/<span class="code-tag">button</span>&gt;
+&lt;/<span class="code-tag">form</span>&gt;</code></pre>
+        </div>
+        <p class="api-block-desc" style="margin-top: 12px;">
+            公开的有效性接口与原生控件一致：<code>validity</code>、<code>validationMessage</code>、<code>willValidate</code>、
+            <code>checkValidity()</code>、<code>reportValidity()</code>、<code>setCustomValidity(message)</code>。
+        </p>
     </div>
 
     <div class="api-block">
@@ -365,8 +445,48 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>change</td>
-                        <td>开关状态变化时触发（原生事件）</td>
-                        <td>Event</td>
+                        <td>开关状态变化时触发；checked 未变化不派发</td>
+                        <td>CustomEvent&lt;{ name: string; value: string; checked: boolean; previousChecked: boolean; source: 'user' | 'api' | 'reset' }&gt;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">ARIA 属性</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>动态更新</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>role="switch"</td>
+                    <td>固定角色，承载元素为 Shadow DOM 内的 <code>.switch</code></td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>aria-checked</td>
+                    <td>开启为 <code>"true"</code>，关闭为 <code>"false"</code></td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-disabled</td>
+                    <td>自身 <code>disabled</code> 或所在 <code>fieldset</code> 禁用时为 <code>"true"</code></td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-label</td>
+                    <td>取 <code>aria-label</code> 属性（JS：<code>ariaLabel</code>），默认“开关”</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>tabindex</td>
+                    <td>可聚焦为 <code>0</code>；<code>disabled</code>、<code>fieldset</code> 禁用或 <code>loading</code> 时为 <code>-1</code></td>
+                    <td>是</td>
                 </tr>
             </tbody>
         </table>
@@ -512,9 +632,12 @@ switchEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
 }
 
 <span class="code-comment">// 开关变化事件数据</span>
-<span class="code-keyword">interface</span> <span class="code-type">SwitchChangeEvent</span> {
+<span class="code-keyword">interface</span> <span class="code-type">SwitchChangeDetail</span> {
+  <span class="code-attr">name</span>: <span class="code-type">string</span>;            <span class="code-comment">// 表单字段名</span>
+  <span class="code-attr">value</span>: <span class="code-type">string</span>;           <span class="code-comment">// 原始 value</span>
   <span class="code-attr">checked</span>: <span class="code-type">boolean</span>;         <span class="code-comment">// 当前开关状态</span>
-  <span class="code-attr">originalEvent</span>: <span class="code-type">Event</span>;     <span class="code-comment">// 原始事件</span>
+  <span class="code-attr">previousChecked</span>: <span class="code-type">boolean</span>; <span class="code-comment">// 变化前状态</span>
+  <span class="code-attr">source</span>: <span class="code-value">'user'</span> | <span class="code-value">'api'</span> | <span class="code-value">'reset'</span>; <span class="code-comment">// 变更来源</span>
 }</code></pre>
         </div>
     </div>

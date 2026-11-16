@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Solely 0.8.0 · 严格 CSP 验收</title>
+        <!--
+            与 examples/csp-demo/index.html 的区别：这里 style-src 不含 'unsafe-inline'。
+            主入口 `solely/components` 会尝试用内联 <style> 注入主题变量，本页会被 CSP 拦下。
+            因此必须手动引入 variables.css（下面的 link），否则所有 --solely-* 变量为空、组件样式塌陷。
+            本页刻意不写任何内联 <style> / style 属性，避免干扰判定。
+        -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ws: wss:;"
+        />
+        <link id="manual-theme-link" rel="stylesheet" href="/src/components/theme/variables.css" />
+    </head>
+    <body>
+        <h1>严格 CSP 验收（#2）</h1>
+        <p>
+            本页 CSP <code>style-src 'self'</code>，<b>没有 'unsafe-inline'</b>。
+            主入口自动注入的内联 <code>&lt;style&gt;</code> 会被浏览器拦下，主题变量必须靠手动
+            <code>&lt;link&gt;</code> 引入。
+        </p>
+        <p>
+            <button id="btn-remove-link">移除手动 link</button>
+            <button id="btn-restore-link">恢复手动 link</button>
+            <button id="btn-report">重新检测</button>
+        </p>
+        <pre id="csp-out">检测中…</pre>
+
+        <h2>组件样式观察区</h2>
+        <p>
+            移除 link 后，下面的 input / button / progress 会明显塌陷（颜色、边框、高度丢失）——
+            这就是「自动注入被拦、未手动引入」的后果。恢复 link 后应还原。
+            组件若走 <code>adoptedStyleSheets</code> 则部分结构样式可能仍在，属正常差异。
+        </p>
+        <p><solely-input placeholder="严格 CSP 下的 input"></solely-input></p>
+        <p><solely-button>按钮</solely-button></p>
+        <p><solely-progress percent="60"></solely-progress></p>
+
+        <h2>预期现象</h2>
+        <ol>
+            <li>自动注入的 <code>#solely-theme-variables</code> 节点存在，但样式不生效（被 CSP 拦）。</li>
+            <li>DevTools Console 出现 <code>[Solely Theme] 主题变量未能生效…</code> 警告。</li>
+            <li>移除手动 link 后 <code>--solely-primary</code> 为空、组件塌陷；恢复后变量与样式回来。</li>
+        </ol>
+
+        <p><a href="./index.html">← 返回手工验收台</a> ｜ <a href="/examples/csp-demo/index.html">宽松 CSP 对照组</a></p>
+
+        <script type="module" src="./strict-csp.js"></script>
+    </body>
+</html>

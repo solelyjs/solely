@@ -1,32 +1,51 @@
-<div
-    part="base"
-    class="tabs"
-    :class="this.getTabsClasses()"
-    role="tablist"
->
+<div part="base" class="tabs" :class="this.getTabsClasses()">
     <!-- 标签栏 -->
-    <div part="nav" class="tabs__nav">
+    <div
+        part="nav"
+        class="tabs__nav"
+        role="tablist"
+        :aria-orientation="this.getPosition() === 'left' || this.getPosition() === 'right' ? 'vertical' : 'horizontal'"
+        :aria-label="$data.label || undefined"
+    >
         <For each="this.getParsedItems()" item="item">
             <div
                 part="tab"
                 class="tabs__tab"
                 :class="this.getTabClasses(item)"
+                :data-key="item.key"
                 role="tab"
+                :id="'tab-' + item.key"
                 :aria-selected="item.key === $data.activeKey ? 'true' : 'false'"
                 :aria-controls="'panel-' + item.key"
+                :aria-disabled="item.disabled ? 'true' : 'false'"
                 :tabindex="item.key === $data.activeKey ? '0' : '-1'"
                 @click="this.handleTabClick(item)"
+                @keydown="this.handleTabKeydown(event, item)"
             >
-                {{item.label}}
+                <If test="item.icon">
+                    <span part="tab-icon" class="tabs__tab-icon">{{item.icon}}</span>
+                </If>
+                <span part="tab-label" class="tabs__tab-label">
+                    <slot :name="'tab-label-' + item.key">{{item.label}}</slot>
+                </span>
+                <If test="item.badge">
+                    <span part="tab-badge" class="tabs__tab-badge">{{item.badge}}</span>
+                </If>
                 <If test="$data.closable && this.getParsedItems().length > 1">
                     <span
                         part="close"
                         class="tabs__close"
                         @click="this.handleClose(item, event)"
+                        @keydown="this.handleCloseKeydown(event, item)"
                         role="button"
                         aria-label="关闭标签"
-                        tabindex="0"
-                    >×</span>
+                        :aria-disabled="item.disabled ? 'true' : 'false'"
+                        tabindex="-1"
+                    >
+                        <svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <path d="M4.4 4.4 11.6 11.6 M11.6 4.4 4.4 11.6"></path>
+                        </svg>
+                    </span>
                 </If>
             </div>
         </For>
@@ -35,6 +54,7 @@
                 part="add"
                 class="tabs__add"
                 @click="this.handleAdd(event)"
+                @keydown="this.handleAddKeydown(event)"
                 role="button"
                 aria-label="新增标签"
                 tabindex="0"
@@ -51,9 +71,12 @@
                 :class="this.getPaneClasses(item)"
                 :id="'panel-' + item.key"
                 role="tabpanel"
+                :aria-labelledby="'tab-' + item.key"
                 :aria-hidden="item.key !== $data.activeKey ? 'true' : 'false'"
             >
-                <slot :name="'tab-' + item.key"></slot>
+                <If test="this.isPaneRendered(item.key)">
+                    <slot :name="'tab-' + item.key"></slot>
+                </If>
             </div>
         </For>
     </div>

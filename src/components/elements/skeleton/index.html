@@ -1,4 +1,10 @@
-<div part="base" class="skeleton" :class="this.getSkeletonClasses()">
+<div
+    part="base"
+    class="skeleton"
+    :class="this.getSkeletonClasses()"
+    :role="$data.loading ? 'status' : undefined"
+    :aria-label="$data.loading ? '加载中' : undefined"
+>
     <!-- 加载中显示骨架屏 -->
     <If test="$data.loading">
         <If test="$data.avatar || $data.title">
@@ -8,6 +14,7 @@
                     <div
                         part="avatar"
                         class="skeleton__element skeleton__avatar"
+                        aria-hidden="true"
                         :class="this.getAvatarClasses()"
                         :style="'width: ' + ($data.avatarSize || 40) + 'px; height: ' + ($data.avatarSize || 40) + 'px'"
                     ></div>
@@ -17,13 +24,14 @@
                         <div
                             part="title"
                             class="skeleton__element skeleton__title"
-                            :style="$data.titleWidth ? 'width: ' + (typeof $data.titleWidth === 'number' ? $data.titleWidth + 'px' : $data.titleWidth) : ''"
+                            aria-hidden="true"
+                            :style="this.getTitleWidthStyle()"
                         ></div>
                     </If>
                     <If test="$data.paragraphRows > 0">
                         <div part="paragraph" class="skeleton__paragraph">
                             <For each="Array.from({length: $data.paragraphRows})" item="i">
-                                <div part="row" class="skeleton__element skeleton__row"></div>
+                                <div part="row" class="skeleton__element skeleton__row" aria-hidden="true"></div>
                             </For>
                         </div>
                     </If>
@@ -34,7 +42,7 @@
             <!-- 只有段落时显示段落 -->
             <div part="paragraph" class="skeleton__paragraph">
                 <For each="Array.from({length: $data.paragraphRows})" item="i">
-                    <div part="row" class="skeleton__element skeleton__row"></div>
+                    <div part="row" class="skeleton__element skeleton__row" aria-hidden="true"></div>
                 </For>
             </div>
         </If>

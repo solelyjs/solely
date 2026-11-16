@@ -3,23 +3,45 @@
         part="rail"
         class="slider__rail"
         ref="rail"
-        role="slider"
-        :aria-valuemin="$data.min ?? 0"
-        :aria-valuemax="$data.max ?? 100"
-        :aria-valuenow="$data.value ?? ($data.min ?? 0)"
-        :aria-valuetext="$data.value ?? ($data.min ?? 0)"
+        :role="$data.range ? 'group' : 'slider'"
+        :aria-label="$data.range ? '范围选择' : this.getAriaLabel()"
+        :aria-valuemin="$data.range ? undefined : ($data.min ?? 0)"
+        :aria-valuemax="$data.range ? undefined : ($data.max ?? 100)"
+        :aria-valuenow="this.getAriaValueNow()"
+        :aria-valuetext="$data.range ? undefined : this.getAriaValueText()"
         :aria-disabled="$data.disabled ? 'true' : 'false'"
         :aria-orientation="$data.vertical ? 'vertical' : 'horizontal'"
-        tabindex="0"
+        :tabindex="this.getRailTabindex()"
         @mousedown="this.handleMouseDown(event)"
         @touchstart="this.handleTouchStart(event)"
+        @keydown="this.handleKeyDown(event)"
     >
         <div part="track" class="slider__track" :style="this.getTrackStyle()"></div>
-        <div part="handle" class="slider__handle" :class="this.getHandleClasses()" :style="this.getHandleStyle()">
-            <If test="$data.tooltipVisible !== false">
-                <span part="tooltip" class="slider__tooltip">{{$data.value}}</span>
-            </If>
-        </div>
+
+        <For each="this.getHandleIndexes()" item="handleIndex">
+            <div
+                part="handle"
+                class="slider__handle"
+                :class="this.getHandleClasses()"
+                :data-index="handleIndex"
+                :style="this.getHandleStyle(handleIndex)"
+                :role="$data.range ? 'slider' : 'presentation'"
+                :aria-valuenow="$data.range ? this.getHandleValue(handleIndex) : undefined"
+                :aria-valuemin="$data.range ? ($data.min ?? 0) : undefined"
+                :aria-valuemax="$data.range ? ($data.max ?? 100) : undefined"
+                :aria-valuetext="$data.range ? this.getTooltipText(this.getHandleValue(handleIndex)) : undefined"
+                :aria-disabled="$data.range ? ($data.disabled ? 'true' : 'false') : undefined"
+                :aria-orientation="$data.range ? ($data.vertical ? 'vertical' : 'horizontal') : undefined"
+                :tabindex="$data.range && !$data.disabled ? '0' : '-1'"
+                @mousedown="this.handleHandleMouseDown(event, handleIndex)"
+                @touchstart="this.handleHandleTouchStart(event, handleIndex)"
+                @keydown="this.handleRangeKeyDown(event, handleIndex)"
+            >
+                <If test="$data.tooltipVisible !== false">
+                    <span part="tooltip" class="slider__tooltip">{{this.getTooltipText(this.getHandleValue(handleIndex))}}</span>
+                </If>
+            </div>
+        </For>
 
         <!-- 刻度标记 -->
         <If test="$data.marks">
@@ -27,8 +49,8 @@
                 <For each="this.getParsedMarks()" item="mark">
                     <span part="mark" class="slider__mark" :style="this.getMarkStyle(mark.value)">
                         <span part="mark-dot" class="slider__mark-dot"
-                            :class="{ 'slider__mark-dot--active': (mark.value <= ($data.value ?? ($data.min ?? 0))) }"></span>
-                        <span part="mark-label" class="slider__mark-label">{{mark.label}}</span>
+                            :class="{ 'slider__mark-dot--active': this.isMarkActive(mark.value) }"></span>
+                        <span part="mark-label" class="slider__mark-label" :style="this.getMarkLabelStyle(mark)">{{mark.label}}</span>
                     </span>
                 </For>
             </div>

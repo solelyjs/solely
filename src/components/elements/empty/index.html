@@ -1,16 +1,26 @@
 <div part="base" class="empty">
-    <div part="image" class="empty__image">
-        <If test="this.hasImageSlot()">
-            <slot name="image"></slot>
-        </If>
-        <ElseIf test="$data.image">
-            <img part="img" :src="$data.image" alt="empty" />
-        </ElseIf>
-        <Else>
-            <span part="icon" class="empty__icon">📭</span>
-        </Else>
-    </div>
-    <p part="description" class="empty__description">{{$data.description || '暂无数据'}}</p>
+    <If test="$data.showIcon">
+        <div part="image" class="empty__image">
+            <If test="this.hasImageSlot()">
+                <slot name="image"></slot>
+            </If>
+            <ElseIf test="$data.image">
+                <img part="img" :src="$data.image" alt="empty" @error="this.handleImageError(event)" />
+            </ElseIf>
+            <Else>
+                <span part="icon" class="empty__icon">
+                    <svg class="solely-linear-icon" viewBox="0 0 16 16" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true" focusable="false">
+                        <path d="M2 6.5h12v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-6Z M2 6.5 3.8 2.8h8.4L14 6.5 M6 10h4">
+                        </path>
+                    </svg>
+                </span>
+            </Else>
+        </div>
+    </If>
+    <p part="description" class="empty__description">
+        <slot name="description">{{$data.description}}</slot>
+    </p>
     <div part="footer" class="empty__footer">
         <slot></slot>
     </div>

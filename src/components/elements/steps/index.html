@@ -1,4 +1,4 @@
-<div part="base" class="steps" :class="this.getStepsClasses()" role="list" aria-label="步骤条">
+<div part="base" class="steps" :class="this.getStepsClasses()" :role="$data.clickable ? 'group' : 'list'" aria-label="步骤条">
     <!-- 使用 items 属性时的渲染 -->
     <If test="!$data.useSlot">
         <For each="this.getParsedItems()" item="item" index="index">
@@ -6,10 +6,12 @@
                 part="step"
                 class="step"
                 :class="this.getStepClasses(item, index)"
-                role="listitem"
+                :role="this.getStepRole(item)"
+                :tabindex="this.getStepTabIndex(item)"
                 :aria-current="this.getStepStatus(index) === 'process' ? 'step' : undefined"
                 :aria-disabled="item.disabled ? 'true' : 'false'"
                 @click="this.handleStepClick(item, index)"
+                @keydown="this.handleStepKeydown(item, index, event)"
             >
                 <div part="tail" class="step__tail"></div>
                 <div part="wrapper" class="step__wrapper">
@@ -19,7 +21,7 @@
                             <If test="!$data.progressDot">
                                 <If
                                     test="item.icon || this.getStepStatus(index) === 'finish' || this.getStepStatus(index) === 'error'">
-                                    <span part="icon-substitution" class="step__icon-substitution">{{this.getStepIcon(item, index)}}</span>
+                                    <span part="icon-substitution" class="step__icon-substitution"><If test="item.icon">{{this.getStepIcon(item, index)}}</If><If test="!item.icon"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path :d="this.getStatusIconPath(this.getStepStatus(index))"></path></svg></If></span>
                                 </If>
                                 <Else>
                                     <span part="icon-text" class="step__icon-text">{{index + 1}}</span>
@@ -45,18 +47,31 @@
                 part="step"
                 class="step"
                 :class="this.getSlotStepClasses(slotItem, index)"
-                role="listitem"
+                :role="this.getStepRole(slotItem)"
+                :tabindex="this.getStepTabIndex(slotItem)"
                 :aria-current="this.getSlotStepStatus(index) === 'process' ? 'step' : undefined"
                 :aria-disabled="slotItem.disabled ? 'true' : 'false'"
                 @click="this.handleSlotStepClick(slotItem, index)"
+                @keydown="this.handleSlotStepKeydown(slotItem, index, event)"
             >
                 <div part="tail" class="step__tail"></div>
                 <div part="wrapper" class="step__wrapper">
-                    <div part="icon-wrapper" class="step__icon-wrapper">
+                    <div part="icon-wrapper" class="step__icon-wrapper" :class="this.getIconClasses(slotItem)"
+                        :style="this.getIconStyle(slotItem)">
                         <div part="icon" class="step__icon">
                             <If test="!$data.progressDot">
-                                <!-- 使用插槽元素的 innerHTML 作为图标内容 -->
-                                <span part="icon-substitution" class="step__icon-substitution" :innerHTML="slotItem.iconHtml"></span>
+                                <If test="slotItem.iconHtml">
+                                    <!-- 使用插槽元素的 innerHTML 作为图标内容 -->
+                                    <span part="icon-substitution" class="step__icon-substitution" :innerHTML="slotItem.iconHtml"></span>
+                                </If>
+                                <ElseIf test="this.getSlotStepStatus(index) === 'finish' || this.getSlotStepStatus(index) === 'error'">
+                                    <!-- 未提供图标时回退到线性状态图标 -->
+                                    <span part="icon-substitution" class="step__icon-substitution"><svg class="solely-linear-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path :d="this.getStatusIconPath(this.getSlotStepStatus(index))"></path></svg></span>
+                                </ElseIf>
+                                <Else>
+                                    <!-- 未提供图标且状态为等待/进行中时回退到序号 -->
+                                    <span part="icon-text" class="step__icon-text">{{index + 1}}</span>
+                                </Else>
                             </If>
                         </div>
                     </div>

@@ -4,7 +4,8 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import type { SkeletonProps } from './types';
+import { oneOf } from '../../../shared/enum';
+import type { SkeletonProps, SkeletonAvatarShape, SkeletonAvatarPosition } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
 
@@ -39,11 +40,17 @@ class SolelySkeleton extends BaseElement<SkeletonProps> {
      * 获取 avatar class 对象
      */
     getAvatarClasses(): Record<string, boolean> {
-        const classes: Record<string, boolean> = {};
-        if (this.$data.avatarShape) {
-            classes[`skeleton__avatar--${this.$data.avatarShape}`] = true;
-        }
-        return classes;
+        return { [`skeleton__avatar--${this.getAvatarShape()}`]: true };
+    }
+
+    /** 头像形状（非法值回退 circle） */
+    getAvatarShape(): SkeletonAvatarShape {
+        return oneOf(this.$data.avatarShape, ['circle', 'square'], 'circle');
+    }
+
+    /** 头像位置（非法值回退 left） */
+    getAvatarPosition(): SkeletonAvatarPosition {
+        return oneOf(this.$data.avatarPosition, ['left', 'right'], 'left');
     }
 
     /**
@@ -51,6 +58,18 @@ class SolelySkeleton extends BaseElement<SkeletonProps> {
      */
     mounted(): void {
         this.refresh();
+        this.updateAriaBusy();
+    }
+
+    updated(): void {
+        this.updateAriaBusy();
+    }
+
+    /**
+     * 同步 aria-busy，向辅助技术说明当前区域仍在加载
+     */
+    private updateAriaBusy(): void {
+        this.setAttribute('aria-busy', this.$data.loading ? 'true' : 'false');
     }
 
     /**
@@ -58,8 +77,17 @@ class SolelySkeleton extends BaseElement<SkeletonProps> {
      */
     getHeaderClasses(): Record<string, boolean> {
         return {
-            'skeleton__header--right': this.$data.avatarPosition === 'right',
+            'skeleton__header--right': this.getAvatarPosition() === 'right',
         };
+    }
+
+    /**
+     * 标题占位宽度：纯数字（number 或数字字符串）补 `px`，其余按 CSS 值原样使用。
+     */
+    getTitleWidthStyle(): string {
+        const width = this.$data.titleWidth;
+        if (!width) return '';
+        return /^\d+(\.\d+)?$/.test(String(width).trim()) ? `width: ${String(width).trim()}px` : `width: ${width}`;
     }
 
     /**

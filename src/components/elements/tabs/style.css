@@ -33,7 +33,12 @@
   padding: var(--solely-spacing-sm) var(--solely-spacing-md);
   color: var(--solely-text-secondary);
   cursor: pointer;
-  transition: all var(--solely-transition-duration);
+  /* 不能用 all：会把 font-weight 也纳入过渡，导致激活态字重渐变（延迟变粗）；
+     逐项列出需要的属性，切换立即生效。 */
+  transition: color var(--solely-transition-duration),
+    background-color var(--solely-transition-duration),
+    border-color var(--solely-transition-duration),
+    opacity var(--solely-transition-duration);
   border: none;
   background: transparent;
   font-size: var(--solely-font-size-md);
@@ -45,7 +50,8 @@
 
 .tabs__tab--active {
   color: var(--solely-primary);
-  font-weight: 500;
+  /* 不再改 font-weight：400→500 会改变字形宽度，使 tab 宽度与后续 tab 位置抖动。
+     激活态用主色 + 下方指示条区分，识别度不变。 */
 }
 
 .tabs__tab--active::after {
@@ -104,6 +110,19 @@
 }
 
 /* 关闭按钮 */
+/* 线性图标：与 input / select 的关闭按钮同一套绘制方式 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 .tabs__close {
   display: inline-flex;
   align-items: center;
@@ -162,3 +181,119 @@
 .tabs__add:hover {
   color: var(--solely-primary);
 }
+
+/* 键盘焦点可见性 */
+.tabs__tab:focus-visible,
+.tabs__close:focus-visible,
+.tabs__add:focus-visible {
+  outline: 2px solid var(--solely-primary);
+  outline-offset: -2px;
+}
+
+/* 标签内容：图标 / 文案 / 徽标 */
+.tabs__tab-label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.tabs__tab-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.tabs__tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--solely-white);
+  background-color: var(--solely-primary);
+  border-radius: 8px;
+}
+
+.tabs__tab--active .tabs__tab-badge {
+  opacity: 1;
+}
+
+/* 居中标签栏 */
+.tabs--centered .tabs__nav {
+  justify-content: center;
+}
+
+/* 位置：左侧 / 右侧 */
+.tabs--pos-left,
+.tabs--pos-right {
+  display: flex;
+  align-items: flex-start;
+}
+
+.tabs--pos-left .tabs__nav,
+.tabs--pos-right .tabs__nav {
+  flex-direction: column;
+  flex-shrink: 0;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.tabs--pos-left .tabs__nav {
+  border-right: 1px solid var(--solely-border-color);
+  margin-right: var(--solely-spacing-md);
+}
+
+.tabs--pos-right .tabs__nav {
+  order: 2;
+  border-left: 1px solid var(--solely-border-color);
+  margin-left: var(--solely-spacing-md);
+}
+
+.tabs--pos-left .tabs__content,
+.tabs--pos-right .tabs__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.tabs--pos-right .tabs__content {
+  order: 1;
+}
+
+/* 侧边位置的激活指示条改为竖向 */
+.tabs--pos-left .tabs__tab--active::after,
+.tabs--pos-right .tabs__tab--active::after {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  height: auto;
+}
+
+.tabs--pos-left .tabs__tab--active::after {
+  right: -1px;
+}
+
+.tabs--pos-right .tabs__tab--active::after {
+  left: -1px;
+  right: auto;
+}
+
+/* 位置：底部 */
+.tabs--pos-bottom {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.tabs--pos-bottom .tabs__nav {
+  border-bottom: none;
+  border-top: 1px solid var(--solely-border-color);
+  margin-bottom: 0;
+  margin-top: var(--solely-spacing-md);
+}
+
+.tabs--pos-bottom .tabs__tab--active::after {
+  top: -1px;
+  bottom: auto;
+}
+

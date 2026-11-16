@@ -22,6 +22,44 @@
         </div>
     </div>
 
+    <!-- 分组边界 -->
+    <div class="demo-block">
+        <h3 class="demo-block-title">分组边界</h3>
+        <p class="demo-block-desc">
+            name 相同的单选框只在同一分组容器内互斥。分组容器按以下顺序确定：最近的
+            <code>role="radiogroup"</code> 或 <code>data-radio-group</code> 容器、最近的
+            <code>&lt;form&gt;</code>；都没有时以所在根节点（document / shadow root）为界。
+            因此两个独立表单或独立分组容器内的同名单选框不会互相取消。
+        </p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+                <form>
+                    <solely-radio name="group-a" value="a1" checked>表单 A：选项 1</solely-radio>
+                    <solely-radio name="group-a" value="a2">表单 A：选项 2</solely-radio>
+                </form>
+                <form>
+                    <solely-radio name="group-a" value="b1" checked>表单 B：选项 1</solely-radio>
+                    <solely-radio name="group-a" value="b2">表单 B：选项 2</solely-radio>
+                </form>
+                <div role="radiogroup">
+                    <solely-radio name="group-c" value="c1">分组 C：选项 1</solely-radio>
+                    <solely-radio name="group-c" value="c2" checked>分组 C：选项 2</solely-radio>
+                </div>
+            </div>
+            <div class="demo-code">
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">form</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"group-a"</span> <span class="code-attr">value</span>=<span class="code-value">"a1"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>选项 1<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"group-a"</span> <span class="code-attr">value</span>=<span class="code-value">"a2"</span><span class="code-bracket">&gt;</span>选项 2<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">form</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">form</span><span class="code-bracket">&gt;</span>
+  <span class="code-comment">&lt;!-- 同样 name="group-a"，但与上一个 form 互不影响 --&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"group-a"</span> <span class="code-attr">value</span>=<span class="code-value">"b1"</span> <span class="code-attr">checked</span><span class="code-bracket">&gt;</span>选项 1<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"group-a"</span> <span class="code-attr">value</span>=<span class="code-value">"b2"</span><span class="code-bracket">&gt;</span>选项 2<span class="code-bracket">&lt;/</span><span class="code-tag">solely-radio</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">form</span><span class="code-bracket">&gt;</span></code></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- 禁用状态 -->
     <div class="demo-block">
         <h3 class="demo-block-title">禁用状态</h3>
@@ -233,7 +271,8 @@ radioEls.forEach(radio => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -242,11 +281,20 @@ radioEls.forEach(radio => {
             <tbody>
                 <tr>
                     <td>checked</td>
+                    <td>checked</td>
                     <td>指定当前是否选中（支持属性读写）</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>default-checked</td>
+                    <td>defaultChecked</td>
+                    <td>表单重置时回到的默认选中状态</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                </tr>
+                <tr>
+                    <td>disabled</td>
                     <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
@@ -254,11 +302,13 @@ radioEls.forEach(radio => {
                 </tr>
                 <tr>
                     <td>content</td>
+                    <td>content</td>
                     <td>单选框文本内容</td>
                     <td>string</td>
                     <td>''</td>
                 </tr>
                 <tr>
+                    <td>value</td>
                     <td>value</td>
                     <td>单选框的值，用于标识选项（支持属性读写）</td>
                     <td>string</td>
@@ -266,11 +316,23 @@ radioEls.forEach(radio => {
                 </tr>
                 <tr>
                     <td>name</td>
-                    <td>单选框名称，用于分组，同组的单选框互斥</td>
+                    <td>name</td>
+                    <td>
+                        单选框名称，用于分组，同组的单选框互斥。分组范围为最近的 &lt;form&gt;、
+                        role="radiogroup" 或 data-radio-group 容器；都没有时以所在根节点（document / shadow root）为界。
+                     </td>
                     <td>string</td>
                     <td>''</td>
                 </tr>
                 <tr>
+                    <td>group</td>
+                    <td>group</td>
+                    <td>显式分组名，同 group 值的单选框互斥，无需依赖 <code>name</code></td>
+                    <td>string</td>
+                    <td>''</td>
+                </tr>
+                <tr>
+                    <td>type</td>
                     <td>type</td>
                     <td>颜色类型，可选 primary、success、warning、error</td>
                     <td>string</td>
@@ -278,12 +340,34 @@ radioEls.forEach(radio => {
                 </tr>
                 <tr>
                     <td>block</td>
+                    <td>block</td>
                     <td>是否块级元素，占满父容器宽度</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">表单关联</h4>
+        <p class="api-block-desc">
+            设置 <code>name</code>（或 <code>group</code>）后，<code>solely-radio</code> 作为表单关联自定义元素参与提交：
+            仅选中项提交一个条目（<code>value</code> 未设置或为空时按 <code>'on'</code> 提交），未选中不产生条目。
+            <code>formResetCallback</code> 回到 <code>default-checked</code>，所属 <code>fieldset</code> 禁用时会同步清空提交值并锁定交互。
+        </p>
+        <div class="demo-code">
+            <pre><code><span class="code-comment">&lt;!-- 同一 name 分组互斥，选中项以 name=color、value=red 提交 --&gt;</span>
+&lt;<span class="code-tag">form</span>&gt;
+  &lt;<span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"color"</span> <span class="code-attr">value</span>=<span class="code-value">"red"</span> <span class="code-attr">default-checked</span>&gt;红&lt;/<span class="code-tag">solely-radio</span>&gt;
+  &lt;<span class="code-tag">solely-radio</span> <span class="code-attr">name</span>=<span class="code-value">"color"</span> <span class="code-attr">value</span>=<span class="code-value">"blue"</span>&gt;蓝&lt;/<span class="code-tag">solely-radio</span>&gt;
+  &lt;<span class="code-tag">button</span> <span class="code-attr">type</span>=<span class="code-value">"submit"</span>&gt;提交&lt;/<span class="code-tag">button</span>&gt;
+&lt;/<span class="code-tag">form</span>&gt;</code></pre>
+        </div>
+        <p class="api-block-desc" style="margin-top: 12px;">
+            公开的有效性接口与原生控件一致：<code>validity</code>、<code>validationMessage</code>、<code>willValidate</code>、
+            <code>checkValidity()</code>、<code>reportValidity()</code>、<code>setCustomValidity(message)</code>。
+        </p>
     </div>
 
     <div class="api-block">
@@ -299,8 +383,8 @@ radioEls.forEach(radio => {
             <tbody>
                 <tr>
                     <td>change</td>
-                    <td>选中状态变化时触发（原生事件）</td>
-                    <td>Event</td>
+                    <td>选中状态变化时触发；组内同值不派发</td>
+                    <td>CustomEvent&lt;{ name: string; value: string; checked: boolean; previousChecked: boolean; source: 'user' | 'api' | 'reset' }&gt;</td>
                 </tr>
             </tbody>
         </table>
@@ -324,6 +408,22 @@ radioEls.forEach(radio => {
                     <td>Space</td>
                     <td>选中当前单选框</td>
                 </tr>
+                <tr>
+                    <td>ArrowRight / ArrowDown</td>
+                    <td>
+                        在分组内移动到下一个单选框并将其选中；仅在显式分组（<code>role="radiogroup"</code> 或
+                        <code>data-radio-group</code>）内，或同一 <code>name</code> / <code>group</code> 且位于同一分组边界（最近的
+                        <code>radiogroup</code> 容器 → <code>form</code> → 根节点）内生效，独立单选框不响应
+                    </td>
+                </tr>
+                <tr>
+                    <td>ArrowLeft / ArrowUp</td>
+                    <td>与 ArrowRight / ArrowDown 相反方向移动；分组条件相同</td>
+                </tr>
+                <tr>
+                    <td>Tab</td>
+                    <td>分组内采用 roving tabindex：仅选中项（无选中项时为第一个可用项）为 <code>tabindex="0"</code>，其余为 <code>-1</code></td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -339,6 +439,11 @@ radioEls.forEach(radio => {
                 </tr>
             </thead>
             <tbody>
+                <tr>
+                    <td>role="radio"</td>
+                    <td>固定角色，承载元素为 Shadow DOM 内的 <code>.radio</code></td>
+                    <td>否</td>
+                </tr>
                 <tr>
                     <td>aria-checked</td>
                     <td>表示当前选中状态</td>

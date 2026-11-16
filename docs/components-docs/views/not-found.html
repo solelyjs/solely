@@ -158,7 +158,8 @@
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -167,29 +168,34 @@
             <tbody>
                 <tr>
                     <td>title</td>
+                    <td>title</td>
                     <td>主标题</td>
                     <td>string</td>
                     <td>'404'</td>
                 </tr>
                 <tr>
                     <td>subtitle</td>
-                    <td>副标题</td>
+                    <td>subtitle</td>
+                    <td>副标题；未设置时按语言取默认值（中文：<code>抱歉，您访问的页面不存在</code>；其他语言：<code>Sorry, the page you requested does not exist</code>）</td>
                     <td>string</td>
-                    <td>'抱歉，您访问的页面不存在'</td>
+                    <td>随 <code>lang</code> 变化</td>
                 </tr>
                 <tr>
                     <td>description</td>
-                    <td>描述文字</td>
+                    <td>description</td>
+                    <td>描述文字；未设置时按语言取默认值（中文：<code>请检查网址是否正确，或点击下方按钮返回首页</code>；其他语言：<code>Please check the URL, or click the button below to go back home</code>）</td>
                     <td>string</td>
-                    <td>'请检查网址是否正确，或点击下方按钮返回首页'</td>
+                    <td>随 <code>lang</code> 变化</td>
                 </tr>
                 <tr>
+                    <td>back-text</td>
                     <td>backText</td>
-                    <td>返回按钮文字</td>
+                    <td>返回按钮文字；未设置时按语言取默认值（中文：<code>返回首页</code>；其他语言：<code>Back to Home</code>）</td>
                     <td>string</td>
-                    <td>'返回首页'</td>
+                    <td>随 <code>lang</code> 变化</td>
                 </tr>
                 <tr>
+                    <td>back-url</td>
                     <td>backUrl</td>
                     <td>返回链接地址</td>
                     <td>string</td>
@@ -197,9 +203,17 @@
                 </tr>
                 <tr>
                     <td>embedded</td>
+                    <td>embedded</td>
                     <td>是否为嵌入模式（用于文档演示等场景）</td>
                     <td>boolean</td>
                     <td>false</td>
+                </tr>
+                <tr>
+                    <td>show-icon</td>
+                    <td>showIcon</td>
+                    <td>是否显示中间的状态图标；<code>show-icon="false"</code> 时仅隐藏图标并保留 404 数字</td>
+                    <td>boolean</td>
+                    <td>true</td>
                 </tr>
             </tbody>
         </table>

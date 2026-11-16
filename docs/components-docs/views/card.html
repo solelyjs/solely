@@ -110,26 +110,33 @@
         </div>
     </div>
 
-    <!-- 小尺寸 -->
+    <!-- 不同尺寸 -->
     <div class="demo-block">
-        <h3 class="demo-block-title">小尺寸</h3>
-        <p class="demo-block-desc">使用 size="small" 属性设置紧凑的卡片样式。</p>
+        <h3 class="demo-block-title">不同尺寸</h3>
+        <p class="demo-block-desc">支持 small、medium（默认）、large 三种真实档位，头部、正文与操作区的内边距逐档增大。</p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-card title="默认尺寸">
-                    <p>默认尺寸的卡片内容。</p>
-                </solely-card>
                 <solely-card title="小尺寸卡片" size="small">
                     <p>小尺寸的卡片内容，更加紧凑。</p>
                 </solely-card>
+                <solely-card title="中尺寸卡片" size="medium">
+                    <p>中尺寸的卡片内容，默认档位。</p>
+                </solely-card>
+                <solely-card title="大尺寸卡片" size="large">
+                    <p>大尺寸的卡片内容，内边距与标题字号更大。</p>
+                </solely-card>
             </div>
             <div class="demo-code">
-                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"默认尺寸"</span><span class="code-bracket">&gt;</span>
-  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>默认尺寸的卡片内容。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+                <pre><code><span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"小尺寸卡片"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>小尺寸的卡片内容，更加紧凑。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
 
-<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"小尺寸卡片"</span> <span class="code-attr">size</span>=<span class="code-value">"small"</span><span class="code-bracket">&gt;</span>
-  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>小尺寸的卡片内容，更加紧凑。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"中尺寸卡片"</span> <span class="code-attr">size</span>=<span class="code-value">"medium"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>中尺寸的卡片内容，默认档位。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
+<span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span>
+
+<span class="code-bracket">&lt;</span><span class="code-tag">solely-card</span> <span class="code-attr">title</span>=<span class="code-value">"大尺寸卡片"</span> <span class="code-attr">size</span>=<span class="code-value">"large"</span><span class="code-bracket">&gt;</span>
+  <span class="code-bracket">&lt;</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>大尺寸的卡片内容，内边距与标题字号更大。<span class="code-bracket">&lt;/</span><span class="code-tag">p</span><span class="code-bracket">&gt;</span>
 <span class="code-bracket">&lt;/</span><span class="code-tag">solely-card</span><span class="code-bracket">&gt;</span></code></pre>
             </div>
         </div>
@@ -138,10 +145,10 @@
     <!-- 带封面 -->
     <div class="demo-block">
         <h3 class="demo-block-title">带封面</h3>
-        <p class="demo-block-desc">使用 cover 属性设置卡片封面图片。</p>
+        <p class="demo-block-desc">使用 cover 属性设置卡片封面图片。文档站使用内置占位图（离线可用）；图片加载失败时组件会自动回退到占位图，不再显示破图。</p>
         <div class="demo-box">
             <div class="demo-preview">
-                <solely-card title="带封面的卡片" cover="https://picsum.photos/400/200?random=1">
+                <solely-card title="带封面的卡片" cover="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23f0f2f5'/%3E%3Ccircle cx='312' cy='56' r='22' fill='%23d9dde3'/%3E%3Cpath d='M0 168 L112 88 L192 148 L272 104 L400 186 L400 200 L0 200 Z' fill='%23d9dde3'/%3E%3Cpath d='M0 190 L92 136 L172 180 L252 142 L400 200 L0 200 Z' fill='%23c8cdd4'/%3E%3C/svg%3E">
                     <p>卡片可以包含封面图片，适合展示图片内容。</p>
                 </solely-card>
             </div>
@@ -158,7 +165,7 @@
     <!-- 额外操作区 -->
     <div class="demo-block">
         <h3 class="demo-block-title">额外操作区</h3>
-        <p class="demo-block-desc">使用 extra 属性或 extra 插槽在标题右侧添加操作按钮。</p>
+        <p class="demo-block-desc">使用 extra 属性或 extra 插槽添加头部右侧内容；即使未设置 title，只要提供 extra 也会渲染头部。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-card title="卡片标题">
@@ -197,7 +204,7 @@
     <!-- 底部操作区 -->
     <div class="demo-block">
         <h3 class="demo-block-title">底部操作区</h3>
-        <p class="demo-block-desc">使用 actions 属性或 actions 插槽添加底部操作按钮。actions 属性使用 JSON 数组字符串格式，点击会触发 action 事件。</p>
+        <p class="demo-block-desc">使用 actions 属性或 actions 插槽添加底部操作按钮。HTML attribute 传 JSON 数组字符串，JS 属性直接赋 <code>string[]</code>；点击操作项触发 action 事件；两者都未提供时不渲染操作区，避免空白带边框底栏。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-card title="卡片标题" actions='["编辑", "删除"]' @action="this.handleAction(event)">
@@ -262,7 +269,7 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
             <div class="demo-preview">
                 <solely-card
                     title="产品卡片"
-                    cover="https://picsum.photos/400/200?random=2"
+                    cover="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23f0f2f5'/%3E%3Ccircle cx='312' cy='56' r='22' fill='%23d9dde3'/%3E%3Cpath d='M0 168 L112 88 L192 148 L272 104 L400 186 L400 200 L0 200 Z' fill='%23d9dde3'/%3E%3Cpath d='M0 190 L92 136 L172 180 L252 142 L400 200 L0 200 Z' fill='%23c8cdd4'/%3E%3C/svg%3E"
                     hoverable
                     bordered
                 >
@@ -365,7 +372,8 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -374,17 +382,27 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
             <tbody>
                 <tr>
                     <td>title</td>
+                    <td>title</td>
                     <td>卡片标题</td>
                     <td>string</td>
                     <td>''</td>
                 </tr>
                 <tr>
                     <td>size</td>
-                    <td>卡片尺寸</td>
-                    <td>'default' | 'small'</td>
-                    <td>'default'</td>
+                    <td>size</td>
+                    <td>卡片尺寸，可选值为 small、medium、large</td>
+                    <td>'small' | 'medium' | 'large'</td>
+                    <td>'medium'</td>
                 </tr>
                 <tr>
+                    <td>size 兼容别名</td>
+                    <td>size</td>
+                    <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                    <td>'middle' | 'default'</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>bordered</td>
                     <td>bordered</td>
                     <td>是否显示边框</td>
                     <td>boolean</td>
@@ -392,11 +410,13 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
                 </tr>
                 <tr>
                     <td>loading</td>
+                    <td>loading</td>
                     <td>是否加载中</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>hoverable</td>
                     <td>hoverable</td>
                     <td>是否可悬停（悬停时有上浮效果）</td>
                     <td>boolean</td>
@@ -404,17 +424,27 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
                 </tr>
                 <tr>
                     <td>cover</td>
+                    <td>cover</td>
                     <td>封面图片 URL</td>
                     <td>string</td>
                     <td>''</td>
                 </tr>
                 <tr>
-                    <td>actions</td>
-                    <td>底部操作区内容（JSON 数组字符串，如 '["编辑", "删除"]'）</td>
+                    <td>cover-alt</td>
+                    <td>coverAlt</td>
+                    <td>封面图片替代文本（映射到 <code>&lt;img&gt;</code> 的 <code>alt</code>）</td>
                     <td>string</td>
                     <td>''</td>
                 </tr>
                 <tr>
+                    <td>actions</td>
+                    <td>actions</td>
+                    <td>底部操作区内容（property 为数组；HTML 属性传入 JSON 数组字符串，如 '["编辑", "删除"]'）</td>
+                    <td>array</td>
+                    <td>[]</td>
+                </tr>
+                <tr>
+                    <td>extra</td>
                     <td>extra</td>
                     <td>右上角额外操作区内容</td>
                     <td>string</td>
@@ -422,6 +452,40 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">ARIA 属性</h4>
+        <p class="api-block-desc">通过 actions 渲染的底部操作项是可聚焦的按钮角色，键盘可直接操作。</p>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>动态更新</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>role="button"</td>
+                    <td>操作项标识为按钮角色（原先仅为 span，键盘不可达）</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>tabindex="0"</td>
+                    <td>可通过 Tab 聚焦，聚焦时显示焦点环</td>
+                    <td>否</td>
+                </tr>
+                <tr>
+                    <td>aria-label</td>
+                    <td>取操作项自身文案，供读屏播报按钮用途</td>
+                    <td>是</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="api-block-desc" style="margin-top: 12px;">
+            键盘操作：聚焦操作项后按 <code>Enter</code> 或 <code>Space</code> 等价于点击。
+        </p>
     </div>
 
     <div class="api-block">
@@ -568,7 +632,7 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
         <h4 class="api-block-title">类型定义</h4>
         <div class="demo-code">
             <pre><code><span class="code-comment">// 卡片尺寸</span>
-<span class="code-keyword">type</span> <span class="code-type">CardSize</span> = <span class="code-value">'default'</span> | <span class="code-value">'small'</span>;
+<span class="code-keyword">type</span> <span class="code-type">CardSize</span> = <span class="code-value">'small'</span> | <span class="code-value">'medium'</span> | <span class="code-value">'large'</span>; <span class="code-comment">// middle / default 为兼容别名 → medium</span>
 
 <span class="code-comment">// 卡片属性接口</span>
 <span class="code-keyword">interface</span> <span class="code-type">CardProps</span> {
@@ -578,7 +642,7 @@ card.setLoading(<span class="code-keyword">true</span>);</code></pre>
   <span class="code-attr">loading</span>?: <span class="code-type">boolean</span>;    <span class="code-comment">// 是否加载中</span>
   <span class="code-attr">hoverable</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否可悬停</span>
   <span class="code-attr">cover</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 封面图片 URL</span>
-  <span class="code-attr">actions</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 底部操作区内容（JSON 数组字符串）</span>
+  <span class="code-attr">actions</span>?: <span class="code-type">string[]</span>;    <span class="code-comment">// 底部操作项文案数组；HTML attribute 需传 JSON 数组字符串</span>
   <span class="code-attr">extra</span>?: <span class="code-type">string</span>;      <span class="code-comment">// 右上角额外操作区</span>
 }</code></pre>
         </div>

@@ -194,7 +194,7 @@
         <p class="demo-block-desc">监听 change 事件获取评分变化。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; gap: 12px;">
-                <solely-rate value="{{$data.rateValue}}" @change="this.handleRateChange(event)"></solely-rate>
+                <solely-rate :value="$data.rateValue" @change="this.handleRateChange(event)"></solely-rate>
                 <span style="color: var(--solely-text-secondary);">当前评分: {{$data.rateValue}}</span>
                 <div style="padding: 12px; background: var(--solely-component-bg); border-radius: 4px; font-size: 12px;">
                     <div style="margin-bottom: 8px; color: var(--solely-text-secondary);">事件日志（最近5条）：</div>
@@ -217,6 +217,24 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
     </div>
 </div>
 
+<!-- ===== 0.8.0 新增特性验收样例 ===== -->
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">提示文案与星星数量（0.8.0）</h3>
+        <p class="demo-block-desc"><code>tooltips</code> 支持 JSON 数组或逗号分隔；<code>allow-half</code> 下点星星左半边得半星，按住拖动可跨星连续预览、松手提交一次 change；<code>count</code> 改为 8 时星星数量同步。</p>
+        <div class="demo-box">
+            <div class="demo-preview" style="flex-direction: column; gap: 16px; align-items: stretch;">
+                <div><div class="demo-subtitle">tooltips + allow-half（悬停 / 点左半边 / 拖拽）</div>
+                    <solely-rate allow-half tooltips='["很差","较差","一般","满意","非常满意"]' value="2.5"></solely-rate></div>
+                <div><div class="demo-subtitle">count=8（星星数量同步）</div>
+                    <solely-rate count="8" value="3" tooltips="1,2,3,4,5,6,7,8"></solely-rate></div>
+            </div>
+            <div class="demo-code"><pre><code>&lt;solely-rate allow-half tooltips='["很差","较差","一般","满意","非常满意"]'&gt;&lt;/solely-rate&gt;
+&lt;solely-rate count="8" tooltips="1,2,3,4,5,6,7,8"&gt;&lt;/solely-rate&gt;</code></pre></div>
+        </div>
+    </div>
+</div>
+
 <!-- API 文档 -->
 <div class="api-section">
     <h2 class="api-title">API</h2>
@@ -226,7 +244,8 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性名</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -235,17 +254,20 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>value</td>
+                    <td>value</td>
                     <td>当前评分值（支持属性读写）</td>
                     <td>number</td>
                     <td>0</td>
                 </tr>
                 <tr>
                     <td>count</td>
+                    <td>count</td>
                     <td>星星总数</td>
                     <td>number</td>
                     <td>5</td>
                 </tr>
                 <tr>
+                    <td>allow-half</td>
                     <td>allowHalf</td>
                     <td>是否允许半选</td>
                     <td>boolean</td>
@@ -253,11 +275,13 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>disabled</td>
+                    <td>disabled</td>
                     <td>是否禁用</td>
                     <td>boolean</td>
                     <td>false</td>
                 </tr>
                 <tr>
+                    <td>allow-clear</td>
                     <td>allowClear</td>
                     <td>是否允许清除</td>
                     <td>boolean</td>
@@ -265,15 +289,24 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                 </tr>
                 <tr>
                     <td>character</td>
+                    <td>character</td>
                     <td>自定义字符</td>
                     <td>string</td>
                     <td>★</td>
                 </tr>
                 <tr>
                     <td>readonly</td>
+                    <td>readonly</td>
                     <td>是否只读</td>
                     <td>boolean</td>
                     <td>false</td>
+                </tr>
+                <tr>
+                    <td>tooltips</td>
+                    <td>tooltips</td>
+                    <td>每颗星的提示文案，JSON 数组或逗号分隔，缺省为「N 分」</td>
+                    <td>string</td>
+                    <td>-</td>
                 </tr>
             </tbody>
         </table>
@@ -292,7 +325,7 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             <tbody>
                 <tr>
                     <td>change</td>
-                    <td>评分改变时触发（原生事件）</td>
+                    <td>评分改变时触发（原生事件）；值未变化时不派发</td>
                     <td>Event</td>
                 </tr>
             </tbody>
@@ -317,8 +350,17 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
                     <td>ArrowLeft / ArrowDown</td>
                     <td>减少评分</td>
                 </tr>
+                <tr>
+                    <td>Home / End</td>
+                    <td>跳到最小 / 最大评分</td>
+                </tr>
+                <tr>
+                    <td>Enter / Space</td>
+                    <td>选中当前聚焦的星</td>
+                </tr>
             </tbody>
         </table>
+        <p class="api-note">键盘焦点采用 roving tabindex：只有对应当前评分的那颗星进入 Tab 序列，方向键移动评分时焦点跟随。</p>
     </div>
 
     <div class="api-block">
@@ -333,28 +375,33 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
             </thead>
             <tbody>
                 <tr>
-                    <td>aria-valuenow</td>
-                    <td>当前评分值</td>
-                    <td>是</td>
-                </tr>
-                <tr>
-                    <td>aria-valuemin</td>
-                    <td>最小评分值（0）</td>
+                    <td>role="radiogroup" / role="radio"</td>
+                    <td>容器与每颗星的可访问角色</td>
                     <td>否</td>
                 </tr>
                 <tr>
-                    <td>aria-valuemax</td>
-                    <td>最大评分值（count）</td>
-                    <td>否</td>
-                </tr>
-                <tr>
-                    <td>aria-disabled</td>
-                    <td>表示禁用状态</td>
+                    <td>aria-label（容器）</td>
+                    <td>容器 <code>role="radiogroup"</code> 的可访问名称：<code>评分，当前 N 分</code></td>
                     <td>是</td>
                 </tr>
                 <tr>
-                    <td>aria-readonly</td>
-                    <td>表示只读状态</td>
+                    <td>aria-valuenow / aria-valuemin / aria-valuemax</td>
+                    <td>写在容器 <code>role="radiogroup"</code> 上：当前评分 / 0 / <code>count</code>（默认 5）</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-checked</td>
+                    <td>当前评分对应的星（半星向上取整）</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-label</td>
+                    <td>星的可读名称，取自 tooltips 或「N 分」</td>
+                    <td>是</td>
+                </tr>
+                <tr>
+                    <td>aria-disabled / aria-readonly</td>
+                    <td>表示禁用 / 只读状态</td>
                     <td>是</td>
                 </tr>
             </tbody>
@@ -426,6 +473,7 @@ rateEl.addEventListener(<span class="code-value">'change'</span>, (e) => {
   <span class="code-attr">allowClear</span>?: <span class="code-type">boolean</span>; <span class="code-comment">// 是否允许清除</span>
   <span class="code-attr">character</span>?: <span class="code-type">string</span>;  <span class="code-comment">// 自定义字符</span>
   <span class="code-attr">readonly</span>?: <span class="code-type">boolean</span>;  <span class="code-comment">// 是否只读</span>
+  <span class="code-attr">tooltips</span>?: <span class="code-type">string</span>;   <span class="code-comment">// 每颗星提示文案（JSON 数组或逗号分隔）</span>
 }</code></pre>
         </div>
     </div>

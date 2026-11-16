@@ -33,11 +33,15 @@ import {
     generateId,
     injectStyle,
     createElement,
+    createLinearIcon,
     addClosingAnimation,
     safeAsyncCallback,
     observeTheme,
     ANIMATION_DURATION,
 } from '../utils';
+import { registerOverlay, type OverlayHandle } from '../../../shared/floating/overlay-stack';
+import { oneOf } from '../../../shared/enum';
+import { createStatusIcon } from '../../../shared/icons';
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-modal-styles';
@@ -45,7 +49,7 @@ const STYLE_ID = 'solely-modal-styles';
 const globalConfig: ModalConfig = {
     width: 520,
     mask: true,
-    maskClosable: false,
+    maskClosable: true,
     okText: '确定',
     cancelText: '取消',
 };
@@ -55,33 +59,42 @@ interface ModalInfo {
     element: HTMLElement;
     instance: ModalInstance | null;
     cleanup?: () => void;
+    overlay?: OverlayHandle;
+    /** 统一关闭回调：所有关闭路径都从这里触发一次 */
+    onClose?: (result?: unknown) => void;
 }
 
 const modalList: ModalInfo[] = [];
-const closingIds = new Set<number>();
+// 正在关闭的 Modal：缓存关闭 Promise，避免 destroy() 在关闭动画期间空转
+const closingTasks = new Map<number, Promise<void>>();
 
-const ICON_MAP: Record<ModalType, string> = {
-    info: 'ℹ',
-    success: '✓',
-    warning: '⚠',
-    error: '✕',
-    confirm: '?',
+/** 惰性创建状态图标：模块顶层不触碰 document（SSR 安全） */
+const ICON_MAP: Record<ModalType, string | (() => Element)> = {
+    info: () => createStatusIcon('info'),
+    success: () => createStatusIcon('success'),
+    warning: () => createStatusIcon('warning'),
+    error: () => createStatusIcon('error'),
+    confirm: () => createStatusIcon('question'),
 };
 
 function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
 }
 
-async function closeModalById(id: number): Promise<void> {
-    // 防止并发关闭同一个 Modal
-    if (closingIds.has(id)) return;
-    closingIds.add(id);
+async function closeModalById(id: number, result?: unknown): Promise<void> {
+    // 已在关闭中：复用同一个 Promise，避免并发关闭或 destroy() 空转
+    const running = closingTasks.get(id);
+    if (running) return running;
 
-    try {
+    const task = (async () => {
         const index = modalList.findIndex(m => m.id === id);
         if (index === -1) return;
 
         const modalInfo = modalList[index];
+
+        // 关闭动画开始：出栈并停止 Esc / Tab 陷阱（焦点与锁在动画结束后释放）
+        modalInfo.overlay?.deactivate();
+
         const mask = modalInfo.element.querySelector('.solely-modal-mask') as HTMLElement;
         const modal = modalInfo.element.querySelector('.solely-modal') as HTMLElement;
 
@@ -99,8 +112,23 @@ async function closeModalById(id: number): Promise<void> {
             modalList[currentIndex].element.remove();
             modalList.splice(currentIndex, 1);
         }
+
+        // 动画结束：还原焦点、释放 scroll lock 与 inert
+        modalInfo.overlay?.dispose();
+
+        // 任何关闭路径（确定/取消/关闭按钮/遮罩/Esc/close()）统一触发一次 onClose
+        try {
+            modalInfo.onClose?.(result);
+        } catch (error) {
+            console.error('[Solely Modal] onClose callback error:', error);
+        }
+    })();
+
+    closingTasks.set(id, task);
+    try {
+        await task;
     } finally {
-        closingIds.delete(id);
+        closingTasks.delete(id);
     }
 }
 
@@ -138,9 +166,11 @@ function open(options: ModalOptions): ModalInstance {
 
     ensureStylesInjected();
 
-    const type = options.type || 'info';
+    // 非法 type 会让 ICON_MAP 取到 undefined、图标渲染成 "undefined"，必须白名单化
+    const type = oneOf(options.type, ['info', 'success', 'warning', 'error', 'confirm'], 'info');
     const width = options.width ?? globalConfig.width;
     const showCancel = options.showCancel ?? type === 'confirm';
+    const mask = options.mask ?? globalConfig.mask;
     const maskClosable = options.maskClosable ?? globalConfig.maskClosable;
 
     const wrap = createElement('div', {
@@ -154,21 +184,33 @@ function open(options: ModalOptions): ModalInstance {
     // 存储需要清理的事件处理函数
     const handlersToCleanup: Array<{ element: HTMLElement; type: string; handler: EventListener }> = [];
 
-    if (options.mask !== false) {
-        const mask = createElement('div', { className: 'solely-modal-mask' });
+    if (mask) {
+        const maskEl = createElement('div', { className: 'solely-modal-mask' });
         if (maskClosable) {
             const handleMaskClick = () => {
                 closeModalById(id);
                 options.onCancel?.();
             };
-            mask.onclick = handleMaskClick;
-            handlersToCleanup.push({ element: mask, type: 'click', handler: handleMaskClick });
+            // onClose 由 closeModalById 统一触发，避免各路径遗漏或重复
+            // 与清理逻辑统一使用 addEventListener，removeEventListener 才能生效
+            maskEl.addEventListener('click', handleMaskClick);
+            handlersToCleanup.push({ element: maskEl, type: 'click', handler: handleMaskClick });
         }
-        wrap.appendChild(mask);
+        wrap.appendChild(maskEl);
     }
+
+    const titleId = `solely-modal-title-${id}`;
+    const hasTitle =
+        typeof options.title === 'string' ? (options.title || '').trim() !== '' : options.title instanceof HTMLElement;
 
     const modal = createElement('div', {
         className: `solely-modal${options.className ? ` ${options.className}` : ''}`,
+        attrs: {
+            role: 'dialog',
+            'aria-modal': 'true',
+            tabIndex: '-1',
+            ...(hasTitle ? { 'aria-labelledby': titleId } : { 'aria-label': '对话框' }),
+        },
         styles: {
             ...(options.style as Partial<CSSStyleDeclaration>),
             width: typeof width === 'number' ? `${width}px` : width,
@@ -179,6 +221,7 @@ function open(options: ModalOptions): ModalInstance {
 
     const title = createElement('h3', {
         className: 'solely-modal__title',
+        attrs: { id: titleId },
     });
 
     // 支持字符串和 DOM 元素作为标题
@@ -194,14 +237,13 @@ function open(options: ModalOptions): ModalInstance {
     if (options.closable !== false) {
         const close = createElement('button', {
             className: 'solely-modal__close',
-            textContent: '×',
             attrs: { type: 'button', 'aria-label': '关闭', part: 'close' },
         });
+        close.appendChild(createLinearIcon('close'));
         const handleCloseClick = () => {
             closeModalById(id);
-            options.onClose?.();
         };
-        close.onclick = handleCloseClick;
+        close.addEventListener('click', handleCloseClick);
         handlersToCleanup.push({ element: close, type: 'click', handler: handleCloseClick });
         header.appendChild(close);
     }
@@ -213,12 +255,20 @@ function open(options: ModalOptions): ModalInstance {
     const contentWrapper = createElement('div', { className: 'solely-modal__content-wrapper' });
 
     // 根据 showIcon 决定是否显示图标，默认为 true
+    // icon="" 明确表示不要图标；showIcon=false 优先级最高
     const showIcon = options.showIcon !== false;
-    if (showIcon) {
+    const iconSource = options.icon ?? ICON_MAP[type];
+    if (showIcon && iconSource !== '') {
         const icon = createElement('span', {
             className: `solely-modal__icon solely-modal__icon--${type}`,
-            textContent: ICON_MAP[type],
         });
+        if (typeof iconSource === 'string') {
+            icon.textContent = iconSource;
+        } else if (typeof iconSource === 'function') {
+            icon.appendChild(iconSource());
+        } else if (iconSource instanceof Element) {
+            icon.appendChild(iconSource.cloneNode(true));
+        }
         contentWrapper.appendChild(icon);
     }
 
@@ -271,20 +321,37 @@ function open(options: ModalOptions): ModalInstance {
         const okBtn = createButton(
             options.okText || globalConfig.okText,
             options.okType || 'primary',
-            async () => {
-                // 兼容 onOk（废弃别名），优先使用 onConfirm
-                const confirmHandler = options.onConfirm || options.onOk;
-                if (confirmHandler) {
-                    const result = await safeAsyncCallback(() => confirmHandler());
-                    // 只有当回调不返回 false 时才关闭对话框
-                    if (result === false) {
-                        return; // 不关闭对话框
-                    }
-                }
-                closeModalById(id);
-            },
+            () => undefined,
             options.cloneElement,
         );
+
+        // 异步 onConfirm：pending 期间按钮 loading / disabled，避免连点重复执行
+        let confirmPending = false;
+        const setConfirmPending = (value: boolean): void => {
+            confirmPending = value;
+            okBtn.disabled = value;
+            okBtn.setAttribute('aria-busy', value ? 'true' : 'false');
+            okBtn.classList.toggle('is-loading', value);
+        };
+
+        okBtn.onclick = () => {
+            if (confirmPending) return;
+
+            // 兼容 onOk（废弃别名），优先使用 onConfirm
+            const confirmHandler = options.onConfirm || options.onOk;
+            if (!confirmHandler) {
+                closeModalById(id);
+                return;
+            }
+
+            setConfirmPending(true);
+            void safeAsyncCallback(() => confirmHandler()).then(result => {
+                setConfirmPending(false);
+                // 契约：返回 false 保持打开；其余返回值作为结果透传给 onClose
+                if (result === false) return;
+                closeModalById(id, result);
+            });
+        };
         footer.appendChild(okBtn);
     }
 
@@ -292,6 +359,25 @@ function open(options: ModalOptions): ModalInstance {
     wrap.appendChild(modal);
 
     document.body.appendChild(wrap);
+
+    // 注册浮层：z-index / Esc / 焦点陷阱 / scroll lock / 背景 inert 统一由基座接管
+    const overlay = registerOverlay({
+        kind: 'modal',
+        // 以 wrap 作为浮层根节点：z-index 作用于遮罩+对话框整体，
+        // 嵌套 modal 时也能让基座正确排除其它浮层、避免把下层对话框 inert 掉
+        container: wrap,
+        trigger: null,
+        escClosable: true,
+        trapFocus: true,
+        lockScroll: true,
+        inertBackground: true,
+        autoFocus: true,
+        initialFocus: modal,
+        onEscape: () => {
+            closeModalById(id);
+        },
+    });
+    overlay.activate();
 
     // 创建清理函数
     const cleanup = () => {
@@ -302,12 +388,11 @@ function open(options: ModalOptions): ModalInstance {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    modalList.push({ id, element: wrap, instance: null!, cleanup });
+    modalList.push({ id, element: wrap, instance: null!, cleanup, overlay, onClose: options.onClose });
 
     const instance: ModalInstance = {
         close: () => {
             closeModalById(id);
-            options.onClose?.();
         },
         update: (newOptions: Partial<ModalOptions>) => {
             // 更新标题
@@ -383,7 +468,8 @@ function open(options: ModalOptions): ModalInstance {
 }
 
 function confirm(options: Omit<ModalOptions, 'type'>): ModalInstance {
-    return open({ ...options, type: 'confirm', showCancel: true });
+    // 确认框默认不响应遮罩点击，避免误关；调用方可显式覆盖
+    return open({ maskClosable: false, ...options, type: 'confirm', showCancel: true });
 }
 
 function info(options: Omit<ModalOptions, 'type'>): ModalInstance {

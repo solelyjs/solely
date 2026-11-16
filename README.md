@@ -142,6 +142,30 @@ class MyCounter extends BaseElement<{ count: number }> {
 </html>
 ```
 
+## 🌐 浏览器支持与 SSR
+
+### 浏览器基线
+
+组件库依赖原生 Web Components 能力，支持基线为 **Chrome / Edge 84+、Firefox 98+、Safari 16.4+**。
+Safari 16.4 是首个支持表单关联自定义元素（`formAssociated` / `ElementInternals`）的版本，是本库的硬底线。
+
+低于基线时模块仍可导入，但会在运行期失败：缺少 `WeakRef` 时响应式系统初始化抛 `TypeError`；缺少
+`requestSubmit` 时 `nativeType="submit"` 的按钮点击后表单不提交；缺少 `ElementInternals` 时表单关联告警并降级为
+不参与表单。本库不提供 polyfill，也不做静默降级。
+
+**结论：不为 `WeakRef` / `requestSubmit` 单独增加存在性守卫。** 两者在声明基线内均受支持，守卫只会覆盖同时缺少
+`ElementInternals`、本就无法使用组件语义的旧环境，反而把「环境不达标」伪装成「组件静默失效」。
+详见 [快速上手 · 浏览器支持基线](./docs/components-docs/views/quickstart.html)。
+
+### SSR 限制
+
+**服务端可以安全导入，但不可实例化。** 导入组件模块不会触发 `customElements.define`（装饰器在没有 `window` /
+`customElements` 时会跳过注册），主题自动注入也会在没有 `document` 时跳过；但构造组件实例会调用
+`this.attachShadow()`，在 Node 中报 `attachShadow is not a function`。
+
+推荐用法：服务端只导入模块并输出标签字符串（如 `<solely-button>`），把组件模块放到客户端入口（hydration 之前）导入；
+不要在服务端 `new` 组件，也不要调用依赖 DOM 的实例方法或主题 API。当前版本不提供 SSR 适配层与 hydration 支持。
+
 ## 📚 模板语法
 
 所有模板必须是 **合法 HTML**；框架会提前编译成高效更新函数，无运行时解析开销。

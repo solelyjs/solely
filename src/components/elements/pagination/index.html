@@ -14,10 +14,17 @@
     <span
         part="prev"
         class="pagination__prev"
+        role="button"
+        :tabindex="this.getPrevTabIndex()"
+        aria-label="上一页"
+        :aria-disabled="this.getPrevTabIndex() === '-1' ? 'true' : 'false'"
          :class="this.getPrevClasses()"
         @click="this.handlePrev(event)"
+        @keydown="this.handlePrevKeydown(event)"
     >
-        &lt;
+        <svg class="pagination__nav-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M10 3.5 5.5 8 10 12.5"></path>
+        </svg>
     </span>
 
     <!-- 页码 -->
@@ -26,8 +33,14 @@
             <span
                 part="item"
                 class="pagination__item"
+                role="button"
+                :tabindex="$data.disabled ? '-1' : '0'"
+                :aria-label="'第 ' + page + ' 页'"
+                :aria-current="page === this.getEffectiveCurrent() ? 'page' : null"
+                :aria-disabled="$data.disabled ? 'true' : 'false'"
                  :class="this.getItemClasses(page)"
                 @click="this.handlePageClick(page, event)"
+                @keydown="this.handlePageKeydown(page, event)"
             >
                 {{page}}
             </span>
@@ -41,17 +54,28 @@
     <span
         part="next"
         class="pagination__next"
+        role="button"
+        :tabindex="this.getNextTabIndex()"
+        aria-label="下一页"
+        :aria-disabled="this.getNextTabIndex() === '-1' ? 'true' : 'false'"
          :class="this.getNextClasses()"
         @click="this.handleNext(event)"
+        @keydown="this.handleNextKeydown(event)"
     >
-        &gt;
+        <svg class="pagination__nav-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M6 3.5 10.5 8 6 12.5"></path>
+        </svg>
     </span>
 
     <!-- 每页条数选择器 -->
     <If test="$data.showSizeChanger">
         <span part="size-changer" class="pagination__size-changer">
-            <select @change="this.handleSizeChange(event)">
-                <For each="$data.parsedPageSizeOptions" item="size">
+            <select
+                aria-label="每页条数"
+                :disabled="$data.disabled"
+                @change="this.handleSizeChange(event)"
+            >
+                <For each="this.getPageSizeOptions()" item="size">
                     <option
                         :value="size"
                         :selected="size === $data.pageSize"
@@ -72,13 +96,41 @@
                     part="jumper-input"
                     type="number"
                     min="1"
+                    aria-label="跳至页码"
                     :max="$data.totalPages"
+                    :disabled="$data.disabled"
                     s-model="$data.jumperValue"
                     @keydown="this.handleJumperKeydown(event)"
                 />
                 <span part="jumper-controls" class="pagination__jumper-controls">
-                    <span part="jumper-up" class="pagination__jumper-up" @click="this.handleJumperStep(1)">▲</span>
-                    <span part="jumper-down" class="pagination__jumper-down" @click="this.handleJumperStep(-1)">▼</span>
+                    <span
+                        part="jumper-up"
+                        class="pagination__jumper-up"
+                        role="button"
+                        :tabindex="$data.disabled ? '-1' : '0'"
+                        aria-label="跳至后一页"
+                        :aria-disabled="$data.disabled ? 'true' : 'false'"
+                        @click="this.handleJumperStep(1)"
+                        @keydown="this.handleJumperStepKeydown(1, event)"
+                    >
+                        <svg class="pagination__jumper-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <path d="M3.5 10 8 5.5 12.5 10"></path>
+                        </svg>
+                    </span>
+                    <span
+                        part="jumper-down"
+                        class="pagination__jumper-down"
+                        role="button"
+                        :tabindex="$data.disabled ? '-1' : '0'"
+                        aria-label="跳至前一页"
+                        :aria-disabled="$data.disabled ? 'true' : 'false'"
+                        @click="this.handleJumperStep(-1)"
+                        @keydown="this.handleJumperStepKeydown(-1, event)"
+                    >
+                        <svg class="pagination__jumper-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <path d="M3.5 6 8 10.5 12.5 6"></path>
+                        </svg>
+                    </span>
                 </span>
             </span>
             页

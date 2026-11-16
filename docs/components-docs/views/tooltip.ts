@@ -70,6 +70,28 @@ export class DocsTooltip extends BaseElement<DocsData> {
                 }),
             );
         }
+
+        // 0.8.0 新增特性样例：目标位于 shadow root 内时，通过 IDREF 代理建立可解析的 aria 关联
+        const shadowHost = this.$refs.featureShadowHost as HTMLElement | undefined;
+        if (shadowHost && !shadowHost.shadowRoot) {
+            const root = shadowHost.attachShadow({ mode: 'open' });
+            const btn = document.createElement('button');
+            btn.textContent = 'shadow 内的按钮';
+            btn.style.cssText =
+                'height:32px;padding:0 12px;border:1px solid var(--solely-border-color);' +
+                'border-radius:6px;background:var(--solely-component-bg);' +
+                'color:var(--solely-text-primary);cursor:pointer;';
+            root.appendChild(btn);
+            this.basicTooltipInstances.push(
+                Tooltip.bind(btn, { content: '跨 shadow 边界的提示', trigger: 'hover', placement: 'top' }),
+            );
+            btn.addEventListener('mouseenter', () => {
+                const log = document.getElementById('shadowIdrefLog');
+                if (log) {
+                    log.textContent = `aria-describedby = ${btn.getAttribute('aria-describedby') ?? '(绑定后生成)'}`;
+                }
+            });
+        }
     }
 
     unmounted(): void {

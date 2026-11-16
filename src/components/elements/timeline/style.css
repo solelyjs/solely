@@ -407,8 +407,8 @@
 .timeline--horizontal-bottom .timeline__item--pending>.timeline__item-tail,
 .timeline--horizontal-alternate .timeline__item--pending>.timeline__item-tail {
   background-image: repeating-linear-gradient(90deg,
-      rgba(5, 5, 5, 0.15) 0,
-      rgba(5, 5, 5, 0.15) 4px,
+      var(--timeline-tail-color) 0,
+      var(--timeline-tail-color) 4px,
       transparent 4px,
       transparent 8px) !important;
 }

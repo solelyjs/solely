@@ -19,7 +19,7 @@ export interface PaginationProps {
     showQuickJumper: boolean;
     /** 是否显示用于改变页数 */
     showSizeChanger: boolean;
-    /** 指定每页可以显示多少条 */
+    /** 指定每页可以显示多少条；当前 pageSize 会自动并入，避免下拉回退显示第一项 */
     pageSizeOptions: string;
     /** 是否禁用 */
     disabled: boolean;

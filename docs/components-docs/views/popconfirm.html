@@ -320,9 +320,15 @@ customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`
                 </tr>
                 <tr>
                     <td>showIcon</td>
-                    <td>是否显示图标</td>
+                    <td>是否显示图标；设为 false 时不渲染图标节点，优先级高于 icon</td>
                     <td>boolean</td>
                     <td>true</td>
+                </tr>
+                <tr>
+                    <td>icon</td>
+                    <td>自定义图标，支持字符串或 Element；<code>icon: ''</code> 表示不渲染图标</td>
+                    <td>string | Element</td>
+                    <td>内置 warning 线性 SVG 图标</td>
                 </tr>
                 <tr>
                     <td>className</td>
@@ -337,9 +343,15 @@ customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`
                     <td>-</td>
                 </tr>
                 <tr>
+                    <td>cloneElement</td>
+                    <td>是否克隆传入的 HTMLElement 内容（<code>title</code> / <code>description</code> / <code>okText</code> / <code>cancelText</code> / <code>icon</code>）；设为 <code>false</code> 时会直接移动原节点</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                </tr>
+                <tr>
                     <td>onConfirm</td>
-                    <td>确认回调函数</td>
-                    <td>() => void</td>
+                    <td>确认回调函数。返回 Promise 时保持打开并显示 loading，resolve 后关闭，reject 时保持打开并展示失败信息</td>
+                    <td>() =&gt; void | Promise&lt;unknown&gt;</td>
                     <td>-</td>
                 </tr>
                 <tr>
@@ -399,6 +411,11 @@ customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`
                 </tr>
             </tbody>
         </table>
+        <p class="api-block-desc" style="margin-top: 12px;">
+            返回值：<code>PopconfirmResult</code>，即 <code>PopconfirmInstance</code> 的 thenable 包装——可直接调用
+            <code>close()</code> / <code>destroy()</code>；也可以 <code>await Popconfirm.show(...)</code> 或
+            <code>.then(instance =&gt; ...)</code>，但 thenable <strong>会立即</strong> resolve 为实例本身，<strong>不是等浮层关闭后才 resolve</strong>。
+        </p>
 
         <h4 class="api-block-subtitle">Popconfirm.config(options)</h4>
         <table class="api-table">
@@ -438,7 +455,8 @@ customDesc.<span class="code-attr">innerHTML</span> = <span class="code-value">`
                 <tr>
                     <td>placement</td>
                     <td>默认气泡框位置</td>
-                    <td>'top' | 'bottom' | 'left' | 'right'</td>
+                    <td>'top' | 'bottom' | 'left' | 'right' | 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' |
+                        'leftTop' | 'leftBottom' | 'rightTop' | 'rightBottom'</td>
                     <td>'top'</td>
                 </tr>
             </tbody>

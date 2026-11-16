@@ -82,7 +82,7 @@
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite, float 3s ease-in-out infinite;
   animation-delay: 0.25s, 0.25s;
-  box-shadow: 0 8px 32px rgba(238, 90, 111, 0.3);
+  box-shadow: var(--solely-shadow-error-glow-lg);
 }
 
 .not-found__icon {
@@ -131,17 +131,25 @@
   border-radius: 22px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+  box-shadow: var(--solely-shadow-primary-glow-md);
   outline: none;
 }
 
 .not-found__button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(24, 144, 255, 0.4);
+  box-shadow: var(--solely-shadow-primary-glow-lg);
 }
 
 .not-found__button:active {
   transform: translateY(0);
+}
+
+/* 键盘焦点可见性 */
+.not-found__button:focus-visible {
+  --solely-focus-ring-offset: 3px;
+
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
 }
 
 .not-found__button-icon {
@@ -279,7 +287,7 @@
 .not-found--embedded .not-found__icon-wrapper {
   width: 48px;
   height: 48px;
-  box-shadow: 0 4px 16px rgba(238, 90, 111, 0.2);
+  box-shadow: var(--solely-shadow-error-glow-sm);
 }
 
 .not-found--embedded .not-found__icon {
@@ -307,7 +315,7 @@
   padding: 0 20px;
   font-size: 13px;
   border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.25);
+  box-shadow: var(--solely-shadow-primary-glow-sm);
 }
 
 .not-found--embedded .not-found__button-icon {

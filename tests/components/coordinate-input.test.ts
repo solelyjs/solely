@@ -5,7 +5,9 @@
  * 重点测试：十进制 <-> 度分秒(DMS) 的解析/格式化逻辑、字段校验、命令式 API。
  * 参考 tests/components/table.test.ts 的挂载方式（设置 attribute 后 append，再 tick）。
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { Coordinate } from '../../src/components/elements/coordinate-input/types';
 
 // 引入组件即自动注册自定义元素 <solely-coordinate-input>（sideEffects 已覆盖）
@@ -39,8 +41,55 @@ describe('solely-coordinate-input', () => {
         expect(el.$refs.longitudeDegreesInput).toBeInstanceOf(HTMLInputElement);
         // 默认 type=both -> 容器含 horizontal；默认 size=medium -> md
         const cls = el.getContainerClasses();
+        // 基础类不能丢：横向布局规则挂在 .coordinate-input 上
+        expect(cls).toContain('coordinate-input');
         expect(cls).toContain('coordinate-input--horizontal');
         expect(cls).toContain('coordinate-input--md');
+    });
+
+    it('非法 type 回退到 both，保证始终渲染有效分支', async () => {
+        const el = createInput({ type: 'bogus' });
+        await tick();
+
+        expect(el.type).toBe('both');
+        expect(el.getContainerClasses()).toContain('coordinate-input--horizontal');
+        expect(el.$refs.latitudeDegreesInput).toBeInstanceOf(HTMLInputElement);
+        expect(el.$refs.longitudeDegreesInput).toBeInstanceOf(HTMLInputElement);
+
+        el.type = 'latitude';
+        await tick();
+        expect(el.type).toBe('latitude');
+    });
+
+    it('placeholder 对度 / 分 / 秒三个输入框都生效（R-14）', async () => {
+        const el = createInput({ placeholder: '请输入坐标' });
+        await tick();
+
+        expect(el.$refs.latitudeDegreesInput.placeholder).toBe('请输入坐标');
+        expect(el.$refs.latitudeMinutesInput.placeholder).toBe('请输入坐标');
+        expect(el.$refs.latitudeSecondsInput.placeholder).toBe('请输入坐标');
+        expect(el.$refs.longitudeDegreesInput.placeholder).toBe('请输入坐标');
+        expect(el.$refs.longitudeMinutesInput.placeholder).toBe('请输入坐标');
+        expect(el.$refs.longitudeSecondsInput.placeholder).toBe('请输入坐标');
+    });
+
+    it('未设置 placeholder 时沿用度 / 分 / 秒的默认占位', async () => {
+        const el = createInput();
+        await tick();
+
+        expect(el.$refs.latitudeDegreesInput.placeholder).toBe('0');
+        expect(el.$refs.latitudeMinutesInput.placeholder).toBe('00');
+        expect(el.$refs.latitudeSecondsInput.placeholder).toBe('00.000');
+    });
+
+    it('Refs 键名与模板 ref 对齐（R-14）', async () => {
+        const el = createInput({ 'show-direction': '' });
+        await tick();
+
+        expect(el.$refs.latitudeDirectionInput).toBeInstanceOf(HTMLElement);
+        expect(el.$refs.longitudeDirectionInput).toBeInstanceOf(HTMLElement);
+        expect(el.$refs.latitudeDirectionSelect).toBeUndefined();
+        expect(el.$refs.longitudeDirectionSelect).toBeUndefined();
     });
 
     it('属性生效：latitude/longitude 十进制自动解析为 DMS', async () => {
@@ -170,5 +219,106 @@ describe('solely-coordinate-input', () => {
         expect(el.value.latitude).toBe(-12);
         expect(el.getDmsCoordinateValue().latitude.direction).toBe('S');
         expect(el.$data.latitudeDirectionOpen).toBe(false);
+    });
+
+    it('打开下拉后未卸载：定时器执行后注册外部点击监听', async () => {
+        const el = createInput();
+        await tick();
+
+        const addSpy = vi.spyOn(document, 'addEventListener');
+        el.toggleDirection('latitude');
+        await tick();
+        expect(addSpy.mock.calls.some(call => call[0] === 'click')).toBe(true);
+
+        el.remove();
+        addSpy.mockRestore();
+    });
+
+    it('打开下拉后立即卸载：清理定时器，不注册外部点击监听', async () => {
+        const el = createInput();
+        await tick();
+
+        const addSpy = vi.spyOn(document, 'addEventListener');
+        el.toggleDirection('latitude');
+        el.remove();
+        await tick();
+
+        expect(addSpy.mock.calls.filter(call => call[0] === 'click')).toHaveLength(0);
+        addSpy.mockRestore();
+    });
+
+    it('方向开关与选项支持键盘操作，并暴露 aria 语义', async () => {
+        const el = createInput({ 'show-direction': '' });
+        await tick();
+
+        const toggle = el.$refs.latitudeDirectionInput as HTMLElement;
+        expect(toggle.getAttribute('role')).toBe('button');
+        expect(toggle.getAttribute('tabindex')).toBe('0');
+        expect(toggle.getAttribute('aria-haspopup')).toBe('listbox');
+        expect(toggle.getAttribute('aria-expanded')).toBe('false');
+
+        const enter = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        toggle.dispatchEvent(enter);
+        await tick();
+
+        expect(enter.defaultPrevented).toBe(true);
+        expect(el.$data.latitudeDirectionOpen).toBe(true);
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+
+        // 键盘选择 S 方向
+        const option = el.shadowRoot.querySelectorAll('.dms-input__direction-option')[1] as HTMLElement;
+        expect(option.getAttribute('role')).toBe('option');
+        option.dispatchEvent(
+            new KeyboardEvent('keydown', { key: ' ', bubbles: true, composed: true, cancelable: true }),
+        );
+        await tick();
+
+        expect(el.getDmsCoordinateValue().latitude.direction).toBe('S');
+        expect(el.$data.latitudeDirectionOpen).toBe(false);
+        // 选择后焦点回到方向开关，避免焦点丢失到 body
+        expect(el.shadowRoot.activeElement).toBe(toggle);
+    });
+
+    it('disabled 时方向开关使用 aria-disabled 且不可聚焦', async () => {
+        const el = createInput({ 'show-direction': '', disabled: '' });
+        await tick();
+
+        const toggle = el.$refs.latitudeDirectionInput as HTMLElement;
+        expect(toggle.getAttribute('aria-disabled')).toBe('true');
+        expect(toggle.hasAttribute('disabled')).toBe(false);
+        expect(toggle.getAttribute('tabindex')).toBe('-1');
+    });
+});
+
+describe('coordinate-input 方向箭头', () => {
+    it('经纬两个方向开关都用线性 SVG chevron，不再渲染 ▼ 文本字符', async () => {
+        const el = createInput({ 'show-direction': '' });
+        await tick();
+
+        const arrows = Array.from(el.shadowRoot.querySelectorAll('.dms-input__direction-arrow')) as HTMLElement[];
+        expect(arrows).toHaveLength(2);
+        for (const arrow of arrows) {
+            expect(arrow.querySelector('svg.dms-input__direction-icon')?.getAttribute('viewBox')).toBe('0 0 16 16');
+            expect(arrow.textContent?.trim()).toBe('');
+            expect(arrow.getAttribute('aria-hidden')).toBe('true');
+        }
+    });
+
+    it('打开下拉时方向区自带右侧圆角、下方改回直角，与菜单衔接不露方角', () => {
+        const css = readFileSync(
+            resolve(process.cwd(), 'src/components/elements/coordinate-input/style.css'),
+            'utf-8',
+        ).replace(/\s+/g, ' ');
+        expect(css).toContain('border-radius: 0 var(--solely-border-radius-md) var(--solely-border-radius-md) 0;');
+        expect(css).toContain(
+            '.dms-input__direction--open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }',
+        );
+        // 菜单必须让开父级 1px 底边框，否则右侧那截横线会被盖掉
+        expect(css).toContain('top: calc(100% + 1px);');
     });
 });

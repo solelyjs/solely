@@ -17,4 +17,6 @@ export interface RateProps {
     character?: string;
     /** 是否只读 */
     readonly?: boolean;
+    /** 每颗星的自定义提示文案（JSON 数组或逗号分隔），缺省为「N 分」 */
+    tooltips?: string;
 }

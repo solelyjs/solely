@@ -3,14 +3,26 @@ import {
     generateId,
     injectStyle,
     createElement,
+    createLinearIcon,
     addClosingAnimation,
     observeTheme,
     ANIMATION_DURATION,
     Z_INDEX,
 } from '../utils';
+import { oneOf } from '../../../shared/enum';
+import { createStatusIcon } from '../../../shared/icons';
 import styles from './style.css?inline';
 
 const STYLE_ID = 'solely-message-styles';
+
+/** 命令式入口常接动态值：非法 placement 会让容器缺少 inset，消息漂到错误位置 */
+function normalizePlacement(placement: unknown): MessagePlacement {
+    return oneOf(
+        placement,
+        ['top', 'topLeft', 'topRight', 'bottom', 'bottomLeft', 'bottomRight', 'left', 'right'],
+        'top',
+    );
+}
 
 const globalConfig: MessageConfig = {
     duration: 3000,
@@ -41,14 +53,21 @@ function createLoadingSpinner(): HTMLElement {
     return createElement('span', { className: 'solely-message__loading-spinner' });
 }
 
-const ICON_MAP: Record<MessageType, string | HTMLElement | (() => HTMLElement)> = {
-    info: 'ℹ',
-    success: '✓',
-    warning: '⚠',
-    error: '✕',
+const ICON_MAP: Record<MessageType, string | Element | (() => Element)> = {
     // 惰性创建：模块顶层调用 document.createElement 会导致 Node/SSR 下 import 直接崩溃
+    info: () => createStatusIcon('info'),
+    success: () => createStatusIcon('success'),
+    warning: () => createStatusIcon('warning'),
+    error: () => createStatusIcon('error'),
     loading: createLoadingSpinner,
 };
+
+/** 命令式入口常接动态值：非法 type 统一回退 info，避免 ICON_MAP 取空后抛 TypeError */
+function normalizeMessageType(type: unknown): MessageType {
+    return typeof type === 'string' && Object.prototype.hasOwnProperty.call(ICON_MAP, type)
+        ? (type as MessageType)
+        : 'info';
+}
 
 // ---------- 样式与主题 ----------
 function ensureStylesInjected(): void {
@@ -57,8 +76,8 @@ function ensureStylesInjected(): void {
 
 const containers: Map<string, { element: HTMLElement; cleanupTheme: () => void }> = new Map();
 
-function getContainer(placement: MessagePlacement = globalConfig.placement): HTMLElement {
-    const containerKey = placement;
+function getContainer(placement: MessagePlacement = 'top'): HTMLElement {
+    const containerKey = normalizePlacement(placement);
     if (containers.has(containerKey)) {
         return (containers.get(containerKey) as { element: HTMLElement; cleanupTheme: () => void }).element;
     }
@@ -77,7 +96,7 @@ function getContainer(placement: MessagePlacement = globalConfig.placement): HTM
         zIndex: String(Z_INDEX.TOAST),
     };
 
-    switch (placement) {
+    switch (containerKey) {
         // 顶部位置
         case 'top':
             styles.top = `${globalConfig.top}px`;
@@ -157,7 +176,7 @@ function scheduleContainerCleanup(): void {
 }
 
 // ---------- 创建元素 ----------
-function createIconElement(icon: string | HTMLElement, type: MessageType): HTMLElement {
+function createIconElement(icon: string | Element, type: MessageType): HTMLElement {
     const iconEl = createElement('span', {
         className: `solely-message__icon solely-message__icon--${type}`,
     });
@@ -165,14 +184,14 @@ function createIconElement(icon: string | HTMLElement, type: MessageType): HTMLE
     if (typeof icon === 'string') {
         iconEl.textContent = icon;
     } else {
-        iconEl.appendChild(icon.cloneNode(true) as HTMLElement);
+        iconEl.appendChild(icon.cloneNode(true));
     }
 
     return iconEl;
 }
 
 function createMessageElement(options: MessageOptions, id: number): HTMLElement {
-    const type = options.type || 'info';
+    const type = normalizeMessageType(options.type);
     const showIcon = options.showIcon !== false;
     const shouldClone = options.cloneElement ?? true;
 
@@ -186,8 +205,11 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
 
     if (showIcon) {
         const iconSource = options.icon ?? ICON_MAP[type];
-        const icon = createIconElement(typeof iconSource === 'function' ? iconSource() : iconSource, type);
-        element.appendChild(icon);
+        // icon="" 明确表示不要图标，不渲染空占位
+        if (iconSource !== '') {
+            const icon = createIconElement(typeof iconSource === 'function' ? iconSource() : iconSource, type);
+            element.appendChild(icon);
+        }
     }
 
     const content = createElement('span', { className: 'solely-message__content' });
@@ -225,9 +247,9 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
     if (options.closable) {
         const close = createElement('button', {
             className: 'solely-message__close',
-            textContent: '×',
             attrs: { type: 'button', 'aria-label': '关闭' },
         });
+        close.appendChild(createLinearIcon('close'));
         close.onclick = () => closeMessage(id);
         element.appendChild(close);
     }
@@ -275,7 +297,7 @@ async function closeMessage(id: number): Promise<void> {
 // ---------- 公开 API ----------
 function open(options: MessageOptions): MessageInstance {
     const id = generateId();
-    const placement = options.placement || globalConfig.placement;
+    const placement = normalizePlacement(options.placement || globalConfig.placement);
     const container = getContainer(placement);
 
     // 只检查对应位置的消息数量

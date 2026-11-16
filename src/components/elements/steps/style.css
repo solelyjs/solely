@@ -29,7 +29,19 @@
 /* ===== 通用步骤结构 ===== */
 .step {
   position: relative;
+  cursor: default;
+}
+
+/* 仅 clickable 模式可点击 */
+.step--clickable {
   cursor: pointer;
+}
+
+/* 键盘焦点可见性 */
+.step--clickable:focus-visible {
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
+  border-radius: var(--solely-border-radius-sm);
 }
 
 .step__wrapper {
@@ -201,6 +213,7 @@
 
 .step--disabled {
   cursor: not-allowed;
+  opacity: var(--solely-disabled-opacity);
 }
 
 .step--disabled * {
@@ -208,15 +221,15 @@
 }
 
 /* ===== Hover 效果 ===== */
-.step:not(.step--disabled):hover .step__title {
+.step--clickable:not(.step--disabled):hover .step__title {
   color: var(--solely-primary);
 }
 
-.step:not(.step--disabled):hover .step__icon {
+.step--clickable:not(.step--disabled):hover .step__icon {
   border-color: var(--solely-primary);
 }
 
-.step--has-icon:not(.step--disabled):hover .step__icon {
+.step--clickable.step--has-icon:not(.step--disabled):hover .step__icon {
   color: var(--solely-primary);
 }
 
@@ -306,6 +319,19 @@
 }
 
 .steps--dot .step__icon-text,
+/* 线性状态图标：完成勾 / 出错叉 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 .steps--dot .step__icon-substitution {
   display: none;
 }

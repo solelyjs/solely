@@ -54,7 +54,7 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
     <!-- 点击事件 -->
     <div class="demo-block">
         <h3 class="demo-block-title">点击事件</h3>
-        <p class="demo-block-desc">为面包屑项添加点击事件处理。</p>
+        <p class="demo-block-desc">面包屑项不接收 <code>onClick</code> 回调，点击任意可点击项后监听 <code>item-click</code> 获取 <code>detail.item</code> 即可。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-breadcrumb ref="breadcrumb5"></solely-breadcrumb>
@@ -72,20 +72,15 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
 <span class="code-comment">// JavaScript</span>
 <span class="code-keyword">const</span> breadcrumb = document.<span class="code-method">getElementById</span>(<span class="code-value">'breadcrumb'</span>);
 <span class="code-keyword">const</span> items = [
-    { 
-        <span class="code-attr">title</span>: <span class="code-value">'首页'</span>, 
-        <span class="code-attr">onClick</span>: () => <span class="code-method">console</span>.<span class="code-method">log</span>(<span class="code-value">'点击了首页'</span>)
-    },
-    { 
-        <span class="code-attr">title</span>: <span class="code-value">'组件'</span>, 
-        <span class="code-attr">onClick</span>: () => <span class="code-method">console</span>.<span class="code-method">log</span>(<span class="code-value">'点击了组件'</span>)
-    },
+    { <span class="code-attr">title</span>: <span class="code-value">'首页'</span> },
+    { <span class="code-attr">title</span>: <span class="code-value">'组件'</span> },
     { <span class="code-attr">title</span>: <span class="code-value">'面包屑'</span> }
 ];
+<span class="code-comment">// 项内不支持 onClick 函数（attribute 会经 JSON 序列化丢函数），统一监听 item-click</span>
 breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value">'items'</span>, JSON.<span class="code-method">stringify</span>(items));
 
-<span class="code-comment">// 监听点击事件</span>
-breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, (e) => {
+<span class="code-comment">// 监听点击事件（item-click 为自定义事件，不会与原生 click 混淆）</span>
+breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'item-click'</span>, (e) => {
     <span class="code-keyword">const</span> item = e.detail.item;
     <span class="code-method">console</span>.<span class="code-method">log</span>(<span class="code-value">'点击了:'</span>, item?.title);
 });</code></pre>
@@ -165,7 +160,7 @@ breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-v
     <!-- 使用 href -->
     <div class="demo-block">
         <h3 class="demo-block-title">使用链接</h3>
-        <p class="demo-block-desc">为面包屑项添加 href 属性，使其成为可点击的链接。</p>
+        <p class="demo-block-desc">为面包屑项添加 href 属性，使其成为可点击的链接；最后一项带 href 时同样可点击，并保留 aria-current="page"。</p>
         <div class="demo-box">
             <div class="demo-preview">
                 <solely-breadcrumb ref="breadcrumb6"></solely-breadcrumb>
@@ -191,7 +186,8 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -199,16 +195,25 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
             </thead>
             <tbody>
                 <tr>
+                    <td>items（JSON 字符串）</td>
                     <td>items</td>
-                    <td>面包屑项列表（JSON 字符串）</td>
-                    <td>string</td>
-                    <td>'[]'</td>
+                    <td>面包屑项列表。HTML attribute 传 JSON 字符串（框架自动解析为数组），JS 属性直接赋 <code>BreadcrumbItem[]</code></td>
+                    <td>BreadcrumbItem[]</td>
+                    <td>[]</td>
                 </tr>
                 <tr>
+                    <td>separator</td>
                     <td>separator</td>
                     <td>分隔符</td>
                     <td>string</td>
                     <td>'/'</td>
+                </tr>
+                <tr>
+                    <td>label</td>
+                    <td>label</td>
+                    <td>导航地标的可访问名称（映射到 <code>&lt;nav&gt;</code> 的 <code>aria-label</code>）</td>
+                    <td>string</td>
+                    <td>''</td>
                 </tr>
             </tbody>
         </table>
@@ -226,16 +231,54 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
             </thead>
             <tbody>
                 <tr>
-                    <td>click</td>
-                    <td>点击面包屑项时触发（自定义事件，无 href 时）</td>
+                    <td>item-click</td>
+                    <td>点击面包屑项时触发；所有可点击项都会派发，包括带 href 的导航项</td>
                     <td>CustomEvent&lt;{ item: BreadcrumbItem }&gt;</td>
+                </tr>
+                <tr>
+                    <td>legacy-click</td>
+                    <td>已废弃：旧版自定义 click 的改名兼容别名，仅在 0.x 期间保留</td>
+                    <td>CustomEvent&lt;{ item: BreadcrumbItem }&gt;</td>
+                </tr>
+                <tr>
+                    <td>click</td>
+                    <td>原生 DOM 事件（由内部元素冒泡到宿主），组件不再额外合成同名的自定义事件</td>
+                    <td>MouseEvent</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
     <div class="api-block">
-        <h4 class="api-block-title">属性</h4>
+        <h4 class="api-block-title">从旧版 click 迁移</h4>
+        <p class="demo-block-desc">
+            旧版组件在点击时会额外合成一次名为 <code>click</code> 的自定义事件，与原生 <code>click</code>
+            同名，导致同一个监听器在一次点击中执行两次。本次修复把该自定义事件改名为
+            <code>legacy-click</code>（detail 同为 <code>{ item }</code>），原生 <code>click</code>
+            保持正常冒泡。迁移时请把依赖 <code>detail.item</code> 的 <code>click</code> 监听改为
+            <code>item-click</code>；过渡期可临时改听 <code>legacy-click</code>，后续大版本移除。
+            带 href 的项同样会派发 <code>item-click</code>，默认导航行为不受影响。
+        </p>
+        <div class="demo-code">
+            <pre><code><span class="code-comment">// 迁移前：同名 click 会被原生事件与自定义事件各触发一次，且原生事件没有 detail</span>
+breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'click'</span>, (e) => {
+    handle(e.detail.item);
+});
+
+<span class="code-comment">// 迁移后：统一监听带 detail 的 item-click</span>
+breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'item-click'</span>, (e) => {
+    handle(e.detail.item);
+});
+
+<span class="code-comment">// 过渡期如需继续使用旧的自定义事件，可临时改听 legacy-click（后续大版本移除）</span>
+breadcrumb.<span class="code-method">addEventListener</span>(<span class="code-value">'legacy-click'</span>, (e) => {
+    handle(e.detail.item);
+});</code></pre>
+        </div>
+    </div>
+
+    <div class="api-block">
+        <h4 class="api-block-title">实例属性（JS property）</h4>
         <table class="api-table">
             <thead>
                 <tr>
@@ -305,14 +348,13 @@ breadcrumb.<span class="code-method">setAttribute</span>(<span class="code-value
             <pre><code><span class="code-comment">// 面包屑项</span>
 <span class="code-keyword">interface</span> <span class="code-type">BreadcrumbItem</span> {
   <span class="code-attr">title</span>: <span class="code-type">string</span>;           <span class="code-comment">// 显示标题（必填）</span>
-  <span class="code-attr">href</span>?: <span class="code-type">string</span>;          <span class="code-comment">// 跳转链接（可选）</span>
-  <span class="code-attr">onClick</span>?: () => <span class="code-type">void</span>;  <span class="code-comment">// 点击回调（可选）</span>
+  <span class="code-attr">href</span>?: <span class="code-type">string</span>;          <span class="code-comment">// 跳转链接（可选）；点击行为统一通过 item-click 事件处理</span>
 }
 
-<span class="code-comment">// 面包屑属性</span>
+<span class="code-comment">// 面包屑属性（JS property）</span>
 <span class="code-keyword">interface</span> <span class="code-type">BreadcrumbProps</span> {
-  <span class="code-attr">items</span>: <span class="code-type">string</span>;         <span class="code-comment">// JSON 字符串格式的 BreadcrumbItem[]</span>
-  <span class="code-attr">separator</span>: <span class="code-type">string</span>;     <span class="code-comment">// 分隔符，默认 '/'</span>
+  <span class="code-attr">items</span>: <span class="code-type">BreadcrumbItem[]</span>; <span class="code-comment">// HTML attribute 需传 JSON 字符串，由框架解析为数组</span>
+  <span class="code-attr">separator</span>: <span class="code-type">string</span>;         <span class="code-comment">// 分隔符，默认 '/'</span>
 }</code></pre>
         </div>
     </div>

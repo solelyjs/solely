@@ -1,4 +1,4 @@
-<span part="base" class="badge" :class="this.getBadgeClasses()">
+<span part="base" class="badge">
     <slot></slot>
 
     <!-- 数字徽标 -->
@@ -6,7 +6,8 @@
         <span
             part="count"
             class="badge__count"
-            :style="$data.color ? { backgroundColor: $data.color } : {}"
+            role="status"
+            :style="this.getIndicatorStyle()"
         >
             {{$data.count > $data.overflowCount ? $data.overflowCount + '+' : $data.count}}
         </span>
@@ -17,13 +18,15 @@
         <span
             part="dot"
             class="badge__dot"
-            :style="$data.color ? { backgroundColor: $data.color } : {}"
+            role="status"
+            aria-label="有新内容"
+            :style="this.getIndicatorStyle()"
         ></span>
     </If>
 
     <!-- 状态点 -->
     <If test="$data.status">
-        <span part="status" class="badge__status">
+        <span part="status" class="badge__status" role="status" :aria-label="$data.text || '状态点'">
             <span
                 part="status-dot"
                 class="badge__status-dot"

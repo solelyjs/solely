@@ -29,6 +29,10 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
     private initialized = false;
     private animating = false;
     private isDocumentContainer = false;
+    /** 位置更新 RAF 句柄（卸载时取消，避免卸载后继续执行） */
+    private positionFrameId?: number;
+    /** 回到顶部动画 RAF 句柄（卸载时取消） */
+    private scrollFrameId?: number;
 
     /**
      * 暴露 visibilityHeight 属性，使外部可通过 event.target.visibilityHeight 访问
@@ -103,7 +107,22 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
             clearTimeout(this.mountTimeout);
             this.mountTimeout = undefined;
         }
+        this.cancelFrames();
         this.cleanupEventListeners();
+    }
+
+    /**
+     * 取消未执行的 RAF，避免组件卸载后仍操作已脱离文档的节点
+     */
+    private cancelFrames(): void {
+        if (this.positionFrameId !== undefined) {
+            cancelAnimationFrame(this.positionFrameId);
+            this.positionFrameId = undefined;
+        }
+        if (this.scrollFrameId !== undefined) {
+            cancelAnimationFrame(this.scrollFrameId);
+            this.scrollFrameId = undefined;
+        }
     }
 
     private initializeContainer(): void {
@@ -188,7 +207,13 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
     }
 
     private schedulePositionUpdate(): void {
-        requestAnimationFrame(() => this.updatePosition());
+        if (this.positionFrameId !== undefined) {
+            cancelAnimationFrame(this.positionFrameId);
+        }
+        this.positionFrameId = requestAnimationFrame(() => {
+            this.positionFrameId = undefined;
+            this.updatePosition();
+        });
     }
 
     /** 根据容器在视口中的位置更新 fixed 坐标 */
@@ -234,6 +259,16 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
         }
     }
 
+    /**
+     * 键盘事件处理（Enter / Space 等价于点击）
+     */
+    handleKeyDown(event: KeyboardEvent): void {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.handleClick();
+        }
+    }
+
     handleClick(): void {
         if (this.animating || !this.container) return;
         this.animating = true;
@@ -253,9 +288,10 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
             this.setScrollTop(currentTop);
 
             if (progress < 1) {
-                requestAnimationFrame(scroll);
+                this.scrollFrameId = requestAnimationFrame(scroll);
             } else {
                 this.animating = false;
+                this.scrollFrameId = undefined;
                 this.dispatchEvent(
                     new CustomEvent('backtop-finish', {
                         bubbles: true,
@@ -265,7 +301,7 @@ class SolelyBackTop extends BaseElement<BackTopProps & { visible: boolean }> {
             }
         };
 
-        requestAnimationFrame(scroll);
+        this.scrollFrameId = requestAnimationFrame(scroll);
     }
 }
 

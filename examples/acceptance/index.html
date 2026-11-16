@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Solely 0.8.0 手工验收台</title>
+        <!-- 避免 dev server 的 /favicon.ico 404 混进控制台错误 -->
+        <link rel="icon" href="data:," />
+        <!-- #3：variables.css 已从 public/ 移到 src/components/theme/，这里直接引用新路径 -->
+        <link rel="stylesheet" href="/src/components/theme/variables.css" />
+        <style>
+            * { box-sizing: border-box; }
+            body {
+                margin: 0; padding: 24px 24px 80px; background: #f5f7fa; color: #1f2937;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6;
+            }
+            main { max-width: 1080px; margin: 0 auto; }
+            h1 { margin: 0 0 4px; font-size: 26px; }
+            h2 { margin: 0 0 12px; font-size: 19px; }
+            h3 { margin: 18px 0 8px; font-size: 15px; }
+            .sub { margin: 0 0 16px; color: #6b7280; font-size: 13px; }
+            nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+            nav a, .inline-link {
+                padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;
+                color: #2563eb; text-decoration: none; font-size: 13px;
+            }
+            nav a:hover { background: #eff6ff; }
+            section { margin-bottom: 20px; padding: 18px 20px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+            section > .desc { margin: 0 0 12px; color: #6b7280; font-size: 13px; }
+            table { width: 100%; border-collapse: collapse; font-size: 13px; }
+            th, td { padding: 7px 9px; border: 1px solid #e5e7eb; text-align: left; vertical-align: top; }
+            th { background: #f9fafb; font-weight: 600; }
+            code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; }
+            pre { margin: 8px 0 0; padding: 10px 12px; border-radius: 6px; background: #111827; color: #e5e7eb; overflow-x: auto; white-space: pre-wrap; }
+            #overlay-log { max-height: 320px; overflow-y: auto; }
+            button.native {
+                padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;
+                cursor: pointer; font-size: 13px; color: #1f2937;
+            }
+            button.native:hover { background: #f3f4f6; }
+            .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+            .probe-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 12px 0; }
+            .probe { padding: 10px; border: 1px dashed #d1d5db; border-radius: 8px; }
+            .probe b { display: block; margin-bottom: 6px; font-size: 12px; color: #6b7280; }
+            .ok { color: #16a34a; font-weight: 600; }
+            .bad { color: #dc2626; font-weight: 600; }
+            /* 验证 property → attribute 镜像后 CSS 属性选择器是否命中 */
+            solely-input[name='mirrored'] { outline: 3px solid #16a34a; outline-offset: 2px; }
+            /* #4：::part() 自定义样式（input 新增 group 包装层后仍应生效） */
+            #part-probe::part(base) { border: 2px solid #2563eb; border-radius: 8px; }
+            /* group 是无 padding 的纯结构层：不加 padding / border 时背景会被 base 的实色背景盖住 */
+            #part-probe::part(group) {
+                padding: 8px;
+                background: #eff6ff;
+                border-radius: 12px;
+                outline: 1px dashed #93c5fd;
+            }
+            #form-probe { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+            #form-probe label { display: block; margin-bottom: 4px; font-size: 12px; color: #6b7280; }
+            fieldset { margin: 12px 0; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; }
+            .state-panel {
+                position: fixed; top: 12px; right: 12px; z-index: 5; width: 260px; padding: 10px 12px;
+                border: 1px solid #93c5fd; border-radius: 8px; background: rgba(239, 246, 255, 0.96);
+                font-size: 12px; line-height: 1.7; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            }
+            .state-panel b { display: block; margin-bottom: 4px; }
+            .corner { position: fixed; z-index: 4; padding: 6px 10px; font-size: 12px; }
+            .corner.tl { top: 8px; left: 8px; }
+            .corner.tr { top: 8px; right: 288px; }
+            .corner.bl { bottom: 8px; left: 8px; }
+            .corner.br { bottom: 8px; right: 8px; }
+            #checklist ol { margin: 0; padding-left: 22px; }
+            #checklist li { margin-bottom: 7px; font-size: 13px; }
+            #checklist label { cursor: pointer; }
+            #checklist .where { margin-left: 6px; color: #6b7280; font-size: 12px; }
+            #checklist a { color: #2563eb; }
+            .tag { display: inline-block; min-width: 26px; padding: 0 5px; border-radius: 4px; font-size: 11px; font-weight: 600; text-align: center; }
+            .tag.p0 { background: #fee2e2; color: #b91c1c; }
+            .tag.p1 { background: #fef3c7; color: #92400e; }
+            .tag.p2 { background: #e5e7eb; color: #4b5563; }
+            #long-content p { margin: 0 0 12px; color: #9ca3af; }
+            .hidden { display: none; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Solely 0.8.0 手工验收台</h1>
+            <p class="sub">
+                <code>npm run dev</code> 后打开本页。文档站是 <b>hash 路由</b>，链接形如
+                <code>/docs/components-docs/index.html#/table</code>，不能直接打开 <code>views/*.html</code>。
+                勾选状态会存 localStorage，刷新不丢。本页是手工验收台，只在 dev server 下使用，<b>不纳入 <code>build:examples</code> 产物</b>。
+            </p>
+            <nav>
+                <a href="/examples/index.html">示例首页</a>
+                <a href="/docs/components-docs/index.html">组件文档站</a>
+                <a href="./strict-csp.html">严格 CSP 页</a>
+                <a href="#checklist">测试顺序</a>
+                <a href="#bool">A 布尔</a>
+                <a href="#form">B 表单</a>
+                <a href="#overlay">C 浮层</a>
+                <a href="#csp">D 严格 CSP</a>
+                <a href="#pack">E 打包</a>
+            </nav>
+
+            <!-- ============ 测试顺序 ============ -->
+            <section id="checklist">
+                <h2>测试顺序与页面（按页面聚拢，减少来回切换）</h2>
+                <p class="desc">先跑「本页」的集中场景，再逐页过文档站，最后跑示例页与命令行。</p>
+                <p style="margin: 6px 0 12px; padding: 8px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; font-size: 13px;">
+                    <b>2026-11-15 自动验收</b>：A/B/C/D 区探针、文档站关键回归（input / tree / tooltip）与打包产物共 <b>14 项已通过</b>，
+                    首次打开时自动勾上；<b>未勾选的 10 项仍需人工走查</b>（键盘无障碍、select / radio / table / slider / rate / upload / tabs、视觉一轮、安全示例页）。
+                    手动改过的勾选以 localStorage 为准，可点
+                    <button class="native" id="btn-reset-checklist" style="margin: 0 4px;">恢复本轮自动结果</button>
+                    一键同步。
+                </p>
+                <p style="margin: 6px 0 12px; padding: 8px 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 13px;">
+                    清单里原先缺少样例的 0.8.0 新特性，已全部补进<b>各自组件的文档页</b>（table 固定列 / slider range / rate tooltips / upload / tree loadData / input / tooltip / select / tabs 竖向激活条）。每行「新增样例」链接直达对应文档页；t11 键盘 / 无障碍树是跨组件走查，随 12–22 项逐页 Tab 即可。
+                </p>
+                <ol>
+                    <li><label><input type="checkbox" data-key="t01" /> <span class="tag p0">P0</span> #1 布尔语义反转 + property↔attribute 镜像</label><span class="where">本页 <a href="#bool">A 区</a> · <a href="/docs/components-docs/index.html#/quickstart" target="_blank">#/quickstart</a> 文字 · <a href="/docs/components-docs/index.html#/progress" target="_blank">#/progress</a></span></li>
+                    <li><label><input type="checkbox" data-key="t02" /> <span class="tag p0">P0</span> #11 原生表单：FormData / required / reset / fieldset disabled</label><span class="where">本页 <a href="#form">B 区</a></span></li>
+                    <li><label><input type="checkbox" data-key="t03" /> <span class="tag p0">P0</span> #6 滚动锁 + 滚动条宽度补偿 + 关闭还原</label><span class="where">本页 <a href="#overlay">C 区</a>（长页面在底部）</span></li>
+                    <li><label><input type="checkbox" data-key="t04" /> <span class="tag p0">P0</span> #7 嵌套浮层 inert / z-index / Esc 栈</label><span class="where">本页 <a href="#overlay">C 区</a></span></li>
+                    <li><label><input type="checkbox" data-key="t05" /> <span class="tag p0">P0</span> #8 flip / shift / 贴边 / 滚动跟随</label><span class="where">本页 <a href="#overlay">C 区</a>：四角按钮测 flip / shift / 贴边（锚点 fixed，滚动时气泡不动是正确的）；<b>滚动跟随</b>要用「文档流探针」按钮</span></li>
+                    <li><label><input type="checkbox" data-key="t06" /> <span class="tag p0">P0</span> #9 maskClosable 默认 true / onClose 全路径 / onConfirm 返回 false</label><span class="where">本页 <a href="#overlay">C 区</a> · <a href="/docs/components-docs/index.html#/modal" target="_blank">#/modal</a></span></li>
+                    <li><label><input type="checkbox" data-key="t07" /> <span class="tag p1">P1</span> #10 Popconfirm Promise：pending loading / reject 保持打开</label><span class="where">本页 <a href="#overlay">C 区</a> · <a href="/docs/components-docs/index.html#/popconfirm" target="_blank">#/popconfirm</a></span></li>
+                    <li><label><input type="checkbox" data-key="t08" /> <span class="tag p0">P0</span> #2 严格 CSP：自动注入被拦 → 手动引 variables.css 回退</label><span class="where"><a href="./strict-csp.html">strict-csp.html</a> · <a href="/examples/csp-demo/index.html" target="_blank">csp-demo</a>（宽松 CSP，对照）</span></li>
+                    <li><label><input type="checkbox" data-key="t09" /> <span class="tag p1">P1</span> #3 variables.css 路径：开发引 src、发布走 dist</label><span class="where">本页 head 的 <code>/src/components/theme/variables.css</code> · build 后看 <code>dist/components/theme/variables.css</code></span></li>
+                    <li><label><input type="checkbox" data-key="t10" /> <span class="tag p1">P1</span> #4 ::part() / CSS 层叠（input group 包装层）</label><span class="where">本页 <a href="#bool">A 区末尾</a> · <a href="/docs/components-docs/index.html#/input" target="_blank">#/input</a></span></li>
+                    <li><label><input type="checkbox" data-key="t11" /> <span class="tag p1">P1</span> #5 键盘与无障碍树（Tab / 读屏 / axe）</label><span class="where">文档站各组件页，边测 12–22 项边走 Tab · 键盘 / a11y 为跨组件走查，随 12–22 项逐页 Tab</span></li>
+                    <li><label><input type="checkbox" data-key="t12" /> <span class="tag p0">P0</span> #12 input：addon / autosize / 三个装饰按钮共存与清空按钮位置 / readonly 不显示清空按钮 / disabled 装饰按钮退出 Tab</label><span class="where"><a href="/docs/components-docs/index.html#/input" target="_blank">#/input</a> 页内「按钮组合与文本域自适应」小节：装饰按钮组合 / autosize / readonly（清空按钮消失、复制按钮保留且仍在 Tab 序列）</span></li>
+                    <li><label><input type="checkbox" data-key="t13" /> <span class="tag p1">P1</span> #13 select：多选标签 / 键盘 / 声明式 option / disabled 语义</label><span class="where"><a href="/docs/components-docs/index.html#/select" target="_blank">#/select</a> · <a href="/docs/components-docs/index.html#/select" target="_blank">#/select 键盘 / disabled</a></span></li>
+                    <li><label><input type="checkbox" data-key="t14" /> <span class="tag p1">P1</span> #14 radio：分组边界 / roving tabindex</label><span class="where"><a href="/docs/components-docs/index.html#/radio" target="_blank">#/radio</a></span></li>
+                    <li><label><input type="checkbox" data-key="t15" /> <span class="tag p0">P0</span> #15 table：排序 / 筛选 / 固定列偏移 / 选择展开 / 键盘行</label><span class="where"><a href="/docs/components-docs/index.html#/table" target="_blank">#/table</a> · <a href="/docs/components-docs/index.html#/table" target="_blank">#/table 固定列</a></span></li>
+                    <li><label><input type="checkbox" data-key="t16" /> <span class="tag p0">P0</span> #16 slider：range 双滑块 / 垂直刻度 / tooltipFormatter</label><span class="where"><a href="/docs/components-docs/index.html#/slider" target="_blank">#/slider</a> · <a href="/docs/components-docs/index.html#/slider" target="_blank">#/slider range / formatter / marks</a></span></li>
+                    <li><label><input type="checkbox" data-key="t17" /> <span class="tag p0">P0</span> #17 rate：左半星 / 拖拽 / tooltips / count 同步</label><span class="where"><a href="/docs/components-docs/index.html#/rate" target="_blank">#/rate</a> · <a href="/docs/components-docs/index.html#/rate" target="_blank">#/rate tooltips / count</a></span></li>
+                    <li><label><input type="checkbox" data-key="t18" /> <span class="tag p0">P0</span> #18 upload：真实上传 / 拖拽 / 进度 / 取消 / 无配置 error</label><span class="where"><a href="/docs/components-docs/index.html#/upload" target="_blank">#/upload</a>（需自备接收端或 customRequest） · <a href="/docs/components-docs/index.html#/upload" target="_blank">#/upload 无配置 / 自定义请求</a></span></li>
+                    <li><label><input type="checkbox" data-key="t19" /> <span class="tag p1">P1</span> #19 tree：键盘 / 单 Tab 停点 / loadData 失败重试 / checkStrictly</label><span class="where"><a href="/docs/components-docs/index.html#/tree" target="_blank">#/tree</a> 页内「异步加载与父子不联动」：勾选「模拟加载失败」→ 展开 ▶ 失败后圆环消失、箭头恢复可点 → 取消勾选再点 ▶ 即为重试</span></li>
+                    <li><label><input type="checkbox" data-key="t20" /> <span class="tag p1">P1</span> #20 tabs：竖向激活条 / lazy 面板 / centered / 组合插槽</label><span class="where"><a href="/docs/components-docs/index.html#/tabs" target="_blank">#/tabs</a> · <b>已补竖向 / lazy / centered / 图标徽标 3 组 demo</b></span></li>
+                    <li><label><input type="checkbox" data-key="t21" /> <span class="tag p1">P1</span> #21 tooltip 焦点唤起 / shadow IDREF / 内容区滚动时气泡跟随 / coordinate-input 横向布局</label><span class="where"><a href="/docs/components-docs/index.html#/tooltip" target="_blank">#/tooltip</a>（shadow IDREF） · <a href="/docs/components-docs/index.html#/tooltip-declarative" target="_blank">#/tooltip-declarative</a>（焦点唤起；点开气泡后滚动右侧内容区，气泡应跟着锚点走） · <a href="/docs/components-docs/index.html#/coordinate-input" target="_blank">#/coordinate-input</a>（横向布局）</span></li>
+                    <li><label><input type="checkbox" data-key="t22" /> <span class="tag p2">P2</span> #22 其余组件一轮视觉：steps / pagination / card / breadcrumb / alert / tag / badge / empty / not-found / progress / skeleton</label><span class="where">文档站 <a href="/docs/components-docs/index.html" target="_blank">导航</a>逐页</span></li>
+                    <li><label><input type="checkbox" data-key="t23" /> <span class="tag p1">P1</span> #23 安全与示例页：javascript: 拦截 / SVG 消毒 / 条件链</label><span class="where"><a href="/examples/index.html" target="_blank">示例首页</a> → 🛡️ 安全机制 / 🧪 回归验证 / 🎛️ 控制流 / 🔒 CSP 模式</span></li>
+                    <li><label><input type="checkbox" data-key="t24" /> <span class="tag p0">P0</span> #24 打包产物：ESM / CJS / 子入口 / Node 导入</label><span class="where">命令行，见下方 <a href="#pack">E 区</a></span></li>
+                </ol>
+            </section>
+
+            <!-- ============ A 布尔 ============ -->
+            <section id="bool">
+                <h2>A · 布尔 attribute / property 镜像（#1、#4）</h2>
+                <p class="desc">
+                    0.8.0 起布尔 attribute 按值解析：<code>"false" / "0"</code>（trim、大小写不敏感）为 false，
+                    <code>""</code> 及其他字符串为 true。下表读回的是<b>真实 property</b>；「结论」列会自动判定。
+                    <b>注意</b>：<code>disabled</code> 声明了 <code>reflect: true</code>——解析为 false 时框架会移除 attribute、
+                    为 true 时回写成 <code>disabled=""</code>，所以「当前 attribute」列是<b>反射后的 DOM 值</b>，不是 HTML 里写的原始字符串。
+                </p>
+                <table>
+                    <thead>
+                        <tr><th>id</th><th>写法</th><th>property 读回</th><th>当前 attribute</th><th>期望</th><th>结论</th></tr>
+                    </thead>
+                    <tbody id="bool-tbody"></tbody>
+                </table>
+
+                <div class="probe-grid">
+                    <div class="probe"><b>b-none · 不写 attribute</b><solely-input id="b-none" placeholder="可输入"></solely-input></div>
+                    <div class="probe"><b>b-bare · disabled（裸）</b><solely-input id="b-bare" disabled placeholder="应禁用"></solely-input></div>
+                    <div class="probe"><b>b-empty · disabled=""</b><solely-input id="b-empty" disabled="" placeholder="应禁用"></solely-input></div>
+                    <div class="probe"><b>b-true · disabled="true"</b><solely-input id="b-true" disabled="true" placeholder="应禁用"></solely-input></div>
+                    <div class="probe"><b>b-false · disabled="false"（反转）</b><solely-input id="b-false" disabled="false" placeholder="应可输入"></solely-input></div>
+                    <div class="probe"><b>b-zero · disabled="0"</b><solely-input id="b-zero" disabled="0" placeholder="应可输入"></solely-input></div>
+                    <div class="probe"><b>b-upper · disabled="FALSE"</b><solely-input id="b-upper" disabled="FALSE" placeholder="应可输入"></solely-input></div>
+                    <div class="probe"><b>b-space · disabled=" FALSE "</b><solely-input id="b-space" disabled=" FALSE " placeholder="应可输入"></solely-input></div>
+                </div>
+
+                <h3>本次修复点：空字符串在两条写值路径下必须一致</h3>
+                <div class="row">
+                    <button class="native" id="btn-p-empty">执行 el.disabled = ''</button>
+                    <button class="native" id="btn-a-empty">执行 setAttribute('disabled', '')</button>
+                    <button class="native" id="btn-bool-clear">清除两个探针</button>
+                    <span class="where">两个探针的读回值会写进上表</span>
+                </div>
+                <div class="probe-grid">
+                    <div class="probe"><b>p-empty · property 路径</b><solely-input id="p-empty" placeholder="待赋值"></solely-input></div>
+                    <div class="probe"><b>a-empty · attribute 路径</b><solely-input id="a-empty" placeholder="待赋值"></solely-input></div>
+                </div>
+                <pre id="bool-log">等待交互…（矩阵里 p-empty / a-empty 行的结论会从「待执行」变为 ✅）</pre>
+
+                <h3>默认开启的属性用 ="false" 关闭 / size 归一</h3>
+                <div class="probe-grid">
+                    <div class="probe"><b>show-icon="false"（empty）</b><solely-empty id="b-showicon" show-icon="false" description="showIcon 读回 false"></solely-empty></div>
+                    <div class="probe"><b>show-info="false"（progress）</b><solely-progress id="b-showinfo" percent="50" show-info="false"></solely-progress></div>
+                    <div class="probe"><b>local-sort="false"（table）</b><solely-table id="b-localsort" local-sort="false"></solely-table></div>
+                    <div class="probe"><b>size="middle" 归一</b><solely-select id="b-size" size="middle" placeholder="读回应为 medium"><solely-select-option value="a">选项 A</solely-select-option><solely-select-option value="b">选项 B</solely-select-option></solely-select></div>
+                </div>
+                <pre id="bool-extra"></pre>
+
+                <h3>property → attribute 镜像 + CSS 属性选择器（#1）</h3>
+                <p class="desc">绿色描边来自 CSS <code>solely-input[name='mirrored']</code>；只有镜像生效才会命中。</p>
+                <div class="row">
+                    <solely-input id="mirror-probe" placeholder="镜像探针"></solely-input>
+                    <button class="native" id="btn-prop">el.name = 'mirrored'</button>
+                    <button class="native" id="btn-attr">setAttribute('name','mirrored')</button>
+                    <button class="native" id="btn-mirror-reset">清除</button>
+                </div>
+                <pre id="mirror-out"></pre>
+
+                <h3>#4 ::part() 自定义样式</h3>
+                <p class="desc">
+                    <code>::part(base)</code> 加蓝框；<code>::part(group)</code> 加浅蓝底 + <code>padding: 8px</code> + 虚线 outline，
+                    应看到一圈底色包住输入框。<b>注意</b>：group 是无 padding 的纯结构包装层（为 addonBefore / addonAfter 服务），
+                    base 自带实色背景与圆角；若只给 group 设背景而不加 padding / border，背景会被 base 盖住，
+                    <b>只有四个圆角外露色</b>——这是正常 CSS 层叠，不是组件 bug。
+                    布局 / 尺寸 / 定位类整体样式用 <code>::part(group)</code>；背景 / 边框类样式仍应作用于 <code>::part(base)</code>。
+                </p>
+                <solely-input id="part-probe" placeholder="::part(base) / ::part(group)"></solely-input>
+            </section>
+
+            <!-- ============ B 原生表单 ============ -->
+            <section id="form">
+                <h2>B · 原生表单关联（#11）</h2>
+                <p class="desc">
+                不拦截提交时浏览器会先做约束校验（必填留空应弹原生气泡）。填好后提交，下方显示真实 FormData；
+                reset 后看组件值与 <code>change.detail.source === 'reset'</code>。
+                声明式 <code>&lt;solely-select-option&gt;</code> 的文本必须写在元素内容里（下拉是 slot 投影、选中态读 childNodes）；
+                只写 <code>label</code> 属性会导致下拉空白、选中后显示 value。
+                <b>级联禁用说明</b>：<code>fieldset[disabled]</code> 走 <code>formDisabledCallback</code>，
+                只记录内部 formDisabled，<b>不会改写作者设置的 <code>el.disabled</code></b>——所以禁用时
+                <code>input.disabled</code> 仍为 false 是设计，要看 <code>aria-disabled="true"</code>、
+                shadow 内原生 input 的 <code>tabindex="-1"</code>，以及点击 / Tab 是否被拦截；不清空值、不派发 change。
+                </p>
+                <form id="native-form">
+                    <div id="form-probe">
+                        <div><label>solely-input · name=username · required</label><solely-input name="username" required invalid-message="请填写用户名" placeholder="请输入用户名"></solely-input></div>
+                        <div><label>solely-checkbox · name=agree · required</label><solely-checkbox name="agree" value="yes" required>同意条款</solely-checkbox></div>
+                        <div><label>solely-switch · name=notify</label><solely-switch name="notify" value="on">开启通知</solely-switch></div>
+                        <div><label>solely-radio · name=gender</label><div><solely-radio name="gender" value="male">男</solely-radio><solely-radio name="gender" value="female">女</solely-radio></div></div>
+                        <div><label>solely-select · name=city · required</label><solely-select name="city" required placeholder="请选择城市"><solely-select-option value="bj" label="北京">北京</solely-select-option><solely-select-option value="sh" label="上海">上海</solely-select-option><solely-select-option value="gz" label="广州">广州</solely-select-option></solely-select></div>
+                    </div>
+                    <div class="row">
+                        <solely-button native-type="submit">提交（校验 + FormData）</solely-button>
+                        <solely-button native-type="reset">重置</solely-button>
+                        <button class="native" id="btn-form-check">form.checkValidity()</button>
+                    </div>
+                </form>
+                <pre id="form-out">等待交互…</pre>
+
+                <!-- 独立 form：让级联禁用走完整的 formDisabledCallback 路径，同时不影响上面 native-form 的提交 / reset -->
+                <form id="fieldset-form">
+                    <fieldset id="probe-fieldset">
+                        <legend>fieldset disabled 级联（点下方按钮切换）</legend>
+                        <solely-input id="fs-input" name="fsField" placeholder="fieldset 内的 input"></solely-input>
+                        <solely-checkbox id="fs-checkbox" name="fsCheck">fieldset 内的 checkbox</solely-checkbox>
+                    </fieldset>
+                </form>
+                <button class="native" id="btn-toggle-fieldset">切换 fieldset.disabled</button>
+                <pre id="fieldset-out"></pre>
+            </section>
+
+            <!-- ============ C 浮层 ============ -->
+            <section id="overlay">
+                <h2>C · 浮层基座：滚动锁 / inert / 嵌套 / 贴边（#6 #7 #8 #9 #10）</h2>
+                <p class="desc">
+                    右上角状态面板实时显示 body overflow、paddingRight（滚动条宽度补偿）、inert 元素数、浮层 z-index。
+                    本页底部有长内容，打开浮层前后滚动页面观察横向跳动与滚动位置还原。
+                </p>
+                <div class="state-panel" id="overlay-state">状态面板加载中…</div>
+                <div class="row">
+                    <button class="native" id="btn-open-nested">打开嵌套浮层 Modal → Drawer → Popconfirm</button>
+                    <button class="native" id="btn-open-nomask">Modal（maskClosable:false + onConfirm 返回 false）</button>
+                    <button class="native" id="btn-open-confirm">Modal.confirm（遮罩不关）</button>
+                    <button class="native" id="btn-open-reject">Popconfirm 异步 reject</button>
+                    <button class="native" id="btn-mask-probe">模拟点击当前 Modal 遮罩（应不关）</button>
+                </div>
+                <p class="desc">
+                    四角角标是 <code>position:fixed</code>，测的是 <b>flip / shift 贴边翻转</b>；锚点固定在视口四角，
+                    所以滚动页面时气泡<b>不动是正确的</b>。要测「滚动跟随」，用下面的文档流探针：按钮在普通文档流中，
+                    弹出气泡后滚动页面，气泡应跟着按钮移动（基座监听 <code>scroll</code> 重定位）。
+                    <b>先点上方 nav 的「C 浮层」把按钮滚进视口再弹出</b>；锚点在视口外时浮层会被 shift 贴边，看起来不动属正常。
+                </p>
+                <div class="row">
+                    <button class="native" id="btn-follow-probe">文档流探针：弹出气泡后滚动页面（测跟随）</button>
+                </div>
+                <p class="desc">
+                    嵌套浮层注意：Modal 默认 <code>cloneElement:false</code>（直接挂载原节点），Drawer 默认 <code>true</code>
+                    （<code>cloneNode</code> 不会复制 <code>addEventListener</code> 注册的监听器）。本页给 Drawer 显式传了
+                    <code>cloneElement:false</code>，否则「在 Drawer 内打开 Popconfirm」按钮点不动。
+                </p>
+                <div class="row">
+                    <button class="native" id="btn-corner-tl">左上贴边 Popconfirm</button>
+                    <button class="native" id="btn-corner-tr">右上贴边 Popconfirm</button>
+                    <button class="native" id="btn-corner-bl">左下贴边 Popconfirm</button>
+                    <button class="native" id="btn-corner-br">右下贴边 Popconfirm</button>
+                </div>
+                <pre id="overlay-log">等待交互…（按 Esc 逐层关闭，观察日志与状态面板）</pre>
+            </section>
+
+            <!-- ============ D CSP ============ -->
+            <section id="csp">
+                <h2>D · 严格 CSP（#2）</h2>
+                <p class="desc">
+                    <a class="inline-link" href="./strict-csp.html">打开 strict-csp.html</a>：该页 CSP 不带
+                    <code>'unsafe-inline'</code>，主题自动注入的内联 <code>&lt;style&gt;</code> 会被拦；用页内按钮移除 / 恢复手动
+                    <code>&lt;link&gt;</code>，验证「自动注入失效 → 手动引入 variables.css 回退」。
+                    <a href="/examples/csp-demo/index.html" target="_blank">csp-demo</a> 是宽松 CSP 对照组。
+                </p>
+            </section>
+
+            <!-- ============ E 打包 ============ -->
+            <section id="pack">
+                <h2>E · 打包产物（#24，命令行）</h2>
+                <p class="desc">Windows 下请在 Git Bash 执行（或把 <code>/tmp</code> 换成本机临时目录）；<code>/path/to/solely/</code> 换成仓库实际路径。</p>
+                <pre>npm run build
+npm run check:exports          # 期望：140 个导出目标全部存在
+npm run check:dist-fresh       # 期望：198 个构建输入指纹一致
+npm pack                       # 产出 solely-0.8.0.tgz
+
+mkdir -p /tmp/solely-smoke &amp;&amp; cd /tmp/solely-smoke &amp;&amp; npm init -y
+npm i /path/to/solely/solely-0.8.0.tgz
+node --input-type=module -e "import('solely').then(m=&gt;console.log('main', typeof m.BaseElement))"
+node --input-type=module -e "import('solely/compiler').then(m=&gt;console.log('compiler', typeof m.buildIR))"
+node -e "const s=require('solely'); console.log('cjs', typeof s.BaseElement)"
+tar -tf solely-0.8.0.tgz | grep -E "package/dist/(index|plugin|compiler/index|components/theme/variables)"</pre>
+            </section>
+
+            <section id="long-content">
+                <h2>长内容（制造滚动条，供 #6 使用）</h2>
+                <p class="desc">下面 60 段占位文本只为让页面出现纵向滚动条。滚动到中部再打开浮层，观察滚动锁与关闭后位置还原。</p>
+                <div id="long-paragraphs"></div>
+            </section>
+        </main>
+
+        <button class="native corner tl" id="corner-tl" aria-hidden="true">左上</button>
+        <button class="native corner tr" id="corner-tr" aria-hidden="true">右上</button>
+        <button class="native corner bl" id="corner-bl" aria-hidden="true">左下</button>
+        <button class="native corner br" id="corner-br" aria-hidden="true">右下</button>
+
+        <script type="module" src="./index.js"></script>
+    </body>
+</html>

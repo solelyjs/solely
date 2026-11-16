@@ -325,7 +325,16 @@ function setAttribute(el: Element, key: string, value: unknown): void {
 /** 安全地将属性值设置到 DOM 元素上 */
 function setProperty(el: Element, propKey: string, value: unknown, isSVGHint?: boolean): void {
     const camelKey = HTML_PROP_MAP[propKey] || propKey;
-    if (propKey.startsWith('data-') || propKey.startsWith('aria-') || ATTR_ONLY_PROPS.has(propKey)) {
+    if (propKey.startsWith('data-') || propKey.startsWith('aria-')) {
+        // data-/aria- 绑定为 null/undefined 时移除属性，避免输出空字符串属性
+        if (value == null) {
+            if (el.hasAttribute(propKey)) el.removeAttribute(propKey);
+            return;
+        }
+        setAttribute(el, propKey, value);
+        return;
+    }
+    if (ATTR_ONLY_PROPS.has(propKey)) {
         setAttribute(el, propKey, value);
         return;
     }

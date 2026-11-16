@@ -31,10 +31,17 @@ export interface PopconfirmOptions {
     cancelText?: string | HTMLElement;
     /** 是否显示取消按钮 */
     showCancel?: boolean;
-    /** 是否显示图标，默认 true */
+    /** 是否显示图标，默认 true；false 优先级最高，即使传了 icon 也不渲染 */
     showIcon?: boolean;
-    /** 确认回调 */
-    onConfirm?: () => void;
+    /** 自定义图标；空字符串表示不要图标；未设置时使用内置 warning 线性 SVG 图标 */
+    icon?: string | Element;
+    /**
+     * 确认回调。
+     *
+     * 返回 Promise 时：pending 期间浮层保持打开、按钮进入 loading 且不可重复触发；
+     * resolve 后关闭；reject 时保持打开并展示失败信息。
+     */
+    onConfirm?: () => void | Promise<unknown>;
     /** 取消回调 */
     onCancel?: () => void;
     /** 自定义类名 */

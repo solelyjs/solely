@@ -3,11 +3,13 @@
     class="switch"
     :class="this.getSwitchClasses()"
     @click="this.handleClick()"
-    tabindex="0"
+    :tabindex="this.getTabIndex()"
     @keydown="this.handleKeyDown(event)"
     role="switch"
     :aria-checked="$data.checked ? 'true' : 'false'"
-    :aria-disabled="$data.disabled ? 'true' : 'false'"
+    :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
+    :aria-busy="$data.loading ? 'true' : 'false'"
+    :aria-label="$data.ariaLabel"
 >
     <div part="track" class="switch__track">
         <div part="inner" class="switch__inner">

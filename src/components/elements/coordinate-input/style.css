@@ -35,6 +35,8 @@
   gap: var(--solely-spacing-sm);
   flex: 1;
   min-width: 0;
+  /* 空间不足时让十进制值换行，而不是把 DMS 输入框压窄后裁掉度/分/秒 */
+  flex-wrap: wrap;
 }
 
 .coordinate-group__label {
@@ -51,7 +53,8 @@
   display: flex;
   align-items: center;
   flex: 1;
-  min-width: 0;
+  /* 三段数字 + °′″ 单位的最小可用宽度；配合父级 flex-wrap 保证永远不被裁切 */
+  min-width: 144px;
   height: var(--solely-height-md);
   background-color: var(--solely-component-bg);
   border: 1px solid var(--solely-border-color);
@@ -76,7 +79,7 @@
 .dms-input--disabled {
   background-color: var(--solely-gray-3);
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: var(--solely-disabled-opacity);
 }
 
 .dms-input--readonly {
@@ -177,6 +180,9 @@
   justify-content: space-between;
   position: relative;
   user-select: none;
+  /* 打开下拉时 .dms-input 的 overflow 会改为 visible，方向区必须自带右侧圆角，
+     否则会露出方角、与输入框的圆角边框断开 */
+  border-radius: 0 var(--solely-border-radius-md) var(--solely-border-radius-md) 0;
 }
 
 .dms-input__direction-value {
@@ -184,10 +190,34 @@
   text-align: center;
 }
 
+/* 方向箭头：与 select / input 同一套线性 chevron，12px 适配 48px 宽的方向区 */
 .dms-input__direction-arrow {
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
   color: var(--solely-text-secondary);
   transition: transform 0.2s;
+}
+
+.dms-input__direction-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* 展开时下方两角改回直角，与下拉菜单的直角顶部严丝合缝，避免出现圆角缺口 */
+.dms-input__direction--open {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .dms-input__direction--open .dms-input__direction-arrow {
@@ -196,7 +226,9 @@
 
 .dms-input__direction-dropdown {
   position: absolute;
-  top: 100%;
+  /* 方向区 bottom 与父级内容区齐平，父级还有 1px 底边框；
+     下移 1px 才不会把这条横线盖掉，展开后左右竖线与上方边框也能连续 */
+  top: calc(100% + 1px);
   left: -1px;
   right: -1px;
   background-color: var(--solely-component-bg);
@@ -215,22 +247,32 @@
   transition: background-color 0.2s, color 0.2s;
 }
 
-.dms-input__direction-option:hover:not(.dms-input__direction-option--selected) {
+/* hover 只用浅色底表达指针位置 */
+.dms-input__direction-option:hover {
   background-color: var(--solely-primary-light);
 }
 
+/* 选中态独立编码：左侧实色边 + 主色字，不再与 hover 共用浅色底 */
 .dms-input__direction-option--selected {
-  background-color: var(--solely-primary-light);
+  box-shadow: inset 3px 0 0 var(--solely-primary);
   color: var(--solely-primary);
   font-weight: 500;
 }
 
-.dms-input__direction:disabled {
+.dms-input__direction:focus-visible,
+.dms-input__direction-option:focus-visible {
+  --solely-focus-ring-offset: -2px;
+
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
+}
+
+.dms-input__direction[aria-disabled='true'] {
   cursor: not-allowed;
   color: var(--solely-text-tertiary);
 }
 
-.dms-input__direction:disabled .dms-input__direction-arrow {
+.dms-input__direction[aria-disabled='true'] .dms-input__direction-arrow {
   color: var(--solely-text-tertiary);
 }
 

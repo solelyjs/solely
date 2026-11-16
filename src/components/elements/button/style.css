@@ -51,6 +51,12 @@
   position: relative;
 }
 
+/* 键盘焦点可见性 */
+.btn:focus-visible {
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
+}
+
 /* ==================== 按钮尺寸 ==================== */
 .btn--sm {
   height: var(--solely-height-sm);
@@ -80,6 +86,10 @@
 }
 
 .btn--shape-round {
+  border-radius: var(--solely-border-radius-full);
+}
+
+.btn--shape-pill {
   border-radius: var(--solely-border-radius-full);
 }
 

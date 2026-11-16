@@ -30,11 +30,8 @@ export class DocsSkeleton extends BaseElement<SkeletonDocData> {
         this.$data.loading = !this.$data.loading;
         const skeleton = this.$refs.skeleton1 as HTMLElement;
         if (skeleton) {
-            if (this.$data.loading) {
-                skeleton.setAttribute('loading', '');
-            } else {
-                skeleton.removeAttribute('loading');
-            }
+            // loading 默认 true：removeAttribute 会回退到默认值 true，关闭必须显式写 false
+            skeleton.setAttribute('loading', this.$data.loading ? '' : 'false');
         }
     }
 
@@ -45,11 +42,8 @@ export class DocsSkeleton extends BaseElement<SkeletonDocData> {
         this.$data.listLoading = !this.$data.listLoading;
         const skeleton = this.$refs.skeleton2 as HTMLElement;
         if (skeleton) {
-            if (this.$data.listLoading) {
-                skeleton.setAttribute('loading', '');
-            } else {
-                skeleton.removeAttribute('loading');
-            }
+            // 同上：默认 true 的布尔属性用 ="false" 关闭
+            skeleton.setAttribute('loading', this.$data.listLoading ? '' : 'false');
         }
     }
 }

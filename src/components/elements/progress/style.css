@@ -48,6 +48,17 @@
 
 .progress__inner--active {
   background-color: var(--solely-primary);
+  /* 没有 background-image 时 background-position 动画不可见，必须提供条纹底图 */
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.3) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.3) 75%,
+    transparent 75%
+  );
+  background-size: 40px 40px;
   animation: progress-active 2s linear infinite;
 }
 
@@ -58,6 +69,24 @@
   100% {
     background-position: 40px 0;
   }
+}
+
+/* 线性状态图标：成功勾 / 异常叉 */
+.solely-linear-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.progress__circle-text .solely-linear-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .progress__text {
@@ -100,6 +129,22 @@
   stroke: var(--solely-error);
 }
 
+/* 圆环 active：用透明度脉动表达“进行中”，不覆盖 stroke-dashoffset 的真实进度 */
+.progress__circle-path--active {
+  stroke: var(--solely-primary);
+  animation: progress-circle-active 2s ease-in-out infinite;
+}
+
+@keyframes progress-circle-active {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
 .progress__circle-text {
   position: absolute;
   top: 50%;
@@ -107,4 +152,19 @@
   transform: translate(-50%, -50%);
   font-size: 24px;
   color: var(--solely-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress__inner {
+    transition: none;
+  }
+
+  .progress__circle-path {
+    transition: none;
+  }
+
+  .progress__inner--active,
+  .progress__circle-path--active {
+    animation: none;
+  }
 }

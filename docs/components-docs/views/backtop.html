@@ -294,7 +294,8 @@ backtop.duration = 800;</code></pre>
         <table class="api-table">
             <thead>
                 <tr>
-                    <th>属性</th>
+                    <th>HTML 属性写法</th>
+                    <th>JS 属性写法</th>
                     <th>说明</th>
                     <th>类型</th>
                     <th>默认值</th>
@@ -302,12 +303,14 @@ backtop.duration = 800;</code></pre>
             </thead>
             <tbody>
                 <tr>
+                    <td>visibility-height</td>
                     <td>visibilityHeight</td>
                     <td>滚动高度达到此参数值时才显示按钮（支持属性读写）</td>
                     <td>number</td>
                     <td>400</td>
                 </tr>
                 <tr>
+                    <td>duration</td>
                     <td>duration</td>
                     <td>回到顶部的动画持续时间，单位毫秒（支持属性读写）</td>
                     <td>number</td>
@@ -384,7 +387,12 @@ backtop.duration = 800;</code></pre>
     <h2 class="usage-section-title">使用指南</h2>
 
     <div class="usage-intro">
-        <p class="usage-desc">BackTop 组件会自动检测最近的滚动父元素（overflow-y 为 auto 或 scroll 的元素），并在该容器右下角显示按钮。</p>
+        <p class="usage-desc">
+            BackTop 组件会自动检测最近的滚动父元素（overflow-y 为 auto 或 scroll 的元素），并把按钮固定到该容器可视区域的右下角。
+            未检测到滚动容器时（document 模式）组件会清空 <code>right</code> / <code>bottom</code>，
+            按钮沿用文档流静态位置，<strong>不会自动固定在视口右下角</strong>；需要该效果时请自行包裹一个滚动容器，
+            或通过 <code>::part(base)</code> 设置定位。
+        </p>
     </div>
 
     <div class="usage-tips">

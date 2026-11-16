@@ -39,6 +39,14 @@
   transform: var(--fab-position-transform, none) scale(0.95);
 }
 
+/* 键盘焦点可见性（常驻阴影不足以表达焦点，需独立焦点环） */
+.fab:focus-visible {
+  --solely-focus-ring-offset: 3px;
+
+  outline: var(--solely-focus-ring-width) solid var(--solely-focus-ring-color);
+  outline-offset: var(--solely-focus-ring-offset);
+}
+
 .fab:disabled {
   opacity: var(--solely-disabled-opacity);
   cursor: not-allowed;

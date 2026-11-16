@@ -24,6 +24,14 @@ import { safeJsonParse } from '../utils/helpers';
         { name: 'searchable', type: 'boolean', default: false },
         { name: 'searchValue', type: 'string' },
         { name: 'block', type: 'boolean', default: false },
+        { name: 'checkStrictly', type: 'boolean', default: false },
+        { name: 'defaultExpandedKeys', type: 'string' },
+        { name: 'defaultCheckedKeys', type: 'string' },
+        { name: 'defaultSelectedKeys', type: 'string' },
+        // 受控键：attribute 写法为 JSON 数组，property 写法可直接传 string[]
+        { name: 'checkedKeys', type: 'array' },
+        { name: 'expandedKeys', type: 'array' },
+        { name: 'label', type: 'string', default: '' },
     ],
 })
 class SolelyTree extends BaseElement<
@@ -38,7 +46,71 @@ class SolelyTree extends BaseElement<
         >;
     }
 > {
-    treeData: TreeNode[] = [];
+    private _treeData: TreeNode[] = [];
+
+    /** default*Keys 是否已应用（首次拿到非空数据时应用一次） */
+    private _defaultsApplied = false;
+
+    /** default-expand-all 是否已写回节点（只应用一次，之后由用户交互接管） */
+    private _expandAllApplied = false;
+
+    /** 上一次生效的搜索条件，用于在 search-value/searchable 变化时自动重新过滤 */
+    private _lastSearchValue = '';
+    private _lastSearchable = false;
+
+    /** 展开全部时的异步加载代次，collapseAll 会让未完成的加载失效 */
+    private _expandAllToken = 0;
+
+    /** 数据尚未可用时暂存的受控键，挂载/数据就绪后统一应用 */
+    private _pendingCheckedKeys?: string[];
+    private _pendingExpandedKeys?: string[];
+
+    /**
+     * 异步加载子节点的回调（属性赋值方式使用，如 `el.loadData = async node => [...]`）。
+     * 节点无 children 且非 isLeaf 时，首次展开会调用它。
+     *
+     * 用 accessor 而非普通字段：文档站通常在 mounted() 里才赋值，此时首帧已渲染，
+     * 没有 loadData 的无子节点会被当成叶子、箭头被 CSS 隐藏，用户根本点不到。
+     * setter 触发一次重算，让可异步加载的节点立刻获得可见箭头。
+     */
+    private _loadData?: (node: TreeNode) => Promise<TreeNode[]> | TreeNode[];
+
+    get loadData(): ((node: TreeNode) => Promise<TreeNode[]> | TreeNode[]) | undefined {
+        return this._loadData;
+    }
+
+    set loadData(value: ((node: TreeNode) => Promise<TreeNode[]> | TreeNode[]) | undefined) {
+        this._loadData = value;
+        this.flattenTree();
+    }
+
+    /** 已触发过异步加载的节点 key，避免重复请求 */
+    private _loadedKeys = new Set<string>();
+
+    /** 正在拉取子节点的节点 key：这段时间内箭头必须保持可见并给出加载反馈 */
+    private _loadingKeys = new Set<string>();
+
+    /**
+     * 树形数据（解析后的数组）。
+     * attribute、property 与方法三条路径都经过此 setter，统一触发解析与扁平化。
+     */
+    get treeData(): TreeNode[] {
+        return this._treeData;
+    }
+
+    set treeData(value: string | TreeNode[]) {
+        this._treeData = typeof value === 'string' ? safeJsonParse(value, []) : Array.isArray(value) ? value : [];
+        // 重新解析会生成全新的节点对象，之前写入的默认展开/默认键随之丢失。
+        // 静态 HTML 场景下 upgrade 与 connectedCallback 会各写一次 tree-data：
+        // 不重置标记的话，第二遍数据会抹掉第一遍应用的默认状态，而标记仍为 true，
+        // mounted 也不会再补应用（表现为 default-expand-all 静默失效）。
+        this._expandAllApplied = false;
+        this._defaultsApplied = false;
+        // 数据首次可用时（常见于异步 fetch 后赋值）补应用默认键
+        this.applyDefaultKeysIfAvailable();
+        this.applyPendingKeys();
+        this.flattenTree();
+    }
 
     /**
      * 获取 tree class 对象
@@ -78,11 +150,17 @@ class SolelyTree extends BaseElement<
 
     /**
      * 获取 switcher class 对象
+     *
+     * 配置了 loadData 且尚未拉取过子节点的节点，即使当前没有 children 也不是叶子：
+     * 必须保留可见的展开箭头，否则用户点不到它，异步加载永远无法触发。
      */
     getSwitcherClasses(node: TreeNode): Record<string, boolean> {
+        const hasChildren = !!node.children && node.children.length > 0;
+        const loading = this._loadingKeys.has(node.key);
         return {
             'tree__switcher--expanded': !!node.expanded,
-            'tree__switcher--leaf': !node.children || node.children.length === 0,
+            'tree__switcher--loading': loading,
+            'tree__switcher--leaf': !hasChildren && !loading && !this.shouldLoadChildren(node),
         };
     }
 
@@ -107,20 +185,125 @@ class SolelyTree extends BaseElement<
     }
 
     mounted(): void {
+        this.applyDefaultKeysIfAvailable();
+        this.applyPendingKeys();
         this.refresh();
         this.parseTreeData();
+        this._lastSearchable = !!this.$data.searchable;
+        this._lastSearchValue = this._lastSearchable ? this.$data.searchValue || '' : '';
     }
 
     /**
-     * 解析树形数据
-     *
-     * 注意：数据源是 tree-data attribute 的字符串快照；若组件在 setTreeData()
-     * 写入新数据后被移出 DOM 再插入（重新触发 mounted），attribute 中的旧字符串
-     * 会覆盖 setTreeData 传入的数据。需要持久化动态数据的场景请在重新挂载后
-     * 再次调用 setTreeData()。
+     * searchValue / searchable 变化后自动重新过滤，无需手动调用 parseTreeData()
+     */
+    updated(): void {
+        const searchable = !!this.$data.searchable;
+        const searchValue = searchable ? this.$data.searchValue || '' : '';
+        if (searchable === this._lastSearchable && searchValue === this._lastSearchValue) return;
+
+        this._lastSearchable = searchable;
+        this._lastSearchValue = searchValue;
+        this.flattenTree();
+        // 搜索过滤会改变可见集合，与展开/勾选一样通过 change 事件通知
+        this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    }
+
+    /**
+     * 解析 default*Keys 属性：支持 JSON 数组（'["1","2"]'）与逗号分隔（'1,2'）
+     */
+    private parseKeys(value?: string): string[] {
+        if (!value) return [];
+        const trimmed = value.trim();
+        if (!trimmed) return [];
+        if (trimmed.startsWith('[')) {
+            const parsed = safeJsonParse<unknown>(trimmed, []);
+            return Array.isArray(parsed) ? parsed.map(item => String(item)) : [];
+        }
+        return trimmed
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean);
+    }
+
+    /**
+     * 应用默认展开/勾选/选中（仅在数据首次可用时生效，不派发事件）
+     */
+    private applyDefaultKeys(): boolean {
+        const expandedKeys = this.parseKeys(this.$data.defaultExpandedKeys);
+        const checkedKeys = this.parseKeys(this.$data.defaultCheckedKeys);
+        const selectedKeys = this.parseKeys(this.$data.defaultSelectedKeys);
+        if (!expandedKeys.length && !checkedKeys.length && !selectedKeys.length) return false;
+
+        const traverse = (nodes: TreeNode[]) => {
+            for (const node of nodes) {
+                if (expandedKeys.includes(node.key)) node.expanded = true;
+                if (checkedKeys.includes(node.key)) node.checked = true;
+                if (selectedKeys.includes(node.key) && this.isNodeSelectable(node)) node.selected = true;
+                if (node.children) traverse(node.children);
+            }
+        };
+
+        traverse(this.treeData);
+        if (checkedKeys.length && !this.$data.checkStrictly) {
+            this.syncParentCheckStates(this.treeData);
+        }
+        return true;
+    }
+
+    /**
+     * 数据首次可用时应用默认键。
+     * 未连接阶段（属性初始化）不处理，交给 mounted / 后续 tree-data 赋值。
+     */
+    private applyDefaultKeysIfAvailable(): void {
+        if (!this.isConnected || this.treeData.length === 0) return;
+        // 「默认展开全部」只在数据首次可用时写回节点状态：若让 flattenTree 每次都按
+        // defaultExpandAll 强制展开，用户点击折叠 / collapseAll() 后会被立刻覆盖回去。
+        this.applyDefaultExpandAll();
+        if (this._defaultsApplied) return;
+        if (this.applyDefaultKeys()) this._defaultsApplied = true;
+    }
+
+    /** 一次性把 default-expand-all 应用到节点，之后完全由 node.expanded 控制 */
+    private applyDefaultExpandAll(): void {
+        if (this._expandAllApplied || !this.$data.defaultExpandAll) return;
+        this._expandAllApplied = true;
+
+        const traverse = (nodes: TreeNode[]) => {
+            for (const node of nodes) {
+                if (node.children && node.children.length > 0) {
+                    node.expanded = true;
+                    traverse(node.children);
+                }
+            }
+        };
+        traverse(this.treeData);
+    }
+
+    /**
+     * 根据子节点状态自底向上重算父节点的 checked / halfChecked
+     */
+    private syncParentCheckStates(nodes: TreeNode[]): void {
+        for (const node of nodes) {
+            if (!node.children || node.children.length === 0) continue;
+            this.syncParentCheckStates(node.children);
+            const allChecked = node.children.every(child => child.checked);
+            const someChecked = node.children.some(child => child.checked || child.halfChecked);
+            node.checked = allChecked;
+            node.halfChecked = !allChecked && someChecked;
+        }
+    }
+
+    /**
+     * 节点是否可选中：节点自身 selectable: false 时不可选中
+     */
+    isNodeSelectable(node: TreeNode): boolean {
+        return node.selectable !== false;
+    }
+
+    /**
+     * 解析树形数据（属性 setter 已自动完成解析，这里仅重建扁平列表）
      */
     parseTreeData(): void {
-        this.treeData = safeJsonParse(this.$data.treeData, []);
         this.flattenTree();
     }
 
@@ -137,7 +320,7 @@ class SolelyTree extends BaseElement<
             for (let i = 0; i < nodes.length; i++) {
                 const node = nodes[i];
                 const hasChildren = node.children && node.children.length > 0;
-                const isExpanded = this.$data.defaultExpandAll || node.expanded;
+                const isExpanded = !!searchValue || node.expanded;
                 const matchesSearch = searchValue && node.title.toLowerCase().includes(searchValue);
 
                 const flatNode = {
@@ -176,32 +359,89 @@ class SolelyTree extends BaseElement<
     }
 
     /**
+     * 内置搜索框输入；过滤统一在 updated() 中按 searchValue 变化触发
+     */
+    handleSearchInput(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        this.$data.searchValue = input.value;
+    }
+
+    /**
      * 切换展开/折叠
      */
-    handleToggle(node: TreeNode & { level: number }, event: MouseEvent): void {
+    handleToggle(node: TreeNode & { level: number }, event: Event): void {
         event.stopPropagation();
 
         if (this.$data.disabled) return;
 
         const originalNode = this.findNode(this.treeData, node.key);
-        if (originalNode) {
-            originalNode.expanded = !originalNode.expanded;
+        if (!originalNode) return;
+
+        // 拉取中再次点击不应把还没有子数据的节点提前展开，也不应重复发请求
+        if (this._loadingKeys.has(originalNode.key)) return;
+
+        const willExpand = !originalNode.expanded;
+
+        // 异步加载：无子节点且非叶子、且提供了 loadData 时，首次展开先拉取数据
+        if (willExpand && this.shouldLoadChildren(originalNode)) {
+            this._loadedKeys.add(originalNode.key);
+            this._loadingKeys.add(originalNode.key);
+            // 立即重渲染：箭头进入 loading 态，避免等待期间看起来「点了没反应」
             this.flattenTree();
-
-            // 派发 expand 自定义事件
-            this.emit('expand', {
-                expandedKeys: this.getExpandedKeys(),
-                node: originalNode,
-            } as TreeExpandEventDetail);
-
-            // 同时派发原生 change 事件
-            this.dispatchEvent(
-                new Event('change', {
-                    bubbles: true,
-                    composed: true,
-                }),
-            );
+            Promise.resolve(this.loadData ? this.loadData(originalNode) : [])
+                .then(children => {
+                    this._loadingKeys.delete(originalNode.key);
+                    originalNode.children = Array.isArray(children) ? children : [];
+                    originalNode.expanded = true;
+                    this.expandFromNode();
+                    this.notifyExpand(originalNode);
+                })
+                .catch(() => {
+                    // 加载失败时保持折叠，允许下次重试
+                    this._loadedKeys.delete(originalNode.key);
+                    this._loadingKeys.delete(originalNode.key);
+                    this.flattenTree();
+                });
+            return;
         }
+
+        originalNode.expanded = willExpand;
+        this.expandFromNode();
+        this.notifyExpand(originalNode);
+    }
+
+    /**
+     * 是否需要异步加载子节点
+     */
+    private shouldLoadChildren(node: TreeNode): boolean {
+        if (!this.loadData) return false;
+        if (node.isLeaf) return false;
+        if (this._loadedKeys.has(node.key)) return false;
+        return !node.children || node.children.length === 0;
+    }
+
+    /**
+     * 依据 treeData 重建扁平列表并刷新
+     */
+    private expandFromNode(): void {
+        this.flattenTree();
+    }
+
+    /**
+     * 派发 expand 事件与 change 事件
+     */
+    private notifyExpand(node: TreeNode): void {
+        this.emit('expand', {
+            expandedKeys: this.getExpandedKeys(),
+            node,
+        } as TreeExpandEventDetail);
+
+        this.dispatchEvent(
+            new Event('change', {
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     /**
@@ -209,6 +449,7 @@ class SolelyTree extends BaseElement<
      */
     handleNodeClick(node: TreeNode & { level: number }): void {
         if (this.$data.disabled || node.disabled) return;
+        if (!this.isNodeSelectable(node)) return;
 
         // 清除其他选中状态（非多选模式下）
         if (!this.$data.multiple) {
@@ -240,7 +481,7 @@ class SolelyTree extends BaseElement<
     /**
      * 勾选节点
      */
-    handleCheck(node: TreeNode & { level: number }, event: MouseEvent): void {
+    handleCheck(node: TreeNode & { level: number }, event: Event): void {
         event.stopPropagation();
 
         if (this.$data.disabled || node.disabled) return;
@@ -248,7 +489,13 @@ class SolelyTree extends BaseElement<
         const originalNode = this.findNode(this.treeData, node.key);
         if (originalNode) {
             const newChecked = !originalNode.checked;
-            this.updateNodeCheckState(originalNode, newChecked);
+            if (this.$data.checkStrictly) {
+                // 父子不关联：只切换当前节点
+                originalNode.checked = newChecked;
+                originalNode.halfChecked = false;
+            } else {
+                this.updateNodeCheckState(originalNode, newChecked);
+            }
             this.flattenTree();
 
             // 派发 check 自定义事件
@@ -266,6 +513,133 @@ class SolelyTree extends BaseElement<
                 }),
             );
         }
+    }
+
+    /**
+     * 复选框的键盘触发
+     */
+    handleCheckKeydown(event: KeyboardEvent, node: TreeNode & { level: number }): void {
+        if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+        event.preventDefault();
+        this.handleCheck(node, event);
+    }
+
+    /**
+     * 参与键盘导航的节点（跳过禁用节点）
+     */
+    private getNavigableNodes(): Array<TreeNode & { level: number }> {
+        // 全局禁用时整树退出 Tab 序列与键盘导航
+        if (this.$data.disabled) return [];
+        const nodes = this.$data.flattenedTree || [];
+        return nodes.filter(node => !node.disabled);
+    }
+
+    /**
+     * roving tabindex：仅第一个可导航节点进入 Tab 序列
+     */
+    getNodeTabindex(node: TreeNode): string {
+        const first = this.getNavigableNodes()[0];
+        return first && first.key === node.key ? '0' : '-1';
+    }
+
+    /**
+     * 把焦点移到指定节点
+     */
+    private focusNode(key: string): void {
+        const nodes = Array.from(this.shadowRoot?.querySelectorAll('.tree__node') || []) as HTMLElement[];
+        const target = nodes.find(item => item.dataset.key === key);
+        target?.focus();
+    }
+
+    /**
+     * 节点键盘导航（WAI-ARIA tree 模式）
+     *
+     * - ArrowDown / ArrowUp：下一个 / 上一个可见节点
+     * - ArrowRight：展开节点；已展开时聚焦第一个子节点
+     * - ArrowLeft：折叠节点；已折叠时聚焦父节点
+     * - Home / End：第一个 / 最后一个可见节点
+     * - Enter：选中节点；Space：可勾选时勾选，否则选中
+     */
+    handleNodeKeydown(event: KeyboardEvent, node: TreeNode & { level: number }): void {
+        if (this.$data.disabled) return;
+        if (event.target !== event.currentTarget) return;
+
+        const key = event.key;
+        const nodes = this.getNavigableNodes();
+        if (nodes.length === 0) return;
+        const index = nodes.findIndex(item => item.key === node.key);
+        if (index < 0) return;
+
+        const focusAt = (next?: TreeNode) => {
+            if (!next) return;
+            event.preventDefault();
+            this.focusNode(next.key);
+        };
+
+        switch (key) {
+            case 'ArrowDown':
+                focusAt(nodes[(index + 1) % nodes.length]);
+                return;
+            case 'ArrowUp':
+                focusAt(nodes[(index - 1 + nodes.length) % nodes.length]);
+                return;
+            case 'Home':
+                focusAt(nodes[0]);
+                return;
+            case 'End':
+                focusAt(nodes[nodes.length - 1]);
+                return;
+            case 'ArrowRight': {
+                const originalNode = this.findNode(this.treeData, node.key);
+                if (!originalNode) return;
+                if (originalNode.children && originalNode.children.length > 0 && !originalNode.expanded) {
+                    this.handleToggle(node, event);
+                } else if (originalNode.expanded && nodes[index + 1] && nodes[index + 1].level > node.level) {
+                    focusAt(nodes[index + 1]);
+                }
+                return;
+            }
+            case 'ArrowLeft': {
+                const originalNode = this.findNode(this.treeData, node.key);
+                if (!originalNode) return;
+                if (originalNode.expanded) {
+                    this.handleToggle(node, event);
+                    return;
+                }
+                const parent = this.findParentNode(nodes, index, node.level);
+                focusAt(parent);
+                return;
+            }
+            case 'Enter':
+                event.preventDefault();
+                this.handleNodeClick(node);
+                return;
+            case ' ':
+            case 'Spacebar':
+                event.preventDefault();
+                if (this.$data.checkable) {
+                    this.handleCheck(node, event);
+                } else {
+                    this.handleNodeClick(node);
+                }
+                return;
+            default:
+                return;
+        }
+    }
+
+    /**
+     * 在可见节点列表中向前查找最近的上层父节点
+     */
+    private findParentNode(
+        nodes: Array<TreeNode & { level: number }>,
+        index: number,
+        level: number,
+    ): TreeNode | undefined {
+        for (let i = index - 1; i >= 0; i--) {
+            if (nodes[i].level === level - 1) return nodes[i];
+        }
+        return undefined;
     }
 
     /**
@@ -368,8 +742,27 @@ class SolelyTree extends BaseElement<
 
     /**
      * 设置勾选的节点 key
+     *
+     * 支持 `el.checkedKeys = ['1','2']` 与 attribute `checked-keys='["1","2"]'`。
+     * 数据未就绪（属性升级 / 异步赋值）时先暂存，等 treeData 可用后应用。
      */
-    set checkedKeys(keys: string[]) {
+    set checkedKeys(keys: string | string[]) {
+        const normalized = this.parseKeyList(keys);
+        if (!this.isConnected || this._treeData.length === 0) {
+            this._pendingCheckedKeys = normalized;
+            return;
+        }
+        this.applyCheckedKeys(normalized);
+        if (!this.isSyncingProps) {
+            this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+        }
+    }
+
+    get checkedKeys(): string[] {
+        return this.getCheckedKeys();
+    }
+
+    private applyCheckedKeys(keys: string[]): void {
         const clearAll = (nodes: TreeNode[]) => {
             for (const node of nodes) {
                 node.checked = false;
@@ -389,13 +782,25 @@ class SolelyTree extends BaseElement<
         };
         setChecked(this.treeData, keys);
         this.flattenTree();
+    }
 
-        this.dispatchEvent(
-            new Event('change', {
-                bubbles: true,
-                composed: true,
-            }),
-        );
+    /** 应用数据就绪前暂存的受控键（默认键先应用，显式键覆盖默认值） */
+    private applyPendingKeys(): void {
+        if (!this.isConnected) return;
+        if (this._pendingCheckedKeys) {
+            this.applyCheckedKeys(this._pendingCheckedKeys);
+            this._pendingCheckedKeys = undefined;
+        }
+        if (this._pendingExpandedKeys) {
+            this.applyExpandedKeys(this._pendingExpandedKeys);
+            this._pendingExpandedKeys = undefined;
+        }
+    }
+
+    /** 受控键既接受 string[]，也接受 JSON / 逗号分隔字符串（兼容模板拼接） */
+    private parseKeyList(value: string | string[] | undefined): string[] {
+        if (Array.isArray(value)) return value.map(key => String(key));
+        return this.parseKeys(value);
     }
 
     /**
@@ -418,9 +823,25 @@ class SolelyTree extends BaseElement<
     }
 
     /**
-     * 设置展开的节点 key
+     * 设置展开的节点 key（attribute 写法为 JSON 数组）
      */
-    set expandedKeys(keys: string[]) {
+    set expandedKeys(keys: string | string[]) {
+        const normalized = this.parseKeyList(keys);
+        if (!this.isConnected || this._treeData.length === 0) {
+            this._pendingExpandedKeys = normalized;
+            return;
+        }
+        this.applyExpandedKeys(normalized);
+        if (!this.isSyncingProps) {
+            this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+        }
+    }
+
+    get expandedKeys(): string[] {
+        return this.getExpandedKeys();
+    }
+
+    private applyExpandedKeys(keys: string[]): void {
         const setExpanded = (nodes: TreeNode[]) => {
             for (const node of nodes) {
                 node.expanded = keys.includes(node.key);
@@ -429,13 +850,6 @@ class SolelyTree extends BaseElement<
         };
         setExpanded(this.treeData);
         this.flattenTree();
-
-        this.dispatchEvent(
-            new Event('change', {
-                bubbles: true,
-                composed: true,
-            }),
-        );
     }
 
     /**
@@ -496,11 +910,98 @@ class SolelyTree extends BaseElement<
     }
 
     /**
+     * 展开所有节点。
+     * 对配置了 loadData 且尚未加载的节点会并发拉取子节点；collapseAll() 会作废未完成的加载。
+     */
+    public expandAll(): void {
+        const token = ++this._expandAllToken;
+        const pending: Promise<void>[] = [];
+
+        const traverse = (nodes: TreeNode[], allowLoad: boolean) => {
+            for (const node of nodes) {
+                node.expanded = true;
+                if (node.children && node.children.length > 0) {
+                    traverse(node.children, allowLoad);
+                    continue;
+                }
+                if (!allowLoad || !this.shouldLoadChildren(node)) continue;
+
+                const key = node.key;
+                this._loadedKeys.add(key);
+                pending.push(
+                    Promise.resolve(this.loadData ? this.loadData(node) : [])
+                        .then(children => {
+                            if (token !== this._expandAllToken) {
+                                // 已被 collapseAll 取消：释放 key，便于下次重新加载
+                                this._loadedKeys.delete(key);
+                                return;
+                            }
+                            node.children = Array.isArray(children) ? children : [];
+                            node.expanded = true;
+                            // 刚返回的节点不再自动触发下一层加载，避免数据未标记叶子时递归请求
+                            traverse(node.children, false);
+                            this.flattenTree();
+                        })
+                        .catch(() => {
+                            if (token !== this._expandAllToken) return;
+                            node.expanded = false;
+                            this._loadedKeys.delete(key);
+                            this.flattenTree();
+                        }),
+                );
+            }
+        };
+
+        traverse(this.treeData, true);
+        this.flattenTree();
+        this.notifyExpandAll();
+
+        if (pending.length > 0) {
+            Promise.all(pending).then(() => {
+                if (token !== this._expandAllToken) return;
+                this.flattenTree();
+                this.notifyExpandAll();
+            });
+        }
+    }
+
+    /**
+     * 收起所有节点。
+     * 不会清除已通过 loadData 加载的子节点，也不会影响勾选状态（checkStrictly 无交互）。
+     */
+    public collapseAll(): void {
+        this._expandAllToken++;
+
+        const collapse = (nodes: TreeNode[]) => {
+            for (const node of nodes) {
+                node.expanded = false;
+                if (node.children) collapse(node.children);
+            }
+        };
+
+        collapse(this.treeData);
+        this.flattenTree();
+        this.notifyExpandAll();
+    }
+
+    /**
+     * 批量展开/收起后派发 expand + change 事件
+     */
+    private notifyExpandAll(): void {
+        this.emit('expand', { expandedKeys: this.getExpandedKeys() } as TreeExpandEventDetail);
+        this.dispatchEvent(
+            new Event('change', {
+                bubbles: true,
+                composed: true,
+            }),
+        );
+    }
+
+    /**
      * 设置树形数据
      */
     public setTreeData(data: TreeNode[]): void {
         this.treeData = data;
-        this.flattenTree();
     }
 
     /**

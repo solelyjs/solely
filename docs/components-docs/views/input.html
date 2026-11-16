@@ -320,17 +320,17 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
   <span class="code-attr">@copy-error</span>=<span class="code-value">"handleCopyError(event)"</span>
 <span class="code-bracket">&gt;&lt;/</span><span class="code-tag">solely-input</span><span class="code-bracket">&gt;</span>
 
-<span class="code-comment">// 原生事件：input、change、focus、blur、keydown</span>
+<span class="code-comment">// 原生事件：input、focus、blur、keydown</span>
 <span class="code-comment">// 通过 event.target.value 获取值</span>
 <span class="code-keyword">function</span> <span class="code-attr">handleInput</span>(<span class="code-attr">event</span>: <span class="code-type">InputEvent</span>) {
   <span class="code-keyword">const</span> <span class="code-attr">target</span> = <span class="code-attr">event</span>.<span class="code-attr">target</span> <span class="code-keyword">as</span> <span class="code-type">HTMLInputElement</span>;
   <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'input:'</span>, <span class="code-attr">target</span>.<span class="code-attr">value</span>);
 }
 
-<span class="code-comment">// change 事件通过 Event 派发，通过 event.target.value 获取值</span>
-<span class="code-keyword">function</span> <span class="code-attr">handleChange</span>(<span class="code-attr">event</span>: <span class="code-type">Event</span>) {
-  <span class="code-keyword">const</span> <span class="code-attr">target</span> = <span class="code-attr">event</span>.<span class="code-attr">target</span> <span class="code-keyword">as</span> <span class="code-type">HTMLInputElement</span>;
-  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'change:'</span>, <span class="code-attr">target</span>.<span class="code-attr">value</span>);
+<span class="code-comment">// change 为 CustomEvent，detail: { name, value, previousValue, source }</span>
+<span class="code-comment">// 值未变化时不派发；source 为 'user' | 'api' | 'reset'</span>
+<span class="code-keyword">function</span> <span class="code-attr">handleChange</span>(<span class="code-attr">event</span>: <span class="code-type">CustomEvent</span>&lt;{ <span class="code-attr">name</span>: <span class="code-type">string</span>; <span class="code-attr">value</span>: <span class="code-type">string</span>; <span class="code-attr">previousValue</span>: <span class="code-type">string</span>; <span class="code-attr">source</span>: <span class="code-value">'user'</span> | <span class="code-value">'api'</span> | <span class="code-value">'reset'</span> }&gt;) {
+  <span class="code-type">console</span>.<span class="code-attr">log</span>(<span class="code-value">'change:'</span>, <span class="code-attr">event</span>.<span class="code-attr">detail</span>.<span class="code-attr">value</span>, <span class="code-attr">event</span>.<span class="code-attr">detail</span>.<span class="code-attr">previousValue</span>, <span class="code-attr">event</span>.<span class="code-attr">detail</span>.<span class="code-attr">source</span>);
 }
 
 <span class="code-keyword">function</span> <span class="code-attr">handleFocus</span>(<span class="code-attr">event</span>: <span class="code-type">FocusEvent</span>) {
@@ -450,6 +450,32 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
         </div>
     </div>
 
+<!-- ===== 0.8.0 新增特性验收样例 ===== -->
+<div class="demo-section">
+    <div class="demo-block">
+        <h3 class="demo-block-title">按钮组合与文本域自适应（0.8.0）</h3>
+        <p class="demo-block-desc"><code>clearable</code> / <code>showpassword</code> / <code>copyable</code> 三个装饰按钮<strong>可同时开启</strong>（0.8.0 起互不排斥），按「显隐切换 → 复制 → 清空」排列，清空按钮始终贴在输入框右侧；<code>type="textarea" autosize</code> 随内容增高；readonly 时不显示清空按钮，disabled 时装饰按钮退出 Tab 序列。</p>
+        <div class="demo-box">
+                        <div class="demo-preview" style="flex-direction: column; gap: 12px; align-items: flex-start;">
+                <div class="demo-subtitle">clearable（有值时显示清空按钮）</div>
+                <solely-input clearable value="Secret123"></solely-input>
+                <div class="demo-subtitle">showpassword（type="password" 时显示显隐切换）</div>
+                <solely-input type="password" showpassword value="Secret123"></solely-input>
+                <div class="demo-subtitle">copyable（有值时显示复制按钮）</div>
+                <solely-input copyable value="Secret123"></solely-input>
+                <div class="demo-subtitle">三者同时写：显隐切换 + 复制 + 清空并存，清空按钮在最右</div>
+                <solely-input type="password" clearable showpassword copyable value="Secret123"></solely-input>
+                <div class="demo-subtitle">readonly（不显示清空按钮，其余装饰按钮保留）</div>
+                <solely-input clearable copyable readonly value="Secret123"></solely-input>
+                <div class="demo-subtitle">textarea autosize（输入多行看高度）</div>
+                <solely-input type="textarea" autosize rows="2" placeholder="在这里换行输入…"></solely-input>
+            </div>
+            <div class="demo-code"><pre><code>&lt;solely-input type="password" clearable show-password copyable value="Secret123"&gt;&lt;/solely-input&gt;
+&lt;solely-input type="textarea" autosize rows="2"&gt;&lt;/solely-input&gt;</code></pre></div>
+        </div>
+    </div>
+</div>
+
     <!-- API 文档 -->
     <div class="api-section">
         <h3 class="api-section-title">API</h3>
@@ -459,7 +485,8 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
             <table class="api-table">
                 <thead>
                     <tr>
-                        <th>属性</th>
+                        <th>HTML 属性写法</th>
+                        <th>JS 属性写法</th>
                         <th>说明</th>
                         <th>类型</th>
                         <th>默认值</th>
@@ -467,12 +494,28 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                 </thead>
                 <tbody>
                     <tr>
+                        <td>name</td>
+                        <td>name</td>
+                        <td>表单 name 属性</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>value</td>
                         <td>value</td>
                         <td>输入框值（支持属性读写）</td>
                         <td>string</td>
                         <td>''</td>
                     </tr>
                     <tr>
+                        <td>default-value</td>
+                        <td>defaultValue</td>
+                        <td>表单重置时回到的默认值</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>placeholder</td>
                         <td>placeholder</td>
                         <td>占位提示文字</td>
                         <td>string</td>
@@ -480,17 +523,27 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>type</td>
+                        <td>type</td>
                         <td>输入框类型</td>
                         <td>'text' | 'password' | 'number' | 'email' | 'tel' | 'url' | 'search' | 'textarea'</td>
                         <td>'text'</td>
                     </tr>
                     <tr>
                         <td>size</td>
+                        <td>size</td>
                         <td>输入框尺寸</td>
                         <td>'small' | 'medium' | 'large'</td>
                         <td>'medium'</td>
                     </tr>
                     <tr>
+                        <td>size 兼容别名</td>
+                        <td>size</td>
+                        <td>兼容别名：middle / default → medium，解析时归一，不作为独立档位</td>
+                        <td>'middle' | 'default'</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>disabled</td>
                         <td>disabled</td>
                         <td>是否禁用</td>
                         <td>boolean</td>
@@ -498,17 +551,27 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>readonly</td>
+                        <td>readonly</td>
                         <td>是否只读</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
                         <td>required</td>
+                        <td>required</td>
                         <td>是否必填</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>invalid-message</td>
+                        <td>invalidMessage</td>
+                        <td>自定义校验失败提示</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>maxlength</td>
                         <td>maxlength</td>
                         <td>最大长度</td>
                         <td>number</td>
@@ -516,23 +579,27 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>minlength</td>
+                        <td>minlength</td>
                         <td>最小长度</td>
                         <td>number</td>
                         <td>-</td>
                     </tr>
                     <tr>
                         <td>clearable</td>
-                        <td>是否可清空</td>
+                        <td>clearable</td>
+                        <td>是否显示清空按钮（有值、非 readonly 且未禁用时显示）；与 show-password、copyable 可同时开启，按钮固定排在其他装饰按钮之后、紧贴输入框右侧</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
-                        <td>showpassword</td>
-                        <td>是否显示密码切换按钮</td>
+                        <td>show-password（兼容 showpassword）</td>
+                        <td>showPassword</td>
+                        <td>是否显示密码可见性切换按钮，仅在 <code>type="password"</code> 时生效；与 clearable、copyable 互不排斥，可同时渲染</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>prefix</td>
                         <td>prefix</td>
                         <td>前缀图标或文字</td>
                         <td>string</td>
@@ -540,11 +607,13 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>suffix</td>
+                        <td>suffix</td>
                         <td>后缀图标或文字</td>
                         <td>string</td>
                         <td>-</td>
                     </tr>
                     <tr>
+                        <td>status</td>
                         <td>status</td>
                         <td>状态</td>
                         <td>'error' | 'warning' | 'success' | ''</td>
@@ -552,17 +621,20 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>message</td>
+                        <td>message</td>
                         <td>状态提示信息</td>
                         <td>string</td>
                         <td>-</td>
                     </tr>
                     <tr>
-                        <td>showcount</td>
-                        <td>是否显示字数统计</td>
+                        <td>show-count（兼容 showcount）</td>
+                        <td>showCount</td>
+                        <td>是否显示字数统计（未设置 maxlength 时只显示当前字数）</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>rows</td>
                         <td>rows</td>
                         <td>文本域行数</td>
                         <td>number</td>
@@ -570,23 +642,27 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>autofocus</td>
+                        <td>autofocus</td>
                         <td>是否自动聚焦</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
-                        <td>selectall</td>
+                        <td>select-all（兼容 selectall）</td>
+                        <td>selectAll</td>
                         <td>聚焦时是否全选</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
                         <td>copyable</td>
-                        <td>是否显示复制按钮</td>
+                        <td>copyable</td>
+                        <td>是否显示复制按钮（有值且未禁用时显示）；与 clearable、show-password 互不排斥，可同时渲染</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
                     <tr>
+                        <td>format</td>
                         <td>format</td>
                         <td>输入格式化类型</td>
                         <td>'none' | 'phone' | 'bankcard' | 'idcard'</td>
@@ -594,18 +670,99 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>suggestions</td>
+                        <td>suggestions</td>
                         <td>搜索建议数据源（设置后自动启用搜索建议）</td>
                         <td>string[]</td>
                         <td>[]</td>
                     </tr>
                     <tr>
                         <td>block</td>
+                        <td>block</td>
                         <td>是否块级显示，设置为 true 时宽度占满父容器</td>
                         <td>boolean</td>
                         <td>false</td>
                     </tr>
+                    <tr>
+                        <td>addon-before</td>
+                        <td>addonBefore</td>
+                        <td>输入框前置附加内容（与输入框合体的文本标签）</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>addon-after</td>
+                        <td>addonAfter</td>
+                        <td>输入框后置附加内容（与输入框合体的文本标签）</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>autosize</td>
+                        <td>autosize</td>
+                        <td>textarea 是否随内容自动增高</td>
+                        <td>boolean</td>
+                        <td>false</td>
+                    </tr>
+                    <tr>
+                        <td>autocomplete</td>
+                        <td>autocomplete</td>
+                        <td>原生 autocomplete 属性透传</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>inputmode</td>
+                        <td>inputmode</td>
+                        <td>原生 inputmode 属性透传</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>enterkeyhint</td>
+                        <td>enterkeyhint</td>
+                        <td>原生 enterkeyhint 属性透传</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>spellcheck</td>
+                        <td>spellcheck</td>
+                        <td>原生 spellcheck 属性透传（'true' / 'false'，未设置时不输出）</td>
+                        <td>string</td>
+                        <td>''</td>
+                    </tr>
+                    <tr>
+                        <td>min / max / step</td>
+                        <td>min / max / step</td>
+                        <td>number 类型的最小值 / 最大值 / 步进</td>
+                        <td>number</td>
+                        <td>-</td>
+                    </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="api-block">
+            <h4 class="api-block-title">表单关联</h4>
+            <p class="api-block-desc">
+                设置 <code>name</code> 后，<code>solely-input</code> 作为表单关联自定义元素参与提交：
+                始终以 <code>name=value</code> 提交，值为空时提交 <code>name=</code>（与原生文本输入一致）。
+                <code>required</code>、<code>minlength</code>、<code>maxlength</code> 参与原生约束校验，
+                校验失败会阻断提交；<code>formResetCallback</code> 回到 <code>default-value</code>，
+                所属 <code>fieldset</code> 禁用时会清空提交值、按有效禁用态设置 <code>aria-disabled</code>
+                并把原生输入控件移出 Tab 序列；不会改写作者设置的 <code>disabled</code>，<code>fieldset</code> 恢复后自动还原。
+            </p>
+            <div class="demo-code">
+                <pre><code><span class="code-comment">&lt;!-- 提交时以 name=username 携带输入值 --&gt;</span>
+&lt;<span class="code-tag">form</span>&gt;
+  &lt;<span class="code-tag">solely-input</span> <span class="code-attr">name</span>=<span class="code-value">"username"</span> <span class="code-attr">default-value</span>=<span class="code-value">"solely"</span> <span class="code-attr">required</span> <span class="code-attr">minlength</span>=<span class="code-value">"3"</span>&gt;&lt;/<span class="code-tag">solely-input</span>&gt;
+  &lt;<span class="code-tag">button</span> <span class="code-attr">type</span>=<span class="code-value">"submit"</span>&gt;提交&lt;/<span class="code-tag">button</span>&gt;
+&lt;/<span class="code-tag">form</span>&gt;</code></pre>
+            </div>
+            <p class="api-block-desc" style="margin-top: 12px;">
+                公开的有效性接口与原生控件一致：<code>validity</code>、<code>validationMessage</code>、<code>willValidate</code>、
+                <code>checkValidity()</code>、<code>reportValidity()</code>、<code>setCustomValidity(message)</code>。
+            </p>
         </div>
 
         <div class="api-block">
@@ -626,8 +783,8 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     </tr>
                     <tr>
                         <td>change</td>
-                        <td>值改变时触发（失焦或回车，原生事件）</td>
-                        <td>Event</td>
+                        <td>值改变时触发（失焦或回车；值未变化不派发）</td>
+                        <td>CustomEvent&lt;{ name: string; value: string; previousValue: string; source: 'user' | 'api' | 'reset' }&gt;</td>
                     </tr>
                     <tr>
                         <td>focus</td>
@@ -652,6 +809,11 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                     <tr>
                         <td>search</td>
                         <td>搜索框回车时触发（自定义事件）</td>
+                        <td>CustomEvent&lt;{ value: string }&gt;</td>
+                    </tr>
+                    <tr>
+                        <td>press-enter</td>
+                        <td>任意类型回车时触发（自定义事件）</td>
                         <td>CustomEvent&lt;{ value: string }&gt;</td>
                     </tr>
                     <tr>
@@ -749,6 +911,16 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                 </thead>
                 <tbody>
                     <tr>
+                        <td>group</td>
+                        <td>整体容器（含前后置内容）</td>
+                        <td>.form-control-group</td>
+                    </tr>
+                    <tr>
+                        <td>addon-before</td>
+                        <td>前置内容区域</td>
+                        <td>.form-control__addon--before</td>
+                    </tr>
+                    <tr>
                         <td>base</td>
                         <td>输入框根容器（&lt;div&gt;）</td>
                         <td>.form-control</td>
@@ -767,6 +939,11 @@ input.suggestions = [<span class="code-value">'Apple'</span>, <span class="code-
                         <td>suffix</td>
                         <td>后缀区域</td>
                         <td>.form-control__suffix</td>
+                    </tr>
+                    <tr>
+                        <td>addon-after</td>
+                        <td>后置内容区域</td>
+                        <td>.form-control__addon--after</td>
                     </tr>
                     <tr>
                         <td>clear</td>
