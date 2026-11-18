@@ -254,7 +254,10 @@
 
 /* 选中态独立编码：左侧实色边 + 主色字，不再与 hover 共用浅色底 */
 .dms-input__direction-option--selected {
-  box-shadow: inset 3px 0 0 var(--solely-primary);
+  background-image: linear-gradient(var(--solely-primary), var(--solely-primary));
+  background-repeat: no-repeat;
+  background-position: 0 center;
+  background-size: 3px calc(100% - 16px);
   color: var(--solely-primary);
   font-weight: 500;
 }

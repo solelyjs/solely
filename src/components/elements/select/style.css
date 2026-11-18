@@ -72,6 +72,39 @@
   font-size: var(--solely-font-size-lg);
 }
 
+/* 下拉浮层内容同步缩放：此前只改了触发框，三档选项的字号与内边距完全一致，
+   small 档选项甚至比触发框更高。以下按档位覆盖字号与内边距，层级与触发框对齐。 */
+.select--sm .select__dropdown {
+  font-size: var(--solely-font-size-sm);
+}
+
+.select--lg .select__dropdown {
+  font-size: var(--solely-font-size-lg);
+}
+
+.select--sm .select__option,
+.select--sm .select__slot-options ::slotted([data-value]),
+.select--sm .select__slot-options>[data-value],
+.select--sm .select__slot-options ::slotted(solely-select-option) {
+  padding: var(--solely-spacing-xs) var(--solely-spacing-sm);
+  font-size: var(--solely-font-size-sm);
+}
+
+.select--lg .select__option,
+.select--lg .select__slot-options ::slotted([data-value]),
+.select--lg .select__slot-options>[data-value],
+.select--lg .select__slot-options ::slotted(solely-select-option) {
+  padding: var(--solely-spacing-sm) var(--solely-spacing-lg);
+  font-size: var(--solely-font-size-lg);
+}
+
+/* small 档选项上下内边距为 4px，选中竖条按新内边距收短，保持两端与内边距对齐 */
+.select--sm .select__option--selected,
+.select--sm .select__slot-options ::slotted([data-value][data-selected]),
+.select--sm .select__slot-options ::slotted(solely-select-option[data-selected]) {
+  background-size: 3px calc(100% - 8px);
+}
+
 /* 选择器值显示：占满触发区剩余宽度，避免自定义内容被压成窄列 */
 .select__value {
   display: inline-flex;
@@ -217,6 +250,7 @@
 .select__dropdown {
   /* 由浮层基座用 fixed 坐标定位，避免被祖先 overflow 裁剪 */
   position: fixed;
+  font-size: var(--solely-font-size-md);
   width: auto;
   min-width: 0;
   max-height: 400px;
@@ -257,6 +291,7 @@
 /* 下拉选项 */
 .select__option {
   padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  font-size: var(--solely-font-size-md);
   cursor: pointer;
   transition: all var(--solely-transition-duration);
   color: var(--solely-text-primary);
@@ -271,7 +306,14 @@
 
 /* 选中态独立编码：左侧实色边 + 对勾，不再与 hover/高亮共用浅色底 */
 .select__option--selected {
-  box-shadow: inset 3px 0 0 var(--solely-primary);
+  background-image: linear-gradient(var(--solely-primary), var(--solely-primary));
+  background-repeat: no-repeat;
+  background-position: 0 center;
+  background-size: 3px calc(100% - 16px);
+  /* 只过渡文字与底色：background-position 若参与过渡，竖条会从顶部滑到中间 */
+  transition:
+    color var(--solely-transition-duration),
+    background-color var(--solely-transition-duration);
   color: var(--solely-primary);
   font-weight: 500;
 }
@@ -359,6 +401,7 @@
 .select__slot-options ::slotted([data-value]),
 .select__slot-options>[data-value] {
   padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  font-size: var(--solely-font-size-md);
   cursor: pointer;
   transition: all var(--solely-transition-duration);
   color: var(--solely-text-primary);
@@ -378,7 +421,13 @@
 
 .select__slot-options ::slotted([data-value][data-selected]),
 .select__slot-options>[data-value][data-selected] {
-  box-shadow: inset 3px 0 0 var(--solely-primary);
+  background-image: linear-gradient(var(--solely-primary), var(--solely-primary));
+  background-repeat: no-repeat;
+  background-position: 0 center;
+  background-size: 3px calc(100% - 16px);
+  transition:
+    color var(--solely-transition-duration),
+    background-color var(--solely-transition-duration);
   color: var(--solely-primary);
   font-weight: 500;
 }
@@ -393,6 +442,7 @@
 /* 声明式选项 <solely-select-option> 与 [data-value] 裸元素共用同一套外观 */
 .select__slot-options ::slotted(solely-select-option) {
   padding: var(--solely-spacing-sm) var(--solely-spacing-md);
+  font-size: var(--solely-font-size-md);
   cursor: pointer;
   transition: all var(--solely-transition-duration);
   color: var(--solely-text-primary);
@@ -411,7 +461,13 @@
 }
 
 .select__slot-options ::slotted(solely-select-option[data-selected]) {
-  box-shadow: inset 3px 0 0 var(--solely-primary);
+  background-image: linear-gradient(var(--solely-primary), var(--solely-primary));
+  background-repeat: no-repeat;
+  background-position: 0 center;
+  background-size: 3px calc(100% - 16px);
+  transition:
+    color var(--solely-transition-duration),
+    background-color var(--solely-transition-duration);
   color: var(--solely-primary);
   font-weight: 500;
 }
