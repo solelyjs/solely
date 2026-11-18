@@ -66,68 +66,7 @@
             />
         </Else>
 
-        <!-- 三个装饰按钮共用 .form-control__action 的 20×20 盒子与 16×16 线性图标，
-             避免系统 emoji 与文字符号的基线/字面高度不一致导致按钮高矮不齐 -->
-        <If test="$data.type === 'password' && $data.showPassword">
-            <span
-                part="password-toggle"
-                class="form-control__action form-control__password-toggle"
-                role="button"
-                :tabindex="this.isEffectivelyDisabled() ? '-1' : '0'"
-                :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
-                :aria-pressed="$data.passwordVisible ? 'true' : 'false'"
-                :aria-label="$data.passwordVisible ? '隐藏密码' : '显示密码'"
-                @click="this.togglePassword()"
-                @keydown="this.handleActionKeydown(event, 'password')"
-            >
-                <If test="$data.passwordVisible">
-                    <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                        <path d="M1.5 8S3.9 4.2 8 4.2s6.5 3.8 6.5 3.8-2.4 3.8-6.5 3.8S1.5 8 1.5 8Z"></path>
-                        <circle cx="8" cy="8" r="2.1"></circle>
-                        <path d="M2.6 2.6 13.4 13.4"></path>
-                    </svg>
-                </If>
-                <Else>
-                    <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                        <path d="M1.5 8S3.9 4.2 8 4.2s6.5 3.8 6.5 3.8-2.4 3.8-6.5 3.8S1.5 8 1.5 8Z"></path>
-                        <circle cx="8" cy="8" r="2.1"></circle>
-                    </svg>
-                </Else>
-            </span>
-        </If>
-        <If test="$data.copyable && $data.value && !this.isEffectivelyDisabled()">
-            <span
-                part="copy"
-                class="form-control__action form-control__copy"
-                role="button"
-                :tabindex="this.isEffectivelyDisabled() ? '-1' : '0'"
-                :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
-                aria-label="复制内容"
-                @click="this.handleCopy()"
-                @keydown="this.handleActionKeydown(event, 'copy')"
-            >
-                <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                    <rect x="5.5" y="5.5" width="8.2" height="9" rx="1.4"></rect>
-                    <path d="M10.6 3.6H4a1.5 1.5 0 0 0-1.5 1.5v7.3"></path>
-                </svg>
-            </span>
-        </If>
-        <!-- 清空放在装饰按钮最右侧：紧贴输入框右内边缘，避免被复制按钮挤到中间 -->
-        <If test="$data.clearable && $data.value && !$data.readonly && !this.isEffectivelyDisabled()">
-            <span
-                part="clear"
-                class="form-control__action close-btn form-control__clear"
-                role="button"
-                tabindex="0"
-                aria-label="清除内容"
-                @click="this.handleClear()"
-                @keydown="this.handleActionKeydown(event, 'clear')"
-            >
-                <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                    <path d="M4.4 4.4 11.6 11.6 M11.6 4.4 4.4 11.6"></path>
-                </svg>
-            </span>
-        </If>
+        <!-- 后缀单位：紧贴输入内容右侧，位于动作区左侧 -->
         <If test="this.hasSuffixSlot()">
             <span part="suffix" class="form-control__suffix">
                 <slot name="suffix"></slot>
@@ -136,6 +75,86 @@
         <ElseIf test="$data.suffix">
             <span part="suffix" class="form-control__suffix">{{$data.suffix}}</span>
         </ElseIf>
+
+        <!-- 单行输入的字数统计放在动作区左侧，与输入内容同行右对齐，不再另占一行；多行文本域见模板末尾的 block 版本 -->
+        <If test="$data.showCount && $data.type !== 'textarea'">
+            <div part="count" class="form-control__count">
+                <span class="form-control__count-current">{{this.getCharCount()}}</span>
+                <If test="$data.maxlength">
+                    <span class="form-control__count-separator">/</span>
+                    <span class="form-control__count-max">{{$data.maxlength}}</span>
+                </If>
+            </div>
+        </If>
+
+        <!-- 动作区：密码切换 / 复制 / 清空三个装饰按钮收敛到同一容器，
+             顺序固定为 密码 → 复制 → 清空，清空始终最右、紧贴输入框右内边缘；
+             按钮垂直居中由容器 flex 统一完成、间距由 gap 控制，
+             容器只在存在按钮时渲染，避免空容器占位 -->
+        <If test="this.hasActions()">
+            <span part="actions" class="form-control__actions">
+                <If test="$data.type === 'password' && $data.showPassword">
+                    <span
+                        part="password-toggle"
+                        class="form-control__action form-control__password-toggle"
+                        role="button"
+                        :tabindex="this.isEffectivelyDisabled() ? '-1' : '0'"
+                        :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
+                        :aria-pressed="$data.passwordVisible ? 'true' : 'false'"
+                        :aria-label="$data.passwordVisible ? '隐藏密码' : '显示密码'"
+                        @click="this.togglePassword()"
+                        @keydown="this.handleActionKeydown(event, 'password')"
+                    >
+                        <If test="$data.passwordVisible">
+                            <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                <path d="M1.5 8S3.9 4.2 8 4.2s6.5 3.8 6.5 3.8-2.4 3.8-6.5 3.8S1.5 8 1.5 8Z"></path>
+                                <circle cx="8" cy="8" r="2.1"></circle>
+                                <path d="M2.6 2.6 13.4 13.4"></path>
+                            </svg>
+                        </If>
+                        <Else>
+                            <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                <path d="M1.5 8S3.9 4.2 8 4.2s6.5 3.8 6.5 3.8-2.4 3.8-6.5 3.8S1.5 8 1.5 8Z"></path>
+                                <circle cx="8" cy="8" r="2.1"></circle>
+                            </svg>
+                        </Else>
+                    </span>
+                </If>
+                <If test="$data.copyable && $data.value && !this.isEffectivelyDisabled()">
+                    <span
+                        part="copy"
+                        class="form-control__action form-control__copy"
+                        role="button"
+                        :tabindex="this.isEffectivelyDisabled() ? '-1' : '0'"
+                        :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
+                        aria-label="复制内容"
+                        @click="this.handleCopy()"
+                        @keydown="this.handleActionKeydown(event, 'copy')"
+                    >
+                        <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <rect x="5.5" y="5.5" width="8.2" height="9" rx="1.4"></rect>
+                            <path d="M10.6 3.6H4a1.5 1.5 0 0 0-1.5 1.5v7.3"></path>
+                        </svg>
+                    </span>
+                </If>
+                <If test="$data.clearable && $data.value && !$data.readonly && !this.isEffectivelyDisabled()">
+                    <span
+                        part="clear"
+                        class="form-control__action form-control__clear"
+                        role="button"
+                        :tabindex="this.isEffectivelyDisabled() ? '-1' : '0'"
+                        :aria-disabled="this.isEffectivelyDisabled() ? 'true' : 'false'"
+                        aria-label="清除内容"
+                        @click="this.handleClear()"
+                        @keydown="this.handleActionKeydown(event, 'clear')"
+                    >
+                        <svg class="form-control__action-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <path d="M4.4 4.4 11.6 11.6 M11.6 4.4 4.4 11.6"></path>
+                        </svg>
+                    </span>
+                </If>
+            </span>
+        </If>
 
         <If test="$data.suggestions && $data.suggestions.length > 0 && !this.isEffectivelyDisabled() && this.filteredSuggestions && this.filteredSuggestions.length > 0">
             <div part="dropdown" class="dropdown" role="listbox" aria-label="输入建议">
@@ -160,8 +179,9 @@
     </If>
 </div>
 
-<If test="$data.showCount">
-    <div part="count" class="form-control__count">
+<!-- 多行文本域高度不固定，字数统计仍放在输入框下方右对齐 -->
+<If test="$data.showCount && $data.type === 'textarea'">
+    <div part="count" class="form-control__count form-control__count--block">
         <span class="form-control__count-current">{{this.getCharCount()}}</span>
         <If test="$data.maxlength">
             <span class="form-control__count-separator">/</span>

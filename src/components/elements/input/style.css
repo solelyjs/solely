@@ -13,6 +13,12 @@
 /* ==================== Host 样式 ==================== */
 :host {
   display: inline-block;
+  /* 宽度基准落在宿主上：装饰按钮与字数统计的增减只挤压文本区，
+     不会再反过来把整个输入框撑宽（原先宽度由内容 shrink-to-fit 决定，
+     空值 185px → 出现清空按钮后变 209px → 再出现复制按钮变 233px）。
+     需要自定义宽度直接给 solely-input 设 width，或用 --solely-input-width 改默认值 */
+  width: var(--solely-input-width, 220px);
+  max-width: 100%;
 }
 
 :host([block]) {
@@ -28,6 +34,9 @@
 .form-control {
   display: inline-flex;
   align-items: center;
+  flex-wrap: nowrap;
+  width: 100%;
+  min-width: 0;
   height: var(--solely-height-md);
   padding: 0 var(--solely-spacing-md);
   position: relative;
@@ -60,8 +69,9 @@
 
 /* 表单控件子元素 */
 .form-control__input {
-  flex: 1;
+  flex: 1 1 0;
   width: 100%;
+  min-width: 0;
   height: 100%;
   padding: 0;
   font-family: inherit;
@@ -155,6 +165,17 @@
    早期分别用 emoji 与文字符号且 font-size 各不相同（14 / 12 / 16px），
    inline span 又按基线对齐，彩色 emoji 字面框比其它两个高出一截，
    视觉上就是「按钮高度不统一」。现在统一为 16×16 currentColor 线性 SVG。 */
+/* 右侧动作区：密码切换 / 复制 / 清空三个装饰按钮统一收敛在这里，
+   顺序固定为 密码 → 复制 → 清空（清空最右、紧贴右内边缘），
+   垂直居中、等距排列，整体 flex-shrink:0 不被文本挤压 */
+.form-control__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--solely-spacing-xs);
+  margin-left: var(--solely-spacing-xs);
+  flex-shrink: 0;
+}
+
 .form-control__action {
   display: inline-flex;
   align-items: center;
@@ -162,17 +183,24 @@
   box-sizing: border-box;
   width: 20px;
   height: 20px;
-  margin-left: var(--solely-spacing-xs);
   flex-shrink: 0;
   line-height: 1;
   color: var(--solely-text-tertiary);
   cursor: pointer;
   user-select: none;
+  /* 点击/聚焦时浏览器默认给 span[role=button][tabindex] 画一圈 1px 方形 outline，
+     表现为「按一下就多出一个边框」。这里关掉 UA 描边，改用图标主色化保留视觉反馈 */
+  outline: none;
   transition: color var(--solely-transition-duration);
 }
 
 .form-control__action:hover {
   color: var(--solely-text-secondary);
+}
+
+.form-control__action:focus-visible,
+.form-control__action:active {
+  color: var(--solely-primary);
 }
 
 .form-control__action-icon {
@@ -190,14 +218,24 @@
 /* 三个按钮各自的独立类名保留作样式钩子与测试选择器，尺寸一律由 .form-control__action 决定 */
 
 /* 字数统计 - 组件特有 */
+/* 单行输入：计数与输入框同行，靠右排列在框内 */
 .form-control__count {
-  display: flex;
-  justify-content: flex-end;
+  display: inline-flex;
   align-items: center;
-  margin-top: var(--solely-spacing-xs);
+  margin-left: var(--solely-spacing-xs);
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: var(--solely-font-size-sm);
   color: var(--solely-text-tertiary);
   gap: 2px;
+}
+
+/* 多行文本域：高度不固定，计数仍放在输入框下方右对齐 */
+.form-control__count--block {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--solely-spacing-xs);
+  margin-left: 0;
 }
 
 .form-control__count-current {
@@ -265,17 +303,6 @@
   background-color: var(--solely-gray-3);
 }
 
-/* ==================== 关闭按钮 ==================== */
-.close-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--solely-text-tertiary);
-  cursor: pointer;
-  transition: color var(--solely-transition-duration);
-  flex-shrink: 0;
-}
-
 /* ==================== Prefix / Suffix 插槽样式 ==================== */
 .form-control__prefix,
 .form-control__suffix {
@@ -303,12 +330,23 @@
 .form-control-group {
   display: inline-flex;
   align-items: stretch;
+  /* 撑满宿主宽度：宿主宽度是基准，group 若继续 shrink-to-fit，
+     内部 .form-control 的 width:100% 会退化成内容宽，边框仍会随按钮出现而变宽 */
+  width: 100%;
   max-width: 100%;
 }
 
 :host([block]) .form-control-group {
   display: flex;
   width: 100%;
+}
+
+/* addon 组合场景：宿主宽度由 group 决定，内部控件改为吃掉剩余空间，
+   否则 .form-control 的 width:100% 会把 addon 挤出宿主 */
+.form-control-group .form-control {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
 }
 
 .form-control__addon {

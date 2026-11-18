@@ -155,6 +155,10 @@
     --solely-height-lg: 40px;
     --solely-height-xl: 48px;
 
+    /* ==================== 控件默认尺寸 ==================== */
+    /* 输入框默认宽度：宽度基准固定在宿主上，内部清空/复制/密码等按钮的显示不影响整体宽度 */
+    --solely-input-width: 220px;
+
     /* ==================== 过渡 ==================== */
     --solely-transition-duration: 0.3s;
     --solely-transition-duration-fast: 0.15s;

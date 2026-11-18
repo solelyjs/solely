@@ -409,6 +409,22 @@ class SolelyInput extends BaseElement<InputProps & InputInternalState, InputRefs
     }
 
     /**
+     * 右侧动作区是否存在任一装饰按钮（密码显示 / 复制 / 清空）。
+     * 模板据此决定是否渲染 .form-control__actions 容器，
+     * 避免容器为空时也占用 margin 与布局位置，导致输入框右内边距视觉不齐。
+     */
+    hasActions(): boolean {
+        const disabled = this.isEffectivelyDisabled();
+        const hasValue = !!this.$data.value;
+
+        const withPassword = this.$data.type === 'password' && !!this.$data.showPassword;
+        const withCopy = !!this.$data.copyable && hasValue && !disabled;
+        const withClear = !!this.$data.clearable && hasValue && !this.$data.readonly && !disabled;
+
+        return withPassword || withCopy || withClear;
+    }
+
+    /**
      * 归一化状态：只接受 error / warning / success，其它值一律视为“无状态”
      */
     getStatus(): InputStatus {
