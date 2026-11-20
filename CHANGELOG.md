@@ -7,10 +7,14 @@
 
 ## [Unreleased]
 
-## [0.8.0] - 2026-11-16
+## [0.8.0] - 2026-11-19
 
 ### ⚠️ Breaking
 
+- **select**: `el.value = x` / `value` attribute 同步改为静默，不再派发 `change`；只有用户交互与显式 `setValue()` 会派发。迁移：需要事件时改用 `setValue(x)`（同值仍不派发），仅做显示同步可继续直接赋值。
+- **select**: `change` 由裸 `Event` 改为 `CustomEvent`，detail 为 `{ name, value, previousValue, source }`；初始化与同值写入不派发。迁移：`event.target.value` 仍可用，需要旧值/来源时读取 `event.detail`。
+- **tree**: 非严格勾选模式下，受控 `checkedKeys` / `default-checked-keys` 与父节点勾选会向下级联，并自底向上派生父节点的全选/半选态；级联与交互均跳过 `disabled` 节点（显式传入的 disabled key 仍按调用方意图保留）。迁移：依赖「写入多少 key 就只勾选多少」的代码改为传入完整勾选集合，或在受控模式下回写 `check` 事件给出的 `checkedKeys`。
+- **tooltip**: Esc 现在会关闭 tooltip 本身，但不消费事件（`escClosable: 'passthrough'`）：下层 modal / drawer 仍能收到 Esc。迁移：依赖「Esc 只关下层、tooltip 保持可见」的代码需在业务侧自行保留提示；`Esc` 不再被 tooltip 拦截。
 - **runtime**: 布尔 attribute 改为按值解析：`"false"` / `"0"`（大小写不敏感、trim 后）解析为 `false`，`""` 与其它字符串仍为 `true`，`removeAttribute` 回退到 props 默认值。此前 attribute 只要存在即为 `true`，因此 `disabled="false"` 的语义发生反转——现在表示**启用**而不是禁用。迁移：需要禁用时写 `disabled` / `disabled="true"` / `disabled=""`，需要关闭默认开启的布尔属性时写 `="false"`（如 `show-info="false"`、`local-sort="false"`）；改用 `hasAttribute()` 判断布尔状态的代码改为读取属性值或 property。
 - **runtime**: 组件属性赋值现在会反向写回同名 attribute（`value`、对象/数组与声明了 `reflect: false` 的属性除外）。迁移：依赖 `hasAttribute()` / CSS 属性选择器判断「是否用户显式设置」的代码改为读取属性值；DOM 快照、SSR 水合断言与基于 attribute 的测试需同步更新。
 - **form**: `input` / `checkbox` / `switch` / `radio` / `select` 接入原生 form 关联。`required` 现在参与约束校验并可能阻止原生提交，`name` 值进入 `FormData`，`form.reset()` 会重置组件并派发 `change`（`source: 'reset'`），祖先 `<fieldset disabled>` 会级联禁用。迁移：不需要原生提交的表单加 `novalidate` 或移除 `required` / `name`；依赖 reset 不派发事件的代码过滤 `event.detail.source === 'reset'`；需要旧行为时移除这些属性并继续用 `setValue()` 自行同步。
@@ -31,9 +35,9 @@
 - **table**: 列配置中的 `sortable` / `filters` 从「被忽略」变为实际生效（`localSort` / `localFilter` 默认 `true`，服务端模式需 `remote`），带 `filters` 的列会新增内置筛选行，行上新增 `data-row-key` / `data-row-index`。说明：`row-key` 稳定插槽只是新增优先级，旧 `col-<key>-<index>` 仍为兜底，不构成破坏。迁移：服务端分页/排序/筛选务必设置 `remote`；不需要内置筛选行时改用自定义筛选 UI；依赖「未知列字段被忽略」的配置需删除或改为受控渲染。
 - **upload**: 未配置 `action` 且未提供 `customRequest` 时不再伪造成功，改为 `error` 状态并派发 `error`。迁移：必须配置真实上传目标或 `customRequest`；补充 `error` 处理与重试；依赖「无配置也成功」的演示/测试改为本地 `customRequest`。
 - **modal**: `maskClosable` 默认值由 `false` 改为 `true`（`Modal.confirm` 仍默认 `false`，可被调用方 options 覆盖）。迁移：需要点击遮罩不关闭的调用显式传 `maskClosable: false` 或 `mask-closable="false"`；`Modal.confirm` 不受影响。
-- **modal / drawer**: 浮层改由统一基座管理：打开时锁定页面滚动并补偿滚动条宽度、给背景兄弟节点加 `inert`、z-index 按打开顺序动态分配，主题 `--solely-z-index-*` 不再是最终层级。迁移：检查自定义滚动容器与依赖滚动条宽度的布局；嵌套浮层不要再写死 z-index；依赖背景可点击/可聚焦的测试需更新（`inert` 后不可交互）。
+- **modal / drawer**: 浮层改由统一基座管理：打开时锁定页面滚动并补偿滚动条宽度、给背景兄弟节点加 `inert`、z-index 按打开顺序动态分配，主题 `--solely-z-index-*` 不再是最终层级；焦点判定穿透 Shadow DOM，shadow 内的浮层同样能正确进入与还原焦点。迁移：检查自定义滚动容器与依赖滚动条宽度的布局；嵌套浮层不要再写死 z-index；依赖背景可点击/可聚焦的测试需更新（`inert` 后不可交互）。
 - **drawer**: 删除 `solely-drawer-open` 空类，滚动锁改由浮层基座接管。迁移：外部 CSS 若依赖该类，改用自有状态类或 `body:has()`；如需锁定样式，监听 open/close 自行维护类名。
-- **select**: 多选由顿号文本改为标签块，`multiple` 下 `value` 为 `string[]`；`disabled` 只阻止用户交互，不再阻止程序化赋值与事件派发。迁移：多选读取按数组处理并兼容字符串输入；依赖 `disabled` 阻止代码写值的逻辑改到调用侧判断。
+- **select**: 多选由顿号文本改为标签块，`multiple` 下 `value` 为 `string[]`；`disabled` 只阻止用户交互，不阻止程序化赋值。迁移：多选读取按数组处理并兼容字符串输入；依赖 `disabled` 阻止代码写值的逻辑改到调用侧判断。
 - **breadcrumb**: 自定义 `click` 事件改名为 `legacy-click`，并新增统一的 `item-click`（含带 `href` 的项）。迁移：`addEventListener('click')` 的自定义逻辑改为 `item-click`；过渡期可继续监听 `legacy-click`；原生 click 不再携带 `detail.item`。
 - **timeline**: 移除 `TimelineItem.label` 类型字段（运行时从未渲染该字段）。迁移：删除该字段，改用 `title` 或默认插槽承载内容，并重新运行类型检查。
 - **skeleton**: `SkeletonType` 移除 `button` / `input` / `image`（运行时从未支持）。迁移：改用 `text` / `title` / `avatar` / `paragraph` 等组合，清理类型配置。
@@ -93,6 +97,10 @@
 
 ### Fixed
 
+- **upload**: 移除上传中的文件后会释放并发槽位并继续排空队列，修复排队文件永久停留在 `waiting` 的问题
+- **table**: `setDataSource()` 直接保存数组（保留行对象身份与 `Date` 等值），不再做 JSON 序列化；原地 `push` / `splice` 不生效，修改后需整体替换数组
+- **pagination**: `setCurrent()` 现在会夹取到 `[1, pageLimit]` 并派发 `change`（detail 为 `{ current, pageSize }`）
+- **tabs**: `setItems()` 传入的新列表不含当前 `activeKey` 时，此前所有面板隐藏且无选中标签，现回退到首个未禁用项
 - **tabs**: 竖向页签的激活条方向与内部排序此前未随 `position` 生效，补充 `tabs--pos-*` 类与对应样式；页签内容支持图标/徽标组合
 - **tree**: 节点 `selectable: false` 此前不生效（点击仍会选中），现已在点击与键盘选中路径统一拦截
 - **rate**: `allowHalf` 时鼠标移入与点击落在星星左半边此前仍按整星取值，改为按指针位置判定半星；反应式更新 `count` 后星星数量此前不会同步
