@@ -98,7 +98,7 @@
 ### Fixed
 
 - **upload**: 移除上传中的文件后会释放并发槽位并继续排空队列，修复排队文件永久停留在 `waiting` 的问题
-- **table**: `setDataSource()` 直接保存数组（保留行对象身份与 `Date` 等值），不再做 JSON 序列化；原地 `push` / `splice` 不生效，修改后需整体替换数组
+- **table**: `setDataSource()` 直接保存数组（保留行对象身份与 `Date` 等值），不再做 JSON 序列化；通过 `getDataSource()` 返回的代理数组原地 push/splice 会自动刷新，调用方原始数组修改后可调用 `refresh()` 重新读取
 - **pagination**: `setCurrent()` 现在会夹取到 `[1, pageLimit]` 并派发 `change`（detail 为 `{ current, pageSize }`）
 - **tabs**: `setItems()` 传入的新列表不含当前 `activeKey` 时，此前所有面板隐藏且无选中标签，现回退到首个未禁用项
 - **tabs**: 竖向页签的激活条方向与内部排序此前未随 `position` 生效，补充 `tabs--pos-*` 类与对应样式；页签内容支持图标/徽标组合
