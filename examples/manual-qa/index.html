@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Solely 0.8.0 手工验收（本批改动）</title>
+        <link rel="icon" href="data:," />
+        <link rel="stylesheet" href="/src/components/theme/variables.css" />
+        <style>
+            * { box-sizing: border-box; }
+            body {
+                margin: 0; padding: 24px 24px 200px; background: #f5f7fa; color: #1f2937;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6;
+            }
+            main { max-width: 1180px; margin: 0 auto; }
+            h1 { margin: 0 0 4px; font-size: 24px; }
+            h2 { margin: 0 0 6px; font-size: 17px; }
+            .sub { margin: 0 0 18px; color: #6b7280; font-size: 13px; }
+            nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+            nav a {
+                padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;
+                color: #2563eb; text-decoration: none; font-size: 13px;
+            }
+            nav a:hover { background: #eff6ff; }
+            section { margin-bottom: 18px; padding: 16px 18px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+            .desc { margin: 0 0 10px; color: #4b5563; font-size: 13px; }
+            .expect { margin: 8px 0 0; padding: 8px 10px; border-left: 3px solid #60a5fa; background: #eff6ff; font-size: 12px; color: #1e3a8a; }
+            .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+            button.native {
+                padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;
+                cursor: pointer; font-size: 13px; color: #1f2937;
+            }
+            button.native:hover { background: #f3f4f6; }
+            .stack { display: grid; gap: 10px; max-width: 640px; }
+            #log {
+                position: fixed; right: 16px; bottom: 16px; z-index: 10; width: 420px; max-height: 260px;
+                margin: 0; padding: 10px 12px; overflow: auto; border-radius: 8px; background: #111827;
+                color: #e5e7eb; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px;
+                white-space: pre-wrap;
+            }
+            #log::before { content: '操作日志'; display: block; margin-bottom: 6px; color: #93c5fd; font-size: 11px; }
+            code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; background: #f3f4f6; padding: 1px 4px; border-radius: 4px; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Solely 0.8.0 手工验收（本批改动）</h1>
+            <p class="sub">
+                覆盖文档页没有的场景：Shadow DOM 焦点、Esc 嵌套、tree disabled 级联、upload 并发、select 异步等。
+                每节末尾的蓝色框是预期结果；右下角是操作日志。
+            </p>
+
+            <nav>
+                <a href="/examples/acceptance/index.html">验收台（浮层/Esc）</a>
+                <a href="/docs/components-docs/index.html">组件文档</a>
+                <a href="/examples/index.html">示例画廊</a>
+                <a href="javascript:location.reload()">刷新页面</a>
+            </nav>
+
+            <section>
+                <h2>1. Modal 内输入框：Shadow 焦点与 Tab</h2>
+                <p class="desc">打开后点进输入框，连续按 Tab；焦点应向后移动，不应被拉回第一个控件。</p>
+                <div class="row">
+                    <button class="native" id="qa-modal-input-btn">打开含输入框的 Modal</button>
+                </div>
+                <p class="expect">预期：日志显示焦点依次经过 input → 下一个按钮；modal 关闭后焦点回到触发按钮。</p>
+            </section>
+
+            <section>
+                <h2>2. Modal 内 Tooltip：Esc 级联</h2>
+                <p class="desc">打开 modal → 点击内容里的按钮弹出 tooltip → 按 Esc。</p>
+                <div class="row">
+                    <button class="native" id="qa-modal-tooltip-btn">打开含 Tooltip 的 Modal</button>
+                </div>
+                <p class="expect">
+                    预期：tooltip 先关闭，modal 同时关闭；日志出现 <code>tooltip false</code> 与
+                    <code>modal closed</code>，且 tooltip 不阻断 Esc。
+                </p>
+            </section>
+
+            <section>
+                <h2>3. Tree：disabled 级联与显式 key</h2>
+                <p class="desc">树可勾选；父节点下有一个 enabled、一个 disabled 子节点。</p>
+                <div class="row">
+                    <solely-tree
+                        id="qa-tree"
+                        checkable
+                        default-expand-all
+                        tree-data='[{"key":"p","title":"父节点","children":[{"key":"p-1","title":"可勾选子节点"},{"key":"p-2","title":"禁用子节点","disabled":true}]}]'
+                    ></solely-tree>
+                </div>
+                <div class="row">
+                    <button class="native" id="qa-tree-read">读取 checkedKeys</button>
+                    <button class="native" id="qa-tree-explicit">显式写入 ['p-2']</button>
+                </div>
+                <p class="expect">
+                    预期：勾选父节点后 keys 只有 <code>p</code>、<code>p-1</code>；显式写入 <code>p-2</code> 后保留该 key，父节点呈半选。
+                </p>
+            </section>
+
+            <section>
+                <h2>4. Upload：并发队列补位</h2>
+                <p class="desc">max-concurrency=1，选择 2 个文件后删除正在上传的第一个。</p>
+                <div class="row">
+                    <solely-upload id="qa-upload" multiple max-concurrency="1" button-text="选择文件（模拟上传）"></solely-upload>
+                </div>
+                <div class="row">
+                    <button class="native" id="qa-upload-remove">删除第一个（上传中）文件</button>
+                </div>
+                <p class="expect">
+                    预期：日志先出现 <code>customRequest #1 开始</code>；删除后出现 <code>#1 abort</code> 与 <code>#2 开始</code>，队列不卡死。
+                </p>
+            </section>
+
+            <section>
+                <h2>5. Select：异步 options / 缺 label / 静默写值</h2>
+                <p class="desc">挂载后再异步赋值 options，第二个选项故意不带 label。</p>
+                <div class="row stack">
+                    <solely-select id="qa-select" placeholder="请选择"></solely-select>
+                </div>
+                <div class="row">
+                    <button class="native" id="qa-select-async">异步设置 options</button>
+                    <button class="native" id="qa-select-open">打开下拉</button>
+                    <button class="native" id="qa-select-arrowup">打开并按 ↑</button>
+                    <button class="native" id="qa-select-tab">下拉打开时按 Tab</button>
+                    <button class="native" id="qa-select-prop">el.value = 'a'</button>
+                    <button class="native" id="qa-select-api">el.setValue('b')</button>
+                </div>
+                <p class="expect">
+                    预期：异步设置后选项出现（也可用“打开下拉”直接验证）；在输入框按 <code>b</code> 首字母搜索不报错；
+                    <code>el.value</code> 不产生 change，<code>setValue</code> 产生一次 CustomEvent（detail.source=api）；
+                    “打开并按 ↑”应高亮最后一项；“下拉打开时按 Tab”应收起下拉。
+                </p>
+            </section>
+
+            <section>
+                <h2>6. Table：数组 dataSource</h2>
+                <p class="desc">整体替换数组生效；原地 push 不会自动重渲染。</p>
+                <div class="row">
+                    <solely-table
+                        id="qa-table"
+                        columns='[{"title":"姓名","dataIndex":"name","key":"name"},{"title":"年龄","dataIndex":"age","key":"age"}]'
+                        data-source='[{"name":"Alice","age":20},{"name":"Bob","age":30}]'
+                    ></solely-table>
+                </div>
+                <div class="row">
+                    <button class="native" id="qa-table-replace">setDataSource 整体替换</button>
+                    <button class="native" id="qa-table-push">代理数组 push（自动刷新）</button>
+                    <button class="native" id="qa-table-raw-push">原始数组 push + refresh</button>
+                    <button class="native" id="qa-table-count">输出当前行数</button>
+                </div>
+                <p class="expect">
+                    预期：整体替换后行数立即变化；<code>getDataSource()</code> 的 push 自动 +1；
+                    调用方原始数组 push 后行数不变，调用 <code>refresh()</code> 后 +1。
+                </p>
+            </section>
+
+            <section>
+                <h2>7. Pagination：setCurrent 夹取与事件</h2>
+                <div class="row"><solely-pagination id="qa-pagination" total="95" page-size="10"></solely-pagination></div>
+                <div class="row">
+                    <button class="native" id="qa-page-max">setCurrent(999)</button>
+                    <button class="native" id="qa-page-min">setCurrent(0)</button>
+                </div>
+                <p class="expect">预期：999 夹到 10、0 夹到 1，各派发一次 change（detail 含 current/pageSize）。</p>
+            </section>
+
+            <section>
+                <h2>8. Tabs：setItems 回退</h2>
+                <div class="row"><solely-tabs id="qa-tabs" items='[{"key":"a","label":"A"},{"key":"b","label":"B"}]'></solely-tabs></div>
+                <div class="row">
+                    <button class="native" id="qa-tabs-swap">setItems 换成 C / D</button>
+                    <button class="native" id="qa-tabs-read">读取 activeKey</button>
+                </div>
+                <p class="expect">预期：切换后 activeKey 回退到 <code>c</code>，内容区不空白。</p>
+            </section>
+
+            <section>
+                <h2>9. Coordinate Input：秒输入框同步</h2>
+                <div class="row"><solely-coordinate-input id="qa-coord"></solely-coordinate-input></div>
+                <div class="row">
+                    <button class="native" id="qa-coord-set">setValue(31.2, 121.5)</button>
+                    <button class="native" id="qa-coord-clear">clear()</button>
+                    <button class="native" id="qa-coord-read">读取各输入框</button>
+                </div>
+                <p class="expect">预期：setValue / clear 后，秒输入框与十进制值一致，没有旧值残留。</p>
+            </section>
+
+            <section>
+                <h2>10. Divider：纯图标插槽</h2>
+                <p class="desc">
+                    图标通过 <code>sprite</code> 属性从 <code>public/icons/bootstrap-icons.svg</code> 加载；
+                    不提供图标源时组件按约定只渲染空白占位。
+                </p>
+                <div class="row">
+                    <solely-divider>
+                        <solely-icon
+                            name="star-fill"
+                            size="24"
+                            color="#2563eb"
+                            sprite="/icons/bootstrap-icons.svg"
+                        ></solely-icon>
+                    </solely-divider>
+                </div>
+                <p class="expect">预期：蓝色星形图标显示在分割线中间；不应被判定为“无内容”而丢弃。</p>
+            </section>
+
+            <section>
+                <h2>11. Steps：动态修改子步骤属性</h2>
+                <div class="row">
+                    <solely-steps id="qa-steps">
+                        <div data-step="1" data-title="步骤一" data-description="初始"></div>
+                        <div data-step="2" data-title="步骤二"></div>
+                    </solely-steps>
+                </div>
+                <div class="row">
+                    <button class="native" id="qa-steps-update">修改第一步标题并禁用第二步</button>
+                </div>
+                <p class="expect">预期：标题立即更新，第二步进入禁用态，无需重新挂载。</p>
+            </section>
+
+            <section>
+                <h2>12. Card / Empty：坏图回退与重渲染</h2>
+                <div class="row">
+                    <solely-card id="qa-card" title="坏图卡片" cover="https://invalid.example/broken.png"></solely-card>
+                    <solely-empty id="qa-empty" description="坏图占位" image="https://invalid.example/broken-empty.png"></solely-empty>
+                </div>
+                <div class="row">
+                    <button class="native" id="qa-img-check">检查当前图片与重渲染</button>
+                </div>
+                <p class="expect">预期：图片回退到内置占位图；触发一次重渲染后仍是占位图，不重新破图。</p>
+            </section>
+        </main>
+
+        <pre id="log"></pre>
+
+        <script type="module">
+            import '../../src/components/index';
+            import { Modal } from '../../src/components/commands/modal/index';
+            import { Tooltip } from '../../src/components/commands/tooltip/index';
+
+            const byId = id => document.getElementById(id);
+            const logs = [];
+            const log = message => {
+                logs.unshift(`${new Date().toLocaleTimeString('zh-CN', { hour12: false })}  ${message}`);
+                byId('log').textContent = logs.slice(0, 60).join('\n');
+            };
+            const deepActive = () => {
+                let el = document.activeElement;
+                while (el && el.shadowRoot && el.shadowRoot.activeElement) el = el.shadowRoot.activeElement;
+                return el;
+            };
+            const describe = el => {
+                if (!el) return 'null';
+                const tag = el.tagName ? el.tagName.toLowerCase() : String(el);
+                const mark = el.id ? `#${el.id}` : el.getAttribute?.('placeholder') ? `[${el.getAttribute('placeholder')}]` : '';
+                return `${tag}${mark}`;
+            };
+            const rowCount = table => table.shadowRoot.querySelectorAll('tr[part="row"]').length;
+
+            document.addEventListener('focusin', () => log(`focus → ${describe(deepActive())}`));
+
+            /* ---------- 1. Modal + input（Shadow 焦点） ---------- */
+            byId('qa-modal-input-btn').addEventListener('click', () => {
+                const content = document.createElement('div');
+                content.innerHTML =
+                    '<solely-input placeholder="Tab 起点"></solely-input>' +
+                    '<p style="margin:12px 0"><button class="native" type="button">下一个焦点</button></p>';
+                Modal.open({
+                    title: 'Shadow 焦点验证',
+                    content,
+                    cloneElement: false,
+                    onClose: () => log('modal closed（焦点应回到触发按钮）'),
+                });
+                log('modal 已打开：点进输入框后连续按 Tab');
+            });
+
+            /* ---------- 2. Modal + Tooltip（Esc 级联） ---------- */
+            byId('qa-modal-tooltip-btn').addEventListener('click', () => {
+                const content = document.createElement('div');
+                const trigger = document.createElement('button');
+                trigger.type = 'button';
+                trigger.className = 'native';
+                trigger.textContent = '点我出 Tooltip，然后按 Esc';
+                content.appendChild(trigger);
+
+                let tip = null;
+                Modal.open({
+                    title: 'Esc 级联验证',
+                    content,
+                    cloneElement: false,
+                    onClose: () => {
+                        tip?.destroy();
+                        log('modal closed');
+                    },
+                });
+                tip = Tooltip.bind(trigger, {
+                    content: '嵌套提示',
+                    trigger: 'click',
+                    onVisibleChange: visible => log(`tooltip ${visible}`),
+                });
+                log('modal 已打开：先点按钮弹出 tooltip，再按 Esc');
+            });
+
+            /* ---------- 3. Tree ---------- */
+            const tree = byId('qa-tree');
+            byId('qa-tree-read').addEventListener('click', () => {
+                log(`tree checkedKeys = ${JSON.stringify(tree.getCheckedKeys())}`);
+                const parent = tree.shadowRoot.querySelector('.tree__node .tree__checkbox');
+                log(`父节点 checked=${parent?.classList.contains('tree__checkbox--checked')} half=${parent?.classList.contains('tree__checkbox--half-checked')}`);
+            });
+            byId('qa-tree-explicit').addEventListener('click', () => {
+                tree.checkedKeys = ['p-2'];
+                log(`写入 ['p-2'] → ${JSON.stringify(tree.getCheckedKeys())}`);
+            });
+
+            /* ---------- 4. Upload ---------- */
+            const upload = byId('qa-upload');
+            let uploadSeq = 0;
+            upload.customRequest = () => {
+                const id = ++uploadSeq;
+                log(`customRequest #${id} 开始`);
+                return { abort: () => log(`customRequest #${id} abort`) };
+            };
+            upload.addEventListener('change', () => {
+                log(`upload files = ${upload.getFileList().map(f => `${f.name}:${f.status}`).join(', ')}`);
+            });
+            byId('qa-upload-remove').addEventListener('click', () => {
+                const first = upload.getFileList()[0];
+                if (!first) return log('upload 列表为空：先选择 2 个文件');
+                log(`移除 ${first.name}（${first.status}）`);
+                upload.handleRemove(first);
+            });
+
+            /* ---------- 5. Select ---------- */
+            const select = byId('qa-select');
+            select.addEventListener('change', event => {
+                log(`select change detail=${JSON.stringify(event.detail)} target.value=${JSON.stringify(event.target.value)}`);
+            });
+            byId('qa-select-async').addEventListener('click', () => {
+                select.options = [
+                    { label: 'Alpha', value: 'a' },
+                    { value: 'b' },
+                ];
+                // updated() 在下一轮刷新里解析，延迟读取才能拿到真实数量
+                setTimeout(() => {
+                    log(`异步设置 options → ${select.getOptions().length} 项（第二项无 label）`);
+                }, 40);
+            });
+            const selectRoot = () => select.shadowRoot.querySelector('.select');
+            byId('qa-select-open').addEventListener('click', () => {
+                select.open();
+                setTimeout(() => log(`下拉已打开：${select.getOptions().length} 项`), 30);
+            });
+            byId('qa-select-arrowup').addEventListener('click', () => {
+                if (!select.$data.isOpen) select.open();
+                selectRoot().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, composed: true }));
+                setTimeout(() => {
+                    const options = select.getOptions();
+                    const active = options[select.$data.activeIndex];
+                    log(`ArrowUp 后 activeIndex=${select.$data.activeIndex}，高亮=${active ? active.label || active.value : '无'}`);
+                }, 30);
+            });
+            byId('qa-select-tab').addEventListener('click', () => {
+                if (!select.$data.isOpen) select.open();
+                selectRoot().dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, composed: true }));
+                setTimeout(() => log(`按 Tab 后 isOpen=${select.$data.isOpen}`), 30);
+            });
+            byId('qa-select-prop').addEventListener('click', () => {
+                select.value = 'a';
+                log(`el.value='a' → value=${JSON.stringify(select.getValue())}（预期无 change）`);
+            });
+            byId('qa-select-api').addEventListener('click', () => {
+                select.setValue('b');
+                log(`setValue('b') → value=${JSON.stringify(select.getValue())}（预期一次 change）`);
+            });
+
+            /* ---------- 6. Table ---------- */
+            const table = byId('qa-table');
+            let tableRound = 0;
+            let rawRows = null;
+            byId('qa-table-replace').addEventListener('click', () => {
+                tableRound += 1;
+                rawRows = [
+                    { name: 'Carol', age: 40 },
+                    { name: `Dave-${tableRound}`, age: 41 },
+                    { name: 'Eve', age: 50 },
+                ];
+                table.setDataSource(rawRows);
+                setTimeout(() => log(`setDataSource 整体替换 → rows=${rowCount(table)}`), 30);
+            });
+            byId('qa-table-push').addEventListener('click', () => {
+                table.getDataSource().push({ name: `Frank-${Date.now() % 1000}`, age: 60 });
+                setTimeout(() => log(`代理数组 push → rows=${rowCount(table)}（预期 +1）`), 40);
+            });
+            byId('qa-table-raw-push').addEventListener('click', () => {
+                if (!rawRows) return log('先点“setDataSource 整体替换”，拿到原始数组引用');
+                rawRows.push({ name: `Grace-${Date.now() % 1000}`, age: 70 });
+                setTimeout(() => {
+                    log(`原始数组 push → rows=${rowCount(table)}（预期不变）`);
+                    table.refresh();
+                    setTimeout(() => log(`refresh() 后 rows=${rowCount(table)}（预期 +1）`), 40);
+                }, 30);
+            });
+            byId('qa-table-count').addEventListener('click', () => {
+                log(`table rows=${rowCount(table)}`);
+            });
+
+            /* ---------- 7. Pagination ---------- */
+            const pagination = byId('qa-pagination');
+            pagination.addEventListener('change', event => {
+                log(`pagination change detail=${JSON.stringify(event.detail)}`);
+            });
+            byId('qa-page-max').addEventListener('click', () => {
+                pagination.setCurrent(999);
+                log(`setCurrent(999) → current=${pagination.current}`);
+            });
+            byId('qa-page-min').addEventListener('click', () => {
+                pagination.setCurrent(0);
+                log(`setCurrent(0) → current=${pagination.current}`);
+            });
+
+            /* ---------- 8. Tabs ---------- */
+            const tabs = byId('qa-tabs');
+            byId('qa-tabs-swap').addEventListener('click', () => {
+                tabs.setItems([
+                    { key: 'c', label: 'C' },
+                    { key: 'd', label: 'D' },
+                ]);
+                log(`setItems(C/D) → activeKey=${tabs.getActiveKey()}`);
+            });
+            byId('qa-tabs-read').addEventListener('click', () => {
+                log(`tabs activeKey=${tabs.getActiveKey()}`);
+            });
+
+            /* ---------- 9. Coordinate Input ---------- */
+            const coord = byId('qa-coord');
+            const readCoord = () => {
+                const values = [...coord.shadowRoot.querySelectorAll('input')].map(input => input.value);
+                log(`coord value=${JSON.stringify(coord.getValue())} inputs=${JSON.stringify(values)}`);
+            };
+            byId('qa-coord-set').addEventListener('click', () => {
+                coord.setValue(31.2, 121.5);
+                log('coord setValue(31.2, 121.5)');
+                setTimeout(readCoord, 30);
+            });
+            byId('qa-coord-clear').addEventListener('click', () => {
+                coord.clear();
+                log('coord clear()');
+                setTimeout(readCoord, 30);
+            });
+            byId('qa-coord-read').addEventListener('click', readCoord);
+
+            /* ---------- 11. Steps ---------- */
+            byId('qa-steps-update').addEventListener('click', () => {
+                const steps = byId('qa-steps');
+                const first = steps.querySelector('[data-step="1"]');
+                const second = steps.querySelector('[data-step="2"]');
+                first.setAttribute('data-title', `步骤一·已更新 ${Date.now() % 1000}`);
+                second.setAttribute('disabled', '');
+                setTimeout(() => {
+                    const titles = [...steps.shadowRoot.querySelectorAll('.steps__title')].map(node => node.textContent.trim());
+                    log(`steps titles=${JSON.stringify(titles)}`);
+                }, 50);
+            });
+
+            /* ---------- 12. Card / Empty 坏图 ---------- */
+            byId('qa-img-check').addEventListener('click', () => {
+                const card = byId('qa-card');
+                const empty = byId('qa-empty');
+                card.setAttribute('title', `坏图卡片 ${Date.now() % 1000}`);
+                empty.setAttribute('description', `坏图占位 ${Date.now() % 1000}`);
+                setTimeout(() => {
+                    const cardImg = card.shadowRoot.querySelector('img');
+                    const emptyImg = empty.shadowRoot.querySelector('img');
+                    const isPlaceholder = src => (src || '').startsWith('data:image/svg');
+                    log(`card img=${isPlaceholder(cardImg?.src) ? 'placeholder' : cardImg?.src}`);
+                    log(`empty img=${isPlaceholder(emptyImg?.src) ? 'placeholder' : emptyImg?.src}`);
+                }, 120);
+            });
+        </script>
+    </body>
+</html>
