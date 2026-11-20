@@ -206,6 +206,15 @@
   border-color: var(--solely-border-color);
 }
 
+/* 显式写入的 disabled key 仍保留勾选态：禁用样式不能把选中背景覆盖掉 */
+.tree__checkbox--disabled.tree__checkbox--checked,
+.tree__checkbox--disabled.tree__checkbox--half-checked {
+  background-color: var(--solely-primary);
+  border-color: var(--solely-primary);
+  /* 降低不透明度，表达「已勾选但不可操作」 */
+  opacity: 0.45;
+}
+
 /* 节点图标 */
 .tree__icon {
   margin-right: 4px;

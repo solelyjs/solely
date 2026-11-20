@@ -376,6 +376,15 @@ describe('solely-tree', () => {
             .querySelector('.tree__checkbox');
         expect(parentCheckbox.classList.contains('tree__checkbox--checked')).toBe(false);
         expect(parentCheckbox.classList.contains('tree__checkbox--half-checked')).toBe(true);
+
+        // 禁用子节点本身必须同时带 checked + disabled 标记，且 CSS 不能让 disabled 覆盖选中背景
+        const disabledCheckbox = [...el.shadowRoot.querySelectorAll('.tree__node')]
+            .find((n: any) => n.querySelector('.tree__title').textContent === 'Disabled')
+            .querySelector('.tree__checkbox');
+        expect(disabledCheckbox.classList.contains('tree__checkbox--checked')).toBe(true);
+        expect(disabledCheckbox.classList.contains('tree__checkbox--disabled')).toBe(true);
+        expect(disabledCheckbox.getAttribute('aria-checked')).toBe('true');
+        expect(readTreeCss()).toContain('.tree__checkbox--disabled.tree__checkbox--checked');
     });
 
     it('should toggle only the target node when checkStrictly is set', async () => {
