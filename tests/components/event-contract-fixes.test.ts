@@ -46,6 +46,25 @@ describe('挂载初始化不派发 change', () => {
         expect(el.pageSize).toBe(10);
     });
 
+    it('setCurrent 会夹取越界值并派发 change', async () => {
+        const el = mount('solely-pagination', { total: '95', 'page-size': '10' });
+        await tick();
+
+        const events = collect(el, 'change');
+        el.setCurrent(999);
+        await tick();
+
+        expect(el.current).toBe(10);
+        expect(events).toHaveLength(1);
+        expect(events[0].detail).toEqual({ current: 10, pageSize: 10 });
+
+        el.setCurrent(0);
+        await tick();
+        expect(el.current).toBe(1);
+        expect(events).toHaveLength(2);
+        expect(events[1].detail).toEqual({ current: 1, pageSize: 10 });
+    });
+
     it('tabs 挂载后未操作时 change 次数为 0，且默认选中第一项', async () => {
         const el = document.createElement('solely-tabs') as any;
         el.setAttribute(

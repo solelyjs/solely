@@ -49,6 +49,8 @@ interface PopconfirmEntry {
     cleanup: () => void;
     overlay: OverlayHandle;
     stopObserve: () => void;
+    /** 关闭时还原触发元素的 aria-haspopup / aria-expanded */
+    restoreTriggerAria: () => void;
 }
 
 let currentPopconfirm: PopconfirmEntry | null = null;
@@ -68,8 +70,9 @@ function ensureStylesInjected(): void {
 /** 立即移除当前 Popconfirm（无动画） */
 function destroyCurrentSync(): void {
     if (!currentPopconfirm) return;
-    const { element, cleanup, overlay, stopObserve } = currentPopconfirm;
+    const { element, cleanup, overlay, stopObserve, restoreTriggerAria } = currentPopconfirm;
     currentPopconfirm = null;
+    restoreTriggerAria();
     cleanup();
     stopObserve();
     element.remove();
@@ -81,9 +84,11 @@ function destroyCurrentSync(): void {
 /** 带动画关闭当前 Popconfirm（fire-and-forget） */
 function closeCurrentAnimated(): void {
     if (!currentPopconfirm) return;
-    const { element, cleanup, overlay, stopObserve } = currentPopconfirm;
+    const { element, cleanup, overlay, stopObserve, restoreTriggerAria } = currentPopconfirm;
     const popconfirm = element.querySelector('.solely-popconfirm') as HTMLElement;
     currentPopconfirm = null;
+    // 关闭开始即复位触发元素的展开态
+    restoreTriggerAria();
     // 关闭开始：出栈，停止 Esc / 外部观察；焦点在动画结束后由基座还原
     overlay.deactivate();
     stopObserve();
@@ -426,7 +431,27 @@ function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult
         },
     });
 
-    currentPopconfirm = { id, target, element: overlay, cleanup, overlay: overlayHandle, stopObserve };
+    // 触发元素语义：声明为弹层并同步展开态，关闭时精确还原
+    const previousHaspopup = target.getAttribute('aria-haspopup');
+    const previousExpanded = target.getAttribute('aria-expanded');
+    target.setAttribute('aria-haspopup', 'dialog');
+    target.setAttribute('aria-expanded', 'true');
+    const restoreTriggerAria = () => {
+        if (previousHaspopup === null) target.removeAttribute('aria-haspopup');
+        else target.setAttribute('aria-haspopup', previousHaspopup);
+        if (previousExpanded === null) target.removeAttribute('aria-expanded');
+        else target.setAttribute('aria-expanded', previousExpanded);
+    };
+
+    currentPopconfirm = {
+        id,
+        target,
+        element: overlay,
+        cleanup,
+        overlay: overlayHandle,
+        stopObserve,
+        restoreTriggerAria,
+    };
 
     const close = () => {
         if (!currentPopconfirm || currentPopconfirm.element !== overlay) return;

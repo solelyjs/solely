@@ -355,6 +355,19 @@ let scheduled: number | null = null;
 let globalsBound = false;
 let resizeObserver: ResizeObserver | null = null;
 
+/** 锚点可能被移动到新的滚动容器；滚动祖先变化时重订阅，避免其滚动不再触发重定位 */
+function refreshScrollTargets(subscription: PositionSubscription): void {
+    const next = collectScrollAncestors(subscription.anchor);
+    const prev = subscription.scrollTargets;
+    if (next.length === prev.length && next.every((target, index) => target === prev[index])) return;
+
+    for (const target of prev) target.removeEventListener('scroll', subscription.onScroll, true);
+    for (const target of next) {
+        target.addEventListener('scroll', subscription.onScroll, { capture: true, passive: true });
+    }
+    subscription.scrollTargets = next;
+}
+
 function runSubscriptions(): void {
     scheduled = null;
     for (const subscription of Array.from(subscriptions)) {
@@ -364,6 +377,7 @@ function runSubscriptions(): void {
             continue;
         }
         if (!subscription.floating.isConnected) continue;
+        refreshScrollTargets(subscription);
         subscription.update();
     }
 }
@@ -450,7 +464,7 @@ export function observePosition(options: ObservePositionOptions): () => void {
         if (subscription.stopped) return;
         subscription.stopped = true;
         subscriptions.delete(subscription);
-        for (const target of scrollTargets) {
+        for (const target of subscription.scrollTargets) {
             target.removeEventListener('scroll', onScroll, true);
         }
         resizeObserver?.unobserve(options.anchor);

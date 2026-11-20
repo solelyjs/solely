@@ -932,8 +932,9 @@ class SolelyTable extends BaseElement<TableProps> {
         const controlled = this.isFilterControlled();
         if (!controlled) {
             this.#filterValues = this.cloneFilters(next);
-            this.refresh();
         }
+        // 受控模式下父级可能不回写：重渲染让原生复选框回到绑定值，避免残留临时翻转
+        this.refresh();
 
         if (!silent) {
             this.emit('filter-change', {
@@ -1379,7 +1380,8 @@ class SolelyTable extends BaseElement<TableProps> {
      * 设置数据源
      */
     public setDataSource(dataSource: Record<string, unknown>[]): void {
-        this.$data.dataSource = JSON.stringify(dataSource);
+        // 直接保存数组，保留行对象身份与 Date 等值；attribute 路径仍走 JSON
+        this.$data.dataSource = dataSource;
         this.emit('data-change', { dataSource, total: dataSource.length });
     }
 

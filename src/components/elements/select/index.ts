@@ -12,6 +12,7 @@ import { registerOverlay, type OverlayHandle } from '../../../shared/floating/ov
 import {
     checkFormValidity,
     effectiveDisabled,
+    emitChange,
     formValidity,
     formValidationMessage,
     handleFormAssociatedCallback,
@@ -25,6 +26,7 @@ import {
     syncFormValue,
     syncValidity,
     FORM_VALIDATION_MESSAGES,
+    type ChangeSource,
     type FormAdapter,
     type FormValidationResult,
 } from '../../../shared/form-associated';
@@ -106,6 +108,8 @@ class SolelySelect
     private manualOptions?: SelectOptionType[];
     /** 首次挂载完成后，属性变更才视为显式覆盖 */
     private initialized = false;
+    /** 上次参与解析的 options 引用，用于发现 property 方式的异步赋值 */
+    private lastParsedOptions?: unknown;
     private _dropdown?: HTMLElement;
     private _overlay?: OverlayHandle;
     private _stopObserve?: () => void;
@@ -123,7 +127,8 @@ class SolelySelect
      * 避免外部值与内部值出现分叉。
      */
     set value(newValue: SelectValue) {
-        this.setValue(newValue);
+        // property 写回必须静默：变更事件只由用户交互或显式 setValue 触发
+        this.setValue(newValue, true);
     }
 
     /**
@@ -598,6 +603,11 @@ class SolelySelect
      * 数据更新后同步标签、插槽选中态与高亮
      */
     updated(): void {
+        // options 是数组，不会镜像 attribute；插槽模式下不解析 options，与 mounted 条件对齐
+        if (!this.$data.useSlot && this.$data.options !== this.lastParsedOptions) {
+            this.lastParsedOptions = this.$data.options;
+            this.parseOptions();
+        }
         this.syncSelectedLabel();
         this.syncSlotSelection();
         this.syncValueContent();
@@ -955,6 +965,8 @@ class SolelySelect
         if (options.length === 0) return;
 
         let index = this.$data.activeIndex;
+        // 打开后 activeIndex 为 -1：向上移动应从末项起算，否则会跳过最后一项
+        if (index < 0) index = delta > 0 ? -1 : options.length;
         for (let step = 0; step < options.length; step++) {
             index = (index + delta + options.length) % options.length;
             if (this.isSelectableOption(options[index])) {
@@ -983,7 +995,8 @@ class SolelySelect
         for (let step = 1; step <= options.length; step++) {
             const index = (start + step + options.length) % options.length;
             const option = options[index];
-            if (this.isSelectableOption(option) && option.label.trim().toLowerCase().startsWith(lower)) {
+            const label = String(option.label ?? option.value ?? '');
+            if (this.isSelectableOption(option) && label.trim().toLowerCase().startsWith(lower)) {
                 this.$data.activeIndex = index;
                 this.syncSlotSelection();
                 return;
@@ -1034,6 +1047,12 @@ class SolelySelect
         const root = this.shadowRoot?.querySelector('.select');
         const selector = this.shadowRoot?.querySelector('.select__selector');
         if (!target || (target !== root && target !== selector && !selector?.contains(target))) {
+            return;
+        }
+
+        // Tab 移出焦点：下拉层不参与 Tab 陷阱，需主动收起，避免浮层悬挂
+        if (key === 'Tab') {
+            if (this.$data.isOpen) this.close();
             return;
         }
 
@@ -1192,13 +1211,13 @@ class SolelySelect
         if (this.$data.multiple) {
             const current = this.getSelectedValues();
             const next = current.includes(value) ? current.filter(item => item !== value) : [...current, value];
-            this.setValue(next);
+            this.setValue(next, false, 'user');
             this.$data.activeIndex = this.getAllOptions().findIndex(option => String(option.value) === value);
             this.syncSlotSelection();
             return;
         }
 
-        this.setValue(value);
+        this.setValue(value, false, 'user');
         this.closeDropdown();
     }
 
@@ -1213,6 +1232,7 @@ class SolelySelect
     private clearValue(): void {
         if (this.getSelectedValues().length === 0) return;
 
+        const previous = this.$data.value;
         this.setValue(this.$data.multiple ? [] : '', true);
         // 框架初始化/属性同步阶段不派发任何事件
         if (this.isSyncingProps) return;
@@ -1222,7 +1242,7 @@ class SolelySelect
                 composed: true,
             }),
         );
-        this.dispatchChange();
+        this.dispatchChange(previous, 'user');
     }
 
     /**
@@ -1272,9 +1292,10 @@ class SolelySelect
      * 设置值
      * 只有值真正变化时才派发 change；silent 或初始化/属性同步阶段不派发
      */
-    public setValue(value: SelectValue, silent = false): void {
+    public setValue(value: SelectValue, silent = false, source: ChangeSource = 'api'): void {
+        const previous = this.$data.value;
         const next = this.normalizeValue(value);
-        const changed = !this.valuesEqual(this.$data.value, next);
+        const changed = !this.valuesEqual(previous, next);
         this.$data.value = next;
 
         // 多选切换后，原高亮位置可能失效
@@ -1286,7 +1307,7 @@ class SolelySelect
         this.syncFormState();
 
         if (!silent && changed && !this.isSyncingProps) {
-            this.dispatchChange();
+            this.dispatchChange(previous, source);
         }
     }
 
@@ -1334,14 +1355,23 @@ class SolelySelect
         });
     }
 
-    /** 派发原生 change 事件（多选时 event.target.value 为数组） */
-    private dispatchChange(): void {
-        this.dispatchEvent(
-            new Event('change', {
-                bubbles: true,
-                composed: true,
-            }),
-        );
+    /** 派发 change（统一 CustomEvent 契约，带 name/value/previousValue/source） */
+    private dispatchChange(previousValue: SelectValue = '', source: ChangeSource = 'user'): void {
+        const value = this.getValue();
+        const name = this.formFieldName();
+        const toArray = (input: SelectValue): string[] =>
+            Array.isArray(input) ? input.map(String) : input ? [String(input)] : [];
+
+        if (Array.isArray(value) || Array.isArray(previousValue)) {
+            emitChange(this, { name, value: toArray(value), previousValue: toArray(previousValue), source });
+            return;
+        }
+        emitChange(this, {
+            name,
+            value: String(value ?? ''),
+            previousValue: String(previousValue ?? ''),
+            source,
+        });
     }
 }
 

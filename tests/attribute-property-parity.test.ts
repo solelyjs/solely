@@ -19,6 +19,7 @@ type ProbeData = Record<string, unknown>;
         { name: 'name', type: 'string', default: '' },
         { name: 'count', type: 'number', default: 0 },
         { name: 'disabled', type: 'boolean', default: false },
+        { name: 'checked', type: 'boolean', default: false },
         { name: 'value', type: 'string', default: '' },
         { name: 'items', type: 'array', default: [] },
         { name: 'config', type: 'object', default: {} },
@@ -35,6 +36,7 @@ class AttrMirrorProbe extends BaseElement<ProbeData> {
     declare name: string;
     declare count: number | string;
     declare disabled: boolean | string;
+    declare checked: boolean;
     declare value: string;
     declare items: unknown[];
     declare config: Record<string, unknown>;
@@ -276,6 +278,19 @@ describe('不镜像清单', () => {
         el.value = 'typed';
         expect(el.$data.value).toBe('typed');
         expect(el.hasAttribute('value')).toBe(false);
+    });
+
+    it('checked 是运行态，property 写入不镜像 attribute', () => {
+        const el = mount();
+
+        el.checked = true;
+        expect(el.$data.checked).toBe(true);
+        // 契约：禁止反射 checked，避免运行态与默认值混淆
+        expect(el.hasAttribute('checked')).toBe(false);
+
+        el.checked = false;
+        expect(el.$data.checked).toBe(false);
+        expect(el.hasAttribute('checked')).toBe(false);
     });
 
     it('object / array 类型不镜像 attribute', () => {

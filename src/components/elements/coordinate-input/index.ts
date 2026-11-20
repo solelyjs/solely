@@ -802,6 +802,8 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
         this.#latitudeDms = this.decimalToDms(latitude, 'latitude');
         this.#longitudeDms = this.decimalToDms(longitude, 'longitude');
         this.refresh();
+        // 秒输入框没有 :value 绑定，需显式同步
+        this.updateSecondsInputs();
     }
 
     /**
@@ -813,6 +815,8 @@ class SolelyCoordinateInput extends BaseElement<CoordinateInputProps, Coordinate
         this.#latitudeDms = { degrees: 0, minutes: 0, seconds: 0, direction: 'N' };
         this.#longitudeDms = { degrees: 0, minutes: 0, seconds: 0, direction: 'E' };
         this.refresh();
+        // 秒输入框没有 :value 绑定，需显式同步
+        this.updateSecondsInputs();
 
         // 派发原生 clear 事件
         this.dispatchEvent(

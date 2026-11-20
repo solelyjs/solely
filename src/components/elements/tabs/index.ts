@@ -353,7 +353,13 @@ class SolelyTabs extends BaseElement<TabsProps & { visitedKeys: string[] }> {
      */
     public setItems(items: TabItem[]): void {
         this.$data.items = JSON.stringify(items);
-        this.markVisited(this.$data.activeKey);
+        const list = Array.isArray(items) ? items : [];
+        // 新列表可能不含当前 activeKey：回退到首个可用（未禁用）项，避免所有面板隐藏
+        if (!this.$data.activeKey || !list.some(item => item.key === this.$data.activeKey)) {
+            const fallback = list.find(item => !item.disabled) ?? list[0];
+            this.$data.activeKey = fallback?.key ?? '';
+        }
+        if (this.$data.activeKey) this.markVisited(this.$data.activeKey);
         this.refresh();
     }
 }

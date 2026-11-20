@@ -4,7 +4,7 @@
  */
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
-import { fallbackBrokenImage } from '../utils/helpers';
+import { fallbackBrokenImage, IMAGE_PLACEHOLDER } from '../utils/helpers';
 import type { EmptyProps } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
@@ -23,6 +23,8 @@ import template from './index.html?solely';
 class SolelyEmpty extends BaseElement<EmptyProps> {
     /** 自定义图片加载失败时回退到内置占位图，避免破图 */
     handleImageError(event: Event): void {
+        // 同步数据源：只改 DOM 会被下一次渲染重新写回坏 URL
+        if (this.$data.image !== IMAGE_PLACEHOLDER) this.$data.image = IMAGE_PLACEHOLDER;
         fallbackBrokenImage(event);
     }
 

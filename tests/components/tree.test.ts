@@ -318,6 +318,66 @@ describe('solely-tree', () => {
         expect(onChange).not.toHaveBeenCalled();
     });
 
+    it('should skip disabled descendants when cascading checked state', async () => {
+        const data: TreeNode[] = [
+            {
+                key: 'p',
+                title: 'Parent',
+                children: [
+                    { key: 'p-1', title: 'Enabled' },
+                    { key: 'p-2', title: 'Disabled', disabled: true },
+                ],
+            },
+        ];
+        const el = createTree(data, {
+            checkable: '',
+            'default-expand-all': '',
+            'checked-keys': '["p"]',
+        });
+        await tick();
+
+        // 禁用节点不随父节点联动，也不进入提交集合
+        expect(el.getCheckedKeys()).toEqual(['p', 'p-1']);
+        expect(el.getCheckedKeys()).not.toContain('p-2');
+
+        // 点击父节点复选框走同一条级联规则
+        el.checkedKeys = [];
+        await tick();
+        const parentCheckbox = [...el.shadowRoot.querySelectorAll('.tree__node')]
+            .find((n: any) => n.querySelector('.tree__title').textContent === 'Parent')
+            .querySelector('.tree__checkbox');
+        parentCheckbox.click();
+        await tick();
+        expect(el.getCheckedKeys()).toEqual(['p', 'p-1']);
+    });
+
+    it('should honor explicitly written disabled keys and derive a half-checked parent', async () => {
+        const data: TreeNode[] = [
+            {
+                key: 'p',
+                title: 'Parent',
+                children: [
+                    { key: 'p-1', title: 'Enabled' },
+                    { key: 'p-2', title: 'Disabled', disabled: true },
+                ],
+            },
+        ];
+        const el = createTree(data, { checkable: '', 'default-expand-all': '' });
+        await tick();
+
+        // 显式写入 disabled key：按调用方意图保留（与交互/级联路径不同）
+        el.checkedKeys = ['p-2'];
+        await tick();
+        expect(el.getCheckedKeys()).toEqual(['p-2']);
+
+        // 父节点的全选只统计 enabled 子节点，因此不能变全选；但禁用子节点已勾选，应呈半选
+        const parentCheckbox = [...el.shadowRoot.querySelectorAll('.tree__node')]
+            .find((n: any) => n.querySelector('.tree__title').textContent === 'Parent')
+            .querySelector('.tree__checkbox');
+        expect(parentCheckbox.classList.contains('tree__checkbox--checked')).toBe(false);
+        expect(parentCheckbox.classList.contains('tree__checkbox--half-checked')).toBe(true);
+    });
+
     it('should toggle only the target node when checkStrictly is set', async () => {
         const el = createTree(SAMPLE, { checkable: '', 'check-strictly': '', 'default-expand-all': '' });
         await tick();

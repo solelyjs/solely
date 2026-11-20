@@ -255,7 +255,8 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
             kind: 'tooltip',
             container: floating,
             trigger: this,
-            escClosable: true,
+            // tooltip 可被 Esc 关闭，但不消费事件：继续传给下层可关闭浮层
+            escClosable: 'passthrough',
             trapFocus: false,
             lockScroll: false,
             inertBackground: false,
@@ -319,6 +320,9 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
     handleMouseLeave(event: Event): void {
         if (this.getTrigger() !== 'hover') return;
         event.stopPropagation();
+        // 键盘焦点仍在宿主内时不隐藏：hover 提示需同时满足指针与焦点状态
+        const active = document.activeElement;
+        if (active && (active === this || this.contains(active))) return;
         this.hide();
     }
 
@@ -519,6 +523,8 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
             this.updateAriaDescribedBy(true);
         } else {
             this.teardownFloating();
+            // 受控 visible=false 不会经过 hide()：必须在这里还原 aria-describedby
+            this.updateAriaDescribedBy(false);
         }
     }
 

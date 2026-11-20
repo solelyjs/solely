@@ -51,6 +51,8 @@ interface TooltipInfo {
     cleanupTheme: () => void;
     overlay: OverlayHandle;
     stopObserve: () => void;
+    /** 被外部（singleton 驱逐 / hideAll / destroy）释放时复位 bind 实例状态 */
+    reset?: () => void;
 }
 
 const tooltipList: TooltipInfo[] = [];
@@ -130,6 +132,8 @@ function disposeTooltip(info: TooltipInfo): void {
     restoreDescribedBy(info);
     info.element.remove();
     info.cleanupTheme();
+    // 外部释放：同步复位所属 bind 实例，否则其 visible 永久为 true、无法再次显示
+    info.reset?.();
 }
 
 async function hideTooltipById(id: number, callback?: () => void): Promise<void> {
@@ -153,7 +157,7 @@ async function hideAllTooltips(callback?: () => void): Promise<void> {
     callback?.();
 }
 
-function showTooltip(target: HTMLElement, options: TooltipOptions, onDismiss?: () => void): number {
+function showTooltip(target: HTMLElement, options: TooltipOptions, reset?: () => void): number {
     const id = generateId();
     ensureStylesInjected();
 
@@ -163,6 +167,8 @@ function showTooltip(target: HTMLElement, options: TooltipOptions, onDismiss?: (
     const existingIndex = tooltipList.findIndex(t => t.target === target);
     if (existingIndex !== -1) {
         const [existing] = tooltipList.splice(existingIndex, 1);
+        // 同一实例的重建不应把调用方的 visible 复位
+        existing.reset = undefined;
         disposeTooltip(existing);
     }
 
@@ -209,18 +215,19 @@ function showTooltip(target: HTMLElement, options: TooltipOptions, onDismiss?: (
         kind: 'tooltip',
         container: tooltip,
         trigger: target,
-        escClosable: true,
+        // tooltip 可被 Esc 关闭，但不消费事件：继续传给下层可关闭浮层
+        escClosable: 'passthrough',
         trapFocus: false,
         lockScroll: false,
         inertBackground: false,
         autoFocus: false,
         returnFocus: false,
         onEscape: () => {
-            if (onDismiss) {
-                onDismiss();
-            } else {
-                void hideTooltipById(id, () => options.onVisibleChange?.(false));
-            }
+            // bind 实例由 dispose 的 reset 回调复位；直接 API 调用则在此通知
+            const hasBindReset = !!tooltipList.find(item => item.id === id)?.reset;
+            void hideTooltipById(id, () => {
+                if (!hasBindReset) options.onVisibleChange?.(false);
+            });
         },
     });
     overlay.activate();
@@ -236,6 +243,7 @@ function showTooltip(target: HTMLElement, options: TooltipOptions, onDismiss?: (
         cleanupTheme,
         overlay,
         stopObserve: () => undefined,
+        reset,
     };
 
     applyDescribedBy(info);
@@ -276,19 +284,25 @@ function bind(target: HTMLElement, options: TooltipOptions): TooltipInstance {
 
     const hide = () => {
         if (!visible || currentTooltipId === null) return;
-        visible = false;
         const id = currentTooltipId;
+        // 先复位状态：disposeTooltip 的 reset 回调会据此跳过重复通知
+        visible = false;
         currentTooltipId = null;
-        hideTooltipById(id, () => {
-            options.onVisibleChange?.(false);
-        });
+        void hideTooltipById(id);
+        options.onVisibleChange?.(false);
     };
 
     const show = () => {
         if (visible) return;
         visible = true;
-        // Esc 关闭时走同一套 hide，确保 bind 的 visible 状态同步复位
-        currentTooltipId = showTooltip(target, options, () => hide());
+        // 外部释放（singleton 驱逐 / hideAll / destroy）时由基座回调复位本实例
+        const reset = () => {
+            if (!visible) return;
+            visible = false;
+            currentTooltipId = null;
+            options.onVisibleChange?.(false);
+        };
+        currentTooltipId = showTooltip(target, options, reset);
     };
 
     const destroy = () => {

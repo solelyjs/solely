@@ -504,7 +504,7 @@ pagination.addEventListener(<span class="code-value">'size-change'</span>, (e) =
             <tbody>
                 <tr>
                     <td>setCurrent(current)</td>
-                    <td>设置当前页</td>
+                    <td>设置当前页；会夹取到 [1, pageLimit] 并派发 change（detail 为 { current, pageSize }）</td>
                     <td>current: number</td>
                 </tr>
                 <tr>

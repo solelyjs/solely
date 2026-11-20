@@ -49,22 +49,26 @@ interface DrawerInfo {
 }
 
 const drawerList: DrawerInfo[] = [];
-const closingIds = new Set<number>();
+/** 正在关闭的抽屉：同一 id 复用同一个 Promise，保证 destroy() 等到动画结束 */
+const closingTasks = new Map<number, Promise<void>>();
 
 function ensureStylesInjected(): void {
     injectStyle(STYLE_ID, styles);
 }
 
-async function closeDrawerById(id: number): Promise<void> {
-    // 防止并发关闭同一个 Drawer
-    if (closingIds.has(id)) return;
-    closingIds.add(id);
+function closeDrawerById(id: number): Promise<void> {
+    // 并发关闭同一个 Drawer：复用进行中的关闭任务，避免重复回调 / 提前返回
+    const running = closingTasks.get(id);
+    if (running) return running;
 
-    try {
+    const task = (async () => {
         const index = drawerList.findIndex(d => d.id === id);
         if (index === -1) return;
 
         const drawerInfo = drawerList[index];
+
+        // 任何关闭路径（遮罩/按钮/Esc/close()/destroy()）都只通知一次
+        drawerInfo.options.onClose?.();
 
         // 关闭动画开始：出栈并停止 Esc / Tab 陷阱（焦点与锁在动画结束后释放）
         drawerInfo.overlay?.deactivate();
@@ -89,9 +93,11 @@ async function closeDrawerById(id: number): Promise<void> {
 
         // 动画结束：还原焦点、释放 scroll lock 与 inert
         drawerInfo.overlay?.dispose();
-    } finally {
-        closingIds.delete(id);
-    }
+    })();
+
+    closingTasks.set(id, task);
+    void task.finally(() => closingTasks.delete(id));
+    return task;
 }
 
 function open(options: DrawerOptions): DrawerInstance {
@@ -125,7 +131,6 @@ function open(options: DrawerOptions): DrawerInstance {
         if (maskClosable) {
             const handleMaskClick = () => {
                 closeDrawerById(id);
-                options.onClose?.();
             };
             maskEl.addEventListener('click', handleMaskClick);
             handlersToCleanup.push({ element: maskEl, type: 'click', handler: handleMaskClick as EventListener });
@@ -181,7 +186,6 @@ function open(options: DrawerOptions): DrawerInstance {
             close.appendChild(createLinearIcon('close'));
             const handleCloseClick = () => {
                 closeDrawerById(id);
-                options.onClose?.();
             };
             close.addEventListener('click', handleCloseClick);
             handlersToCleanup.push({ element: close, type: 'click', handler: handleCloseClick as EventListener });
@@ -222,7 +226,6 @@ function open(options: DrawerOptions): DrawerInstance {
         initialFocus: drawer,
         onEscape: () => {
             closeDrawerById(id);
-            options.onClose?.();
         },
     });
     overlay.activate();
@@ -243,7 +246,6 @@ function open(options: DrawerOptions): DrawerInstance {
     return {
         close: () => {
             closeDrawerById(id);
-            options.onClose?.();
         },
         update: (newOptions: Partial<DrawerOptions>) => {
             const updateShouldClone = newOptions.cloneElement ?? shouldClone;

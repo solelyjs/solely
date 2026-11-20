@@ -63,7 +63,7 @@ function resolveDefaultValue(value: unknown, host: unknown): unknown {
  * 维护 value），框架若在 property 写入后回写 attribute，会覆盖组件的写入，
  * 或在输入过程中产生高频 attribute 抖动。
  */
-const MIRROR_EXCLUDED_PROPS = new Set(['value']);
+const MIRROR_EXCLUDED_PROPS = new Set(['value', 'checked']);
 
 /**
  * 把写入值规整为 manifest 声明的类型
@@ -389,7 +389,7 @@ class BaseElement<
      * 1. `reflect: false`：manifest 显式关闭反射（优先级最高）。
      * 2. `object` / `array`：复杂类型不把 JSON 写回 attribute，避免每次赋值产生大字符串，
      *    以及深层字段变更引发整段序列化。
-     * 3. `MIRROR_EXCLUDED_PROPS`（当前为 `value`）：由组件自行管理 attribute 语义。
+     * 3. `MIRROR_EXCLUDED_PROPS`（当前为 `value` / `checked`）：由组件自行管理 attribute 语义。
      * 4. 框架驱动的写入（`#propSyncDepth > 0`）：初始化默认值、attribute → state、属性升级
      *    都以 attribute 为源头，再镜像回去会让所有带空字符串默认值的 prop 凭空多出空
      *    attribute，也可能覆盖用户手写的 attribute。该条件在调用处判断。
@@ -518,9 +518,23 @@ class BaseElement<
             // 随后属性升级读到的是已被覆盖的默认值。
             const instanceDesc = Object.getOwnPropertyDescriptor(this, desc.name);
             if (instanceDesc && 'value' in instanceDesc) {
-                // 预先赋的值直接同步到 $data（先规整类型，与 property 写入路径一致）
-                (this.$data as DataRecord)[desc.name] = normalizePropValue(desc, instanceDesc.value);
+                // 先规整类型，与 property 写入路径一致
+                const preAssigned = normalizePropValue(desc, instanceDesc.value);
                 delete this[desc.name as keyof this];
+
+                if (this.#getCustomAccessor(desc.name)?.set) {
+                    // 先把原始值落库，保证后续默认值逻辑识别「用户已赋值」；
+                    // 再走 setter 规范化，避免额外探测 setter 是否写入了 $data。
+                    this.#propSyncDepth++;
+                    try {
+                        (this.$data as DataRecord)[desc.name] = preAssigned;
+                    } finally {
+                        this.#propSyncDepth--;
+                    }
+                    this.#writeProp(desc, preAssigned);
+                } else {
+                    (this.$data as DataRecord)[desc.name] = preAssigned;
+                }
             }
 
             // 用户自定义 getter/setter：保持用户实现，不覆盖

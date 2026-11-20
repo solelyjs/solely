@@ -26,6 +26,7 @@
     <div class="demo-block">
         <h3 class="demo-block-title">通过属性绑定设置数据</h3>
         <p class="demo-block-desc">在 Solely 模板中使用 <code>:columns</code> 和 <code>:dataSource</code> 绑定组件数据，无需手写 JSON 字符串。</p>
+        <p class="demo-block-desc">数组按引用感知变化：原地 push / splice 不会生效；修改数据后请整体替换数组（<code>setDataSource(arr)</code> 或重新赋值 <code>dataSource</code>）。</p>
         <div class="demo-box">
             <div class="demo-preview" style="flex-direction: column; gap: 12px;">
                 <solely-table :columns="$data.bindColumns" :dataSource="$data.bindDataSource"></solely-table>

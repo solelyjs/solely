@@ -107,6 +107,7 @@ setCustomValidity(message: string): void;
 - `source` 必填：`'user' | 'api' | 'reset'`。
 - `detail.value` 必须与同一时刻宿主的 `value` getter 一致；禁止在 detail 中放元素、事件、函数或可变对象。
 - 内部原生控件也触发 `change` 时，先 `stopPropagation()`，再走统一派发，保证只出现一个事件。
+- 历史例外：`pagination` 的 `change` detail 为 `{ current, pageSize }`，形状与表单控件不同（保留）；`tree` 的 `checkedKeys` 受控写入目前派发裸 `Event('change')`，后续可升级为 `CustomEvent` 补 detail（向后兼容）。新增组件不得再沿用裸 `Event`。
 
 ### 10. 静默路径
 
@@ -165,8 +166,9 @@ top = anchorRect.top - containerRect.top + container.scrollTop - container.clien
 
 - 全库只允许一个 document 级 `keydown` 监听，注册在捕获阶段，由浮层栈统一处理 Esc。
 - `event.isComposing === true` 时直接返回。
-- 命中 Esc 后，从栈顶向下找第一个 `escClosable` 的层：调用其关闭回调，并 `preventDefault()` + `stopPropagation()`。
-- 不可关闭的层（tooltip）不消费 Esc，继续向下找；没有任何可关闭层时不处理。
+- 命中 Esc 后，从栈顶向下收集需要关闭的层：`escClosable === 'passthrough'`（tooltip）先关闭但不消费，继续向下；首个 `escClosable === true` 的层关闭后 `preventDefault()` + `stopPropagation()`。
+- 不可关闭的层（`escClosable: false`）不响应 Esc，继续向下找；没有任何可关闭层时不处理。
+- 多个 passthrough 层（tooltip）叠加时，一次 Esc 会依次关闭所有 passthrough 层，直到遇到首个消费层或栈底。
 - 禁止组件自行监听 document keydown 处理 Esc。
 
 ### 6. 焦点
@@ -213,7 +215,7 @@ close:  deactivate → animation → dispose
 - 动态状态（展开、选中、无效）必须随状态变化同步，禁止只在打开时设置一次。
 - 不渲染错误文案时，不要设置指向不存在节点的 `aria-describedby`。
 - `select`：`combobox`、`tabindex`、`aria-*` 由宿主承载；列表与宿主同 tree；选项 `role="option"`，高亮用 `aria-activedescendant`，选项永远不接收 DOM 焦点。
-- `tooltip`：浮层 `role="tooltip"` 且生成唯一 id；禁止在可见节点上写 `aria-hidden="true"`；显示时给触发元素追加 `aria-describedby`，隐藏时精确还原；不可交互、不参与 Tab、不消费 Esc。
+- `tooltip`：浮层 `role="tooltip"` 且生成唯一 id；禁止在可见节点上写 `aria-hidden="true"`；显示时给触发元素追加 `aria-describedby`，隐藏时精确还原；不可交互、不参与 Tab；Esc 仅关闭 tooltip 本身，不消费事件（`escClosable: 'passthrough'`）。
 - `popconfirm`：`role="dialog"`，禁止 `aria-modal="true"`；打开时给触发元素设置 `aria-haspopup="dialog"` 与 `aria-expanded="true"`，关闭时还原。
 - `modal` / `drawer`：`role="dialog"`、`aria-modal="true"`，必须有关联的 `aria-labelledby`；无标题时使用调用方标签或默认“对话框 / 抽屉”；`tabindex="-1"`、焦点陷阱、滚动锁、背景 inert 必须开启，inert 引用计数，全部关闭后才释放。
 - 背景 inert 范围：挂在 body 时对 body 的直接子元素设置，排除浮层根节点、`aria-live`、message 容器与 `script/style/link`；挂在 shadow root 时对该 root 的直接子元素设置。`inert` 不支持时退化为焦点陷阱 + `aria-hidden`，并在文档写明背景仍可 Tab 到。

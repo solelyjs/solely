@@ -5,7 +5,7 @@
 
 import { BaseElement, CustomElement } from '../../../runtime/component';
 import { normalizeSize, type SizeInput } from '../../../shared/size';
-import { fallbackBrokenImage } from '../utils/helpers';
+import { fallbackBrokenImage, IMAGE_PLACEHOLDER } from '../utils/helpers';
 import type { CardProps, CardRefs, CardSize } from './types';
 import styles from './style.css?inline';
 import template from './index.html?solely';
@@ -39,6 +39,8 @@ class SolelyCard extends BaseElement<CardProps, CardRefs> {
 
     /** 封面图加载失败时回退到内置占位图，避免破图 */
     handleCoverError(event: Event): void {
+        // 同步数据源：只改 DOM 会被下一次渲染重新写回坏 URL
+        if (this.$data.cover !== IMAGE_PLACEHOLDER) this.$data.cover = IMAGE_PLACEHOLDER;
         fallbackBrokenImage(event);
     }
 

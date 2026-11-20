@@ -232,12 +232,14 @@ describe('tree', () => {
             'checked-keys': JSON.stringify(['1-1']),
             'expanded-keys': JSON.stringify(['1']),
         });
-        expect(el.checkedKeys).toEqual(['1-1']);
+        // 非严格模式：父节点状态由子节点重算，全部子节点勾选后父节点同步勾选
+        expect(el.checkedKeys).toEqual(['1', '1-1']);
         expect(el.expandedKeys).toEqual(['1']);
 
         el.checkedKeys = ['1'];
         await tick();
-        expect(el.checkedKeys).toEqual(['1']);
+        // 勾选父节点向下级联
+        expect(el.checkedKeys).toEqual(['1', '1-1']);
     });
 
     it('搜索过滤派发 change，label 映射到 role=tree 名称', async () => {

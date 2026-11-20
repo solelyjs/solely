@@ -510,13 +510,19 @@ describe('solely-select 修复回归', () => {
             expect(changes).toEqual([]);
             expect(clears).toEqual([]);
 
-            // 显式赋值才派发，载荷仍是数组
+            // 契约：property 写回零事件
             el.value = 'c,a';
             await tick();
             expect(el.getValue()).toEqual(['c', 'a']);
+            expect(changes).toEqual([]);
+            expect(clears).toEqual([]);
+
+            // 显式 setValue 才派发，载荷仍是数组
+            el.setValue('a,b');
+            await tick();
             expect(changes).toHaveLength(1);
             expect(Array.isArray(changes[0])).toBe(true);
-            expect(changes[0]).toEqual(['c', 'a']);
+            expect(changes[0]).toEqual(['a', 'b']);
 
             el.remove();
         }

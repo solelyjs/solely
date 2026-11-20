@@ -421,7 +421,7 @@ treeEl.addEventListener(<span class="code-value">'check'</span>, (e) => {
                 <tr>
                     <td>checked-keys</td>
                     <td>checkedKeys</td>
-                    <td>受控勾选 key；property 传 <code>string[]</code>，attribute 传 JSON 数组；读取时返回当前勾选集合</td>
+                    <td>受控勾选 key；property 传 <code>string[]</code>，attribute 传 JSON 数组；读取时返回当前勾选集合。非严格模式下会派生父子勾选态，级联与交互跳过 disabled 节点；显式传入的 disabled key 仍会保留</td>
                     <td>string[]</td>
                     <td>-</td>
                 </tr>

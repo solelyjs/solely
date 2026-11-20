@@ -796,7 +796,12 @@ class SolelyUpload extends BaseElement<UploadProps & { parsedFileList: UploadFil
             }
         }
 
+        // 先出队再泵：顺序即自证，避免依赖「同一 uid 不会既 active 又排队」的隐含前提
         this.#queue = this.#queue.filter(item => item.uid !== uid);
+        if (token) {
+            // 释放并发槽位后继续排空队列：handleRemove 等路径不经过 abort()
+            this.#pumpQueue();
+        }
 
         const file = this.#findFile(uid);
         if (!file) return;

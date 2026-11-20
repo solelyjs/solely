@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { TableColumn } from '../../src/components/elements/table/types';
+import { toRaw } from '../../src/runtime/reactivity';
 
 // 引入组件即自动注册自定义元素 <solely-table>（sideEffects 已覆盖）
 import '../../src/components/elements/table';
@@ -53,6 +54,35 @@ describe('solely-table', () => {
         expect(firstRowCells).toContain('20');
         // 宽度样式生效
         expect(el.shadowRoot.querySelector('th').getAttribute('style')).toContain('100px');
+    });
+
+    it('数组 dataSource 按引用感知：保留对象身份，原地修改需 refresh 才重渲染', async () => {
+        const el = createTable();
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(2);
+
+        const rows = [{ name: 'Carol', age: 40 }];
+        el.setDataSource(rows);
+        await tick();
+
+        // 保留调用方数组的引用（$data 是响应式代理，比较前先取 raw）
+        expect(toRaw(el.getDataSource())).toBe(rows);
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(1);
+
+        // 原地修改不自动触发重渲染
+        rows.push({ name: 'Dave', age: 41 });
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(1);
+
+        // 整体替换才会生效
+        const next = [
+            { name: 'Eve', age: 50 },
+            { name: 'Frank', age: 60 },
+        ];
+        el.setDataSource(next);
+        await tick();
+        expect(toRaw(el.getDataSource())).toBe(next);
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(2);
     });
 
     it('should map size prop to table class (small/large/default-md)', async () => {

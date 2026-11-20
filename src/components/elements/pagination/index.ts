@@ -388,7 +388,8 @@ class SolelyPagination extends BaseElement<PaginationProps> {
      * 设置当前页
      */
     public setCurrent(current: number): void {
-        this.$data.current = Math.max(1, this.#toInt(current, this.$data.current || 1));
+        // 与 current setter 保持一致：夹取到 [1, pageLimit] 并派发 change
+        this.current = this.#clampCurrent(current, this.$data.total, this.$data.pageSize);
     }
 
     /**

@@ -94,7 +94,7 @@
         <p class="demo-block-desc">监听 change 事件获取选中的值，监听 clear 事件处理清除操作。通过 event.target.value 获取当前选中的值。</p>
         <p class="demo-block-desc">
             <strong>事件语义：</strong>只有值真正发生变化时才派发 <code>change</code>；初始化、属性同步（如设置 <code>value</code> 属性）不派发。
-            用户交互与显式 <code>setValue()</code> / <code>.value=</code> 会派发；写入相同值（含点击已选中项）不会重复派发。
+            用户交互与显式 <code>setValue()</code> 会派发；property 写回（<code>el.value = x</code>）保持静默；写入相同值（含点击已选中项）不会重复派发。
             多选时任何路径的 <code>event.target.value</code> 都是数组，重复值会自动去重。
         </p>
         <div class="demo-box">

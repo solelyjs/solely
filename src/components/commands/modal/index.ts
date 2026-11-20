@@ -67,6 +67,15 @@ interface ModalInfo {
 const modalList: ModalInfo[] = [];
 // 正在关闭的 Modal：缓存关闭 Promise，避免 destroy() 在关闭动画期间空转
 const closingTasks = new Map<number, Promise<void>>();
+// 已通知过 onCancel 的实例：关闭动画期间重复点击遮罩/取消按钮时只回调一次
+const cancelNotifiedIds = new Set<number>();
+
+/** onCancel 只通知一次：关闭动画期间监听器尚未清理，可能被重复点击 */
+function notifyCancelOnce(id: number, onCancel?: () => void): void {
+    if (cancelNotifiedIds.has(id)) return;
+    cancelNotifiedIds.add(id);
+    onCancel?.();
+}
 
 /** 惰性创建状态图标：模块顶层不触碰 document（SSR 安全） */
 const ICON_MAP: Record<ModalType, string | (() => Element)> = {
@@ -112,6 +121,7 @@ async function closeModalById(id: number, result?: unknown): Promise<void> {
             modalList[currentIndex].element.remove();
             modalList.splice(currentIndex, 1);
         }
+        cancelNotifiedIds.delete(id);
 
         // 动画结束：还原焦点、释放 scroll lock 与 inert
         modalInfo.overlay?.dispose();
@@ -189,7 +199,7 @@ function open(options: ModalOptions): ModalInstance {
         if (maskClosable) {
             const handleMaskClick = () => {
                 closeModalById(id);
-                options.onCancel?.();
+                notifyCancelOnce(id, options.onCancel);
             };
             // onClose 由 closeModalById 统一触发，避免各路径遗漏或重复
             // 与清理逻辑统一使用 addEventListener，removeEventListener 才能生效
@@ -311,7 +321,7 @@ function open(options: ModalOptions): ModalInstance {
                 'default',
                 () => {
                     closeModalById(id);
-                    options.onCancel?.();
+                    notifyCancelOnce(id, options.onCancel);
                 },
                 options.cloneElement,
             );

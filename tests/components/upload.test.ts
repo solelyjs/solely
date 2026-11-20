@@ -667,6 +667,25 @@ describe('并发排队', () => {
         expect(MockXHR.instances).toHaveLength(3);
         expect(el.getFileList()[2].status).toBe('uploading');
     });
+
+    it('移除上传中的文件会释放并发槽位并继续排空队列', async () => {
+        const el = mount({ action: '/api/upload', multiple: '', 'max-concurrency': '1' });
+        await tick();
+
+        selectFiles(el, [new File(['a'], 'a.txt'), new File(['b'], 'b.txt')]);
+        await tick();
+
+        expect(MockXHR.instances).toHaveLength(1);
+        expect(el.getFileList()[1].status).toBe('waiting');
+
+        // 移除正在上传的文件：槽位应释放，排队项自动补位（回归：曾永久卡在 waiting）
+        el.handleRemove(el.getFileList()[0]);
+        await tick();
+
+        expect(MockXHR.instances).toHaveLength(2);
+        expect(el.getFileList()).toHaveLength(1);
+        expect(el.getFileList()[0].status).toBe('uploading');
+    });
 });
 
 describe('受控 fileList', () => {

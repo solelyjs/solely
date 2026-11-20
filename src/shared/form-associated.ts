@@ -391,7 +391,9 @@ export function syncValidity(el: HTMLElement): void {
     const flags: ValidityStateFlags = { ...(result?.flags ?? {}) };
     if (state.customMessage) flags.customError = true;
 
-    const hasFlags = DEFAULT_FLAG_ORDER.some(flag => !!flags[flag]) || !!flags.customError;
+    // 不能只检查固定标志位：rangeUnderflow / rangeOverflow / stepMismatch 等
+    // 由组件自行上报的标志同样需要参与校验，否则会被 setValidity({}) 静默清空。
+    const hasFlags = Object.values(flags).some(Boolean);
     if (!hasFlags) {
         state.internals.setValidity({});
         return;

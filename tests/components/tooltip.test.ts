@@ -3,7 +3,7 @@
  * - 命令式 Tooltip：重复 bind 复用实例、显隐与销毁
  * - 声明式 <solely-tooltip>：role="tooltip"、aria-describedby 关联、多子元素事件解绑
  */
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import Tooltip from '../../src/components/commands/tooltip';
 import '../../src/components/elements/tooltip';
 
@@ -45,7 +45,7 @@ describe('Tooltip command component', () => {
         expect(document.querySelector('.solely-tooltip')).toBeNull();
     });
 
-    it('should be visible to screen readers and close on Escape', async () => {
+    it('should close on Escape without consuming the event', async () => {
         const target = document.createElement('button');
         document.body.appendChild(target);
 
@@ -56,13 +56,22 @@ describe('Tooltip command component', () => {
         const tooltip = document.querySelector('.solely-tooltip') as HTMLElement;
         expect(tooltip.getAttribute('aria-hidden')).toBe('false');
 
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        const bodyKeydown = vi.fn();
+        document.body.addEventListener('keydown', bodyKeydown);
+        const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        document.body.dispatchEvent(event);
         await tick();
-        expect(document.querySelector('.solely-tooltip')).toBeNull();
 
-        // Esc 关闭后 bind 状态同步复位，可再次显示
+        // tooltip 关闭，但不消费 Esc：不阻止默认行为、不阻断冒泡
+        expect(document.querySelector('.solely-tooltip')).toBeNull();
+        expect(event.defaultPrevented).toBe(false);
+        expect(bodyKeydown).toHaveBeenCalledTimes(1);
+        document.body.removeEventListener('keydown', bodyKeydown);
+
+        // 关闭后 bind 状态同步复位，可再次显示
         instance.show();
         expect(document.querySelector('.solely-tooltip')).not.toBeNull();
+        instance.hide();
     });
 
     it('命令式 tooltip 的目标位于 shadow root 时，aria-describedby 在目标树内可解析', async () => {
@@ -187,7 +196,7 @@ describe('solely-tooltip element', () => {
         expect(button.hasAttribute('aria-describedby')).toBe(false);
     });
 
-    it('should close on Escape and restore aria-describedby', async () => {
+    it('should close on Escape without consuming the event and restore aria-describedby', async () => {
         const button = document.createElement('button');
         const el = createTooltip({ content: '提示内容', trigger: 'focus' }, [button]);
         await tick();
@@ -196,10 +205,18 @@ describe('solely-tooltip element', () => {
         await tick();
         expect(el.shadowRoot.querySelector('.tooltip')).not.toBeNull();
 
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        const bodyKeydown = vi.fn();
+        document.body.addEventListener('keydown', bodyKeydown);
+        const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+        button.dispatchEvent(event);
         await tick();
+
+        // 只关闭自身，不消费 Esc
         expect(el.shadowRoot.querySelector('.tooltip')).toBeNull();
         expect(button.hasAttribute('aria-describedby')).toBe(false);
+        expect(event.defaultPrevented).toBe(false);
+        expect(bodyKeydown).toHaveBeenCalledTimes(1);
+        document.body.removeEventListener('keydown', bodyKeydown);
     });
 
     it('should bind focus/blur for every child element and unbind all of them', async () => {

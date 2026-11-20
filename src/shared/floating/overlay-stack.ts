@@ -16,8 +16,13 @@ export interface OverlayOptions {
     container: HTMLElement;
     /** 打开者，用于焦点还原 */
     trigger?: HTMLElement | null;
-    /** 默认 true；tooltip 传 false，不消费 Esc */
-    escClosable?: boolean;
+    /**
+     * Esc 行为：
+     * - `true`（默认）：关闭当前层并消费 Esc（preventDefault + stopPropagation）
+     * - `false`：不响应 Esc，继续向下找
+     * - `'passthrough'`：关闭当前层但不消费，Esc 继续向下传递（tooltip）
+     */
+    escClosable?: boolean | 'passthrough';
     /** 默认 false；仅 modal/drawer 打开 */
     trapFocus?: boolean;
     /** 默认 false；仅 modal/drawer 打开 */
@@ -29,7 +34,8 @@ export interface OverlayOptions {
     /** 默认 true */
     returnFocus?: boolean;
     initialFocus?: HTMLElement | (() => HTMLElement | null);
-    onEscape: () => void;
+    /** 仅 escClosable !== false 的层需要提供 */
+    onEscape?: () => void;
 }
 
 export interface OverlayHandle {
@@ -78,7 +84,6 @@ const KIND_FLOORS: Record<OverlayKind, number> = {
 
 const Z_INDEX_STEP = 10;
 const Z_INDEX_WRAP_THRESHOLD = 1990;
-const Z_INDEX_START = 1000;
 
 /** 浏览器原生可聚焦候选（是否可 Tab 到由 isTabbable 再判定） */
 const TABBABLE_SELECTOR = [
@@ -106,7 +111,6 @@ const stack: Layer[] = [];
 /** 所有已注册且未 dispose 的层，用于 inert 排除与焦点引用重定向 */
 const liveLayers = new Set<Layer>();
 let keydownBound = false;
-let zIndexTop = Z_INDEX_START;
 /** 兜底清理：仅在层仍持有滚动锁 / inert 时启用，避免常态下的全文档观察开销 */
 let detachedObserver: MutationObserver | null = null;
 
@@ -121,20 +125,27 @@ function readFloor(kind: OverlayKind): number {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-/** 后开者永远在上；单层关闭不回退，栈全部清空后重置起点（见 removeFromStack） */
-function allocateZIndex(kind: OverlayKind): number {
+/**
+ * 后开者永远在上：以当前仍存活的层为基准计算，而不是维护单调递增的全局计数器，
+ * 避免单层反复开合把 z-index 累积到回绕阈值。
+ */
+function allocateZIndex(kind: OverlayKind, current?: Layer): number {
     const floor = readFloor(kind);
-    const climbed = zIndexTop + Z_INDEX_STEP;
+    let activeMax = 0;
+    liveLayers.forEach(layer => {
+        if (layer === current || layer.state === 'disposed') return;
+        // inactive 层关闭动画期间仍在 DOM 中，必须计入，保证新层压住它；
+        // idle 层 zIndex 为 0，不影响结果。
+        if (layer.zIndex > activeMax) activeMax = layer.zIndex;
+    });
 
-    // 只在"递增后的值触顶"时回绕；主题把起点直接设到阈值以上属于异常配置，不回绕
-    if (climbed >= Z_INDEX_WRAP_THRESHOLD && floor < Z_INDEX_WRAP_THRESHOLD) {
-        console.warn(`[solely] 浮层 z-index 已达 ${climbed}，回绕到 ${floor}。`);
-        zIndexTop = floor;
+    const next = Math.max(floor, activeMax + Z_INDEX_STEP);
+    // 主题把起点设在阈值以上属于异常配置，不回绕；正常路径达不到该阈值
+    if (next >= Z_INDEX_WRAP_THRESHOLD && floor < Z_INDEX_WRAP_THRESHOLD) {
+        console.warn(`[solely] 浮层 z-index 已达 ${next}，回绕到 ${floor}。`);
         return floor;
     }
-
-    zIndexTop = Math.max(climbed, floor);
-    return zIndexTop;
+    return next;
 }
 
 // ---------- 焦点判定（C-OVL-12 的可聚焦判定） ----------
@@ -160,6 +171,37 @@ function isTabbable(el: HTMLElement | null | undefined): el is HTMLElement {
 }
 
 /**
+ * 穿透 Shadow DOM 读取真正获得焦点的元素。
+ * `document.activeElement` 在 shadow 内会返回宿主，导致 focus 校验与还原判定失效。
+ */
+function getDeepActiveElement(): HTMLElement | null {
+    let active = document.activeElement as HTMLElement | null;
+    while (active?.shadowRoot?.activeElement) {
+        active = active.shadowRoot.activeElement as HTMLElement;
+    }
+    return active;
+}
+
+/**
+ * 跨 Shadow DOM 的祖先判定。
+ * `Node.contains()` 不穿透 shadow 边界，而 `getDeepActiveElement()` 返回的可能是
+ * shadow tree 内的元素，直接用 contains 会把「层内焦点」误判为「层外」。
+ */
+function composedContains(container: Node, target: Node | null): boolean {
+    let node: Node | null = target;
+    while (node) {
+        if (node === container) return true;
+        if (node.parentNode) {
+            node = node.parentNode;
+            continue;
+        }
+        const root = typeof node.getRootNode === 'function' ? node.getRootNode() : null;
+        node = root instanceof ShadowRoot ? root.host : null;
+    }
+    return false;
+}
+
+/**
  * 尝试聚焦并校验结果。
  * 仅检查 focus 是否存在不够：无 tabindex 的自定义元素宿主可能 focus() 无效，
  * 契约要求此时继续沿候选链前进。
@@ -176,7 +218,8 @@ function tryFocus(el: HTMLElement | null | undefined): boolean {
             return false;
         }
     }
-    return document.activeElement === el;
+    const active = getDeepActiveElement();
+    return !!active && (active === el || composedContains(el, active));
 }
 
 function collectTabbables(container: HTMLElement): HTMLElement[] {
@@ -222,18 +265,28 @@ function focusIntoLayer(layer: Layer): void {
 
 // ---------- 键盘：Esc（C-OVL-09）与 Tab 陷阱（C-OVL-11） ----------
 
-function findEscTarget(): Layer | null {
+/**
+ * 解析一次 Esc 需要通知的层（栈顶向下）：
+ * - `escClosable === false`：跳过；
+ * - `escClosable === 'passthrough'`：收入结果但不中断，继续向下；
+ * - 其余（true）：收入结果并终止。
+ */
+function resolveEscLayers(): Array<{ layer: Layer; consume: boolean }> {
+    const resolved: Array<{ layer: Layer; consume: boolean }> = [];
     for (let i = stack.length - 1; i >= 0; i--) {
-        // escClosable === false（tooltip）不消费，继续向下找
-        if (stack[i].options.escClosable !== false) return stack[i];
+        const layer = stack[i];
+        if (layer.options.escClosable === false) continue;
+        const consume = layer.options.escClosable !== 'passthrough';
+        resolved.push({ layer, consume });
+        if (consume) break;
     }
-    return null;
+    return resolved;
 }
 
 function applyTabTrap(layer: Layer, event: KeyboardEvent): void {
     const items = collectTabbables(layer.container);
-    const active = document.activeElement as HTMLElement | null;
-    const inside = !!active && active !== layer.container && layer.container.contains(active);
+    const active = getDeepActiveElement();
+    const inside = !!active && active !== layer.container && composedContains(layer.container, active);
 
     if (items.length === 0) {
         event.preventDefault();
@@ -265,11 +318,22 @@ function handleDocumentKeydown(event: KeyboardEvent): void {
     if (event.isComposing) return;
 
     if (event.key === 'Escape') {
-        const target = findEscTarget();
-        if (!target) return; // 没有可关闭层：不处理、不 preventDefault
-        target.options.onEscape();
-        event.preventDefault();
-        event.stopPropagation();
+        const resolved = resolveEscLayers();
+        if (resolved.length === 0) return; // 没有可关闭层：不处理、不 preventDefault
+
+        let consumed = false;
+        for (const { layer, consume } of resolved) {
+            layer.options.onEscape?.();
+            if (consume) {
+                consumed = true;
+                break;
+            }
+        }
+        // passthrough 层只关闭自身，不阻止事件继续传递
+        if (consumed) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
         return;
     }
 
@@ -433,7 +497,7 @@ function releaseInert(layer: Layer): void {
 // ---------- 焦点还原（C-OVL-12） ----------
 
 function isInsideClosingLayer(container: HTMLElement, el: HTMLElement): boolean {
-    return el === container || container.contains(el);
+    return el === container || composedContains(container, el);
 }
 
 /**
@@ -457,10 +521,10 @@ function redirectFocusReferences(closing: Layer): void {
 function shouldRestoreFocus(layer: Layer, wasTop: boolean): boolean {
     if (layer.options.returnFocus === false) return false;
     if (!wasTop) return false;
-    const active = document.activeElement as HTMLElement | null;
+    const active = getDeepActiveElement();
     // 动画期间用户把焦点移到别处（既不在本层内也不是 body）时不抢焦点
     if (!active || active === document.body) return true;
-    return layer.container.contains(active);
+    return composedContains(layer.container, active);
 }
 
 /** 六段候选链：trigger → previousFocus → 下层 lastFocus → 下层 container → 下层 trigger/previousFocus → blur */
@@ -481,7 +545,7 @@ function restoreFocusAfterClose(layer: Layer): void {
         if (tryFocus(candidate)) return;
     }
 
-    const active = document.activeElement as HTMLElement | null;
+    const active = getDeepActiveElement();
     if (active && active !== document.body && typeof active.blur === 'function') {
         active.blur();
     }
@@ -496,9 +560,6 @@ function isTopLayer(layer: Layer): boolean {
 function removeFromStack(layer: Layer): void {
     const index = stack.indexOf(layer);
     if (index !== -1) stack.splice(index, 1);
-    // 栈空即视为一轮浮层生命周期结束：重置计数，避免长期开合累积后回绕到
-    // modal/drawer 楼层（1050），被仍在使用的旧浮层压住。
-    if (stack.length === 0) zIndexTop = Z_INDEX_START;
 }
 
 /* ---------- 异常卸载兜底（容器被移除而组件未 dispose） ---------- */
@@ -543,7 +604,7 @@ function attachFocusTracking(layer: Layer): void {
     if (layer.onFocus) return;
     layer.onFocus = (event: Event) => {
         const target = event.target as HTMLElement | null;
-        if (target && layer.container.contains(target)) {
+        if (target && composedContains(layer.container, target)) {
             layer.lastFocus = target;
         }
     };
@@ -569,16 +630,19 @@ function activateLayer(layer: Layer): void {
 
     // 打开前先清理容器已被移除的残留层，避免旧的滚动锁拖累新浮层
     pruneDetachedLayers();
+    // prune 可能因容器已从文档移除而释放本层（dispose 会从 liveLayers 移除）
+    if (!liveLayers.has(layer)) return;
 
     const firstOpen = layer.state === 'idle';
     layer.state = 'active';
     layer.wasTopWhenClosed = false;
     if (layer.container.isConnected) layer.containerWasConnected = true;
 
-    // z-index 每个实例只分配一次；deactivate 后重新打开复用原值
+    // z-index 每次打开都重新分配：重新激活时可能已被其它层超越，
+    // 复用旧值会导致后激活的层压在已打开层之下。
+    layer.zIndex = allocateZIndex(layer.options.kind, layer);
     if (firstOpen) {
-        layer.zIndex = allocateZIndex(layer.options.kind);
-        const active = document.activeElement as HTMLElement | null;
+        const active = getDeepActiveElement();
         layer.previousFocus = active && active !== document.body ? active : null;
     }
     layer.container.style.zIndex = String(layer.zIndex);
@@ -595,8 +659,8 @@ function activateLayer(layer: Layer): void {
 
     if (layer.options.autoFocus !== false) {
         focusIntoLayer(layer);
-        const active = document.activeElement as HTMLElement | null;
-        if (active && layer.container.contains(active)) layer.lastFocus = active;
+        const active = getDeepActiveElement();
+        if (active && composedContains(layer.container, active)) layer.lastFocus = active;
     }
 }
 
@@ -623,8 +687,8 @@ function disposeLayer(layer: Layer): void {
     syncKeydownListener();
 
     // 关闭动画期间焦点若仍在本层内，即为本层最后聚焦元素
-    const active = document.activeElement as HTMLElement | null;
-    if (active && layer.container.contains(active)) layer.lastFocus = active;
+    const active = getDeepActiveElement();
+    if (active && composedContains(layer.container, active)) layer.lastFocus = active;
 
     redirectFocusReferences(layer);
     releaseInert(layer);
@@ -671,6 +735,10 @@ export function registerOverlay(options: OverlayOptions): OverlayHandle {
     };
 
     liveLayers.add(layer);
+    // escClosable 层必须提供关闭回调，否则 Esc 被消费却没有任何响应
+    if (options.escClosable !== false && !options.onEscape) {
+        console.warn(`[solely] ${options.kind} 浮层设置了 escClosable 但缺少 onEscape，Esc 将无效。`);
+    }
     syncDetachedObserver();
 
     return {

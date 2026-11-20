@@ -269,7 +269,8 @@ class SolelySteps extends BaseElement<
 
         this.slotObserver.observe(this, {
             childList: true,
-            subtree: false,
+            // 步骤属性（data-* / disabled）写在子元素上，必须观察子树
+            subtree: true,
             attributes: true,
             attributeFilter: ['data-step', 'data-title', 'data-description', 'data-color', 'disabled'],
         });

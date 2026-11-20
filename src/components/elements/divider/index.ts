@@ -66,6 +66,9 @@ class SolelyDivider extends BaseElement<DividerProps & { hasSlotContent: boolean
         const element = node as Element;
         if ((element.textContent || '').trim() !== '') return true;
 
+        // 自定义元素（如 <solely-icon>）常以属性描述图标，本身既无文本也无子节点
+        if (element.tagName.includes('-')) return true;
+
         // 元素自身没有文本时，继续检查后代元素
         return Array.from(element.children).some(child => this.isMeaningfulNode(child));
     }

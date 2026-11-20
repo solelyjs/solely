@@ -245,7 +245,8 @@ class SolelyTree extends BaseElement<
 
         traverse(this.treeData);
         if (checkedKeys.length && !this.$data.checkStrictly) {
-            this.syncParentCheckStates(this.treeData);
+            // 默认键可能指向父节点：先向下级联勾选后代，再自底向上重算，避免父节点被清空
+            this.syncCheckCascade();
         }
         return true;
     }
@@ -280,17 +281,57 @@ class SolelyTree extends BaseElement<
     }
 
     /**
+     * 由子节点计算父节点的勾选态
+     *
+     * - 全选判定只统计未禁用子节点：禁用项不能被级联勾选，也不应阻止父节点全选；
+     * - 半选判定包含禁用子节点：调用方显式写入的 disabled key 会被保留，父节点据此呈半选。
+     */
+    private calcParentCheckState(children: TreeNode[]): { checked: boolean; halfChecked: boolean } {
+        const enabled = children.filter(child => !child.disabled);
+        const checked = enabled.length > 0 && enabled.every(child => child.checked);
+        const halfChecked = !checked && children.some(child => child.checked || child.halfChecked);
+        return { checked, halfChecked };
+    }
+
+    /**
      * 根据子节点状态自底向上重算父节点的 checked / halfChecked
      */
     private syncParentCheckStates(nodes: TreeNode[]): void {
         for (const node of nodes) {
             if (!node.children || node.children.length === 0) continue;
             this.syncParentCheckStates(node.children);
-            const allChecked = node.children.every(child => child.checked);
-            const someChecked = node.children.some(child => child.checked || child.halfChecked);
-            node.checked = allChecked;
-            node.halfChecked = !allChecked && someChecked;
+            const { checked, halfChecked } = this.calcParentCheckState(node.children);
+            node.checked = checked;
+            node.halfChecked = halfChecked;
         }
+    }
+
+    /**
+     * 非严格勾选模式下的父子联动：
+     * 勾选父节点时向下级联所有【未禁用】后代，再自底向上重算父节点的 checked / halfChecked。
+     *
+     * 仅约束交互与级联路径；调用方显式写入的 checkedKeys / defaultCheckedKeys
+     * 即使命中 disabled 节点也按原样保留（业务预置场景）。
+     */
+    private syncCheckCascade(): void {
+        const checkDescendants = (node: TreeNode) => {
+            node.children?.forEach(child => {
+                // 禁用子树不随父节点联动
+                if (child.disabled) return;
+                child.checked = true;
+                child.halfChecked = false;
+                checkDescendants(child);
+            });
+        };
+        const cascade = (nodes: TreeNode[]) => {
+            for (const node of nodes) {
+                if (node.disabled) continue;
+                if (node.checked) checkDescendants(node);
+                if (node.children) cascade(node.children);
+            }
+        };
+        cascade(this.treeData);
+        this.syncParentCheckStates(this.treeData);
     }
 
     /**
@@ -531,7 +572,9 @@ class SolelyTree extends BaseElement<
         // 全局禁用时整树退出 Tab 序列与键盘导航
         if (this.$data.disabled) return [];
         const nodes = this.$data.flattenedTree || [];
-        return nodes.filter(node => !node.disabled);
+        // 搜索过滤的节点仅以 display:none 隐藏，仍留在 flattenedTree 中：
+        // 必须排除，否则 tabindex 会落到不可见节点、方向键 focus 也会失败
+        return nodes.filter(node => !node.disabled && !node.isFiltered);
     }
 
     /**
@@ -649,9 +692,10 @@ class SolelyTree extends BaseElement<
         node.checked = checked;
         node.halfChecked = false;
 
-        // 更新子节点
+        // 更新子节点：禁用子树不随父节点联动
         if (node.children) {
             for (const child of node.children) {
+                if (child.disabled) continue;
                 this.updateNodeCheckState(child, checked);
             }
         }
@@ -668,21 +712,17 @@ class SolelyTree extends BaseElement<
             if (node.children) {
                 if (node.children.includes(targetNode)) {
                     // 找到父节点
-                    const allChecked = node.children.every(child => child.checked);
-                    const someChecked = node.children.some(child => child.checked || child.halfChecked);
-
-                    node.checked = allChecked;
-                    node.halfChecked = !allChecked && someChecked;
+                    const { checked, halfChecked } = this.calcParentCheckState(node.children);
+                    node.checked = checked;
+                    node.halfChecked = halfChecked;
                     return true;
                 }
 
                 if (this.updateParentCheckState(node.children, targetNode)) {
                     // 递归更新上层父节点
-                    const allChecked = node.children.every(child => child.checked);
-                    const someChecked = node.children.some(child => child.checked || child.halfChecked);
-
-                    node.checked = allChecked;
-                    node.halfChecked = !allChecked && someChecked;
+                    const { checked, halfChecked } = this.calcParentCheckState(node.children);
+                    node.checked = checked;
+                    node.halfChecked = halfChecked;
                     return true;
                 }
             }
@@ -781,6 +821,10 @@ class SolelyTree extends BaseElement<
             }
         };
         setChecked(this.treeData, keys);
+        if (keys.length && !this.$data.checkStrictly) {
+            // 受控写入与点击路径保持一致：父节点勾选需向下级联并重算半选态
+            this.syncCheckCascade();
+        }
         this.flattenTree();
     }
 

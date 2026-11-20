@@ -138,6 +138,54 @@ describe('Esc 响应者（C-OVL-09）', () => {
         expect(onEscape).not.toHaveBeenCalled();
         expect(event.defaultPrevented).toBe(false);
     });
+
+    it('passthrough 层先关闭但不消费，继续关闭下层', () => {
+        const modalEsc = vi.fn();
+        const tooltipEsc = vi.fn();
+
+        const modal = makeHandle({ kind: 'modal', container: mountContainer(), onEscape: modalEsc });
+        modal.activate();
+        const tooltip = makeHandle({
+            kind: 'tooltip',
+            container: mountContainer(),
+            escClosable: 'passthrough',
+            onEscape: tooltipEsc,
+        });
+        tooltip.activate();
+
+        const bodyKeydown = vi.fn();
+        document.body.addEventListener('keydown', bodyKeydown);
+
+        const event = pressKey('Escape');
+        expect(tooltipEsc).toHaveBeenCalledTimes(1);
+        expect(modalEsc).toHaveBeenCalledTimes(1);
+        // 下层 modal 消费 Esc
+        expect(event.defaultPrevented).toBe(true);
+        expect(bodyKeydown).not.toHaveBeenCalled();
+
+        document.body.removeEventListener('keydown', bodyKeydown);
+    });
+
+    it('只有 passthrough 层时不 preventDefault、不阻断冒泡', () => {
+        const tooltipEsc = vi.fn();
+        const tooltip = makeHandle({
+            kind: 'tooltip',
+            container: mountContainer(),
+            escClosable: 'passthrough',
+            onEscape: tooltipEsc,
+        });
+        tooltip.activate();
+
+        const bodyKeydown = vi.fn();
+        document.body.addEventListener('keydown', bodyKeydown);
+
+        const event = pressKey('Escape');
+        expect(tooltipEsc).toHaveBeenCalledTimes(1);
+        expect(event.defaultPrevented).toBe(false);
+        expect(bodyKeydown).toHaveBeenCalledTimes(1);
+
+        document.body.removeEventListener('keydown', bodyKeydown);
+    });
 });
 
 describe('焦点进入与 Tab 陷阱（C-OVL-10 / C-OVL-11）', () => {
@@ -497,6 +545,28 @@ describe('z-index 动态分配（C-OVL-16）', () => {
         });
     });
 
+    it('deactivate 后重新 activate 会重新分配 z-index，后激活者在上', async () => {
+        vi.resetModules();
+        const mod = await import('../src/shared/floating/overlay-stack');
+
+        const a = mod.registerOverlay({ kind: 'dropdown', container: mountContainer(), onEscape: vi.fn() });
+        const b = mod.registerOverlay({ kind: 'dropdown', container: mountContainer(), onEscape: vi.fn() });
+
+        a.activate();
+        a.deactivate();
+
+        b.activate();
+        const bz = b.getZIndex();
+
+        a.activate();
+        expect(a.getZIndex()).toBeGreaterThan(bz);
+
+        a.deactivate();
+        b.deactivate();
+        a.dispose();
+        b.dispose();
+    });
+
     it('CSS 变量可覆盖第一层的起点', async () => {
         document.documentElement.style.setProperty('--solely-z-index-modal', '4000');
         vi.resetModules();
@@ -510,5 +580,66 @@ describe('z-index 动态分配（C-OVL-16）', () => {
         handle.deactivate();
         handle.dispose();
         document.documentElement.style.removeProperty('--solely-z-index-modal');
+    });
+});
+
+/** 焦点委托到 shadowRoot 内原生 input 的宿主，用于验证跨 shadow 的焦点判定 */
+class FocusShadowHost extends HTMLElement {
+    constructor() {
+        super();
+        const root = this.attachShadow({ mode: 'open' });
+        root.appendChild(document.createElement('input'));
+    }
+
+    focus(): void {
+        (this.shadowRoot?.querySelector('input') as HTMLInputElement | null)?.focus();
+    }
+}
+
+if (!customElements.get('test-focus-shadow-host')) {
+    customElements.define('test-focus-shadow-host', FocusShadowHost);
+}
+
+describe('Shadow DOM 焦点（回归）', () => {
+    it('层内 shadow 焦点不会被 Tab 陷阱误判为层外', () => {
+        const container = mountContainer();
+        const host = document.createElement('test-focus-shadow-host') as HTMLElement;
+        container.appendChild(host);
+        mountButton('after', container);
+
+        const handle = makeHandle({ kind: 'modal', container, onEscape: vi.fn() });
+        handle.activate();
+
+        const input = host.shadowRoot!.querySelector('input') as HTMLInputElement;
+        input.focus();
+        expect(host.shadowRoot!.activeElement).toBe(input);
+
+        const event = pressKey('Tab');
+        // 焦点仍在层内：不应被拉回首个可聚焦项
+        expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('关闭时能把焦点从 shadow 内部正确还原到触发元素', () => {
+        const trigger = mountButton('trigger');
+        const container = mountContainer();
+        const host = document.createElement('test-focus-shadow-host') as HTMLElement;
+        container.appendChild(host);
+
+        const handle = makeHandle({
+            kind: 'modal',
+            container,
+            trigger,
+            initialFocus: host,
+            onEscape: vi.fn(),
+        });
+        handle.activate();
+
+        // tryFocus 应穿透 shadow 判定聚焦成功，焦点落在内部 input
+        const input = host.shadowRoot!.querySelector('input') as HTMLInputElement;
+        expect(host.shadowRoot!.activeElement).toBe(input);
+
+        handle.deactivate();
+        handle.dispose();
+        expect(document.activeElement).toBe(trigger);
     });
 });
