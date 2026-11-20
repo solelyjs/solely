@@ -173,6 +173,38 @@ class SolelyTable extends BaseElement<TableProps> {
     }
 
     /**
+     * dataSource 发生变化（含数组原地 push/splice）时清空展示缓存。
+     *
+     * 基座会为任何响应式变更调度重渲染，但缓存只按引用判断会继续返回旧结果；
+     * 这里在渲染前失效缓存，保证通过代理数组的原地修改也能生效。
+     */
+    #handleReactiveDataChange = (event: Event): void => {
+        const path = (event as CustomEvent).detail?.path as unknown;
+        if (Array.isArray(path) && path[0] === 'dataSource') {
+            this.#displayedDataSourceCache = null;
+        }
+    };
+
+    created(): void {
+        this.addEventListener('dataChange', this.#handleReactiveDataChange);
+    }
+
+    unmounted(): void {
+        this.removeEventListener('dataChange', this.#handleReactiveDataChange);
+    }
+
+    /**
+     * 刷新前丢弃展示数据缓存。
+     *
+     * 数据源可能被原地修改（响应式代理的 push/splice，或调用方持有原始数组后手动
+     * refresh）：缓存只按引用判断会把修改前的结果继续返回，表现为“数据变了但表格不动”。
+     */
+    public refresh(): void {
+        this.#displayedDataSourceCache = null;
+        super.refresh();
+    }
+
+    /**
      * 获取解析后的数据源（未经过本地筛选/排序）
      */
     getParsedDataSource(): Record<string, unknown>[] {

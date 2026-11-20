@@ -56,7 +56,7 @@ describe('solely-table', () => {
         expect(el.shadowRoot.querySelector('th').getAttribute('style')).toContain('100px');
     });
 
-    it('数组 dataSource 按引用感知：保留对象身份，原地修改需 refresh 才重渲染', async () => {
+    it('数组 dataSource 按引用感知：代理数组原地修改自动刷新，原始数组需 refresh', async () => {
         const el = createTable();
         await tick();
         expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(2);
@@ -69,20 +69,25 @@ describe('solely-table', () => {
         expect(toRaw(el.getDataSource())).toBe(rows);
         expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(1);
 
-        // 原地修改不自动触发重渲染
+        // 调用方原始数组：无响应式通知，需要显式 refresh
         rows.push({ name: 'Dave', age: 41 });
         await tick();
         expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(1);
+        el.refresh();
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(2);
 
-        // 整体替换才会生效
-        const next = [
-            { name: 'Eve', age: 50 },
-            { name: 'Frank', age: 60 },
-        ];
+        // 组件返回的代理数组：push 会自动触发刷新
+        el.getDataSource().push({ name: 'Eve', age: 50 });
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(3);
+
+        // 整体替换同样生效
+        const next = [{ name: 'Frank', age: 60 }];
         el.setDataSource(next);
         await tick();
         expect(toRaw(el.getDataSource())).toBe(next);
-        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(2);
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(1);
     });
 
     it('should map size prop to table class (small/large/default-md)', async () => {
