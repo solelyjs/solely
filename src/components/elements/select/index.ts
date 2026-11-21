@@ -116,7 +116,7 @@ class SolelySelect
      */
     private ignoreOutsideClick = false;
     /** 解除 ignoreOutsideClick 的定时器（等整次点击派发结束） */
-    private ignoreOutsideClickTimer?: number;
+    private ignoreOutsideClickTimer?: ReturnType<typeof setTimeout>;
     private _dropdown?: HTMLElement;
     private _overlay?: OverlayHandle;
     private _stopObserve?: () => void;
@@ -610,6 +610,7 @@ class SolelySelect
             clearTimeout(this.ignoreOutsideClickTimer);
             this.ignoreOutsideClickTimer = undefined;
         }
+        this.ignoreOutsideClick = false;
         this.teardownDropdown();
     }
 
@@ -1150,7 +1151,7 @@ class SolelySelect
         this.ignoreOutsideClickTimer = setTimeout(() => {
             this.ignoreOutsideClick = false;
             this.ignoreOutsideClickTimer = undefined;
-        }, 0) as unknown as number;
+        }, 0);
         if (this.closeTimer) {
             clearTimeout(this.closeTimer);
             this.closeTimer = undefined;
@@ -1183,6 +1184,12 @@ class SolelySelect
             clearTimeout(this.closeTimer);
             this.closeTimer = undefined;
         }
+        // 同一 tick 内 open() → close() 时，不能把保护留给下一次外部点击
+        if (this.ignoreOutsideClickTimer) {
+            clearTimeout(this.ignoreOutsideClickTimer);
+            this.ignoreOutsideClickTimer = undefined;
+        }
+        this.ignoreOutsideClick = false;
         this.teardownDropdown();
         this.$data.isOpen = false;
         this.$data.closing = false;
