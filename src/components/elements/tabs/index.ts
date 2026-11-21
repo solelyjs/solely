@@ -358,7 +358,8 @@ class SolelyTabs extends BaseElement<TabsProps & { visitedKeys: string[] }> {
         const active = this.$data.activeKey ? list.find(item => item.key === this.$data.activeKey) : undefined;
         if (!active || active.disabled) {
             const fallback = list.find(item => !item.disabled) ?? list[0];
-            this.$data.activeKey = fallback?.key ?? '';
+            // 回退与点击 / 关闭路径共用 setter：受控父组件才能通过 change 感知激活项切换
+            this.activeKey = fallback?.key ?? '';
         }
         if (this.$data.activeKey) this.markVisited(this.$data.activeKey);
         this.refresh();

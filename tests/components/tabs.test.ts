@@ -238,4 +238,35 @@ describe('solely-tabs', () => {
 
         expect(el.activeKey).toBe('a');
     });
+
+    it('setItems 回退激活项时派发一次 change，未回退时保持静默', async () => {
+        const el = createTabs(SAMPLE);
+        await tick();
+        el.activeKey = 'b';
+        await tick();
+
+        const onChange = vi.fn();
+        el.addEventListener('change', onChange);
+
+        // 当前项变为 disabled → 回退到 a，与点击 / 关闭路径一样派发 change
+        el.setItems([
+            { key: 'a', label: 'A' },
+            { key: 'b', label: 'B', disabled: true },
+            { key: 'c', label: 'C' },
+        ]);
+        await tick();
+        expect(el.activeKey).toBe('a');
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.calls[0][0].detail).toEqual({ activeKey: 'a' });
+
+        // 新列表仍包含当前激活项：不切换、不派发
+        onChange.mockClear();
+        el.setItems([
+            { key: 'a', label: 'A' },
+            { key: 'c', label: 'C' },
+        ]);
+        await tick();
+        expect(el.activeKey).toBe('a');
+        expect(onChange).not.toHaveBeenCalled();
+    });
 });
