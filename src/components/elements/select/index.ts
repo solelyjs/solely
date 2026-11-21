@@ -110,6 +110,13 @@ class SolelySelect
     private initialized = false;
     /** 上次参与解析的 options 引用，用于发现 property 方式的异步赋值 */
     private lastParsedOptions?: unknown;
+    /**
+     * 程序化 open() 所在的点击事件尚未结束时，忽略 document 的外部点击判定。
+     * 否则外部按钮在 click 里调用 open()，同一事件冒泡到 document 会立刻把下拉关掉。
+     */
+    private ignoreOutsideClick = false;
+    /** 解除 ignoreOutsideClick 的定时器（等整次点击派发结束） */
+    private ignoreOutsideClickTimer?: number;
     private _dropdown?: HTMLElement;
     private _overlay?: OverlayHandle;
     private _stopObserve?: () => void;
@@ -557,6 +564,9 @@ class SolelySelect
 
         // 点击外部关闭
         this.clickOutsideHandler = (event: MouseEvent) => {
+            // 外部按钮在 click 中调用 open() 时，同一事件随后会冒泡到 document：
+            // 需跳过这一次判定，否则下拉会被立即关闭
+            if (this.ignoreOutsideClick) return;
             const path = event.composedPath();
             if (!path.some(el => el === this)) {
                 this.closeDropdown();
@@ -595,6 +605,10 @@ class SolelySelect
         if (this.closeTimer) {
             clearTimeout(this.closeTimer);
             this.closeTimer = undefined;
+        }
+        if (this.ignoreOutsideClickTimer) {
+            clearTimeout(this.ignoreOutsideClickTimer);
+            this.ignoreOutsideClickTimer = undefined;
         }
         this.teardownDropdown();
     }
@@ -1128,6 +1142,15 @@ class SolelySelect
     /** 打开下拉菜单（已打开时保留当前高亮，不重置） */
     public open(): void {
         if (effectiveDisabled(this)) return;
+        // 跳过本次点击冒泡到 document 的外部关闭判定。
+        // 不能用微任务：浏览器会在同一事件的监听器之间清空微任务队列，
+        // 必须等到整次点击派发结束（下一个宏任务）再解除。
+        this.ignoreOutsideClick = true;
+        if (this.ignoreOutsideClickTimer) clearTimeout(this.ignoreOutsideClickTimer);
+        this.ignoreOutsideClickTimer = setTimeout(() => {
+            this.ignoreOutsideClick = false;
+            this.ignoreOutsideClickTimer = undefined;
+        }, 0) as unknown as number;
         if (this.closeTimer) {
             clearTimeout(this.closeTimer);
             this.closeTimer = undefined;

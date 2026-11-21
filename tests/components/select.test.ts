@@ -136,6 +136,32 @@ describe('solely-select', () => {
         expect(onChange).toHaveBeenCalled();
     });
 
+    it('外部按钮在 click 中调用 open() 时不会被“点击外部关闭”立即收起', async () => {
+        const el = createSelect();
+        await tick();
+
+        const trigger = document.createElement('button');
+        trigger.textContent = '外部打开';
+        trigger.addEventListener('click', () => el.open());
+        document.body.appendChild(trigger);
+
+        trigger.click();
+        // 同一次点击冒泡到 document 时不应触发关闭
+        expect(el.$data.isOpen).toBe(true);
+        expect(el.$data.closing).toBe(false);
+
+        // 事件结束后的真正外部点击仍应关闭
+        await tick();
+        const outside = document.createElement('button');
+        document.body.appendChild(outside);
+        outside.click();
+        await tick(240);
+        expect(el.$data.isOpen).toBe(false);
+
+        trigger.remove();
+        outside.remove();
+    });
+
     it('should support keyboard open, move highlight, select and close', async () => {
         const el = createSelect();
         await tick();
