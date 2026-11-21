@@ -122,14 +122,16 @@
                     <button class="native" id="qa-select-async">异步设置 options</button>
                     <button class="native" id="qa-select-open">打开下拉</button>
                     <button class="native" id="qa-select-arrowup">打开并按 ↑</button>
-                    <button class="native" id="qa-select-tab">下拉打开时按 Tab</button>
+                    <button class="native" id="qa-select-tab">模拟 Tab（仅验证关闭）</button>
                     <button class="native" id="qa-select-prop">el.value = 'a'</button>
                     <button class="native" id="qa-select-api">el.setValue('b')</button>
                 </div>
                 <p class="expect">
                     预期：异步设置后选项出现（也可用“打开下拉”直接验证）；在输入框按 <code>b</code> 首字母搜索不报错；
                     <code>el.value</code> 不产生 change，<code>setValue</code> 产生一次 CustomEvent（detail.source=api）；
-                    “打开并按 ↑”应高亮最后一项；“下拉打开时按 Tab”应收起下拉。
+                    “打开并按 ↑”应高亮最后一项。
+                    “模拟 Tab”按钮只验证关闭逻辑（<code>isOpen=false</code>）；<strong>真实焦点移动请点“打开下拉”后用键盘 Tab</strong>，
+                    应看到下拉关闭且焦点移到下一个控件。
                 </p>
             </section>
 
@@ -364,7 +366,10 @@
             byId('qa-select-tab').addEventListener('click', () => {
                 if (!select.$data.isOpen) select.open();
                 selectRoot().dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, composed: true }));
-                setTimeout(() => log(`按 Tab 后 isOpen=${select.$data.isOpen}`), 30);
+                setTimeout(
+                    () => log(`按 Tab 后 isOpen=${select.$data.isOpen}（合成事件不会移动焦点，真实 Tab 请用键盘）`),
+                    30,
+                );
             });
             byId('qa-select-prop').addEventListener('click', () => {
                 select.value = 'a';
