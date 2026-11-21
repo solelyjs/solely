@@ -58,6 +58,25 @@ describe('Popconfirm command component', () => {
         expect(okBtn.tabIndex).toBe(0);
     });
 
+    it('bind：激活另一个已绑定目标时直接切换到新 Popconfirm', () => {
+        const first = createTarget();
+        const second = createTarget();
+        const firstInstance = Popconfirm.bind(first, { title: '第一个' });
+        const secondInstance = Popconfirm.bind(second, { title: '第二个' });
+
+        // 键盘 Enter / 程序化 click 不会先触发 mousedown 的外部关闭逻辑
+        first.click();
+        expect(document.querySelector('.solely-popconfirm__title')!.textContent).toBe('第一个');
+
+        second.click();
+        const popconfirms = document.querySelectorAll('.solely-popconfirm');
+        expect(popconfirms.length).toBe(1);
+        expect(popconfirms[0].querySelector('.solely-popconfirm__title')!.textContent).toBe('第二个');
+
+        firstInstance.destroy();
+        secondInstance.destroy();
+    });
+
     it('should support icon override, icon="" and showIcon=false', () => {
         const t1 = createTarget();
         Popconfirm.show(t1, { title: '确定？', icon: '★' });

@@ -493,10 +493,13 @@ function bind(
     const handleClick = (e: MouseEvent) => {
         e.stopPropagation();
 
-        // 如果当前有 Popconfirm，则关闭；否则打开新的
         if (currentPopconfirm) {
+            // 同一目标：再次激活等价切换关闭；不同目标：关闭旧的并直接打开新的
+            // （键盘 Enter/Space 不会先触发 mousedown，不能依赖外部点击关闭逻辑）
+            const sameTarget = currentPopconfirm.target === target;
             destroyCurrentSync();
             instance = null;
+            if (!sameTarget) instance = show(target, options as PopconfirmOptions);
         } else {
             instance = show(target, options as PopconfirmOptions);
         }
