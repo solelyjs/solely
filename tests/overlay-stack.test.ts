@@ -276,7 +276,7 @@ describe('焦点进入与 Tab 陷阱（C-OVL-10 / C-OVL-11）', () => {
         expect(document.activeElement).toBe(first);
     });
 
-    it('只有栈顶且 trapFocus=true 的层处理 Tab', () => {
+    it('栈顶是非陷阱层时，由下层最近的 trapFocus 层接管 Tab', () => {
         const lower = mountContainer();
         const lowerButton = mountButton('lower', lower);
         const lowerHandle = makeHandle({
@@ -297,11 +297,39 @@ describe('焦点进入与 Tab 陷阱（C-OVL-10 / C-OVL-11）', () => {
         });
         upperHandle.activate();
 
-        // 焦点在正在关闭的下层里，但栈顶是 trapFocus=false 的 popover
+        // 焦点在下层 modal 内，栈顶的非陷阱 popover 不应旁路 modal 的焦点约束
         lowerButton.focus();
         const event = pressKey('Tab');
-        expect(event.defaultPrevented).toBe(false);
+        expect(event.defaultPrevented).toBe(true);
         expect(document.activeElement).toBe(lowerButton);
+    });
+});
+
+describe('容器剪枝时序', () => {
+    it('同一任务内移出再插回的容器不会被误 dispose', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const containerA = mountContainer();
+        const a = makeHandle({
+            kind: 'modal',
+            container: containerA,
+            lockScroll: true,
+            onEscape: vi.fn(),
+        });
+        a.activate();
+
+        // 模拟 DOM 移动：先移出，另开一层触发剪枝，再把容器插回
+        containerA.remove();
+        const b = makeHandle({ kind: 'modal', container: mountContainer(), onEscape: vi.fn() });
+        b.activate();
+        document.body.appendChild(containerA);
+
+        await Promise.resolve();
+
+        // 容器已回到文档：A 不应被剪枝释放
+        a.activate();
+        expect(warnSpy.mock.calls.some(args => String(args[0]).includes('已 dispose'))).toBe(false);
+
+        warnSpy.mockRestore();
     });
 });
 

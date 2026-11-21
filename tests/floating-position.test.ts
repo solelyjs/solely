@@ -346,4 +346,31 @@ describe('observePosition: 滚动祖先重定位', () => {
 
         host.remove();
     });
+
+    it('同一滚动祖先上的多个订阅互不影响', async () => {
+        const { host, scroller, anchor, floating } = createShadowAnchor();
+        const secondAnchor = document.createElement('button');
+        const secondFloating = document.createElement('div');
+        scroller.appendChild(secondAnchor);
+        scroller.appendChild(secondFloating);
+
+        let firstCalls = 0;
+        let secondCalls = 0;
+        const stopFirst = observePosition({ anchor, floating, update: () => (firstCalls += 1) });
+        const stopSecond = observePosition({
+            anchor: secondAnchor,
+            floating: secondFloating,
+            update: () => (secondCalls += 1),
+        });
+
+        // 两个订阅共用 scroller 作为滚动祖先；只停止第一个不能摘掉第二个的监听
+        stopFirst();
+        scroller.dispatchEvent(new Event('scroll'));
+        await flush();
+        expect(firstCalls).toBe(0);
+        expect(secondCalls).toBe(1);
+
+        stopSecond();
+        host.remove();
+    });
 });

@@ -175,7 +175,7 @@ top = anchorRect.top - containerRect.top + container.scrollTop - container.clien
 
 - 打开时按顺序选择初始焦点：显式 `initialFocus` → `[autofocus]` → 第一个可聚焦元素 → 容器本身（容器必须 `tabindex="-1"`）。
 - `autoFocus=false` 时不移动焦点；下拉类浮层应保持焦点在宿主，用 `aria-activedescendant` 表达当前项。
-- 只有栈顶且 `trapFocus=true` 的层处理 Tab；每次重新计算可聚焦列表，不缓存。
+- Tab 由栈中最近的 `trapFocus=true` 层处理（栈顶可能是 tooltip / 下拉等非陷阱层，不能旁路下层的焦点约束）；每次重新计算可聚焦列表，不缓存。
 - 关闭时只在动画结束后的 `dispose` 还原焦点，候选顺序：触发元素 → 打开时记录的焦点 → 下一层的最后焦点 → 下一层容器 → 下一层触发元素。任一候选不可聚焦就跳过；都失效时只 `blur()`，禁止给 `body` 设 `tabindex`。
 - 若用户在关闭动画期间主动把焦点移出浮层，`dispose` 不抢焦点。
 

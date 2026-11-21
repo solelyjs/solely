@@ -441,14 +441,15 @@ function unbindGlobalListeners(): void {
 /**
  * 订阅锚点/浮层的位置与尺寸变化。
  *
- * 内部复用一组全局监听与单一 rAF 批处理，多个浮层同时打开时不重复绑定。
- * 锚点路径上的每个祖先都订阅 scroll（capture），因此 Shadow DOM 内的滚动容器
- * 也能触发重定位；返回的清理函数幂等，会一并解绑这些监听。
+ * 全局 window / resize / ResizeObserver 复用一组监听与单一 rAF 批处理；
+ * 每个订阅对滚动祖先使用独立的监听函数：同一祖先被多个浮层共享时，
+ * `addEventListener` 会按函数引用去重，若共用一个引用，任一订阅清理都会
+ * 摘掉其他订阅的监听，导致其余浮层滚动后不再重定位。
  */
 export function observePosition(options: ObservePositionOptions): () => void {
     if (typeof window === 'undefined') return () => undefined;
 
-    const onScroll = scheduleSubscriptions;
+    const onScroll = () => scheduleSubscriptions();
     const scrollTargets = collectScrollAncestors(options.anchor);
     for (const target of scrollTargets) {
         target.addEventListener('scroll', onScroll, { capture: true, passive: true });

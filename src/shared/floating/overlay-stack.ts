@@ -338,10 +338,17 @@ function handleDocumentKeydown(event: KeyboardEvent): void {
     }
 
     if (event.key === 'Tab') {
-        // 只有栈顶且 trapFocus=true 的层处理 Tab
-        const top = stack[stack.length - 1];
-        if (!top || top.options.trapFocus !== true) return;
-        applyTabTrap(top, event);
+        // 从栈顶向下找最近的焦点陷阱层：tooltip / 下拉等 trapFocus=false 的层
+        // 可能悬在 modal 之上，不能让它们旁路下层浮层的焦点约束。
+        let trapping: Layer | undefined;
+        for (let i = stack.length - 1; i >= 0; i--) {
+            if (stack[i].options.trapFocus === true) {
+                trapping = stack[i];
+                break;
+            }
+        }
+        if (!trapping) return;
+        applyTabTrap(trapping, event);
     }
 }
 
@@ -600,6 +607,24 @@ function pruneDetachedLayers(): void {
     syncDetachedObserver();
 }
 
+let pruneScheduled = false;
+
+/**
+ * 延迟到微任务再剪枝。
+ *
+ * activate / register 可能发生在「容器移出 → 重新插入」的同一任务中，
+ * 同步剪枝会把仍要复用的层误 dispose；微任务执行时 DOM 移动已经完成。
+ * 真正遗留的层仍会在本次微任务中被清理，不改变兜底语义。
+ */
+function scheduleDetachedPrune(): void {
+    if (pruneScheduled) return;
+    pruneScheduled = true;
+    queueMicrotask(() => {
+        pruneScheduled = false;
+        pruneDetachedLayers();
+    });
+}
+
 function attachFocusTracking(layer: Layer): void {
     if (layer.onFocus) return;
     layer.onFocus = (event: Event) => {
@@ -628,9 +653,9 @@ function activateLayer(layer: Layer): void {
     }
     if (layer.state === 'active') return;
 
-    // 打开前先清理容器已被移除的残留层，避免旧的滚动锁拖累新浮层
-    pruneDetachedLayers();
-    // prune 可能因容器已从文档移除而释放本层（dispose 会从 liveLayers 移除）
+    // 打开前安排清理容器已被移除的残留层，避免旧的滚动锁拖累新浮层。
+    // 延迟到微任务：容器可能正在同一任务内被移出再插回。
+    scheduleDetachedPrune();
     if (!liveLayers.has(layer)) return;
 
     const firstOpen = layer.state === 'idle';
@@ -716,8 +741,8 @@ function disposeLayer(layer: Layer): void {
  * open → activate；关闭动画开始 → deactivate；动画结束 → dispose。
  */
 export function registerOverlay(options: OverlayOptions): OverlayHandle {
-    // 注册时顺手清理已被移除的旧层（不依赖 MutationObserver 的时机）
-    pruneDetachedLayers();
+    // 注册时安排清理已被移除的旧层（延迟到微任务，避免误伤同一任务内的 DOM 移动）
+    scheduleDetachedPrune();
 
     const layer: Layer = {
         options,
