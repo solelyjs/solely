@@ -23,15 +23,15 @@ URL 与共享数据用例会把预期告警各输出 1 条到控制台（方便�
 
 **当前基线**
 
-| 项                                                  | 当前实测（基线）                                                                                                                                                        |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tsc --noEmit`                                      | exit 0，无输出                                                                                                                                                          |
-| `eslint .`                                          | 0 error / 0 warning                                                                                                                                                     |
-| `npm run format:check`                              | All matched files use Prettier code style                                                                                                                               |
-| `vitest run`                                        | **1695 passed / 3 skipped**（60 个文件）                                                                                                                                |
-| 覆盖率（`npx vitest run --coverage`）               | statements 89.02 / branches 81.45 / functions 91.31 / lines 89.02（v8 provider；Node v24.14.1 / vitest 3.2.4；阈值 80/75/85/80，全部达标；多次运行各项有 ±0.05pp 波动） |
-| `vite build` + `check:exports` + `check:dist-fresh` | 140 个导出目标全部存在，199 个构建输入指纹一致                                                                                                                          |
-| `build:examples`                                    | 构建成功，无报错                                                                                                                                                        |
+| 项                                                  | 当前实测（基线）                                                                                                                                                                                                 |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tsc --noEmit`                                      | exit 0，无输出                                                                                                                                                                                                   |
+| `eslint .`                                          | 0 error / 0 warning                                                                                                                                                                                              |
+| `npm run format:check`                              | All matched files use Prettier code style                                                                                                                                                                        |
+| `vitest run`                                        | **1695 passed / 3 skipped**（60 个文件）                                                                                                                                                                         |
+| 覆盖率（`npx vitest run --coverage`）               | statements 89.02 / branches 81.45 / functions 91.31 / lines 89.02（v8 provider；Node v24.14.1 / vitest 3.2.4；阈值 80/75/85/80，全部达标；同版本多次运行约 ±0.05pp，跨 Node 版本 branches/functions 可差约 1pp） |
+| `vite build` + `check:exports` + `check:dist-fresh` | 140 个导出目标全部存在，199 个构建输入指纹一致                                                                                                                                                                   |
+| `build:examples`                                    | 构建成功，无报错                                                                                                                                                                                                 |
 
 > 上表是 2026-11-21 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
 >
