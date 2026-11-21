@@ -97,6 +97,10 @@
 
 ### Fixed
 
+- **drawer**: `onClose` 回调抛错不再中断关闭流程，抽屉仍会播放动画、移除节点并释放滚动锁与焦点陷阱
+- **tree**: 子节点全部为 disabled 时，不再把显式写入的父节点勾选重算为未勾选
+- **tabs**: `setItems()` 时当前激活项变为 disabled，会回退到首个可用项
+- **modal**: 关闭已不存在的实例时同步清理 `onCancel` 去重标记，避免内部 Set 残留
 - **select**: 外部按钮在 click 中调用 `open()` 时，不再被同一次点击冒泡到 document 的“点击外部关闭”立即收起
 - **upload**: 移除上传中的文件后会释放并发槽位并继续排空队列，修复排队文件永久停留在 `waiting` 的问题
 - **table**: `setDataSource()` 直接保存数组（保留行对象身份与 `Date` 等值），不再做 JSON 序列化；通过 `getDataSource()` 返回的代理数组原地 push/splice 会自动刷新，调用方原始数组修改后可调用 `refresh()` 重新读取
