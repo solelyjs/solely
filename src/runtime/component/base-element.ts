@@ -185,6 +185,8 @@ class BaseElement<
     #isActive = false;
     #needsRefresh = false;
     #propsInstalled = false;
+    /** 是否已经历过首次连接：重挂载时不再重放 attribute → state */
+    #hasConnected = false;
 
     // reflect ↔ attributeChangedCallback 循环保护
     #reflectingAttrs = new Set<string>();
@@ -314,12 +316,16 @@ class BaseElement<
         }
 
         const { proxy, dispose } = observe(data, (change: ChangeItem) => {
-            // set 与 array-replace 都带有 key，均可用于 reflect 同步
-            if (change.type === 'set' || change.type === 'array-replace') {
+            // 只有顶层属性变更才允许镜像到 attribute。
+            // 嵌套对象的变更会冒泡到 $data，但 payload.key 仍是子字段名；
+            // 若直接用 key 查 propMap，`options[0].disabled = true` 会给宿主加上 disabled。
+            const changePath = (change as { path?: Array<string | number> }).path;
+            const isTopLevelChange = !Array.isArray(changePath) || changePath.length <= 1;
+
+            if ((change.type === 'set' || change.type === 'array-replace') && isTopLevelChange) {
                 const { key, newValue } = change;
 
                 const manifest = this.#manifest as InternalManifest;
-                // 这里的 key 是 PathKey，如果是顶层属性同步，它通常是 string
                 const propKey = String(key);
 
                 const desc = manifest.propMap?.get(propKey);
@@ -758,28 +764,33 @@ class BaseElement<
             // 安装响应式属性访问器（如果用户没有自定义 getter/setter）
             this.#installReactivePropsOnce();
 
-            // 遍历预设好的属性映射
-            for (const [attrName, desc] of manifest.attributeMap) {
-                const propName = desc.name; // 对应的驼峰或原始变量名
+            // 只在首次连接时重放 attribute → state。
+            // 重挂载时 attribute 仍是初始值，重放会用旧值覆盖运行态
+            // （例如 input 用户输入后 DOM 被移动/虚拟列表回收再挂回）。
+            // 断开期间的 attribute 变更已由 attributeChangedCallback 同步。
+            if (!this.#hasConnected) {
+                for (const [attrName, desc] of manifest.attributeMap) {
+                    const propName = desc.name; // 对应的驼峰或原始变量名
 
-                if (this.hasAttribute(attrName)) {
-                    const raw = this.getAttribute(attrName);
-                    const value = this.#convertAttrValue(
-                        raw,
-                        resolveDefaultValue(desc.default, this),
-                        desc.type,
-                        attrName,
-                    );
-                    this.#writeProp(desc, value);
-                } else if ('default' in desc) {
-                    // 只有在 property 没有被设置过（比如通过 s-model）的情况下才使用默认值
-                    // 检查 $data 中是否已经有值（非 undefined），有则保留，无则使用默认值
-                    const currentValue = (this.$data as DataRecord)[propName];
-                    if (currentValue === undefined) {
-                        this.#writeProp(desc, resolveDefaultValue(desc.default, this));
-                        // 对于布尔类型，如果默认值是 true，同步设置到 HTML 属性
-                        if (desc.type === 'boolean' && desc.default === true) {
-                            this.setAttribute(attrName, '');
+                    if (this.hasAttribute(attrName)) {
+                        const raw = this.getAttribute(attrName);
+                        const value = this.#convertAttrValue(
+                            raw,
+                            resolveDefaultValue(desc.default, this),
+                            desc.type,
+                            attrName,
+                        );
+                        this.#writeProp(desc, value);
+                    } else if ('default' in desc) {
+                        // 只有在 property 没有被设置过（比如通过 s-model）的情况下才使用默认值
+                        // 检查 $data 中是否已经有值（非 undefined），有则保留，无则使用默认值
+                        const currentValue = (this.$data as DataRecord)[propName];
+                        if (currentValue === undefined) {
+                            this.#writeProp(desc, resolveDefaultValue(desc.default, this));
+                            // 对于布尔类型，如果默认值是 true，同步设置到 HTML 属性
+                            if (desc.type === 'boolean' && desc.default === true) {
+                                this.setAttribute(attrName, '');
+                            }
                         }
                     }
                 }
@@ -797,6 +808,7 @@ class BaseElement<
             this.#scheduleRefresh();
         }
 
+        this.#hasConnected = true;
         this.mounted();
     }
 

@@ -159,10 +159,9 @@ describe('solely-tree', () => {
         expect(el.getTreeData()[0].key).toBe('x');
     });
 
-    it('should reset to attribute data after re-attach (documented caveat)', async () => {
-        // 锁定 parseTreeData() 注释描述的边界：重新挂载时 connectedCallback 会把
-        // tree-data attribute 重新同步进 $data，随后 mounted -> parseTreeData()
-        // 用它覆盖 setTreeData() 写入的动态数据。
+    it('should keep runtime tree data after re-attach', async () => {
+        // 基座只在首次连接时重放 attribute → state，重挂载不会被 tree-data
+        // 的初始值覆盖 setTreeData() 写入的动态数据。
         const el = createTree(SAMPLE);
         await tick();
 
@@ -177,13 +176,9 @@ describe('solely-tree', () => {
         await tick();
 
         titles = [...el.shadowRoot.querySelectorAll('.tree__title')].map((t: any) => t.textContent);
-        expect(titles).not.toContain('Dynamic');
-        expect(titles).toContain('Parent');
-        // 恢复方式：重新挂载后再调一次 setTreeData
-        el.setTreeData([{ key: 'dynamic', title: 'Dynamic' }]);
-        await tick();
-        titles = [...el.shadowRoot.querySelectorAll('.tree__title')].map((t: any) => t.textContent);
         expect(titles).toContain('Dynamic');
+        expect(titles).not.toContain('Parent');
+        expect(el.getTreeData()).toEqual([{ key: 'dynamic', title: 'Dynamic' }]);
     });
 
     it('should re-render when tree-data attribute changes after mount', async () => {

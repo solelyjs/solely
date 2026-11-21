@@ -81,6 +81,27 @@ describe('solely-input 挂载静默', () => {
         expect(onChange).toHaveBeenCalledTimes(1);
         expect(el.getValue()).toBe('c');
     });
+
+    it('断开重连不会被初始 value 属性覆盖运行态', async () => {
+        const el = document.createElement('solely-input') as any;
+        el.setAttribute('value', 'a');
+        document.body.appendChild(el);
+        await tick();
+        expect(el.getValue()).toBe('a');
+
+        // value 不在镜像清单内：运行态与 attribute 允许不一致
+        el.value = 'b';
+        await tick();
+        expect(el.getValue()).toBe('b');
+        expect(el.getAttribute('value')).toBe('a');
+
+        // 重挂载不能重放 attribute → state（H3）
+        const parent = el.parentNode as HTMLElement;
+        parent.removeChild(el);
+        parent.appendChild(el);
+        await tick();
+        expect(el.getValue()).toBe('b');
+    });
 });
 
 describe('solely-input 新旧属性名并存', () => {
