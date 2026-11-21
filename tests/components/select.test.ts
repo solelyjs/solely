@@ -814,6 +814,49 @@ describe('solely-select 修复回归', () => {
         await tick();
         expect(el.$data.isOpen).toBe(false);
     });
+
+    it('原地修改 options 条目会同步下拉内容，且不污染宿主属性', async () => {
+        const el = createSelect();
+        await tick();
+        await open(el);
+
+        // 引用不变、仅 label 变化：仍要重渲染（M2）
+        el.options[0].label = '选项A2';
+        await tick();
+        const labels = Array.from(el.shadowRoot.querySelectorAll('.select__option-label')).map(
+            (node: any) => node.textContent,
+        );
+        expect(labels[0]).toBe('选项A2');
+
+        // 引用不变、仅 disabled 变化：禁用样式同步（M2）
+        el.options[1].disabled = true;
+        await tick();
+        const optionNodes = el.shadowRoot.querySelectorAll('.select__option');
+        expect(optionNodes[1].classList.contains('select__option--disabled')).toBe(true);
+
+        // 嵌套字段名与宿主 prop 同名时不能被镜像成宿主属性（H1）
+        expect(el.hasAttribute('disabled')).toBe(false);
+        expect(el.disabled).toBe(false);
+    });
+
+    it('收起动画期间重新打开会恢复定位订阅', async () => {
+        const el = createSelect();
+        await tick();
+        await open(el);
+        expect(typeof el._stopObserve).toBe('function');
+
+        // 开始收起动画：解绑 observe，但浮层尚未移除
+        el.closeDropdown();
+        expect(el.$data.closing).toBe(true);
+        expect(el._stopObserve).toBeUndefined();
+
+        // 动画未结束就重新打开，需要重新入栈并恢复定位订阅（M3）
+        el.open();
+        await tick();
+        expect(el.$data.closing).toBe(false);
+        expect(el.$data.isOpen).toBe(true);
+        expect(typeof el._stopObserve).toBe('function');
+    });
 });
 
 describe('solely-select 开箱即用：声明式选项与字符串图标', () => {

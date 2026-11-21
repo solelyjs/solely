@@ -432,6 +432,15 @@ class SolelySelect
         }
 
         if (this._dropdown === dropdown) {
+            // 关闭动画期间 observe 已被解绑，重新打开时需要恢复定位订阅
+            if (!this._stopObserve) {
+                this._stopObserve = observePosition({
+                    anchor: this,
+                    floating: dropdown,
+                    update: () => this.positionDropdown(),
+                    onAnchorLost: () => this.close(),
+                });
+            }
             this.positionDropdown();
             return;
         }
@@ -716,9 +725,15 @@ class SolelySelect
             const container = node.querySelector('.select__option-content') as OptionContentWithRef | null;
             if (!container) return;
 
-            // 选项对象引用未变化时跳过，避免每次高亮移动都重建 DOM
-            if (container.__solelyOptionRef === option) return;
+            // 选项对象引用未变化、且可见字段也一致时才跳过：
+            // 原地修改 label/value/icon/disabled 时引用不变，但必须重渲染
+            const iconSignature = typeof option.icon === 'string' ? option.icon : '';
+            const signature = [option.label ?? '', option.value ?? '', option.disabled ? '1' : '0', iconSignature].join(
+                '\u0000',
+            );
+            if (container.__solelyOptionRef === option && container.dataset.optionSignature === signature) return;
             container.__solelyOptionRef = option;
+            container.dataset.optionSignature = signature;
             container.textContent = '';
 
             if (option.isGroup) {
@@ -1159,9 +1174,10 @@ class SolelySelect
         if (this.$data.isOpen) {
             this.$data.closing = false;
             this.$data.focused = true;
-            // 若正处在收起动画中，浮层已 deactivate，需要重新入栈
+            // 若正处在收起动画中，浮层已 deactivate，需要重新入栈并恢复定位订阅
             if (this._overlay) {
                 this._overlay.activate();
+                if (this._dropdown && !this._stopObserve) this.setupDropdown();
             } else {
                 this.setupDropdown();
             }
