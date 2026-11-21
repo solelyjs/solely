@@ -180,14 +180,10 @@ class SolelyTable extends BaseElement<TableProps> {
      */
     #handleReactiveDataChange = (event: Event): void => {
         const path = (event as CustomEvent).detail?.path as unknown;
-        if (Array.isArray(path) && path[0] === 'dataSource') {
+        if (Array.isArray(path) && (path[0] === 'dataSource' || path[0] === 'columns')) {
             this.#displayedDataSourceCache = null;
         }
     };
-
-    created(): void {
-        this.addEventListener('dataChange', this.#handleReactiveDataChange);
-    }
 
     unmounted(): void {
         this.removeEventListener('dataChange', this.#handleReactiveDataChange);
@@ -593,6 +589,8 @@ class SolelyTable extends BaseElement<TableProps> {
     }
 
     mounted(): void {
+        // 与 unmounted 成对注册：created() 只调用一次，而 disconnected 每次都会触发 unmounted
+        this.addEventListener('dataChange', this.#handleReactiveDataChange);
         this.refresh();
     }
 

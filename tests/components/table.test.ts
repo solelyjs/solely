@@ -90,6 +90,50 @@ describe('solely-table', () => {
         expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(1);
     });
 
+    it('断开重连后仍响应代理数组的原地修改', async () => {
+        const el = createTable();
+        await tick();
+        // 使用 property 写入代理数组，attribute 路径得到的是非响应式解析结果
+        el.dataSource = [
+            { name: 'Alice', age: 20 },
+            { name: 'Bob', age: 30 },
+        ];
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(2);
+
+        // created() 只在首次连接执行，dataChange 监听必须随 mounted 恢复（H2）
+        const parent = el.parentNode as HTMLElement;
+        parent.removeChild(el);
+        parent.appendChild(el);
+        await tick();
+
+        el.getDataSource().push({ name: 'Eve', age: 50 });
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(3);
+
+        // 重连后继续响应，且重复监听不会造成重复渲染
+        el.getDataSource().push({ name: 'Frank', age: 60 });
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(4);
+    });
+
+    it('columns 原地修改会失效展示缓存', async () => {
+        const el = createTable({}, [], DATA);
+        await tick();
+
+        el.columns = [{ title: 'Name', dataIndex: 'age', key: 'name' }];
+        el.filterValues = { name: ['Alice'] };
+        await tick();
+        // 列仍按 age 取值，与筛选值 Alice 不匹配
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(0);
+
+        // 引用不变，仅 dataIndex 变化：缓存必须失效，否则仍返回空结果（M5）
+        el.columns[0].dataIndex = 'name';
+        await tick();
+        expect(el.shadowRoot.querySelectorAll('tr[part="row"]').length).toBe(1);
+        expect(el.shadowRoot.querySelector('tr[part="row"] td')?.textContent).toBe('Alice');
+    });
+
     it('should map size prop to table class (small/large/default-md)', async () => {
         const small = createTable({ size: 'small' });
         await tick();
