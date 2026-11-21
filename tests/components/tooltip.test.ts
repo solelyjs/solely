@@ -45,6 +45,23 @@ describe('Tooltip command component', () => {
         expect(document.querySelector('.solely-tooltip')).toBeNull();
     });
 
+    it('API 重建同目标 tooltip 时会复位原 bind 状态', () => {
+        const target = document.createElement('button');
+        document.body.appendChild(target);
+
+        const instance = Tooltip.bind(target, { content: '绑定提示', trigger: 'click' });
+        instance.show();
+        expect(document.querySelector('.solely-tooltip')!.textContent).toContain('绑定提示');
+
+        // 同目标重建：旧 bind 的 visible / currentTooltipId 必须复位
+        Tooltip.show(target, { content: 'API 提示', duration: 0 });
+        expect(document.querySelector('.solely-tooltip')!.textContent).toContain('API 提示');
+
+        instance.show();
+        expect(document.querySelector('.solely-tooltip')!.textContent).toContain('绑定提示');
+        instance.hide();
+    });
+
     it('should close on Escape without consuming the event', async () => {
         const target = document.createElement('button');
         document.body.appendChild(target);

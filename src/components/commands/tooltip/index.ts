@@ -167,8 +167,8 @@ function showTooltip(target: HTMLElement, options: TooltipOptions, reset?: () =>
     const existingIndex = tooltipList.findIndex(t => t.target === target);
     if (existingIndex !== -1) {
         const [existing] = tooltipList.splice(existingIndex, 1);
-        // 同一实例的重建不应把调用方的 visible 复位
-        existing.reset = undefined;
+        // 保留 reset：dispose 时同步复位原 bind 实例的 visible/currentTooltipId，
+        // 否则旧 bind 会永久停留在 visible=true，后续无法再次显示
         disposeTooltip(existing);
     }
 
