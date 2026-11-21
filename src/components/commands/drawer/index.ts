@@ -260,7 +260,7 @@ function open(options: DrawerOptions): DrawerInstance {
             const updateShouldClone = newOptions.cloneElement ?? shouldClone;
             // 更新标题
             if (newOptions.title !== undefined) {
-                const titleEl = wrap.querySelector('.solely-drawer__title') as HTMLElement;
+                let titleEl = wrap.querySelector('.solely-drawer__title') as HTMLElement | null;
                 if (titleEl) {
                     // 清空现有内容
                     titleEl.innerHTML = '';
@@ -272,22 +272,38 @@ function open(options: DrawerOptions): DrawerInstance {
                         titleEl.appendChild(updateShouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
                     }
                 } else if (newOptions.title) {
-                    // 如果之前没有标题，需要创建 header
+                    // 如果之前没有标题，需要创建 header；标题必须带 id，供 aria-labelledby 引用
                     const header = createElement('div', { className: 'solely-drawer__header' });
-                    const title = createElement('h3', {
+                    titleEl = createElement('h3', {
                         className: 'solely-drawer__title',
-                    });
+                        attrs: { id: titleId },
+                    }) as HTMLElement;
 
                     // 支持字符串和 DOM 元素
                     if (typeof newOptions.title === 'string') {
-                        title.textContent = newOptions.title;
+                        titleEl.textContent = newOptions.title;
                     } else if (newOptions.title instanceof HTMLElement) {
-                        title.appendChild(updateShouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
+                        titleEl.appendChild(updateShouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
                     }
 
-                    header.appendChild(title);
+                    header.appendChild(titleEl);
                     const drawer = wrap.querySelector('.solely-drawer') as HTMLElement;
                     drawer?.insertBefore(header, drawer.firstChild);
+                }
+
+                // 标题增删后重新同步 dialog 的可访问名称：
+                // 标题存在 → aria-labelledby；标题被清空 → 回退 aria-label，避免指向空节点
+                if (titleEl) {
+                    const hasTitle = !!titleEl.textContent?.trim() || titleEl.childElementCount > 0;
+                    const drawer = wrap.querySelector('.solely-drawer') as HTMLElement | null;
+                    if (hasTitle) {
+                        if (!titleEl.id) titleEl.id = titleId;
+                        drawer?.setAttribute('aria-labelledby', titleEl.id);
+                        drawer?.removeAttribute('aria-label');
+                    } else {
+                        drawer?.removeAttribute('aria-labelledby');
+                        drawer?.setAttribute('aria-label', '抽屉');
+                    }
                 }
             }
 
@@ -310,19 +326,26 @@ function open(options: DrawerOptions): DrawerInstance {
             // 更新方向/尺寸
             const drawerEl = wrap.querySelector('.solely-drawer') as HTMLElement;
             if (drawerEl) {
-                // 方向变化时同步切换 BEM 修饰类
-                if (newOptions.placement !== undefined && newOptions.placement !== currentPlacement) {
-                    currentPlacement = newOptions.placement;
-                    drawerEl.classList.remove(
-                        'solely-drawer--left',
-                        'solely-drawer--right',
-                        'solely-drawer--top',
-                        'solely-drawer--bottom',
+                // 方向变化时同步切换 BEM 修饰类；非法值回退当前方向，避免拼出无样式类名
+                if (newOptions.placement !== undefined) {
+                    const nextPlacement = oneOf(
+                        newOptions.placement,
+                        ['left', 'right', 'top', 'bottom'],
+                        currentPlacement,
                     );
-                    drawerEl.classList.add(`solely-drawer--${currentPlacement}`);
-                    // 清理旧方向遗留的行内尺寸，避免切换方向后尺寸失效
-                    drawerEl.style.width = '';
-                    drawerEl.style.height = '';
+                    if (nextPlacement !== currentPlacement) {
+                        currentPlacement = nextPlacement;
+                        drawerEl.classList.remove(
+                            'solely-drawer--left',
+                            'solely-drawer--right',
+                            'solely-drawer--top',
+                            'solely-drawer--bottom',
+                        );
+                        drawerEl.classList.add(`solely-drawer--${currentPlacement}`);
+                        // 清理旧方向遗留的行内尺寸，避免切换方向后尺寸失效
+                        drawerEl.style.width = '';
+                        drawerEl.style.height = '';
+                    }
                 }
 
                 if (newOptions.width !== undefined && (currentPlacement === 'left' || currentPlacement === 'right')) {

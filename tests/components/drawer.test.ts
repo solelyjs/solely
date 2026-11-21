@@ -207,6 +207,34 @@ describe('Drawer command component', () => {
         expect(drawerEl.className).toBe('solely-drawer solely-drawer--top custom-drawer');
     });
 
+    it('update() 补标题 / 清空标题时同步 aria-labelledby 与 aria-label', () => {
+        const instance = Drawer.open({ content: 'c' });
+        const drawerEl = document.querySelector('.solely-drawer') as HTMLElement;
+        expect(drawerEl.hasAttribute('aria-labelledby')).toBe(false);
+        expect(drawerEl.getAttribute('aria-label')).toBe('抽屉');
+
+        // 原本没有标题：补标题时必须带 id 并切换到 aria-labelledby
+        instance.update({ title: '新标题' });
+        const title = drawerEl.querySelector('.solely-drawer__title') as HTMLElement;
+        expect(title.id).toBeTruthy();
+        expect(drawerEl.getAttribute('aria-labelledby')).toBe(title.id);
+        expect(drawerEl.hasAttribute('aria-label')).toBe(false);
+
+        // 标题清空后不能继续指向空节点
+        instance.update({ title: '' });
+        expect(drawerEl.hasAttribute('aria-labelledby')).toBe(false);
+        expect(drawerEl.getAttribute('aria-label')).toBe('抽屉');
+    });
+
+    it('update() 忽略非法 placement，保持当前方向', () => {
+        const instance = Drawer.open({ title: 't', placement: 'right' });
+        instance.update({ placement: 'bogus' as never });
+
+        const drawerEl = document.querySelector('.solely-drawer') as HTMLElement;
+        expect(drawerEl.classList.contains('solely-drawer--right')).toBe(true);
+        expect(drawerEl.className).not.toContain('bogus');
+    });
+
     it('关闭按钮渲染线性 SVG 而不是 × 文本字符', () => {
         Drawer.open({ title: 't', content: 'c' });
         const close = document.querySelector('.solely-drawer__close') as HTMLElement;
