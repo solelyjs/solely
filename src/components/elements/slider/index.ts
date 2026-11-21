@@ -602,7 +602,8 @@ class SolelySlider extends BaseElement<
      */
     private snapToStep(rawValue: number, step: number, min: number, max: number): number {
         const bounded = Math.max(min, Math.min(max, rawValue));
-        const snapped = Math.round(bounded / step) * step;
+        // step 网格从 min 起算：min=10/step=3 时合法值是 10、13、16…
+        const snapped = Math.round((bounded - min) / step) * step + min;
         const decimals = Math.min(this.getStepDecimals(step), 20);
         const normalized = Number(snapped.toFixed(decimals));
         return Math.max(min, Math.min(max, normalized));

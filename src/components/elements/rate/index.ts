@@ -76,6 +76,21 @@ class SolelyRate extends BaseElement<RateProps & { hoverValue: number | undefine
     }
 
     /**
+     * 把实际存储的分值收敛到 [0, count]。
+     * 之前只在渲染时用 resolveValue 裁剪，`value` / `getValue()` 仍会返回越界值，
+     * 与视觉、ARIA 不一致；这里统一落库，保证 API 读取与展示同源。
+     */
+    private clampValue(): void {
+        const current = Number(this.$data.value ?? 0);
+        if (!Number.isFinite(current)) {
+            this.$data.value = 0;
+            return;
+        }
+        const clamped = Math.max(0, Math.min(this.resolveCount(), current));
+        if (clamped !== current) this.$data.value = clamped;
+    }
+
+    /**
      * roving tabindex：只有对应当前评分的星（向上取整）进入 Tab 序列
      * 禁用时整组移出 Tab 序列（原生禁用 radio 不可聚焦）
      */
@@ -138,6 +153,8 @@ class SolelyRate extends BaseElement<RateProps & { hoverValue: number | undefine
     mounted(): void {
         this.dragging = false;
         this.dragValue = undefined;
+        // 初始属性（如 value="9"）可能超出 count，先归一化再渲染
+        this.clampValue();
         this.refresh();
         this.$data.hoverValue = undefined;
         this.generateStarCount();
@@ -179,6 +196,8 @@ class SolelyRate extends BaseElement<RateProps & { hoverValue: number | undefine
      */
     generateStarCount(): void {
         this.$data.starCount = Array.from({ length: this.resolveCount() }, (_, i) => i + 1);
+        // count 调小后原分值可能越界，同步收敛
+        this.clampValue();
     }
 
     /**
@@ -454,7 +473,13 @@ class SolelyRate extends BaseElement<RateProps & { hoverValue: number | undefine
      * 设置评分值
      */
     public setValue(value: number): void {
-        this.$data.value = value;
+        const raw = Number(value);
+        if (!Number.isFinite(raw)) {
+            this.$data.value = 0;
+            return;
+        }
+        // 与展示 / ARIA 同口径收敛，避免 API 写入越界值后读取与视觉不一致
+        this.$data.value = Math.max(0, Math.min(this.resolveCount(), raw));
     }
 
     /**

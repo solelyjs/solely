@@ -195,10 +195,35 @@ describe('solely-rate', () => {
     it('should clamp aria-checked and visuals when value exceeds count', async () => {
         const el = createRate({ value: '9', count: '5' });
         await tick();
+        // API 读取也必须收敛，不能只裁视觉 / ARIA
+        expect(el.value).toBe(5);
+        expect(el.getValue()).toBe(5);
         expect(stars(el)).toHaveLength(5);
         expect(stars(el)[4].getAttribute('aria-checked')).toBe('true');
         expect(stars(el)[4].classList.contains('rate__star--full')).toBe(true);
         expect(stars(el)[4].getAttribute('tabindex')).toBe('0');
+    });
+
+    it('setValue 与 count 调小都会把分值收敛到 [0, count]', async () => {
+        const el = createRate({ value: '2' });
+        await tick();
+
+        el.setValue(9);
+        await tick();
+        expect(el.value).toBe(5);
+        expect(el.getValue()).toBe(5);
+
+        el.setValue(-3);
+        await tick();
+        expect(el.value).toBe(0);
+
+        el.setValue(4);
+        await tick();
+        el.count = 3;
+        await tick();
+        expect(el.value).toBe(3);
+        expect(el.getValue()).toBe(3);
+        expect(stars(el)).toHaveLength(3);
     });
 
     it('should treat a negative count as zero stars', async () => {

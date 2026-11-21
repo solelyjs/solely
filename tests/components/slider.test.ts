@@ -78,6 +78,23 @@ describe('solely-slider P1 补齐', () => {
         expect(el.value).toEqual([69, 69]);
     });
 
+    it('step 网格从 min 起算，而不是从 0 起算', async () => {
+        const el = createSlider({ min: '10', max: '40', step: '3', value: '10' });
+        await tick();
+
+        keydown(rail(el), 'ArrowRight');
+        await tick();
+        expect(el.value).toBe(13);
+
+        keydown(rail(el), 'ArrowRight');
+        await tick();
+        expect(el.value).toBe(16);
+
+        keydown(rail(el), 'ArrowLeft');
+        await tick();
+        expect(el.value).toBe(13);
+    });
+
     it('should drag the nearest handle when clicking the rail', async () => {
         const el = createSlider({ range: '' });
         await tick();
