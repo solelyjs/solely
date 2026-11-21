@@ -97,6 +97,7 @@
 
 ### Fixed
 
+- **select**: 外部按钮在 click 中调用 `open()` 时，不再被同一次点击冒泡到 document 的“点击外部关闭”立即收起
 - **upload**: 移除上传中的文件后会释放并发槽位并继续排空队列，修复排队文件永久停留在 `waiting` 的问题
 - **table**: `setDataSource()` 直接保存数组（保留行对象身份与 `Date` 等值），不再做 JSON 序列化；通过 `getDataSource()` 返回的代理数组原地 push/splice 会自动刷新，调用方原始数组修改后可调用 `refresh()` 重新读取
 - **pagination**: `setCurrent()` 现在会夹取到 `[1, pageLimit]` 并派发 `change`（detail 为 `{ current, pageSize }`）
