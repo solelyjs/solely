@@ -97,6 +97,11 @@
 
 ### Fixed
 
+- **runtime**: 嵌套响应式变更不再误镜像到宿主 attribute（`options[0].disabled = true` 不会再把 `<solely-select>` 变成禁用态）；attribute → state 只在首次连接重放，断开重连保留运行态（input 用户输入、tree 动态数据不再被初始 attribute 覆盖）
+- **table**: `dataChange` 监听改在 `mounted()` 注册，断开重连后代理数组的原地修改仍会刷新；`columns` 原地修改（同一数组引用）会失效展示缓存
+- **select**: 原地修改选项 `label` / `value` / `icon` / `disabled` 会同步下拉内容；收起动画期间重新 `open()` 会恢复定位订阅与浮层出栈
+- **slider**: 键盘与拖拽的 step 网格从 `min` 起算（`min=10` / `step=3` 得到 10、13、16，而不是 12）
+- **rate**: `value` 统一收敛到 `[0, count]`，`setValue()` / 初始属性 / `count` 调小后的 API 读取与视觉、ARIA 保持一致
 - **drawer**: `onClose` 回调抛错不再中断关闭流程，抽屉仍会播放动画、移除节点并释放滚动锁与焦点陷阱
 - **tree**: 子节点全部为 disabled 时，不再把显式写入的父节点勾选重算为未勾选
 - **tabs**: `setItems()` 时当前激活项变为 disabled，会回退到首个可用项
@@ -261,7 +266,7 @@
     - any 收敛时将 `HTMLElement` 检查提取为变量，破坏了 `isBrowser &&` 的短路语义，Node 环境提前求值抛 `ReferenceError: HTMLElement is not defined`
     - 恢复 `typeof HTMLElement !== 'undefined'` 守卫，并由 `tests/ssr-safety.test.ts` 锁定
 - **fix(security)**: `sanitizeSvg` 增加 `DOMParser` 存在性守卫，Node/SSR 下返回空串（fail closed）而非抛错
-- **fix(tree)**: 修复 `setTreeData` 误将 `$data.treeData` 回写为 JSON 字符串导致 `flattenTree` 遍历字符串字符的问题；并注释说明重新挂载时 attribute 旧值可能覆盖动态数据的边界（该边界已由 `tests/components/tree.test.ts` 的「re-attach」用例锁定：`connectedCallback` 会把 `tree-data` 重新同步进 `$data`，随后 `mounted` → `parseTreeData()` 覆盖动态数据）
+- **fix(tree)**: 修复 `setTreeData` 误将 `$data.treeData` 回写为 JSON 字符串导致 `flattenTree` 遍历字符串字符的问题；当时锁定过「重新挂载时 attribute 旧值覆盖动态数据」的边界，该边界后续已由基座修复（attribute → state 只在首次连接重放），用例改为锁定重挂载保留运行态数据
 
 ## [0.5.8] - 2026-08-30
 
