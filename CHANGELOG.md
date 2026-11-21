@@ -99,7 +99,7 @@
 
 - **runtime**: 嵌套响应式变更不再误镜像到宿主 attribute（`options[0].disabled = true` 不会再把 `<solely-select>` 变成禁用态）；attribute → state 只在首次连接重放，断开重连保留运行态（input 用户输入、tree 动态数据不再被初始 attribute 覆盖）
 - **table**: `dataChange` 监听改在 `mounted()` 注册，断开重连后代理数组的原地修改仍会刷新；`columns` 原地修改（同一数组引用）会失效展示缓存
-- **select**: 原地修改选项 `label` / `value` / `icon` / `disabled` 会同步下拉内容；收起动画期间重新 `open()` 会恢复定位订阅与浮层出栈
+- **select**: 原地修改选项 `label` / `value` / `icon` / `disabled` 会同步下拉内容；收起动画期间重新 `open()` 会恢复定位订阅与浮层出栈；挂载后的首次 `updated()` 不再重复解析 `options`
 - **slider**: 键盘与拖拽的 step 网格从 `min` 起算（`min=10` / `step=3` 得到 10、13、16，而不是 12）
 - **rate**: `value` 统一收敛到 `[0, count]`，`setValue()` / 初始属性 / `count` 调小后的 API 读取与视觉、ARIA 保持一致
 - **drawer**: `onClose` 回调抛错不再中断关闭流程，抽屉仍会播放动画、移除节点并释放滚动锁与焦点陷阱
