@@ -222,4 +222,20 @@ describe('solely-tabs', () => {
         await tick();
         expect(el.shadowRoot.querySelectorAll('.tabs__tab').length).toBe(4);
     });
+
+    it('setItems 时当前项变为 disabled 会回退到首个可用项', async () => {
+        const el = createTabs(SAMPLE);
+        await tick();
+        el.activeKey = 'b';
+        await tick();
+
+        el.setItems([
+            { key: 'a', label: 'A' },
+            { key: 'b', label: 'B', disabled: true },
+            { key: 'c', label: 'C' },
+        ]);
+        await tick();
+
+        expect(el.activeKey).toBe('a');
+    });
 });

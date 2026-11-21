@@ -354,8 +354,9 @@ class SolelyTabs extends BaseElement<TabsProps & { visitedKeys: string[] }> {
     public setItems(items: TabItem[]): void {
         this.$data.items = JSON.stringify(items);
         const list = Array.isArray(items) ? items : [];
-        // 新列表可能不含当前 activeKey：回退到首个可用（未禁用）项，避免所有面板隐藏
-        if (!this.$data.activeKey || !list.some(item => item.key === this.$data.activeKey)) {
+        // 新列表可能不含当前 activeKey，或当前项已变成 disabled：回退到首个可用项
+        const active = this.$data.activeKey ? list.find(item => item.key === this.$data.activeKey) : undefined;
+        if (!active || active.disabled) {
             const fallback = list.find(item => !item.disabled) ?? list[0];
             this.$data.activeKey = fallback?.key ?? '';
         }
