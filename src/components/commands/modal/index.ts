@@ -97,7 +97,11 @@ async function closeModalById(id: number, result?: unknown): Promise<void> {
 
     const task = (async () => {
         const index = modalList.findIndex(m => m.id === id);
-        if (index === -1) return;
+        if (index === -1) {
+            // 实例已不存在：顺手清理取消标记，避免 Set 单调增长
+            cancelNotifiedIds.delete(id);
+            return;
+        }
 
         const modalInfo = modalList[index];
 
