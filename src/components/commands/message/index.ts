@@ -36,7 +36,8 @@ const globalConfig: MessageConfig = {
 };
 
 let containerCleanupTimer: number | undefined;
-const closingIds = new Set<number>();
+/** 进行中的关闭任务：同一 id 复用同一个 Promise，destroy() 才能等到动画结束 */
+const closingTasks = new Map<number, Promise<void>>();
 
 interface MessageInfo {
     id: number;
@@ -158,6 +159,8 @@ function getContainer(placement: MessagePlacement = 'top'): HTMLElement {
 }
 
 function scheduleContainerCleanup(): void {
+    // 测试环境销毁 / SSR 场景没有 window：直接跳过清理，避免 unhandled rejection
+    if (typeof window === 'undefined') return;
     if (containerCleanupTimer) {
         clearTimeout(containerCleanupTimer);
     }
@@ -258,40 +261,47 @@ function createMessageElement(options: MessageOptions, id: number): HTMLElement 
 }
 
 // ---------- 关闭消息 ----------
-async function closeMessage(id: number): Promise<void> {
-    if (closingIds.has(id)) return;
-    closingIds.add(id);
+function closeMessage(id: number): Promise<void> {
+    const pending = closingTasks.get(id);
+    if (pending) return pending;
+
+    const task = performClose(id);
+    closingTasks.set(id, task);
+    // 用 then 的双回调清理，避免 finally 派生的 rejected Promise 变成 unhandled rejection
+    void task.then(
+        () => closingTasks.delete(id),
+        () => closingTasks.delete(id),
+    );
+    return task;
+}
+
+async function performClose(id: number): Promise<void> {
+    const index = messageList.findIndex(m => m.id === id);
+    if (index === -1) return;
+
+    const message = messageList[index];
+
+    if (message.timer) {
+        clearTimeout(message.timer);
+        message.timer = undefined;
+    }
+
+    await addClosingAnimation(message.element, ANIMATION_DURATION.NORMAL);
+
+    message.element.remove();
+
+    const currentIndex = messageList.findIndex(m => m.id === id);
+    if (currentIndex !== -1) {
+        messageList.splice(currentIndex, 1);
+    }
 
     try {
-        const index = messageList.findIndex(m => m.id === id);
-        if (index === -1) return;
-
-        const message = messageList[index];
-
-        if (message.timer) {
-            clearTimeout(message.timer);
-            message.timer = undefined;
-        }
-
-        await addClosingAnimation(message.element, ANIMATION_DURATION.NORMAL);
-
-        message.element.remove();
-
-        const currentIndex = messageList.findIndex(m => m.id === id);
-        if (currentIndex !== -1) {
-            messageList.splice(currentIndex, 1);
-        }
-
-        try {
-            message.onClose?.();
-        } catch (err) {
-            console.error('[Solely Message] onClose callback error:', err);
-        }
-
-        scheduleContainerCleanup();
-    } finally {
-        closingIds.delete(id);
+        message.onClose?.();
+    } catch (err) {
+        console.error('[Solely Message] onClose callback error:', err);
     }
+
+    scheduleContainerCleanup();
 }
 
 // ---------- 公开 API ----------

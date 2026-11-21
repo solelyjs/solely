@@ -133,6 +133,15 @@ describe('Message command component', () => {
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 
+    it('destroy() 会等待正在关闭的消息动画结束', async () => {
+        const inst = Message.info('延迟关闭', { duration: 0 });
+        // 先触发关闭动画，再立即 destroy：destroy 必须复用同一个关闭 Promise
+        void inst.close();
+
+        await Message.destroy();
+        expect(document.querySelector('.solely-message')).toBeNull();
+    });
+
     it('loading 类型默认 duration=0，不会自动关闭', async () => {
         Message.loading('一直加载'); // duration 0，不自动关闭
         await new Promise<void>(r => setTimeout(r, 1000));
