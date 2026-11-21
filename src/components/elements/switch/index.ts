@@ -276,6 +276,22 @@ class SolelySwitch extends BaseElement<SwitchProps, SwitchRefs> {
     }
 
     /**
+     * defaultChecked：property 写入时同步 form reset 目标。
+     *
+     * property → attribute 的镜像不会触发 attributeChanged 钩子，
+     * 因此不能只依赖 attributeChanged 中的 setFormDefault。
+     */
+    get defaultChecked(): boolean {
+        return !!this.$data.defaultChecked;
+    }
+
+    set defaultChecked(value: boolean) {
+        this.$data.defaultChecked = !!value;
+        // 框架初始化 / attribute 同步写入由 attributeChanged 钩子负责
+        if (!this.isSyncingProps) setFormDefault(this, !!value);
+    }
+
+    /**
      * 聚焦到开关
      */
     focus(): void {

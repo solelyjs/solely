@@ -139,6 +139,22 @@ class SolelySelect
     }
 
     /**
+     * defaultValue：property 写入时同步 form reset 目标。
+     *
+     * property → attribute 的镜像不会触发 attributeChanged 钩子，
+     * 因此不能只依赖 attributeChanged 中的 setFormDefault。
+     */
+    get defaultValue(): SelectValue {
+        return this.$data.defaultValue ?? '';
+    }
+
+    set defaultValue(newValue: SelectValue) {
+        this.$data.defaultValue = newValue as string;
+        // 框架初始化 / attribute 同步写入由 attributeChanged 钩子或 readDefault 负责
+        if (!this.isSyncingProps && this.initialized) setFormDefault(this, this.normalizeValue(newValue));
+    }
+
+    /**
      * 多选开关。切换为多选时把已有的单值归一化为数组。
      */
     get multiple(): boolean {

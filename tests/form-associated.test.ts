@@ -16,6 +16,7 @@ import {
     effectiveDisabled,
     emitChange,
     FORM_VALIDATION_MESSAGES,
+    formValidity,
     getFormOwner,
     handleFormAssociatedCallback,
     handleFormDisabledCallback,
@@ -929,6 +930,32 @@ describe('formResetCallback：默认值捕获与重置时序', () => {
         resetFormControl(el);
 
         expect(holder.value).toBe('later');
+    });
+
+    it('组件上报范围类标志时仍生成非空默认消息', () => {
+        const { el, internals } = setupScalar({
+            initial: 'x',
+            adapter: {
+                validate: () => ({ flags: { rangeOverflow: true } }),
+            },
+        });
+
+        syncValidity(el);
+        const call = lastValidity(internals)!;
+        expect(call.flags?.rangeOverflow).toBe(true);
+        expect(call.message).toBe(FORM_VALIDATION_MESSAGES.rangeOverflow);
+    });
+
+    it('无 internals 时返回的 validity 快照是冻结的共享常量', () => {
+        const el = document.createElement('div');
+        const validity = formValidity(el);
+
+        expect(Object.isFrozen(validity)).toBe(true);
+        expect(() => {
+            (validity as { valueMissing: boolean }).valueMissing = true;
+        }).toThrow(TypeError);
+        // 其他实例读到的仍是干净快照
+        expect(formValidity(document.createElement('div')).valueMissing).toBe(false);
     });
 
     it('值未变化时重置不派发 change', async () => {

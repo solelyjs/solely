@@ -146,6 +146,10 @@ export const FORM_VALIDATION_MESSAGES = {
     typeMismatch: '请输入有效的{type}',
     patternMismatch: '输入格式不正确',
     badInput: '请输入有效内容',
+    rangeUnderflow: '数值小于允许的最小值',
+    rangeOverflow: '数值大于允许的最大值',
+    stepMismatch: '数值不符合步长要求',
+    customError: '输入内容无效',
 } as const;
 
 /** 内部状态：按元素缓存，保证 attachInternals 与重置目标只初始化一次 */
@@ -169,6 +173,11 @@ const DEFAULT_FLAG_ORDER: (keyof ValidityStateFlags)[] = [
     'patternMismatch',
     'typeMismatch',
     'badInput',
+    // 组件可自行上报范围类标志；必须参与消息解析，否则会 setValidity(flags, '')
+    'customError',
+    'rangeUnderflow',
+    'rangeOverflow',
+    'stepMismatch',
 ];
 
 function describeElement(el: HTMLElement): string {
@@ -727,7 +736,7 @@ export function setFormDefault<T>(el: HTMLElement, value: T): void {
 /* -------------------- 公开 API 代理 -------------------- */
 
 /** 无 internals 或宿主未同步时的只读快照，避免公开 API 返回 undefined（C-FORM-16 降级） */
-const EMPTY_VALIDITY: ValidityState = {
+const EMPTY_VALIDITY: ValidityState = Object.freeze({
     badInput: false,
     customError: false,
     patternMismatch: false,
@@ -739,7 +748,7 @@ const EMPTY_VALIDITY: ValidityState = {
     typeMismatch: false,
     valid: true,
     valueMissing: false,
-};
+});
 
 /** 代理 `internals.validity`；jsdom 等环境没有该字段时返回全 false 快照 */
 export function formValidity(el: HTMLElement): ValidityState {

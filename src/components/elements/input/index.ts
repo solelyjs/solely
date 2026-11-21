@@ -769,6 +769,23 @@ class SolelyInput extends BaseElement<InputProps & InputInternalState, InputRefs
     }
 
     /**
+     * defaultValue：property 写入时同步 form reset 目标。
+     *
+     * property → attribute 的镜像会被基座的 reflectingAttrs 保护跳过
+     * attributeChangedCallback，组件钩子拿不到这次变更，必须在 setter 中直连。
+     */
+    get defaultValue(): string {
+        return this.$data.defaultValue;
+    }
+
+    set defaultValue(val: string) {
+        this.$data.defaultValue = val;
+        // 框架初始化 / attribute 同步写入时由 attributeChanged 钩子或 readDefault 负责，
+        // 不能在这里提前捕获重置目标，否则默认空串会覆盖 value 的初始值
+        if (!this.isSyncingProps) setFormDefault(this, val || '');
+    }
+
+    /**
      * 读取多个别名属性，任一为 true 即返回 true。
      * 显式 "false" / "0" 会被解析为 false，与框架属性语义一致。
      */

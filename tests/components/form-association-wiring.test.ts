@@ -239,6 +239,24 @@ describe('solely-input 表单关联', () => {
         expect(el.getValue()).toBe('fallback');
     });
 
+    it('property 写入 defaultValue 会同步重置目标', async () => {
+        const form = document.createElement('form');
+        const el = document.createElement('solely-input') as any;
+        el.setAttribute('name', 'q');
+        el.setAttribute('value', 'initial');
+        form.appendChild(el);
+        document.body.appendChild(form);
+        await tick();
+
+        el.defaultValue = 'later';
+        el.setValue('changed', true);
+        el.formResetCallback();
+        await tick();
+
+        expect(el.getValue()).toBe('later');
+        expect(el.getAttribute('default-value')).toBe('later');
+    });
+
     it('用户输入派发 source=user 的 change，并同步提交值', async () => {
         const form = document.createElement('form');
         const el = document.createElement('solely-input') as any;
@@ -336,6 +354,23 @@ describe('solely-checkbox / solely-switch 表单关联', () => {
         await tick();
 
         expect(el.checked).toBe(true);
+    });
+
+    it('property 写入 defaultChecked 会同步重置目标', async () => {
+        const form = document.createElement('form');
+        const el = document.createElement('solely-checkbox') as any;
+        el.setAttribute('name', 'agree');
+        form.appendChild(el);
+        document.body.appendChild(form);
+        await tick();
+
+        el.defaultChecked = true;
+        el.setChecked(false, true);
+        el.formResetCallback();
+        await tick();
+
+        expect(el.checked).toBe(true);
+        expect(el.hasAttribute('default-checked')).toBe(true);
     });
 
     it('formDisabledCallback 后点击不改变 checkbox/switch 状态', async () => {
