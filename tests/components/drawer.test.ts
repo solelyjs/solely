@@ -213,4 +213,23 @@ describe('Drawer command component', () => {
         expect(close.querySelector('svg.solely-linear-icon')).toBeTruthy();
         expect(close.textContent?.trim()).toBe('');
     });
+
+    it('onClose 抛错时仍完成关闭并释放浮层资源', async () => {
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        Drawer.open({
+            title: 't',
+            content: 'c',
+            onClose: () => {
+                throw new Error('onClose boom');
+            },
+        });
+
+        (document.querySelector('.solely-drawer__close') as HTMLElement).click();
+        await waitClose();
+
+        expect(document.querySelector('.solely-drawer-wrap')).toBeNull();
+        expect(document.body.style.overflow).toBe('');
+        expect(errorSpy).toHaveBeenCalled();
+        errorSpy.mockRestore();
+    });
 });

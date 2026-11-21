@@ -67,8 +67,13 @@ function closeDrawerById(id: number): Promise<void> {
 
         const drawerInfo = drawerList[index];
 
-        // 任何关闭路径（遮罩/按钮/Esc/close()/destroy()）都只通知一次
-        drawerInfo.options.onClose?.();
+        // 任何关闭路径（遮罩/按钮/Esc/close()/destroy()）都只通知一次；
+        // 回调异常不能中断后续的 deactivate / 动画 / dispose
+        try {
+            drawerInfo.options.onClose?.();
+        } catch (error) {
+            console.error('[Solely Drawer] onClose callback error:', error);
+        }
 
         // 关闭动画开始：出栈并停止 Esc / Tab 陷阱（焦点与锁在动画结束后释放）
         drawerInfo.overlay?.deactivate();
@@ -96,7 +101,11 @@ function closeDrawerById(id: number): Promise<void> {
     })();
 
     closingTasks.set(id, task);
-    void task.finally(() => closingTasks.delete(id));
+    // 用 then 的双回调清理，避免 finally 派生的 rejected Promise 变成 unhandled rejection
+    void task.then(
+        () => closingTasks.delete(id),
+        () => closingTasks.delete(id),
+    );
     return task;
 }
 
