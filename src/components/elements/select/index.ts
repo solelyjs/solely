@@ -629,7 +629,6 @@ class SolelySelect
     updated(): void {
         // options 是数组，不会镜像 attribute；插槽模式下不解析 options，与 mounted 条件对齐
         if (!this.$data.useSlot && this.$data.options !== this.lastParsedOptions) {
-            this.lastParsedOptions = this.$data.options;
             this.parseOptions();
         }
         this.syncSelectedLabel();
@@ -837,7 +836,10 @@ class SolelySelect
      * 解析选项
      */
     parseOptions(): void {
-        this.$data.parsedOptions = Array.isArray(this.$data.options) ? this.$data.options : [];
+        const options = this.$data.options;
+        // 同步已解析引用：mounted 解析后，首次 updated 不应再重复解析
+        this.lastParsedOptions = options;
+        this.$data.parsedOptions = Array.isArray(options) ? options : [];
         this.syncSelectedLabel(); // 直接更新选中的标签
     }
 

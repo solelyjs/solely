@@ -839,6 +839,21 @@ describe('solely-select 修复回归', () => {
         expect(el.disabled).toBe(false);
     });
 
+    it('挂载后首次 updated 不重复解析 options', async () => {
+        const el = document.createElement('solely-select') as any;
+        el.setAttribute('options', JSON.stringify(OPTIONS));
+        const parseSpy = vi.spyOn(el, 'parseOptions');
+
+        document.body.appendChild(el);
+        await tick();
+        // 插槽回退 + mounted 各解析一次；首次 updated 不应再重复解析
+        expect(parseSpy).toHaveBeenCalledTimes(2);
+
+        el.value = 'b';
+        await tick();
+        expect(parseSpy).toHaveBeenCalledTimes(2);
+    });
+
     it('收起动画期间重新打开会恢复定位订阅', async () => {
         const el = createSelect();
         await tick();
