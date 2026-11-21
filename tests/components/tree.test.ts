@@ -387,6 +387,30 @@ describe('solely-tree', () => {
         expect(readTreeCss()).toContain('.tree__checkbox--disabled.tree__checkbox--checked');
     });
 
+    it('全 disabled 子树不会清空父节点的显式勾选', async () => {
+        const data: TreeNode[] = [
+            {
+                key: 'p',
+                title: 'Parent',
+                children: [{ key: 'p-1', title: 'Disabled', disabled: true }],
+            },
+        ];
+
+        const el = createTree(data, { checkable: '', 'default-expand-all': '' });
+        await tick();
+        el.checkedKeys = ['p'];
+        await tick();
+        expect(el.getCheckedKeys()).toEqual(['p']);
+
+        const def = createTree(data, {
+            checkable: '',
+            'default-expand-all': '',
+            'default-checked-keys': '["p"]',
+        });
+        await tick();
+        expect(def.getCheckedKeys()).toEqual(['p']);
+    });
+
     it('should toggle only the target node when checkStrictly is set', async () => {
         const el = createTree(SAMPLE, { checkable: '', 'check-strictly': '', 'default-expand-all': '' });
         await tick();

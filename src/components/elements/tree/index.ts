@@ -283,12 +283,15 @@ class SolelyTree extends BaseElement<
     /**
      * 由子节点计算父节点的勾选态
      *
+     * - 没有未禁用子节点时返回 null：不重算，保留父节点的显式状态
+     *   （例如 checkedKeys 写入一个子节点全禁用的父节点）；
      * - 全选判定只统计未禁用子节点：禁用项不能被级联勾选，也不应阻止父节点全选；
      * - 半选判定包含禁用子节点：调用方显式写入的 disabled key 会被保留，父节点据此呈半选。
      */
-    private calcParentCheckState(children: TreeNode[]): { checked: boolean; halfChecked: boolean } {
+    private calcParentCheckState(children: TreeNode[]): { checked: boolean; halfChecked: boolean } | null {
         const enabled = children.filter(child => !child.disabled);
-        const checked = enabled.length > 0 && enabled.every(child => child.checked);
+        if (enabled.length === 0) return null;
+        const checked = enabled.every(child => child.checked);
         const halfChecked = !checked && children.some(child => child.checked || child.halfChecked);
         return { checked, halfChecked };
     }
@@ -300,9 +303,10 @@ class SolelyTree extends BaseElement<
         for (const node of nodes) {
             if (!node.children || node.children.length === 0) continue;
             this.syncParentCheckStates(node.children);
-            const { checked, halfChecked } = this.calcParentCheckState(node.children);
-            node.checked = checked;
-            node.halfChecked = halfChecked;
+            const state = this.calcParentCheckState(node.children);
+            if (!state) continue;
+            node.checked = state.checked;
+            node.halfChecked = state.halfChecked;
         }
     }
 
@@ -711,18 +715,22 @@ class SolelyTree extends BaseElement<
         for (const node of nodes) {
             if (node.children) {
                 if (node.children.includes(targetNode)) {
-                    // 找到父节点
-                    const { checked, halfChecked } = this.calcParentCheckState(node.children);
-                    node.checked = checked;
-                    node.halfChecked = halfChecked;
+                    // 找到父节点；子节点全禁用时保留父节点显式状态
+                    const state = this.calcParentCheckState(node.children);
+                    if (state) {
+                        node.checked = state.checked;
+                        node.halfChecked = state.halfChecked;
+                    }
                     return true;
                 }
 
                 if (this.updateParentCheckState(node.children, targetNode)) {
                     // 递归更新上层父节点
-                    const { checked, halfChecked } = this.calcParentCheckState(node.children);
-                    node.checked = checked;
-                    node.halfChecked = halfChecked;
+                    const state = this.calcParentCheckState(node.children);
+                    if (state) {
+                        node.checked = state.checked;
+                        node.halfChecked = state.halfChecked;
+                    }
                     return true;
                 }
             }
