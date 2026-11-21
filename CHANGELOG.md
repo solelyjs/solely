@@ -97,6 +97,14 @@
 
 ### Fixed
 
+- **form**: `defaultValue` / `defaultChecked` 的 property 写入现在同步更新 `form.reset()` 目标（此前只有 attribute 路径会更新；property → attribute 镜像会跳过 `attributeChanged` 钩子）
+- **form**: 校验消息补齐 `rangeUnderflow` / `rangeOverflow` / `stepMismatch` / `customError` 默认文案；无 internals 时返回的 `EMPTY_VALIDITY` 已冻结，避免共享快照被跨实例修改
+- **floating**: `observePosition` 改为每个订阅独立监听滚动祖先，同一祖先上的多个浮层不再因一个订阅清理而失去重定位；浮层剪枝延迟到微任务，同一任务内的 DOM 移动不会被误 dispose
+- **a11y**: Tab 陷阱改为从栈顶向下找最近的 `trapFocus=true` 层，select 下拉 / tooltip 悬在 modal 上时不再旁路 modal 的焦点约束
+- **popconfirm**: `bind` 下用键盘或程序化 click 激活另一个已绑定目标时直接切换，不再需要点两次
+- **tooltip**: 同目标 API 重建时保留旧 bind 的 reset 回调，bind 实例不再永久停留在 `visible=true`
+- **drawer**: `update()` 补标题时写入 `id` 并同步 `aria-labelledby`，清空标题回退 `aria-label`；`placement` 更新走白名单，非法值不再拼出无样式类名
+- **message**: `destroy()` 复用正在进行的关闭 Promise，等关闭动画结束后才 resolve；`scheduleContainerCleanup()` 在无 `window` 环境（测试销毁 / SSR）直接跳过，避免 unhandled rejection
 - **runtime**: 嵌套响应式变更不再误镜像到宿主 attribute（`options[0].disabled = true` 不会再把 `<solely-select>` 变成禁用态）；attribute → state 只在首次连接重放，断开重连保留运行态（input 用户输入、tree 动态数据不再被初始 attribute 覆盖）
 - **table**: `dataChange` 监听改在 `mounted()` 注册，断开重连后代理数组的原地修改仍会刷新；`columns` 原地修改（同一数组引用）会失效展示缓存
 - **select**: 原地修改选项 `label` / `value` / `icon` / `disabled` 会同步下拉内容；收起动画期间重新 `open()` 会恢复定位订阅与浮层出栈；挂载后的首次 `updated()` 不再重复解析 `options`
