@@ -136,7 +136,7 @@ function toResult(instance: PopconfirmInstance): PopconfirmResult {
     };
 }
 
-function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult {
+function show(target: HTMLElement, options: PopconfirmOptions, closeOnOutside = true): PopconfirmResult {
     // 单例模式：如果当前显示的是同一个目标，则关闭
     if (currentPopconfirm && currentPopconfirm.target === target) {
         destroyCurrentSync();
@@ -156,7 +156,12 @@ function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult
     const titleId = `solely-popconfirm-title-${id}`;
     const descriptionId = `solely-popconfirm-description-${id}`;
 
-    const overlay = createElement('div', { className: 'solely-popconfirm-overlay' });
+    // 浮层容器只承载 z-index / 定位，不拦截页面交互：
+    // 否则全屏透明 overlay 会挡住其它 Popconfirm 触发器，必须先关掉当前气泡才能点别的按钮。
+    const overlay = createElement('div', {
+        className: 'solely-popconfirm-overlay',
+        styles: { pointerEvents: 'none' },
+    });
 
     // 主题适配（使用共享观察者）
     const cleanupTheme = observeTheme(() => overlay);
@@ -183,12 +188,12 @@ function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult
 
     const popconfirm = createElement('div', {
         className: popconfirmClassName,
+        styles: { pointerEvents: 'auto', ...(options.style as Partial<CSSStyleDeclaration>) },
         attrs: {
             role: 'dialog',
             tabindex: '-1',
             ...ariaAttrs,
         },
-        styles: options.style as Partial<CSSStyleDeclaration>,
     });
 
     const content = createElement('div', { className: 'solely-popconfirm__content' });
@@ -392,16 +397,23 @@ function show(target: HTMLElement, options: PopconfirmOptions): PopconfirmResult
     positionFloating();
 
     // 事件处理器
-    const handleOverlayClick = (e: MouseEvent) => {
-        if (e.target === overlay) {
-            handleCancel();
-        }
+    // overlay 不再拦截指针事件，外部点击改由 document mousedown 判定：
+    // 点击其它 Popconfirm 触发器时可同时完成“关闭旧的 + 打开新的”。
+    const handleOutsidePointerDown = (e: MouseEvent) => {
+        const node = e.target as Node | null;
+        if (!node) return;
+        // 气泡内部不关闭；点击触发元素或页面其它位置都视为外部点击
+        if (popconfirm.contains(node)) return;
+        handleCancel();
     };
-
-    overlay.addEventListener('click', handleOverlayClick);
+    if (closeOnOutside) {
+        document.addEventListener('mousedown', handleOutsidePointerDown);
+    }
 
     const cleanup = () => {
-        overlay.removeEventListener('click', handleOverlayClick);
+        if (closeOnOutside) {
+            document.removeEventListener('mousedown', handleOutsidePointerDown);
+        }
         cleanupTheme();
     };
 
@@ -499,9 +511,10 @@ function bind(
             const sameTarget = currentPopconfirm.target === target;
             destroyCurrentSync();
             instance = null;
-            if (!sameTarget) instance = show(target, options as PopconfirmOptions);
+            // 外部点击已由 bind 的 document mousedown 处理，避免重复 onCancel
+            if (!sameTarget) instance = show(target, options as PopconfirmOptions, false);
         } else {
-            instance = show(target, options as PopconfirmOptions);
+            instance = show(target, options as PopconfirmOptions, false);
         }
     };
 

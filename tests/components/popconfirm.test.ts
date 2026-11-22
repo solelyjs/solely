@@ -77,6 +77,21 @@ describe('Popconfirm command component', () => {
         secondInstance.destroy();
     });
 
+    it('overlay 不拦截页面点击，外部点击可关闭气泡', async () => {
+        const target = createTarget();
+        Popconfirm.show(target, { title: '外部点击测试' });
+
+        const overlay = document.querySelector('.solely-popconfirm-overlay') as HTMLElement;
+        const popconfirm = document.querySelector('.solely-popconfirm') as HTMLElement;
+        // 全屏透明 overlay 不能吃掉其它按钮的点击
+        expect(overlay.style.pointerEvents).toBe('none');
+        expect(popconfirm.style.pointerEvents).toBe('auto');
+
+        document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        await waitClose();
+        expect(document.querySelector('.solely-popconfirm')).toBeNull();
+    });
+
     it('should support icon override, icon="" and showIcon=false', () => {
         const t1 = createTarget();
         Popconfirm.show(t1, { title: '确定？', icon: '★' });

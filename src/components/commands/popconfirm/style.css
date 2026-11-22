@@ -18,11 +18,14 @@
   position: fixed;
   inset: 0;
   z-index: var(--solely-z-index-popover);
+  /* 只承载层级与定位，不拦截页面点击（外部关闭由 document mousedown 处理） */
+  pointer-events: none;
 }
 
 /* ==================== 确认框容器 ==================== */
 .solely-popconfirm {
   position: fixed;
+  pointer-events: auto;
   /* 与 tooltip 一致：固定为内容宽度。fixed + width:auto 时 shrink-to-fit 会随 left 变化，
      设置左坐标后气泡被压缩（先宽后窄、文字多换行、右侧留边界残影）。 */
   width: max-content;
@@ -58,6 +61,8 @@
   bottom: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
   border-bottom: 1px solid var(--solely-border-color-split);
   border-right: 1px solid var(--solely-border-color-split);
+  /* JS 给出的是箭头中心坐标：水平位移 -50% 保证与锚点中心对齐 */
+  transform: translateX(-50%) rotate(45deg);
 }
 
 /* 下方位置箭头 */
@@ -67,6 +72,7 @@
   top: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
   border-top: 1px solid var(--solely-border-color-split);
   border-left: 1px solid var(--solely-border-color-split);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 /* 左侧位置箭头 */
@@ -76,6 +82,7 @@
   right: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
   border-top: 1px solid var(--solely-border-color-split);
   border-right: 1px solid var(--solely-border-color-split);
+  transform: translateY(-50%) rotate(45deg);
 }
 
 /* 右侧位置箭头 */
@@ -85,6 +92,7 @@
   left: calc(var(--solely-popconfirm-arrow-size, 8px) / -2);
   border-bottom: 1px solid var(--solely-border-color-split);
   border-left: 1px solid var(--solely-border-color-split);
+  transform: translateY(-50%) rotate(45deg);
 }
 
 /* ==================== 内容区域 ==================== */
