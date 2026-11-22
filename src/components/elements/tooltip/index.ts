@@ -213,8 +213,10 @@ class SolelyTooltip extends BaseElement<TooltipProps> {
             else if (result.placement.startsWith('bottom')) side = 'bottom';
             else if (result.placement.startsWith('left')) side = 'left';
             const half = `${-(arrow.offsetWidth || 8) / 2}px`;
+            // result.arrow.x / y 是箭头中心坐标，transform 必须补上对应轴的 -50%
+            const centering = side === 'top' || side === 'bottom' ? 'translateX(-50%)' : 'translateY(-50%)';
 
-            arrow.style.transform = 'rotate(45deg)';
+            arrow.style.transform = `${centering} rotate(45deg)`;
             arrow.style.top = 'auto';
             arrow.style.bottom = 'auto';
             arrow.style.left = 'auto';

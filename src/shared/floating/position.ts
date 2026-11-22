@@ -31,6 +31,13 @@ export const DEFAULT_OFFSET = 8;
 export const DEFAULT_BOUNDARY_PADDING = 8;
 /** 箭头距浮层边缘的最小距离 */
 const ARROW_EDGE = 8;
+/**
+ * 箭头中心到浮层边缘的最小内边距。
+ *
+ * 8px 方块旋转 45° 后半对角线约 5.7px；配合常见的 8px 圆角，12px 内边距可让
+ * 箭头外沿留在直边区域（圆角缺口 < 0.2px），同时保留足够的指向偏移区间。
+ */
+const ARROW_INSET = 12;
 
 type Side = 'top' | 'bottom' | 'left' | 'right';
 type Alignment = 'center' | 'start' | 'end';
@@ -207,11 +214,11 @@ const chooseAutoPlacement = (
     return bestFitting ?? bestFallback;
 };
 
-/** 箭头偏移：钳制在 [8, size - 8]；尺寸过小时取中点 */
+/** 箭头偏移：钳制在 [12, size - 12]；尺寸过小时取中点 */
 const clampArrow = (value: number, size: number): number => {
-    const max = size - ARROW_EDGE;
-    if (max <= ARROW_EDGE) return size / 2;
-    return Math.min(Math.max(value, ARROW_EDGE), max);
+    const max = size - ARROW_INSET;
+    if (max <= ARROW_INSET) return size / 2;
+    return Math.min(Math.max(value, ARROW_INSET), max);
 };
 
 /**

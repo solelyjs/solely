@@ -61,6 +61,8 @@
 .solely-tooltip--topLeft .solely-tooltip__arrow,
 .solely-tooltip--topRight .solely-tooltip__arrow {
   bottom: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+  /* JS 给出的是箭头中心坐标：水平位移 -50% 保证与锚点中心对齐 */
+  transform: translateX(-50%) rotate(45deg);
 }
 
 /* 下方位置箭头 */
@@ -68,6 +70,7 @@
 .solely-tooltip--bottomLeft .solely-tooltip__arrow,
 .solely-tooltip--bottomRight .solely-tooltip__arrow {
   top: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 /* 左侧位置箭头 */
@@ -75,6 +78,8 @@
 .solely-tooltip--leftTop .solely-tooltip__arrow,
 .solely-tooltip--leftBottom .solely-tooltip__arrow {
   right: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+  /* 垂直方位使用 top 坐标，改为垂直居中 */
+  transform: translateY(-50%) rotate(45deg);
 }
 
 /* 右侧位置箭头 */
@@ -82,6 +87,7 @@
 .solely-tooltip--rightTop .solely-tooltip__arrow,
 .solely-tooltip--rightBottom .solely-tooltip__arrow {
   left: calc(var(--solely-tooltip-arrow-size, 8px) / -2);
+  transform: translateY(-50%) rotate(45deg);
 }
 
 /* ==================== 动画定义 ==================== */

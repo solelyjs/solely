@@ -98,6 +98,13 @@ describe('computePosition: 12 方位基础定位', () => {
         expect(result.y).toBe(348);
     });
 
+    it('箭头靠近浮层边缘时保留 12px 内边距，避免压到圆角', () => {
+        // 锚点在视口最右侧，浮层被 shift 回边界后箭头中心也不能贴住圆角
+        const result = compute('top', { viewport: { width: 200, height: 800 } }, rect(190, 300, 10, 20), size(80, 40));
+        expect(result.arrow.x).toBeGreaterThanOrEqual(12);
+        expect(result.arrow.x).toBeLessThanOrEqual(80 - 12);
+    });
+
     it('flipState 记录请求、首选与尝试顺序', () => {
         const result = compute('top');
         expect(result.flipState).toEqual({
@@ -197,7 +204,8 @@ describe('computePosition: shift（交叉轴平移）', () => {
     it('水平方位的垂直平移与箭头钳制', () => {
         const result = compute('right', { viewport: { width: 1000, height: 800 } }, rect(100, 790, 100, 20));
         expect(result.y).toBe(742);
-        expect(result.arrow).toEqual({ y: 42 });
+        // 箭头中心按 [12, size-12] 钳制，避免压到圆角
+        expect(result.arrow).toEqual({ y: 38 });
         expect(result.overflow.cross).toBe(0);
     });
 });
