@@ -272,8 +272,9 @@ function open(options: DrawerOptions): DrawerInstance {
                         titleEl.appendChild(updateShouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
                     }
                 } else if (newOptions.title) {
-                    // 如果之前没有标题，需要创建 header；标题必须带 id，供 aria-labelledby 引用
-                    const header = createElement('div', { className: 'solely-drawer__header' });
+                    // 之前没有标题：优先复用已有 header（无标题但可关闭时 header 里只有关闭按钮），
+                    // 避免再插一个 header 导致标题和关闭按钮分成两行
+                    const existingHeader = wrap.querySelector('.solely-drawer__header') as HTMLElement | null;
                     titleEl = createElement('h3', {
                         className: 'solely-drawer__title',
                         attrs: { id: titleId },
@@ -286,9 +287,14 @@ function open(options: DrawerOptions): DrawerInstance {
                         titleEl.appendChild(updateShouldClone ? newOptions.title.cloneNode(true) : newOptions.title);
                     }
 
-                    header.appendChild(titleEl);
-                    const drawer = wrap.querySelector('.solely-drawer') as HTMLElement;
-                    drawer?.insertBefore(header, drawer.firstChild);
+                    if (existingHeader) {
+                        existingHeader.insertBefore(titleEl, existingHeader.firstChild);
+                    } else {
+                        const header = createElement('div', { className: 'solely-drawer__header' });
+                        header.appendChild(titleEl);
+                        const drawer = wrap.querySelector('.solely-drawer') as HTMLElement;
+                        drawer?.insertBefore(header, drawer.firstChild);
+                    }
                 }
 
                 // 标题增删后重新同步 dialog 的可访问名称：

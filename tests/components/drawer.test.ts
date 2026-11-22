@@ -213,9 +213,13 @@ describe('Drawer command component', () => {
         expect(drawerEl.hasAttribute('aria-labelledby')).toBe(false);
         expect(drawerEl.getAttribute('aria-label')).toBe('抽屉');
 
-        // 原本没有标题：补标题时必须带 id 并切换到 aria-labelledby
+        // 原本没有标题：补标题时应复用已有 header（关闭按钮所在行），不能出现两个 header
         instance.update({ title: '新标题' });
         const title = drawerEl.querySelector('.solely-drawer__title') as HTMLElement;
+        const headers = drawerEl.querySelectorAll('.solely-drawer__header');
+        expect(headers).toHaveLength(1);
+        expect(headers[0].contains(title)).toBe(true);
+        expect(headers[0].querySelector('.solely-drawer__close')).not.toBeNull();
         expect(title.id).toBeTruthy();
         expect(drawerEl.getAttribute('aria-labelledby')).toBe(title.id);
         expect(drawerEl.hasAttribute('aria-label')).toBe(false);
