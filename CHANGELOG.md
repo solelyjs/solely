@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-22
+
+### Fixed
+
+- **floating**: 箭头统一按「中心坐标」消费：top / bottom 补 `translateX(-50%)`、left / right 补 `translateY(-50%)`，修复此前把中心值写成 `left` / `top` 导致的单侧溢出；钳制范围保持 `[12, size-12]`，既保证箭头本体不压到气泡圆角，也保留足够的指向偏移。命令式 tooltip、声明式 tooltip 与 popconfirm 同步
+- **drawer**: `update({ title })` 在「打开时无标题、但可关闭」的场景复用已有 header，标题与关闭按钮保持同一行，不再出现两个 header
+- **popconfirm**: 全屏透明 overlay 改为 `pointer-events: none`，外部点击由 document mousedown 处理；已打开的 A 不再挡住另一个已绑定的 B，一次点击即可直接切换
+
 ## [0.8.0] - 2026-11-21
 
 ### ⚠️ Breaking
@@ -1091,7 +1099,8 @@
 
 ---
 
-[Unreleased]: https://github.com/solelyjs/solely/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/solelyjs/solely/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/solelyjs/solely/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/solelyjs/solely/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/solelyjs/solely/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/solelyjs/solely/compare/v0.6.0...v0.7.0

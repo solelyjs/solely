@@ -14,7 +14,7 @@ npm run verify
 ```
 
 `verify` = `typecheck` → `lint` → `format:check` → `test:run` → `build` → `check:exports` → `check:dist-fresh`。
-全部通过即说明静态检查、1718 个单测、构建、导出入口与产物指纹都没问题；失败会在对应步骤直接停下。
+全部通过即说明静态检查、1720 个单测、构建、导出入口与产物指纹都没问题；失败会在对应步骤直接停下。
 
 **人工直观验证**：`npm run dev` 后打开 `http://localhost:5173/examples/regression/index.html`。
 页面会自动跑完 12 个用例，每项给出「预期 / 实际 / 结论」，顶部显示 `12/12 通过`；
@@ -28,12 +28,12 @@ URL 与共享数据用例会把预期告警各输出 1 条到控制台（方便�
 | `tsc --noEmit`                                      | exit 0，无输出                                                                                                                                                                                                   |
 | `eslint .`                                          | 0 error / 0 warning                                                                                                                                                                                              |
 | `npm run format:check`                              | All matched files use Prettier code style                                                                                                                                                                        |
-| `vitest run`                                        | **1718 passed / 3 skipped**（60 个文件）                                                                                                                                                                         |
-| 覆盖率（`npx vitest run --coverage`）               | statements 89.42 / branches 81.47 / functions 91.35 / lines 89.42（v8 provider；Node v24.14.1 / vitest 3.2.4；阈值 80/75/85/80，全部达标；同版本多次运行约 ±0.05pp，跨 Node 版本 branches/functions 可差约 1pp） |
+| `vitest run`                                        | **1720 passed / 3 skipped**（60 个文件）                                                                                                                                                                         |
+| 覆盖率（`npx vitest run --coverage`）               | statements 89.41 / branches 81.44 / functions 91.35 / lines 89.41（v8 provider；Node v24.14.1 / vitest 3.2.4；阈值 80/75/85/80，全部达标；同版本多次运行约 ±0.05pp，跨 Node 版本 branches/functions 可差约 1pp） |
 | `vite build` + `check:exports` + `check:dist-fresh` | 140 个导出目标全部存在，199 个构建输入指纹一致                                                                                                                                                                   |
 | `build:examples`                                    | 构建成功，无报错                                                                                                                                                                                                 |
 
-> 上表是 2026-11-21 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
+> 上表是 2026-11-22 的实测基线，会随版本演进变化；实际以 `npm run verify` 的输出为准。
 >
 > 覆盖率采集环境：Node v24.14.1 / vitest 3.2.4（v8 provider）。不同 Node 版本的 v8 覆盖率口径存在浮动（engines 下限 Node 22 的 branches/functions 通常略高），对照基线时请先确认 Node 版本；门禁以阈值（80/75/85/80）为准，不按小数点比较。
 >
@@ -205,14 +205,14 @@ createRouter({ routes, maxKeepAlive: 1 });
 
 ```bash
 npm run pack:local
-# 会先 build + check:exports + check:dist-fresh，再产出 solely-0.8.0.tgz
+# 会先 build + check:exports + check:dist-fresh，再产出 solely-0.8.1.tgz
 ```
 
 然后在一个空目录安装并验证所有入口（Node 20/22）：
 
 ```bash
 mkdir -p /tmp/solely-smoke && cd /tmp/solely-smoke && npm init -y
-npm i /path/to/solely/solely-0.8.0.tgz
+npm i /path/to/solely/solely-0.8.1.tgz
 
 node --input-type=module -e "import('solely').then(m=>console.log('main', typeof m.BaseElement, typeof m.buildIR))"
 node --input-type=module -e "import('solely/compiler').then(m=>console.log('compiler', typeof m.buildIR))"
@@ -226,7 +226,7 @@ node -e "const s=require('solely'); console.log('cjs', typeof s.BaseElement)"
 再确认 tarball 里关键入口齐全：
 
 ```bash
-tar -tf solely-0.8.0.tgz | grep -E "package/dist/(index|plugin|compiler/index|components/elements/button/index)"
+tar -tf solely-0.8.1.tgz | grep -E "package/dist/(index|plugin|compiler/index|components/elements/button/index)"
 ```
 
 ---
