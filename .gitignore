@@ -30,6 +30,8 @@ publish
 visualizer
 vite.config.ts.*
 *.tgz
+# 扩展打包产物：本地分发 / 挂 Releases，不进版本库（.vscodeignore 也已排除）
+*.vsix
 coverage/
 coverage-tmp/
 dist-verify/
