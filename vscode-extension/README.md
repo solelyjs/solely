@@ -322,6 +322,7 @@ class MyComponent extends BaseElement<MyData> {
 - 包装类型：`Partial` / `Required` / `Readonly` / `NonNullable` 透传键集；`Pick<T, K>` / `Omit<T, K>` 按 `K` 过滤，`K` 支持字面量联合、`keyof T` 与（同文件或跨文件的）类型别名，以及它们的混合写法（如 `K | 'c'`）
 - 泛型参数里的对象约束（如 `interface S<T extends { id: string }> { a: string }`）不会污染数据键，键集仍取类体本身
 - 成员修饰符与特殊键：`readonly a: string`、`'kebab-key': string`、`2: number`、`['computed']` 都算数据键；方法签名会被排除
+- 多级属性：`$data.user.name` 的补全、悬停、跳转与诊断都会沿类型链解析到末段（`user: User` → `User.name`），路径支持可选链 `?.` 与下标 `[0]`；中间类型无法静态确定时跳过校验
 
 父类跳转与链式调用还支持多种导入 / 导出写法：命名 / 默认导入及其别名、`import * as ns` 命名空间成员（`extends ns.Base`）、barrel 的命名与 `*` 再导出、`export { default }` / `export { X as default }` 默认再导出、`class X {} ... export default X` 先声明后导出；`this.prop.method()` 中 `prop` 声明在父类时也能沿继承链解析。
 

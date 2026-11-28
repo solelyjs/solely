@@ -15,7 +15,11 @@ import {
     escapeRegex,
     findHeaderBrace,
     findInterfaceBodies,
+    findKeyIndex,
+    findKeyType,
+    findKeyTypeRange,
     findMatchingBracket,
+    findMemberText,
     readIdentifier,
     readInterfaceKeys,
     skipAngle,
@@ -66,12 +70,15 @@ const OPAQUE_TYPE_WRAPPERS = new Set([
  * - `memo` 缓存本次解析已算出的结果，避免菱形继承重复展开。
  * - `sources` 记录解析时读到的每个文件及其版本：refs 里存的是**其它文件**的绝对
  *   下标，必须能判断这些文件事后有没有被改过。
+ * - `files` 是本次解析内的源码缓存：`loadSource` 每次都要 `statSync`（Windows 上
+ *   约 0.1ms），同一次解析反复取同一文件时不该重复付这个代价。
  * - `incomplete` 表示存在无法静态确定的类型表达式，键集不能作为校验依据。
  */
 interface ResolveContext {
     stack: Set<string>;
     memo: Map<string, TypeBodyRef[]>;
     sources: Map<string, SourceVersion>;
+    files: Map<string, SourceInfo | null>;
     incomplete: boolean;
 }
 
@@ -120,13 +127,18 @@ export function clearTypeCache(): void {
 }
 
 function createContext(): ResolveContext {
-    return { stack: new Set(), memo: new Map(), sources: new Map(), incomplete: false };
+    return { stack: new Set(), memo: new Map(), sources: new Map(), files: new Map(), incomplete: false };
 }
 
-/** 解析期读取源码，顺带记下版本供缓存命中时校验 */
+/** 解析期读取源码，顺带记下版本供缓存命中时校验；同一上下文内只读一次磁盘 */
 function sourceOf(filePath: string, ctx: ResolveContext): SourceInfo | null {
+    const key = normalizePath(filePath);
+    const cached = ctx.files.get(key);
+    if (cached !== undefined) return cached;
+
     const source = loadSource(filePath);
-    if (source) ctx.sources.set(normalizePath(filePath), { path: filePath, version: source.version });
+    ctx.files.set(key, source);
+    if (source) ctx.sources.set(key, { path: filePath, version: source.version });
     return source;
 }
 
@@ -208,8 +220,18 @@ function bodyHasIndexSignature(body: TypeBodyRef): boolean {
 export function readTypeBodyKeys(body: TypeBodyRef): string[] {
     const source = loadSource(body.path);
     if (!source) return [];
+    return bodyKeysOf(source, body).keys;
+}
 
-    let keys = readBaseKeys(source, body.open).keys;
+/**
+ * 已持有源码时的键集读取：调用方已经 loadSource 过，不必再 stat 一次。
+ *
+ * `hasIndexSignature` 表示「任何名字都可能存在」——`Pick` / `Omit` 之后键集被
+ * 收窄，这条退路也就不成立了。
+ */
+function bodyKeysOf(source: SourceInfo, body: TypeBodyRef): BaseKeys {
+    const base = readBaseKeys(source, body.open);
+    let keys = base.keys;
     if (body.pick) {
         const picked = body.pick;
         keys = keys.filter(key => picked.includes(key));
@@ -218,7 +240,8 @@ export function readTypeBodyKeys(body: TypeBodyRef): string[] {
         const omitted = body.omit;
         keys = keys.filter(key => !omitted.includes(key));
     }
-    return keys;
+    const hasIndexSignature = base.hasIndexSignature && !body.pick && !body.omit;
+    return { keys, hasIndexSignature };
 }
 
 /** interface 基础键集按 `{` 下标缓存：`typeBodyHasKey` 会被反复调用 */
@@ -240,6 +263,138 @@ function readBaseKeys(source: SourceInfo, open: number): BaseKeys {
 
 export function typeBodyHasKey(body: TypeBodyRef, name: string): boolean {
     return readTypeBodyKeys(body).includes(name);
+}
+
+export interface DataPathResult {
+    /** 每一段都在已知类型体里找到 */
+    found: boolean;
+    /** 有无法静态确定的类型：找不到也不能断言「不存在」 */
+    incomplete: boolean;
+    /** 第一段**确定**不存在的下标（诊断定位用）；null 表示没有确定缺失 */
+    missingAt: number | null;
+    /** 最后一段命中的位置（跳转用）；路径未走完时为 null */
+    location: { path: string; index: number } | null;
+    /** 最后一段的类型原文（悬停用）；路径未走完时为 null */
+    typeText: string | null;
+    /** 末段是方法 / 访问器时的声明原文（悬停用），普通数据键为 null */
+    memberText: string | null;
+    /** 最后一段的类型体（补全下一级用） */
+    refs: TypeBodyRef[];
+}
+
+/**
+ * 沿 `$data.a.b` 的路径逐级解析：每一级在当前类型体里找键，再把该键的类型解析成
+ * 下一组类型体。
+ *
+ * 中间类型无法静态确定（外部类型 / 泛型实参 / 索引访问）时标记 `incomplete`，
+ * 调用方据此跳过诊断，而不是按不完整的链报「未定义」。
+ *
+ * 走不完时 `location` / `typeText` 一律为 null：把父级的位置和类型当成末段的，
+ * 会让悬停显示 `$data.map.zzz: Record<...>` 这种并非该键类型的信息。
+ */
+export function resolveDataPath(tsPath: string, cls: ClassInfo | null, segments: string[]): DataPathResult {
+    const initial = resolveDataBodiesInfo(tsPath, cls);
+    let refs = initial.refs;
+    let incomplete = initial.incomplete;
+    let location: { path: string; index: number } | null = null;
+    let typeText: string | null = null;
+    let memberText: string | null = null;
+    // 整条路径共用一个上下文：memo / 源码缓存跨段复用，否则每段都要重新 stat
+    const ctx = createContext();
+
+    for (let index = 0; index < segments.length; index++) {
+        const segment = segments[index];
+        if (refs.length === 0) {
+            return {
+                found: false,
+                incomplete: true,
+                missingAt: null,
+                location: null,
+                typeText: null,
+                memberText: null,
+                refs: [],
+            };
+        }
+
+        let hit: { path: string; index: number } | null = null;
+        let hitType: string | null = null;
+        let hitMemberText: string | null = null;
+        let unreadable = false;
+        const next: TypeBodyRef[] = [];
+
+        for (const body of refs) {
+            const source = sourceOf(body.path, ctx);
+            if (!source) {
+                unreadable = true;
+                continue;
+            }
+
+            const bodyKeys = bodyKeysOf(source, body);
+            // 索引签名（`{ [k: string]: T }`）下任何名字都合法：这一段只能算「不确定」，
+            // 具名键仍然照常解析，但缺名字时不能断言不存在
+            if (bodyKeys.hasIndexSignature) ctx.incomplete = true;
+
+            if (!bodyKeys.keys.includes(segment)) {
+                // 方法签名 / 访问器也是合法成员（`$data.user.greet()`、`get title()`），
+                // 只是不算数据键；`Pick` / `Omit` 收窄过的类型不适用这条退路
+                const member =
+                    bodyKeys.hasIndexSignature || body.pick || body.omit
+                        ? null
+                        : findMemberText(source.text, source.masked, body.open, segment);
+                if (!member) continue;
+
+                if (!hit) {
+                    hit = { path: body.path, index: member.nameIndex };
+                    hitMemberText = member.text;
+                }
+                // 方法 / 访问器的返回值类型不继续展开：末段是它本身，没有「下一级」
+                continue;
+            }
+
+            const keyIndex = findKeyIndex(source.text, source.masked, body.open, segment);
+            if (keyIndex === null) {
+                unreadable = true;
+                continue;
+            }
+            if (!hit) {
+                hit = { path: body.path, index: keyIndex };
+                hitType = findKeyType(source.text, source.masked, body.open, segment);
+            }
+            next.push(...resolveKeyTypeBodies(body, segment, ctx));
+        }
+
+        if (ctx.incomplete) incomplete = true;
+
+        if (!hit) {
+            const definite = !incomplete && !unreadable;
+            return {
+                found: false,
+                incomplete: !definite,
+                missingAt: definite ? index : null,
+                location: null,
+                typeText: null,
+                memberText: null,
+                refs: [],
+            };
+        }
+
+        location = hit;
+        typeText = hitType;
+        memberText = hitMemberText;
+        refs = next;
+    }
+
+    return { found: true, incomplete, missingAt: null, location, typeText, memberText, refs };
+}
+
+/** 某个键的**类型**解析出的类型体（对象 / interface / 别名 / 导入链） */
+function resolveKeyTypeBodies(body: TypeBodyRef, name: string, ctx: ResolveContext): TypeBodyRef[] {
+    const source = sourceOf(body.path, ctx);
+    if (!source) return [];
+
+    const range = findKeyTypeRange(source.text, source.masked, body.open, name);
+    if (!range) return [];
+    return resolveTypeRange(body.path, range, 0, ctx);
 }
 
 function trimRange(masked: string, start: number, end: number): SourceRange {

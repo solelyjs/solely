@@ -1118,51 +1118,95 @@ export function readInterfaceKeys(text: string, masked: string, open: number): I
     return { keys, hasIndexSignature };
 }
 
-/** 在 `{ ... }` 块里定位某个顶层 key 的下标 */
-export function findKeyIndex(text: string, masked: string, open: number, name: string): number | null {
+/**
+ * 遍历 `{ ... }` 块里的成员，返回第一个满足条件的成员：名字下标 + 名字之后
+ * （跳过 `?` 等可选标记）的位置，供调用方判断成员种类。
+ */
+function findMemberIf(
+    text: string,
+    masked: string,
+    open: number,
+    accept: (name: string | null, after: number) => boolean,
+): { nameIndex: number; after: number; start: number; next: number } | null {
     const close = findMatchingBracket(masked, open);
     if (close === -1) return null;
 
     let i = open + 1;
     while (i < close) {
-        const member = readMemberNameAt(text, masked, i, close);
+        const start = skipTrivia(masked, i, close);
+        if (start >= close) break;
+        const member = readMemberNameAt(text, masked, start, close);
         if (!member) break;
-
-        if (member.name === name) {
-            // `:` 是数据键；`,` / `}` 是对象字面量的简写（`super({ a })`）
-            const next = masked[skipOptional(masked, member.afterName)];
-            if (next === ':' || next === ',' || next === '}') return member.nameIndex;
+        const after = skipOptional(masked, member.afterName);
+        if (accept(member.name, after)) {
+            return { nameIndex: member.nameIndex, after, start, next: member.next };
         }
-
         i = member.next;
     }
 
     return null;
+}
+
+/** 在 `{ ... }` 块里定位某个顶层 key 的下标 */
+export function findKeyIndex(text: string, masked: string, open: number, name: string): number | null {
+    // `:` 是数据键；`,` / `}` 是对象字面量的简写（`super({ a })`）
+    const found = findMemberIf(
+        text,
+        masked,
+        open,
+        (memberName, after) =>
+            memberName === name && (masked[after] === ':' || masked[after] === ',' || masked[after] === '}'),
+    );
+    return found ? found.nameIndex : null;
+}
+
+/**
+ * 按名字找**任意**成员（含方法签名与访问器），返回名字下标与声明原文。
+ *
+ * `findKeyIndex` 只认数据键，`$data.user.greet()` 里的 `greet` 会被漏掉；
+ * 悬停要展示方法 / 访问器签名时用这个。
+ */
+export function findMemberText(
+    text: string,
+    masked: string,
+    open: number,
+    name: string,
+): { nameIndex: number; text: string } | null {
+    const found = findMemberIf(text, masked, open, memberName => memberName === name);
+    if (!found) return null;
+    return { nameIndex: found.nameIndex, text: text.slice(found.start, found.next).trim() };
+}
+
+/** 读取 `{ name: Type }` 中 Type 的区间（调用方用它继续解析这个类型） */
+export function findKeyTypeRange(
+    source: string,
+    masked: string,
+    open: number,
+    name: string,
+): { start: number; end: number } | null {
+    const found = findMemberIf(
+        source,
+        masked,
+        open,
+        (memberName, after) => memberName === name && masked[after] === ':',
+    );
+    if (!found) return null;
+
+    const close = findMatchingBracket(masked, open);
+    if (close === -1) return null;
+    return readTypeRangeAfterColon(masked, found.after, close);
 }
 
 /** 读取 `{ name: Type }` 中 Type 的原文（找不到返回 null） */
 export function findKeyType(source: string, masked: string, open: number, name: string): string | null {
-    const close = findMatchingBracket(masked, open);
-    if (close === -1) return null;
-
-    let i = open + 1;
-    while (i < close) {
-        const member = readMemberNameAt(source, masked, i, close);
-        if (!member) break;
-
-        if (member.name === name) {
-            const colon = skipOptional(masked, member.afterName);
-            if (masked[colon] === ':') return readTypeAfterColon(source, masked, colon, close);
-        }
-
-        i = member.next;
-    }
-
-    return null;
+    const range = findKeyTypeRange(source, masked, open, name);
+    if (!range) return null;
+    const type = source.slice(range.start, range.end).trim();
+    return type || null;
 }
 
-/** 读取 `:` 之后到成员边界之间的类型原文 */
-function readTypeAfterColon(source: string, masked: string, colon: number, close: number): string | null {
+/** 读取 `:` 之后到成员边界之间的类型区间 */
+function readTypeRangeAfterColon(masked: string, colon: number, close: number): { start: number; end: number } | null {
     const valueStart = skipSpaces(masked, colon + 1);
     // 对象类型 `{ a: string }` 单独处理，否则 scanTypeEnd 会在 `{` 处直接停住
     let typeEnd: number;
@@ -1172,8 +1216,7 @@ function readTypeAfterColon(source: string, masked: string, colon: number, close
     } else {
         typeEnd = scanTypeEnd(masked, colon + 1, close);
     }
-    const type = source.slice(colon + 1, typeEnd).trim();
-    return type || null;
+    return typeEnd > colon + 1 ? { start: colon + 1, end: typeEnd } : null;
 }
 
 export function escapeRegex(str: string): string {

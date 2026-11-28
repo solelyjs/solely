@@ -5,6 +5,8 @@ import {
     findAncestorFiles,
     extractDataPropsFromTs,
     getComponentMembers,
+    getDataPathBeforeCursor,
+    getDataPropKeysByPath,
     type MethodSignature,
 } from './templateParser';
 
@@ -98,9 +100,12 @@ export class SolelyCompletionProvider implements vscode.CompletionItemProvider {
             return this.getThisCompletions(document);
         }
 
-        // 2. $data. 后补全数据属性
-        if (/\$data\.\w*$/.test(textBefore)) {
-            return this.getDataCompletions(document);
+        // 2. $data. / $data.a. 后补全（支持 `?.` 与 `[0]` 下标）
+        const dataPath = getDataPathBeforeCursor(textBefore);
+        if (dataPath) {
+            return dataPath.length === 0
+                ? this.getDataCompletions(document)
+                : this.getNestedDataCompletions(document, dataPath);
         }
 
         // 3. $refs. 后补全 ref 名称
@@ -180,6 +185,16 @@ export class SolelyCompletionProvider implements vscode.CompletionItemProvider {
 
         const props = extractDataPropsFromTs(tsPath, document.fileName);
         return props.map(prop => new vscode.CompletionItem(prop, vscode.CompletionItemKind.Property));
+    }
+
+    /** $data.a. 后补全嵌套字段 */
+    private getNestedDataCompletions(document: vscode.TextDocument, segments: string[]): vscode.CompletionItem[] {
+        const tsPath = findCorrespondingTsFile(document.fileName);
+        if (!tsPath) return [];
+
+        return getDataPropKeysByPath(tsPath, document.fileName, segments).map(
+            key => new vscode.CompletionItem(key, vscode.CompletionItemKind.Property),
+        );
     }
 
     /** $refs. 后补全: 从当前 HTML 模板解析所有 ref="xxx" */

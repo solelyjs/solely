@@ -28,6 +28,7 @@ import {
     readTypeBodyKeys,
     resolveDataBodies,
     resolveDataBodiesInfo,
+    resolveDataPath,
     typeBodyHasKey,
 } from './typeResolver';
 
@@ -82,6 +83,23 @@ const FRAMEWORK_METHODS = new Set([
 /** 不是「可调用成员」的名字（构造函数不会被模板调用） */
 const NON_CALLABLE = new Set(['constructor']);
 
+/**
+ * `Object.prototype` 上的成员。
+ *
+ * 任何非 null 对象都能访问它们，但没人会写进 `interface`；多级路径逐段校验时
+ * 若不放过，`$data.user.address.toString()` 就会被误报成「未定义」。
+ * 只放过这些名字的**存在性**判断，不影响它们出现在键集里。
+ */
+const OBJECT_PROTO_MEMBERS = new Set([
+    'toString',
+    'toLocaleString',
+    'valueOf',
+    'hasOwnProperty',
+    'isPrototypeOf',
+    'propertyIsEnumerable',
+    'constructor',
+]);
+
 // HTML → TS 文件映射
 const tsFileCache = new Map<string, string | null>();
 // 父类解析结果（key: tsPath#className）
@@ -128,6 +146,8 @@ export interface TemplateReference {
     name: string;
     range: vscode.Range;
     fullExpression: string;
+    /** `$data.a.b` 里被引用段**之前**的路径（单级属性时不设置） */
+    dataPath?: string[];
 }
 
 export interface TemplateDiagnostic {
@@ -396,6 +416,26 @@ export function extractDataPropsFromTs(tsPath: string, htmlPath?: string): strin
     return extractDataPropsInfo(tsPath, htmlPath).props;
 }
 
+/** `$data.a.b` 整条路径末段的信息：数据键给类型原文，方法 / 访问器给声明原文 */
+export function getDataPropInfoByPath(
+    tsPath: string,
+    htmlPath: string | undefined,
+    segments: string[],
+): { typeText: string | null; memberText: string | null } {
+    const result = resolveDataPath(tsPath, resolveComponentClass(tsPath, htmlPath), segments);
+    return { typeText: result.typeText, memberText: result.memberText };
+}
+
+/** `$data.a.` 之后可补全的下一级键 */
+export function getDataPropKeysByPath(tsPath: string, htmlPath: string | undefined, segments: string[]): string[] {
+    const result = resolveDataPath(tsPath, resolveComponentClass(tsPath, htmlPath), segments);
+    if (!result.found) return [];
+
+    const keys: string[] = [];
+    for (const body of result.refs) keys.push(...readTypeBodyKeys(body));
+    return Array.from(new Set(keys));
+}
+
 /** 同 `extractDataPropsFromTs`，同时返回键集是否完整（诊断据此决定要不要跳过校验） */
 function extractDataPropsInfo(tsPath: string, htmlPath?: string): { props: string[]; incomplete: boolean } {
     const { props: interfaceProps, incomplete } = extractDataPropsFromInterface(tsPath, htmlPath);
@@ -502,22 +542,92 @@ function extractThisPropAtPosition(line: string, lineNum: number, charIndex: num
     return null;
 }
 
+interface DataPathSegment {
+    name: string;
+    start: number;
+    end: number;
+}
+
+/** 路径段名：粘性匹配靠 `lastIndex` 定位，避免每个 token 都 slice 一次整行 */
+const DATA_PATH_IDENT = /[A-Za-z_$][\w$]*/y;
+
+/**
+ * 从 `$data.` 之后解析属性路径，支持 `.` / `?.` 分隔和 `[expr]` 下标
+ * （`$data.user?.name`、`$data.list[0].name`、`$data.list?.[0].name`）。
+ * 返回每段名字、它在模板里的区间，以及停止位置；遇到其它内容就停。
+ */
+function scanDataPath(line: string, from: number): { segments: DataPathSegment[]; end: number } {
+    const segments: DataPathSegment[] = [];
+    let cursor = from;
+
+    while (true) {
+        // 下标 `[0]` / `[key]` 只是取值，不参与路径。放在名字之前处理，
+        // `?.` 后面的下标（`list?.[0].name`）才不会被当成路径终点
+        while (line[cursor] === '[') {
+            const close = line.indexOf(']', cursor);
+            if (close === -1) return { segments, end: cursor };
+            cursor = close + 1;
+        }
+
+        DATA_PATH_IDENT.lastIndex = cursor;
+        const token = DATA_PATH_IDENT.exec(line);
+        if (token) {
+            segments.push({ name: token[0], start: cursor, end: cursor + token[0].length });
+            cursor += token[0].length;
+            continue;
+        }
+
+        // 名字之间只认 `.` / `?.`；路径还没开始时碰到分隔符不算路径
+        if (segments.length === 0) break;
+        if (line.startsWith('?.', cursor)) {
+            cursor += 2;
+            continue;
+        }
+        if (line[cursor] === '.') {
+            cursor += 1;
+            continue;
+        }
+        break;
+    }
+
+    return { segments, end: cursor };
+}
+
+/** 补全用：`$data.` 之后**已完成**的路径段；光标不在属性路径上时返回 null */
+export function getDataPathBeforeCursor(textBefore: string): string[] | null {
+    const head = textBefore.lastIndexOf('$data.');
+    if (head === -1) return null;
+
+    const { segments, end } = scanDataPath(textBefore, head + '$data.'.length);
+    // 光标前只允许「路径 + 半截标识符」，遇到其他表达式就不给补全
+    if (!/^[\w$]*$/.test(textBefore.slice(end))) return null;
+
+    // 紧跟在 `.` / `?.` / `]` 之后才把最后一段当成已完成，否则那是正在输入的半截名字
+    const endedWithSeparator = /(?:\.|\])$/.test(textBefore.slice(0, end));
+    const completed = endedWithSeparator ? segments : segments.slice(0, -1);
+    return completed.map(item => item.name);
+}
+
 function extractDataPropAtPosition(line: string, lineNum: number, charIndex: number): TemplateReference | null {
-    const regex = /\$data\.(\w+)/g;
+    const head = /\$data\./g;
     let match: RegExpExecArray | null;
 
-    while ((match = regex.exec(line)) !== null) {
-        const startChar = match.index + '$data.'.length;
-        const endChar = startChar + match[1].length;
+    while ((match = head.exec(line)) !== null) {
+        const { segments } = scanDataPath(line, match.index + match[0].length);
+        const index = segments.findIndex(item => charIndex >= item.start && charIndex <= item.end);
+        if (index === -1) continue;
 
-        if (charIndex >= startChar && charIndex <= endChar) {
-            return {
-                kind: 'dataProp',
-                name: match[1],
-                range: new vscode.Range(lineNum, startChar, lineNum, endChar),
-                fullExpression: match[0],
-            };
-        }
+        const target = segments[index];
+        return {
+            kind: 'dataProp',
+            name: target.name,
+            dataPath: segments.slice(0, index).map(item => item.name),
+            range: new vscode.Range(lineNum, target.start, lineNum, target.end),
+            // 只截到光标所在段：悬停中间段（`$data.user.name` 的 `user`）时，
+            // 标签必须是 `$data.user`，不能是整条 `$data.user.name`——
+            // 否则标签与解析出的类型（User）对不上
+            fullExpression: line.slice(match.index, target.end),
+        };
     }
 
     return null;
@@ -656,6 +766,12 @@ export function findDefinitionInTsFile(
     htmlPath?: string,
 ): vscode.Location | null {
     if (!fs.existsSync(tsPath)) return null;
+
+    // `$data.a.b`：沿类型链解析到最后一段（不能退回按名字在顶层找，会同名错跳）
+    if (ref.kind === 'dataProp' && ref.dataPath && ref.dataPath.length > 0) {
+        const result = resolveDataPath(tsPath, resolveComponentClass(tsPath, htmlPath), [...ref.dataPath, ref.name]);
+        return result.location ? locate(result.location.path, result.location.index) : null;
+    }
 
     const localResult = findDefinitionLocally(tsPath, ref, htmlPath);
     if (localResult) return localResult;
@@ -1238,6 +1354,7 @@ export function validateReferences(document: vscode.TextDocument): TemplateDiagn
     if (!tsPath) return diagnostics;
 
     const { methods, getters, dataProps, dataPropsIncomplete } = getComponentMembers(tsPath, document.fileName);
+    const componentClass = resolveComponentClass(tsPath, document.fileName);
     const text = document.getText();
     const masked = maskHtmlNonContent(text);
     const lineStarts = computeLineStarts(text);
@@ -1252,6 +1369,10 @@ export function validateReferences(document: vscode.TextDocument): TemplateDiagn
             severity: vscode.DiagnosticSeverity.Error,
         });
     };
+
+    // 同一模板里 `$data.user.name` 这类路径常重复出现几十次：一趟校验内按路径
+    // 记住解析结果。源码版本在一次 validate 内不会变，所以不会拿到旧结果
+    const pathResults = new Map<string, ReturnType<typeof resolveDataPath>>();
 
     for (const region of regions) {
         const slice = masked.slice(region.start, region.end);
@@ -1269,14 +1390,46 @@ export function validateReferences(document: vscode.TextDocument): TemplateDiagn
         // 确定的类型（泛型实参 / 索引访问等）。两种情况都跳过，以免按残缺键集误报
         if (dataProps.size === 0 || dataPropsIncomplete) continue;
 
-        const dataProp = /\$data\.(\w+)/g;
-        while ((match = dataProp.exec(slice)) !== null) {
-            const name = match[1];
-            if (dataProps.has(name) || getters.has(name) || methods.has(name)) continue;
+        // `$data.a.b` / `$data.list[0].c`：逐段校验。第一段缺失沿用单级文案；
+        // 中间类型无法静态确定时 `missingAt` 为 null，不报
+        const dataHead = /\$data\./g;
+        while ((match = dataHead.exec(slice)) !== null) {
+            const { segments } = scanDataPath(slice, match.index + '$data.'.length);
+            if (segments.length === 0) continue;
+
+            const first = segments[0];
+            if (!dataProps.has(first.name) && !getters.has(first.name) && !methods.has(first.name)) {
+                pushDiagnostic(
+                    `数据属性 '${first.name}' 在 super({}) 或 interface 中未定义`,
+                    region.start + first.start,
+                    first.name.length,
+                );
+                continue;
+            }
+            if (segments.length === 1) continue;
+
+            const pathKey = segments.map(item => item.name).join('.');
+            let result = pathResults.get(pathKey);
+            if (!result) {
+                result = resolveDataPath(
+                    tsPath,
+                    componentClass,
+                    segments.map(item => item.name),
+                );
+                pathResults.set(pathKey, result);
+            }
+            // `missingAt === 0`：首段来自 `super({...})` 或 getter，类型链里没有它，
+            // 但上面已经确认存在，不再重复报
+            if (result.found || result.missingAt === null || result.missingAt === 0) continue;
+
+            const missing = segments[result.missingAt];
+            // 对象都继承这些成员，接口里不写不代表不能用
+            if (OBJECT_PROTO_MEMBERS.has(missing.name)) continue;
+            const prefix = ['$data', ...segments.slice(0, result.missingAt).map(item => item.name)].join('.');
             pushDiagnostic(
-                `数据属性 '${name}' 在 super({}) 或 interface 中未定义`,
-                region.start + match.index + 6,
-                name.length,
+                `数据属性 '${missing.name}' 在 ${prefix} 的类型中未定义`,
+                region.start + missing.start,
+                missing.name.length,
             );
         }
     }

@@ -2685,3 +2685,336 @@ test('符号键不算索引签名：$data 校验仍然生效', () => {
         "数据属性 'zzz' 在 super({}) 或 interface 中未定义",
     ]);
 });
+
+test('$data 多级属性：悬停 / 跳转 / 补全 / 诊断都沿类型链解析', async () => {
+    const { SolelyHoverProvider } = require('../dist/hoverProvider.js');
+    const ws = makeWorkspace();
+    const tsPath = ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Address { city: string }',
+        'interface User { name: string; address: Address }',
+        'interface Data { user: User }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+    const html = '<div>{{ $data.user.name }}{{ $data.user.address.zzz }}</div>';
+    const document = ws.html('index.html', html);
+    const nameAt = html.indexOf('name') + 1;
+
+    // 悬停：显示末段类型
+    const hover = await new SolelyHoverProvider().provideHover(document, new Position(0, nameAt), {});
+    assert.ok(hover, '多级属性应有悬停');
+    const hoverText = (Array.isArray(hover.contents) ? hover.contents : [hover.contents])
+        .map(item => item.value)
+        .join('');
+    assert.ok(hoverText.includes('$data.user.name: string'), hoverText);
+
+    // 跳转：落到 User 里的 name，而不是顶层同名键
+    const ref = parser.extractReferenceAtPosition(document, new Position(0, nameAt));
+    assert.deepStrictEqual(ref && ref.dataPath, ['user']);
+    const location = parser.findDefinitionInTsFile(tsPath, ref, document.fileName);
+    assert.ok(location, '多级属性应能跳转');
+    assert.strictEqual(location.range.start.line, 3);
+
+    // 补全：`$data.user.` 给出下一级字段
+    const completionHtml = '<div>{{ $data.user. }}</div>';
+    const completionDoc = ws.html('index.html', completionHtml);
+    const caret = completionHtml.indexOf('$data.user.') + '$data.user.'.length;
+    const items = new SolelyCompletionProvider().provideCompletionItems(completionDoc, new Position(0, caret), {});
+    assert.deepStrictEqual((items ?? []).map(item => item.label), ['name', 'address']);
+
+    // 诊断：只报缺失段，并带上路径
+    assert.deepStrictEqual(messages(parser.validateReferences(document)), [
+        "数据属性 'zzz' 在 $data.user.address 的类型中未定义",
+    ]);
+});
+
+test('多级属性中间类型无法静态确定时不报未定义', () => {
+    const ws = makeWorkspace();
+    ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Data { user: UnknownType }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+    const document = ws.html('index.html', '<div>{{ $data.user.zzz }}</div>');
+
+    assert.deepStrictEqual(messages(parser.validateReferences(document)), []);
+});
+
+test('$data 路径支持可选链与下标：$data.user?.name / $data.list[0].name', async () => {
+    const { SolelyHoverProvider } = require('../dist/hoverProvider.js');
+    const ws = makeWorkspace();
+    const tsPath = ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Item { name: string }',
+        'interface User { name: string }',
+        'interface Data { user: User; list: Item[] }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+    const html = '<div>{{ $data.user?.name }}{{ $data.list[0].name }}{{ $data.user?.zzz }}</div>';
+    const document = ws.html('index.html', html);
+
+    // 可选链
+    const optionalAt = html.indexOf('?.name') + 3;
+    const optionalRef = parser.extractReferenceAtPosition(document, new Position(0, optionalAt));
+    assert.deepStrictEqual(optionalRef && optionalRef.dataPath, ['user']);
+    const optionalLoc = parser.findDefinitionInTsFile(tsPath, optionalRef, document.fileName);
+    assert.ok(optionalLoc, '可选链路径应能跳转');
+    assert.strictEqual(optionalLoc.range.start.line, 3);
+
+    const hover = await new SolelyHoverProvider().provideHover(document, new Position(0, optionalAt), {});
+    assert.ok(hover);
+    const hoverText = (Array.isArray(hover.contents) ? hover.contents : [hover.contents])
+        .map(item => item.value)
+        .join('');
+    // 标签用模板原文，保留 `?.`
+    assert.ok(hoverText.includes('$data.user?.name: string'), hoverText);
+
+    // 下标：跳过 `[0]`，落到数组元素类型
+    const indexAt = html.indexOf('[0].name') + 5;
+    const indexRef = parser.extractReferenceAtPosition(document, new Position(0, indexAt));
+    assert.deepStrictEqual(indexRef && indexRef.dataPath, ['list']);
+    const indexLoc = parser.findDefinitionInTsFile(tsPath, indexRef, document.fileName);
+    assert.ok(indexLoc, '下标路径应能跳转');
+    assert.strictEqual(indexLoc.range.start.line, 2);
+
+    // 标签同样保留 `[0]`，而不是显示 `$data.list.name`
+    const indexHover = await new SolelyHoverProvider().provideHover(document, new Position(0, indexAt), {});
+    assert.ok(indexHover);
+    const indexHoverText = (Array.isArray(indexHover.contents) ? indexHover.contents : [indexHover.contents])
+        .map(item => item.value)
+        .join('');
+    assert.ok(indexHoverText.includes('$data.list[0].name: string'), indexHoverText);
+
+    // 补全：下标之后
+    const completionHtml = '<div>{{ $data.list[0]. }}</div>';
+    const completionDoc = ws.html('index.html', completionHtml);
+    const caret = completionHtml.indexOf('$data.list[0].') + '$data.list[0].'.length;
+    const items = new SolelyCompletionProvider().provideCompletionItems(completionDoc, new Position(0, caret), {});
+    assert.deepStrictEqual((items ?? []).map(item => item.label), ['name']);
+
+    // 可选链 + 下标（`list?.[0]`）：`?.` 后面还要能接下标
+    const bothHtml = '<div>{{ $data.list?.[0].name }}</div>';
+    const bothDoc = ws.html('index.html', bothHtml);
+    const bothAt = bothHtml.indexOf('[0].name') + 5;
+    const bothRef = parser.extractReferenceAtPosition(bothDoc, new Position(0, bothAt));
+    assert.deepStrictEqual(bothRef && bothRef.dataPath, ['list']);
+    const bothLoc = parser.findDefinitionInTsFile(tsPath, bothRef, bothDoc.fileName);
+    assert.ok(bothLoc, '可选链 + 下标路径应能跳转');
+    assert.strictEqual(bothLoc.range.start.line, 2);
+
+    const bothCompletionHtml = '<div>{{ $data.list?.[0]. }}</div>';
+    const bothCompletionDoc = ws.html('index.html', bothCompletionHtml);
+    const bothCaret = bothCompletionHtml.indexOf('$data.list?.[0].') + '$data.list?.[0].'.length;
+    const bothItems = new SolelyCompletionProvider().provideCompletionItems(
+        bothCompletionDoc,
+        new Position(0, bothCaret),
+        {},
+    );
+    assert.deepStrictEqual((bothItems ?? []).map(item => item.label), ['name']);
+
+    // 诊断：中间类型已知时，末段拼错仍然报
+    assert.deepStrictEqual(messages(parser.validateReferences(document)), [
+        "数据属性 'zzz' 在 $data.user 的类型中未定义",
+    ]);
+
+    // 诊断：`Item[]` 的元素类型按保守策略不校验键（与 `$data.list[0].zzz` 一致）
+    const bothMissDoc = ws.html('index.html', '<div>{{ $data.list?.[0].zzz }}</div>');
+    assert.deepStrictEqual(messages(parser.validateReferences(bothMissDoc)), []);
+});
+
+test('$data 路径末段是方法 / 访问器时，悬停显示声明原文', async () => {
+    const { SolelyHoverProvider } = require('../dist/hoverProvider.js');
+    const ws = makeWorkspace();
+    ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface User {',
+        '  greet(name: string): string;',
+        '  get title(): string;',
+        '}',
+        'interface Data { user: User }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+    const html = '<div>{{ $data.user.greet("x") }}{{ $data.user.title }}</div>';
+    const document = ws.html('index.html', html);
+
+    const hoverTextAt = async offset => {
+        const hover = await new SolelyHoverProvider().provideHover(document, new Position(0, offset), {});
+        if (!hover) return null;
+        return (Array.isArray(hover.contents) ? hover.contents : [hover.contents])
+            .map(item => item.value)
+            .join('');
+    };
+
+    const greetText = await hoverTextAt(html.indexOf('greet') + 1);
+    assert.ok(greetText, '方法应有悬停');
+    assert.ok(greetText.includes('greet(name: string): string'), greetText);
+
+    const titleText = await hoverTextAt(html.indexOf('title') + 1);
+    assert.ok(titleText, '访问器应有悬停');
+    assert.ok(titleText.includes('get title(): string'), titleText);
+
+    // 方法 / 访问器是合法成员，诊断不应报未定义
+    assert.deepStrictEqual(messages(parser.validateReferences(document)), []);
+});
+
+test('多级路径中途走不通时不给跳转，也不把父级类型当成末段类型', async () => {
+    const { SolelyHoverProvider } = require('../dist/hoverProvider.js');
+    const ws = makeWorkspace();
+    const tsPath = ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Data { map: Record<string, { name: string }> }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+    const html = '<div>{{ $data.map.zzz }}</div>';
+    const document = ws.html('index.html', html);
+    const at = html.indexOf('zzz') + 1;
+
+    // Record 的键不可枚举：解析不出末段，但也不能断言 zzz 不存在
+    assert.deepStrictEqual(messages(parser.validateReferences(document)), []);
+
+    const ref = parser.extractReferenceAtPosition(document, new Position(0, at));
+    // 不能拿 map 的声明位置冒充 zzz 的
+    assert.strictEqual(parser.findDefinitionInTsFile(tsPath, ref, document.fileName), null);
+
+    const hover = await new SolelyHoverProvider().provideHover(document, new Position(0, at), {});
+    const text = (Array.isArray(hover.contents) ? hover.contents : [hover.contents]).map(item => item.value).join('');
+    // 也不能拿 map 的类型（Record<...>）冒充 zzz 的类型
+    assert.ok(!text.includes('typescript'), text);
+    assert.ok(text.includes('$data.map.zzz'), text);
+});
+
+test('多级属性的成员判定：方法 / 访问器 / 索引签名不算「未定义」', () => {
+    const ws = makeWorkspace();
+    const tsPath = ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Item { name: string }',
+        'interface User { name: string; greet(who: string): string; get title(): string }',
+        'interface Data {',
+        '  user: User;',
+        '  dict: { [key: string]: Item };',
+        '  picked: Pick<User, "name">;',
+        '  list: Item[];',
+        '}',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+
+    // 方法是合法成员（`$data.user.greet()`），只是不算数据键
+    const greetDoc = ws.html('index.html', '<div>{{ $data.user.greet("a") }}</div>');
+    assert.deepStrictEqual(messages(parser.validateReferences(greetDoc)), []);
+
+    // 能跳到方法的声明，而不是当作不存在
+    const greetHtml = greetDoc.getText();
+    const greetRef = parser.extractReferenceAtPosition(greetDoc, new Position(0, greetHtml.indexOf('greet') + 1));
+    const greetLoc = parser.findDefinitionInTsFile(tsPath, greetRef, greetDoc.fileName);
+    assert.ok(greetLoc, '接口方法应能跳转');
+    assert.strictEqual(greetLoc.range.start.line, 3);
+
+    // 访问器同理
+    const titleDoc = ws.html('index.html', '<div>{{ $data.user.title }}</div>');
+    assert.deepStrictEqual(messages(parser.validateReferences(titleDoc)), []);
+    const titleLoc = parser.findDefinitionInTsFile(
+        tsPath,
+        parser.extractReferenceAtPosition(titleDoc, new Position(0, 16)),
+        titleDoc.fileName,
+    );
+    assert.ok(titleLoc, '访问器应能跳转');
+
+    // 索引签名下任何名字都可能存在，不能报未定义
+    assert.deepStrictEqual(messages(parser.validateReferences(ws.html('index.html', '<div>{{ $data.dict.zzz }}</div>'))), []);
+
+    // 但 Pick 收窄之后方法不在键集里，该报还得报
+    assert.deepStrictEqual(messages(parser.validateReferences(ws.html('index.html', '<div>{{ $data.picked.greet }}</div>'))), [
+        "数据属性 'greet' 在 $data.picked 的类型中未定义",
+    ]);
+
+    // 数组元素类型仍按保守策略跳过（不做「数组本身没有具名键」之外的推断）
+    assert.deepStrictEqual(messages(parser.validateReferences(ws.html('index.html', '<div>{{ $data.list[0].zzz }}</div>'))), []);
+});
+
+test('悬停中间段只显示到该段为止的路径，后缀方法调用不并入路径', async () => {
+    const { SolelyHoverProvider } = require('../dist/hoverProvider.js');
+    const ws = makeWorkspace();
+    ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Item { name: string }',
+        'interface User { name: string; list: Item[] }',
+        'interface Data { user: User; list: Item[] }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+
+    const hoverTextAt = async (html, offset) => {
+        const document = ws.html('index.html', html);
+        const hover = await new SolelyHoverProvider().provideHover(document, new Position(0, offset), {});
+        assert.ok(hover, '应有悬停内容');
+        return (Array.isArray(hover.contents) ? hover.contents : [hover.contents]).map(item => item.value).join('');
+    };
+
+    // `user` 是中间段：标签不能连后面的 `.name` 一起显示，否则标签与类型（User）对不上
+    const midHtml = '<div>{{ $data.user.name }}</div>';
+    const midText = await hoverTextAt(midHtml, midHtml.indexOf('user') + 1);
+    assert.ok(midText.includes('$data.user: User'), midText);
+    assert.ok(!midText.includes('$data.user.name'), midText);
+
+    // 下标段的中间段同理：`$data.list` 的类型是 `Item[]`
+    const indexHtml = '<div>{{ $data.list[0].name }}</div>';
+    const indexText = await hoverTextAt(indexHtml, indexHtml.indexOf('list') + 1);
+    assert.ok(indexText.includes('$data.list: Item[]'), indexText);
+
+    // 末段后缀跟着方法调用：`trim` 不是路径的一部分
+    const tailHtml = '<div>{{ $data.user.name.trim() }}</div>';
+    const tailText = await hoverTextAt(tailHtml, tailHtml.indexOf('name') + 1);
+    assert.ok(tailText.includes('$data.user.name: string'), tailText);
+    assert.ok(!tailText.includes('trim'), tailText);
+});
+
+test('Object.prototype 上的成员不算未定义（接口里不会写，但能访问）', () => {
+    const ws = makeWorkspace();
+    ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Address { city: string }',
+        'interface User { name: string; address: Address }',
+        'interface Data { user: User }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+
+    assert.deepStrictEqual(messages(parser.validateReferences(ws.html('index.html', '<div>{{ $data.user.toString() }}</div>'))), []);
+    assert.deepStrictEqual(
+        messages(parser.validateReferences(ws.html('index.html', '<div>{{ $data.user.address.hasOwnProperty("city") }}</div>'))),
+        [],
+    );
+
+    // 普通拼错照报
+    assert.deepStrictEqual(messages(parser.validateReferences(ws.html('index.html', '<div>{{ $data.user.address.tostring() }}</div>'))), [
+        "数据属性 'tostring' 在 $data.user.address 的类型中未定义",
+    ]);
+});
+
+test('同一条错误路径出现在多处时各自定位（诊断按路径缓存，但不复用位置）', () => {
+    const ws = makeWorkspace();
+    ws.write('index.ts', [
+        "import { BaseElement } from 'solely';",
+        "import tpl from './index.html?solely';",
+        'interface Address { city: string }',
+        'interface User { name: string; address: Address }',
+        'interface Data { user: User }',
+        'class X extends BaseElement<Data> {}',
+    ].join('\n'));
+
+    const html = '<div>\n  {{ $data.user.address.zzz }}\n  <p>{{ $data.user.address.zzz }}</p>\n</div>';
+    const diagnostics = parser.validateReferences(ws.html('index.html', html));
+    assert.deepStrictEqual(
+        diagnostics.map(item => [item.message, item.range.start.line, item.range.start.character]),
+        [
+            ["数据属性 'zzz' 在 $data.user.address 的类型中未定义", 1, 24],
+            ["数据属性 'zzz' 在 $data.user.address 的类型中未定义", 2, 27],
+        ],
+    );
+});
