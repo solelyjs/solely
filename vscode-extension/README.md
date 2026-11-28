@@ -309,6 +309,31 @@ class MyComponent extends BaseElement<MyData> {
 
 ---
 
+## `$data` 类型解析
+
+`$data.xxx` 的补全、悬停、跳转与诊断都基于 `BaseElement<...>` 的类型参数，支持：
+
+- 内联类型字面量：`BaseElement<{ count: number }>`
+- 交叉类型：`BaseElement<TreeProps & { flattenedTree: TreeNode[] }>`
+- `interface` 继承链：`interface MyData extends BaseData { ... }`（可跨文件、多级）
+- 同名 `interface` 声明合并：多个 `interface MyData { ... }` 的键取并集
+- 导入类型：`import type { TreeProps } from './types'`，含 barrel 的 `export { X } from` / `export * from`
+- 类型别名：`type Data = A & B`
+- 包装类型：`Partial` / `Required` / `Readonly` / `NonNullable` 透传键集；`Pick<T, K>` / `Omit<T, K>` 按 `K` 过滤，`K` 支持字面量联合、`keyof T` 与（同文件或跨文件的）类型别名，以及它们的混合写法（如 `K | 'c'`）
+- 泛型参数里的对象约束（如 `interface S<T extends { id: string }> { a: string }`）不会污染数据键，键集仍取类体本身
+- 成员修饰符与特殊键：`readonly a: string`、`'kebab-key': string`、`2: number`、`['computed']` 都算数据键；方法签名会被排除
+
+父类跳转与链式调用还支持多种导入 / 导出写法：命名 / 默认导入及其别名、`import * as ns` 命名空间成员（`extends ns.Base`）、barrel 的命名与 `*` 再导出、`export { default }` / `export { X as default }` 默认再导出、`class X {} ... export default X` 先声明后导出；`this.prop.method()` 中 `prop` 声明在父类时也能沿继承链解析。
+
+已知限制：
+
+- 类型嵌套超过 32 层（别名 / 泛型展开）会停止解析，`$data` 退化为不校验，不会误报
+- 泛型类型别名的类型实参暂不代入（如 `BaseElement<WithId<Data>>`，`WithId<T> = T & { id: string }`），索引访问（`Props['data']`）与条件类型同理：键集无法完整确定时会跳过 `$data` 校验，不误报
+- `Pick` 的键集无法静态确定时（如 `K` 来自运行时计算），`Pick` 返回空集、`Omit` 保留全部键
+- 索引签名 `[key: string]: T`、映射类型与 `Record<K, V>` 不透出具体键名，键集视为不完整，跳过校验
+
+---
+
 ## 安装
 
 **方式一：通过 VS Code 扩展面板安装（推荐）**

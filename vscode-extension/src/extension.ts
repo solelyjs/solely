@@ -66,14 +66,19 @@ export function activate(context: vscode.ExtensionContext) {
     const isScriptDocument = (document: vscode.TextDocument): boolean =>
         document.languageId === 'typescript' || document.languageId === 'typescriptreact';
 
+    /** 重新跑一遍所有已打开文档的诊断（缓存失效后调用） */
+    const refreshOpenDiagnostics = (): void => {
+        for (const document of vscode.workspace.textDocuments) {
+            diagnosticProvider.updateDiagnostics(document);
+        }
+    };
+
     const changeListener = vscode.workspace.onDidChangeTextDocument(event => {
         if (isScriptDocument(event.document)) {
             // TS 内容变了：模板与组件的关联、父类解析、成员签名都可能失效，
             // 同时刷新所有已打开的模板，否则改名后 HTML 侧诊断会一直是旧的
             invalidateForChangedFile(event.document.fileName);
-            for (const document of vscode.workspace.textDocuments) {
-                diagnosticProvider.updateDiagnostics(document);
-            }
+            refreshOpenDiagnostics();
             return;
         }
         diagnosticProvider.updateDiagnostics(event.document);
@@ -87,15 +92,47 @@ export function activate(context: vscode.ExtensionContext) {
         diagnosticProvider.clearDiagnostics(document);
     });
 
-    // 文件增删改名会改变模板 ↔ 组件的关联
-    const didCreateListener = vscode.workspace.onDidCreateFiles(() => clearTsFileCache());
-    const didDeleteListener = vscode.workspace.onDidDeleteFiles(() => clearTsFileCache());
-    const didRenameListener = vscode.workspace.onDidRenameFiles(() => clearTsFileCache());
+    // 文件增删改名会改变模板 ↔ 组件的关联；清缓存后立即刷新已打开的模板
+    const didCreateListener = vscode.workspace.onDidCreateFiles(() => {
+        clearTsFileCache();
+        refreshOpenDiagnostics();
+    });
+    const didDeleteListener = vscode.workspace.onDidDeleteFiles(() => {
+        clearTsFileCache();
+        refreshOpenDiagnostics();
+    });
+    const didRenameListener = vscode.workspace.onDidRenameFiles(() => {
+        clearTsFileCache();
+        refreshOpenDiagnostics();
+    });
+
+    // 编辑器外的改动（git checkout / 外部生成）不会触发文档事件，靠磁盘监听补齐：
+    // 只递增类型缓存代次，命中时按文件版本决定要不要重解析。
+    // 外部改动常常是成批的，合并成一次刷新
+    const tsWatcher = vscode.workspace.createFileSystemWatcher('**/*.{ts,tsx,mts,cts}');
+    let externalRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+    const scheduleExternalRefresh = (): void => {
+        if (externalRefreshTimer) clearTimeout(externalRefreshTimer);
+        externalRefreshTimer = setTimeout(() => {
+            externalRefreshTimer = undefined;
+            refreshOpenDiagnostics();
+        }, 100);
+    };
+    const externalChangeListener = tsWatcher.onDidChange(uri => {
+        invalidateForChangedFile(uri.fsPath);
+        scheduleExternalRefresh();
+    });
+    const externalCreateListener = tsWatcher.onDidCreate(() => {
+        clearTsFileCache();
+        scheduleExternalRefresh();
+    });
+    const externalDeleteListener = tsWatcher.onDidDelete(() => {
+        clearTsFileCache();
+        scheduleExternalRefresh();
+    });
 
     // 启动时把已经打开的文档全部扫一遍，而不是只看当前激活的那个
-    for (const document of vscode.workspace.textDocuments) {
-        diagnosticProvider.updateDiagnostics(document);
-    }
+    refreshOpenDiagnostics();
 
     context.subscriptions.push(
         definitionProvider,
@@ -108,6 +145,13 @@ export function activate(context: vscode.ExtensionContext) {
         didCreateListener,
         didDeleteListener,
         didRenameListener,
+        tsWatcher,
+        externalChangeListener,
+        externalCreateListener,
+        externalDeleteListener,
+        new vscode.Disposable(() => {
+            if (externalRefreshTimer) clearTimeout(externalRefreshTimer);
+        }),
         diagnosticProvider,
     );
 }

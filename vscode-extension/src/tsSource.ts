@@ -15,10 +15,14 @@ export interface ClassInfo {
     name: string;
     /** `extends` 的类名（已去掉命名空间前缀），无则 null */
     extendsName: string | null;
+    /** `extends` 的完整表达式（保留命名空间前缀，如 `ns.Base`），无则 null */
+    extendsExpr: string | null;
     /** `extends BaseElement<X>` 中的 `X` 原文 */
     extendsTypeArg: string | null;
     /** `extendsTypeArg` 在源码中的起始下标（指向 `<` 之后第一个字符） */
     extendsTypeArgStart: number;
+    /** 泛型参数 `>` 的下标（无泛型时为 -1） */
+    extendsTypeArgEnd: number;
     /** `class` 关键字下标 */
     keywordIndex: number;
     /** 类体 `{` 的下标 */
@@ -178,7 +182,7 @@ export function findMatchingBracket(masked: string, openIndex: number): number {
  * 1. `=>` 里的 `>` 不是泛型闭合（`{ onClick: () => void }` 会被误判）；
  * 2. 花括号内是类型字面量，里面的 `<>` 不参与外层泛型计数。
  */
-function skipAngle(masked: string, from: number): number {
+export function skipAngle(masked: string, from: number): number {
     let i = from;
     while (i < masked.length && /\s/.test(masked[i])) i++;
     if (masked[i] !== '<') return from;
@@ -214,7 +218,7 @@ function skipAngle(masked: string, from: number): number {
  * `class X extends BaseElement<{ a: number }> {` 里的 `{` 属于泛型，不能当成类体。
  * 与 `skipAngle` 一样，`=>` 的 `>` 和花括号内的 `<>` 都不参与计数。
  */
-function findHeaderBrace(masked: string, from: number): number {
+export function findHeaderBrace(masked: string, from: number): number {
     let angle = 0;
     let curly = 0;
 
@@ -256,19 +260,24 @@ export function listClasses(masked: string): ClassInfo[] {
 
         const header = masked.slice(cursor, bodyStart);
         let extendsName: string | null = null;
+        let extendsExpr: string | null = null;
         let extendsTypeArg: string | null = null;
         let extendsTypeArgStart = -1;
+        let extendsTypeArgEnd = -1;
 
         const ext = /\bextends\s+([A-Za-z_$][\w$.]*)/.exec(header);
         if (ext) {
+            extendsExpr = ext[1];
             extendsName = ext[1].split('.').pop() ?? ext[1];
             const afterExt = cursor + ext.index + ext[0].length;
             const open = masked.indexOf('<', afterExt);
             if (open !== -1 && open < bodyStart) {
                 const close = skipAngle(masked, open);
-                if (close !== -1 && close <= bodyStart) {
+                // skipAngle 解析失败时原样返回 open，此时三个字段都保持 -1
+                if (close > open && close <= bodyStart) {
                     extendsTypeArg = masked.slice(open + 1, close - 1).trim();
                     extendsTypeArgStart = open + 1;
+                    extendsTypeArgEnd = close - 1;
                 }
             }
         }
@@ -276,8 +285,10 @@ export function listClasses(masked: string): ClassInfo[] {
         result.push({
             name,
             extendsName,
+            extendsExpr,
             extendsTypeArg,
             extendsTypeArgStart,
+            extendsTypeArgEnd,
             keywordIndex: match.index,
             bodyStart,
             bodyEnd,
@@ -425,7 +436,7 @@ export function scanClassMembers(source: string, masked: string, bodyStart: numb
                 members.push({
                     name,
                     kind: 'arrow',
-                    params: source.slice(arrow.paramsStart + 1, arrow.paramsEnd).trim(),
+                    params: source.slice(arrow.paramsStart, arrow.paramsEnd).trim(),
                     returnType: arrow.returnType,
                     nameIndex,
                 });
@@ -438,9 +449,39 @@ export function scanClassMembers(source: string, masked: string, bodyStart: numb
         }
 
         // 属性：name: Type = ...
+        // 也可能是带类型注解的箭头函数：name: (e: Event) => void = (e) => {}
         if (masked[i] === ':') {
-            const typeEnd = scanTypeEnd(masked, i + 1, bodyEnd);
-            i = skipToMemberBoundary(masked, typeEnd, bodyEnd);
+            const typeEnd = scanType(masked, i + 1, bodyEnd);
+            if (typeEnd > i + 1) {
+                const afterType = skipSpaces(masked, typeEnd);
+                if (masked[afterType] === '=') {
+                    const arrow = tryParseArrow(masked, afterType + 1, bodyEnd);
+                    if (arrow) {
+                        // 标注是函数类型时以标注为准：`handleClick: (e: Event) => void = (e) => {}`
+                        const annotated = splitFunctionType(source, masked, i + 1, typeEnd);
+                        members.push({
+                            name,
+                            kind: 'arrow',
+                            params: annotated
+                                ? annotated.params
+                                : source.slice(arrow.paramsStart, arrow.paramsEnd).trim(),
+                            // 注解不是函数类型（如 `onClick: Handler`）时，它是整个字段的类型，
+                            // 不是返回类型；只有内联函数类型标注或箭头自身的注解才算返回类型
+                            returnType: annotated?.returnType ?? arrow.returnType,
+                            nameIndex,
+                        });
+                        i = arrow.bodyEnd + 1;
+                        continue;
+                    }
+                }
+                i = skipToMemberBoundary(masked, typeEnd, bodyEnd);
+                members.push({ name, kind: 'property', params: '', returnType: null, nameIndex });
+                continue;
+            }
+
+            // 类型解析失败时退回旧的启发式扫描，至少保证成员边界不错位
+            const legacyEnd = scanTypeEnd(masked, i + 1, bodyEnd);
+            i = skipToMemberBoundary(masked, legacyEnd, bodyEnd);
             members.push({ name, kind: 'property', params: '', returnType: null, nameIndex });
             continue;
         }
@@ -453,18 +494,168 @@ export function scanClassMembers(source: string, masked: string, bodyStart: numb
 }
 
 interface ArrowInfo {
+    /** 参数文本起点（`(` 之后，或单参数箭头里参数的起点） */
     paramsStart: number;
+    /** 参数文本终点（`)` 的下标，或单参数箭头里参数的终点） */
     paramsEnd: number;
     returnType: string | null;
     bodyEnd: number;
 }
 
+/** 类型里的前缀关键字：`keyof X` / `typeof X` / `readonly T[]` / `infer T` */
+const TYPE_KEYWORDS = new Set(['keyof', 'typeof', 'readonly', 'infer', 'new', 'unique']);
+
+/**
+ * 按类型语法扫描类型表达式，返回「类型结束」后的下标；解析失败返回 `from`。
+ *
+ * 与 `scanTypeEnd` 的启发式不同，这里能区分：
+ * - 函数类型里的 `=>`（`(e: Event) => void` 属于类型）
+ * - 箭头函数体的 `=>`（`(): Promise<void> => {}` 属于函数体）
+ * 之前用 `scanTypeEnd` 会把 `=> body` 一起吃进类型，导致带返回类型注解的
+ * 箭头函数字段被误判成普通属性。
+ */
+function scanType(masked: string, from: number, limit: number): number {
+    let i = scanTypePrimary(masked, from, limit);
+    if (i <= from) return from;
+
+    while (true) {
+        i = skipSpaces(masked, i);
+        if (i >= limit) return i;
+
+        const c = masked[i];
+        if (c === '|' || c === '&') {
+            const next = scanTypePrimary(masked, i + 1, limit);
+            if (next <= i + 1) return i;
+            i = next;
+            continue;
+        }
+        if (c === '[') {
+            // 数组类型 T[]
+            const close = findMatchingBracket(masked, i);
+            if (close === -1 || close >= limit) return i;
+            i = close + 1;
+            continue;
+        }
+        return i;
+    }
+}
+
+/**
+ * 判断括号里的内容是不是函数类型的参数列表。
+ * `(A | B)`、`((e) => void)` 这类是「被括号包起来的类型」，不能当成参数。
+ */
+function looksLikeFunctionTypeParams(content: string): boolean {
+    const text = content.trim();
+    if (text === '') return true;
+    if (/=>/.test(text)) return false;
+    // `(A | B)` 是类型分组；`(e: string | number)` 里的 |/& 属于参数类型。
+    // 有冒号即 `name: Type` 形式的参数列表，不能因参数类型里的 |/& 误判成分组。
+    if (!text.includes(':') && /[|&]/.test(text)) return false;
+    if (/^[{([]/.test(text)) return false;
+    if (/\bextends\b/.test(text)) return false;
+    return true;
+}
+
+function scanTypePrimary(masked: string, from: number, limit: number): number {
+    let i = skipSpaces(masked, from);
+    if (i >= limit) return from;
+
+    const prefix = readIdentifier(masked, i);
+    if (prefix && TYPE_KEYWORDS.has(prefix.value)) {
+        const after = skipSpaces(masked, i + prefix.value.length);
+        if (after > i + prefix.value.length && after < limit) {
+            const inner = scanTypePrimary(masked, after, limit);
+            if (inner > after) return inner;
+        }
+        return i + prefix.value.length;
+    }
+
+    const c = masked[i];
+
+    if (c === '(') {
+        const close = findMatchingBracket(masked, i);
+        if (close === -1 || close >= limit) return from;
+        const after = skipSpaces(masked, close + 1);
+        // `(e: Event) => void` 是函数类型；`(A | B) => ...` 里括号只是类型分组
+        if (masked.startsWith('=>', after) && looksLikeFunctionTypeParams(masked.slice(i + 1, close))) {
+            const body = scanType(masked, after + 2, limit);
+            return body > after + 2 ? body : after + 2;
+        }
+        return close + 1;
+    }
+
+    if (c === '{' || c === '[') {
+        // 对象类型 / 元组类型
+        const close = findMatchingBracket(masked, i);
+        if (close === -1 || close >= limit) return from;
+        return close + 1;
+    }
+
+    if (c === '<') {
+        // 泛型函数类型：`<T>(v: T) => T`
+        const afterAngle = skipAngle(masked, i);
+        if (afterAngle <= i) return from;
+        return scanTypePrimary(masked, afterAngle, limit);
+    }
+
+    if (/[0-9+\-]/.test(c)) {
+        let k = i + 1;
+        while (k < limit && /[\w$.]/.test(masked[k])) k++;
+        return k;
+    }
+
+    const token = readIdentifier(masked, i);
+    if (!token) return from;
+
+    let end = token.index + token.value.length;
+    // 限定名 A.B
+    while (masked[end] === '.') {
+        const next = readIdentifier(masked, end + 1);
+        if (!next) break;
+        end = next.index + next.value.length;
+    }
+    // 泛型实参 Foo<Bar>
+    if (masked[end] === '<') {
+        const afterAngle = skipAngle(masked, end);
+        if (afterAngle > end) end = afterAngle;
+    }
+    return end;
+}
+
+/**
+ * 从函数类型的注解里拆出参数和返回类型：`(e: Event) => void`。
+ * 不是函数类型时返回 null。
+ */
+function splitFunctionType(
+    source: string,
+    masked: string,
+    start: number,
+    end: number,
+): { params: string; returnType: string } | null {
+    const i = skipSpaces(masked, start);
+    if (masked[i] !== '(') return null;
+
+    const close = findMatchingBracket(masked, i);
+    if (close === -1 || close >= end) return null;
+
+    const after = skipSpaces(masked, close + 1);
+    if (!masked.startsWith('=>', after)) return null;
+
+    const returnEnd = scanType(masked, after + 2, end);
+    if (returnEnd <= after + 2) return null;
+
+    return {
+        params: source.slice(i + 1, close).trim(),
+        returnType: source.slice(after + 2, returnEnd).trim(),
+    };
+}
+
 function tryParseArrow(masked: string, from: number, limit: number): ArrowInfo | null {
     let i = skipSpaces(masked, from);
 
-    if (masked.startsWith('async', i)) {
-        const after = skipSpaces(masked, i + 5);
-        if (after > i + 5) i = after;
+    // async，允许 `async()` 紧贴写法
+    if (masked.startsWith('async', i) && !IDENT_PART.test(masked[i + 5] ?? '')) {
+        i = skipSpaces(masked, i + 5);
     }
 
     if (masked[i] === '<') {
@@ -472,14 +663,29 @@ function tryParseArrow(masked: string, from: number, limit: number): ArrowInfo |
         if (afterAngle > i) i = skipSpaces(masked, afterAngle);
     }
 
-    if (masked[i] !== '(') return null;
-    const paramsEnd = findMatchingBracket(masked, i);
-    if (paramsEnd === -1) return null;
+    let paramsStart: number;
+    let paramsEnd: number;
 
-    let cursor = skipSpaces(masked, paramsEnd + 1);
+    if (masked[i] === '(') {
+        const close = findMatchingBracket(masked, i);
+        if (close === -1) return null;
+        paramsStart = i + 1;
+        paramsEnd = close;
+        i = close + 1;
+    } else {
+        // 单参数省略括号：`e => ...`
+        const token = readIdentifier(masked, i);
+        if (!token) return null;
+        paramsStart = token.index;
+        paramsEnd = token.index + token.value.length;
+        i = paramsEnd;
+    }
+
+    let cursor = skipSpaces(masked, i);
     let returnType: string | null = null;
     if (masked[cursor] === ':') {
-        const typeEnd = scanTypeEnd(masked, cursor + 1, limit);
+        const typeEnd = scanType(masked, cursor + 1, limit);
+        if (typeEnd <= cursor + 1) return null;
         returnType = masked.slice(cursor + 1, typeEnd).trim();
         cursor = skipSpaces(masked, typeEnd);
     }
@@ -490,12 +696,17 @@ function tryParseArrow(masked: string, from: number, limit: number): ArrowInfo |
     if (masked[cursor] === '{') {
         const close = findMatchingBracket(masked, cursor);
         if (close === -1) return null;
-        return { paramsStart: i, paramsEnd, returnType, bodyEnd: close };
+        return { paramsStart, paramsEnd, returnType, bodyEnd: close };
     }
 
     const end = skipToMemberBoundary(masked, cursor, limit);
-    return { paramsStart: i, paramsEnd, returnType, bodyEnd: end };
+    return { paramsStart, paramsEnd, returnType, bodyEnd: end };
 }
+
+/**
+ * 「下一行是不是新成员」这类判断只向前看这么多字符，够覆盖一行签名即可。
+ */
+export const MEMBER_LOOKAHEAD = 200;
 
 /**
  * 这些字符之后出现的 `{` 属于「类型里的对象字面量」，而不是方法体
@@ -503,8 +714,10 @@ function tryParseArrow(masked: string, from: number, limit: number): ArrowInfo |
 const TYPE_CONTINUES = new Set([':', '|', '&', ',', '(', '[', '<', '?', '=']);
 
 /**
- * 从类型注解起点扫描到类型结束，返回下一个成员边界（方法体 `{` / `;` / 换行后的新成员）。
- * 期间正确跳过 `<...>`、`(...)`、`[...]`、`{...}`，以及 `=>`。
+ * 类型注解的启发式结束位置扫描。
+ *
+ * **仅作兜底**：`scanType` 才是按类型语法解析的权威实现，只有在它解析失败时
+ * 才退回这里，保证成员边界不错位。不要再往这个函数里加新分支。
  *
  * 难点是区分「类型里的 `{`」和「方法体的 `{`」：
  * `getState(): { ok: boolean } { ... }` 里有两个 `{`，前一个是返回类型。
@@ -526,7 +739,7 @@ function scanTypeEnd(masked: string, from: number, limit: number): number {
         if (c === '\n') {
             // 类型跨行很常见，但下一行若是新的成员声明就该停
             if (angle === 0 && round === 0 && square === 0 && curly === 0) {
-                const rest = masked.slice(i + 1, Math.min(limit, i + 200));
+                const rest = masked.slice(i + 1, Math.min(limit, i + MEMBER_LOOKAHEAD));
                 if (
                     /^\s*(?:(?:public|private|protected|static|readonly|abstract|override|async)\s+)*(?:get\s+|set\s+)?[A-Za-z_$#][\w$]*\s*[(:<]/.test(
                         rest,
@@ -600,7 +813,7 @@ function skipToMemberBoundary(masked: string, from: number, limit: number): numb
             return i;
         } else if (c === '\n' && curly === 0 && round === 0 && square === 0 && angle === 0) {
             // interface / 对象字面量允许不写分号，换行即下一个成员
-            if (NEXT_MEMBER_RE.test(masked.slice(i + 1, Math.min(limit, i + 200)))) return i;
+            if (NEXT_MEMBER_RE.test(masked.slice(i + 1, Math.min(limit, i + MEMBER_LOOKAHEAD)))) return i;
         }
     }
     return limit;
@@ -610,13 +823,13 @@ function skipMember(masked: string, from: number, limit: number): number {
     return skipToMemberBoundary(masked, from, limit);
 }
 
-function skipSpaces(masked: string, from: number): number {
+export function skipSpaces(masked: string, from: number): number {
     let i = from;
     while (i < masked.length && /\s/.test(masked[i])) i++;
     return i;
 }
 
-function readIdentifier(masked: string, from: number): { value: string; index: number } | null {
+export function readIdentifier(masked: string, from: number): { value: string; index: number } | null {
     if (from >= masked.length) return null;
     if (!IDENT_START.test(masked[from])) return null;
 
@@ -670,93 +883,258 @@ export function readObjectLiteralKeys(masked: string, open: number): string[] {
     return keys;
 }
 
-/** 找到 `interface Name {` 的 `{` 下标 */
-export function findInterfaceBody(masked: string, name: string): number | null {
-    const re = new RegExp(`\\binterface\\s+${escapeRegex(name)}\\b[^{]*\\{`, 'g');
-    const match = re.exec(masked);
-    if (!match) return null;
-    return match.index + match[0].length - 1;
+/**
+ * 找到所有同名 `interface Name {` 的 `{` 下标。
+ *
+ * TS 允许同名 interface 声明合并，键集必须取所有声明的并集；
+ * 只取首个会让第二个声明里的属性在模板里被误报未定义。
+ */
+export function findInterfaceBodies(masked: string, name: string): number[] {
+    const re = new RegExp(`\\binterface\\s+${escapeRegex(name)}\\b`, 'g');
+    const bodies: number[] = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = re.exec(masked)) !== null) {
+        // 从类型名之后找真正的类体 `{`，跳过泛型参数里的对象约束
+        // （`interface S<T extends { id: string }> { ... }` 中前一个 `{` 属于泛型）。
+        const open = findHeaderBrace(masked, match.index + match[0].length);
+        if (open !== -1) bodies.push(open);
+        re.lastIndex = Math.max(re.lastIndex, open === -1 ? match.index + match[0].length : open + 1);
+    }
+
+    return bodies;
 }
 
-/** 读取 interface 顶层成员名 */
-export function readInterfaceKeys(masked: string, open: number): string[] {
+/** `['key']` 形式计算属性名里的字符串键；索引签名 / 映射类型返回 null */
+function readComputedStringKey(text: string, open: number, close: number): string | null {
+    const inner = text.slice(open + 1, close).trim();
+    const match = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/.exec(inner);
+    return match ? match[2] : null;
+}
+
+/**
+ * `[Symbol.iterator]` / `[typeof Symbol.x]` 这类符号键：是具名成员，但模板里
+ * 引用不到，也不代表「还有无法枚举的动态键」，不能算索引签名。
+ */
+function isSymbolComputedKey(text: string, open: number, close: number): boolean {
+    const inner = text.slice(open + 1, close).trim();
+    return /^(?:typeof\s+)?Symbol\s*[.[]/.test(inner);
+}
+
+/** interface / 类成员前的修饰符 */
+const MEMBER_MODIFIERS = new Set([
+    'readonly',
+    'public',
+    'private',
+    'protected',
+    'static',
+    'abstract',
+    'override',
+    'declare',
+    'accessor',
+]);
+
+/** 访问器前缀（`get foo(): string` 里的 foo 才是成员名） */
+const ACCESSOR_KEYWORDS = new Set(['get', 'set']);
+
+/**
+ * 跳过成员前的修饰符，返回成员名起点。
+ * 后面必须还是成员名，否则这个单词本身就是名字（`readonly: boolean`）。
+ */
+function skipMemberModifiers(masked: string, from: number, limit: number): number {
+    let i = from;
+    while (i < limit) {
+        const token = readIdentifier(masked, i);
+        if (!token) return i;
+        if (!MEMBER_MODIFIERS.has(token.value) && !ACCESSOR_KEYWORDS.has(token.value)) return i;
+
+        const after = skipSpaces(masked, token.index + token.value.length);
+        if (after >= limit || !IDENT_START.test(masked[after])) return i;
+        i = after;
+    }
+    return i;
+}
+
+/**
+ * 字符串键被掩码成空格后无法直接读取，回看原文：
+ * 紧邻 `:` / `?` 之前的引号字面量就是成员名。
+ */
+function readStringKeyBefore(text: string, index: number): { value: string; start: number } | null {
+    let k = index - 1;
+    while (k >= 0 && /\s/.test(text[k])) k--;
+    if (k < 0) return null;
+
+    const quote = text[k];
+    if (quote !== '"' && quote !== "'") return null;
+
+    let start = k - 1;
+    while (start >= 0) {
+        if (text[start] === quote && text[start - 1] !== '\\') break;
+        start--;
+    }
+    if (start < 0) return null;
+
+    // 引号前必须是成员边界，避免把类型里的字符串字面量当成键
+    const before = start - 1;
+    if (before >= 0 && !/[\s;{,}]/.test(text[before])) return null;
+    return { value: text.slice(start + 1, k), start };
+}
+
+export interface InterfaceKeys {
+    keys: string[];
+    /**
+     * 体内有索引签名 / 映射类型（`[key: string]: T`、`[K in Keys]`）。
+     * 这类成员意味着还存在无法枚举的动态键，键集不能当作完整集合使用。
+     */
+    hasIndexSignature: boolean;
+}
+
+interface MemberNameInfo {
+    /** 成员名；null = 没有可读的具名键（动态键 / 展开 / 解析失败） */
+    name: string | null;
+    /** 名字在原文里的起点（字符串键是引号，计算键是 `[`） */
+    nameIndex: number;
+    /** 名字之后第一个非空字符的下标（可能是 `?` / `:` / `(`） */
+    afterName: number;
+    /** 下一个成员的起点（已吃掉后随的逗号） */
+    next: number;
+    /** 索引签名 / 映射类型 / symbol 等动态键 */
+    dynamic: boolean;
+}
+
+/**
+ * 读一个成员名，并把游标推到下一个成员；没有成员时返回 null。
+ *
+ * 成员名有三种写法，三种调用方（读键集 / 定位 key / 读 key 的类型）必须共用这一份，
+ * 否则规则一改就只修好一处（`readonly ['a']` 曾经只在补全侧生效，悬停 / 跳转仍丢失）：
+ * - 普通标识符，前面可能带 `readonly` / `static` / `get` 等修饰符
+ * - 字符串 / 数字字面量键（掩码后只剩 `:` / `?`，名字要回原文取）
+ * - 计算键 `['key']`；`[key: string]` / `[K in Keys]` / `[Symbol.x]` 是动态键
+ */
+function readMemberNameAt(text: string, masked: string, from: number, limit: number): MemberNameInfo | null {
+    const start = skipTrivia(masked, from, limit);
+    if (start >= limit) return null;
+
+    const advance = (position: number): number => {
+        let next = skipToMemberBoundary(masked, position, limit);
+        if (next < limit && masked[next] === ',') next++;
+        return next;
+    };
+
+    // `...rest` 展开不是具名键
+    if (masked.startsWith('...', start)) {
+        return { name: null, nameIndex: -1, afterName: -1, next: advance(start + 3), dynamic: false };
+    }
+
+    // 计算键；`[key: string]` / `[K in Keys]` 无法枚举出名字，`[Symbol.x]` 是具名但模板不可达
+    if (masked[start] === '[') {
+        const end = findMatchingBracket(masked, start);
+        if (end === -1) return { name: null, nameIndex: -1, afterName: -1, next: limit, dynamic: true };
+        const computed = readComputedStringKey(text, start, end);
+        return {
+            name: computed,
+            nameIndex: start,
+            afterName: skipSpaces(masked, end + 1),
+            next: advance(end + 1),
+            dynamic: computed === null && !isSymbolComputedKey(text, start, end),
+        };
+    }
+
+    // 字符串键（掩码后只剩 `:` / `?`）
+    if (masked[start] === ':' || masked[start] === '?') {
+        const quoted = readStringKeyBefore(text, start);
+        if (quoted) {
+            return {
+                name: quoted.value,
+                nameIndex: quoted.start,
+                afterName: start,
+                next: advance(start + 1),
+                dynamic: false,
+            };
+        }
+    }
+
+    // 数字键
+    const numeric = /^\d+/.exec(masked.slice(start, limit));
+    if (numeric) {
+        const end = start + numeric[0].length;
+        return {
+            name: numeric[0],
+            nameIndex: start,
+            afterName: skipSpaces(masked, end),
+            next: advance(end),
+            dynamic: false,
+        };
+    }
+
+    // `readonly a: string` / `get foo(): string`
+    const afterModifiers = skipMemberModifiers(masked, start, limit);
+    const token = readIdentifier(masked, afterModifiers);
+    if (!token) {
+        return { name: null, nameIndex: -1, afterName: -1, next: advance(afterModifiers), dynamic: false };
+    }
+
+    // `readonly [key: string]`：skipMemberModifiers 要求修饰符后是标识符，遇到 `[`
+    // 会停在修饰符上。退回 `[` 重走计算键分支，否则动态键不会被标记
+    const afterToken = skipSpaces(masked, token.index + token.value.length);
+    if ((MEMBER_MODIFIERS.has(token.value) || ACCESSOR_KEYWORDS.has(token.value)) && masked[afterToken] === '[') {
+        return readMemberNameAt(text, masked, afterToken, limit);
+    }
+
+    return {
+        name: token.value,
+        nameIndex: token.index,
+        afterName: afterToken,
+        next: advance(token.index + token.value.length),
+        dynamic: false,
+    };
+}
+
+/** 跳过名字后的 `?`，返回 `:` 所在位置（没有 `?` 时原样返回） */
+function skipOptional(masked: string, position: number): number {
+    return masked[position] === '?' ? skipSpaces(masked, position + 1) : position;
+}
+
+/** 读取 interface 顶层成员名，并回报是否存在动态键（索引签名 / 映射类型） */
+export function readInterfaceKeys(text: string, masked: string, open: number): InterfaceKeys {
     const close = findMatchingBracket(masked, open);
-    if (close === -1) return [];
+    if (close === -1) return { keys: [], hasIndexSignature: false };
 
     const keys: string[] = [];
+    let hasIndexSignature = false;
     let i = open + 1;
 
     while (i < close) {
-        i = skipTrivia(masked, i, close);
-        if (i >= close) break;
-
-        if (masked[i] === '[') {
-            const end = findMatchingBracket(masked, i);
-            if (end === -1) break;
-            i = skipToMemberBoundary(masked, end + 1, close);
-            continue;
+        const member = readMemberNameAt(text, masked, i, close);
+        if (!member) break;
+        if (member.dynamic) hasIndexSignature = true;
+        // 方法签名（`foo(): void` / `foo<T>()`）不是数据属性
+        if (member.name !== null && masked[skipOptional(masked, member.afterName)] === ':') {
+            keys.push(member.name);
         }
-
-        const token = readIdentifier(masked, i);
-        if (!token) {
-            i = skipToMemberBoundary(masked, i, close);
-            if (i < close && masked[i] === ',') i++;
-            continue;
-        }
-
-        const afterName = skipSpaces(masked, token.index + token.value.length);
-        const next = masked[afterName];
-        if (next === ':' || next === '?' || next === '(' || next === '<') {
-            if (next === '(' || next === '<') {
-                // 方法签名，不算数据属性
-                i = skipToMemberBoundary(masked, token.index + token.value.length, close);
-                if (i < close && masked[i] === ',') i++;
-                continue;
-            }
-            keys.push(token.value);
-        }
-
-        i = skipToMemberBoundary(masked, token.index + token.value.length, close);
-        if (i < close && masked[i] === ',') i++;
+        i = member.next;
     }
 
-    return keys;
+    return { keys, hasIndexSignature };
 }
 
 /** 在 `{ ... }` 块里定位某个顶层 key 的下标 */
-export function findKeyIndex(masked: string, open: number, name: string): number | null {
+export function findKeyIndex(text: string, masked: string, open: number, name: string): number | null {
     const close = findMatchingBracket(masked, open);
     if (close === -1) return null;
 
     let i = open + 1;
     while (i < close) {
-        i = skipTrivia(masked, i, close);
-        if (i >= close) break;
+        const member = readMemberNameAt(text, masked, i, close);
+        if (!member) break;
 
-        if (masked.startsWith('...', i) || masked[i] === '[') {
-            const end = masked[i] === '[' ? findMatchingBracket(masked, i) : -1;
-            i = skipToMemberBoundary(masked, end === -1 ? i + 3 : end + 1, close);
-            if (i < close && masked[i] === ',') i++;
-            continue;
+        if (member.name === name) {
+            // `:` 是数据键；`,` / `}` 是对象字面量的简写（`super({ a })`）
+            const next = masked[skipOptional(masked, member.afterName)];
+            if (next === ':' || next === ',' || next === '}') return member.nameIndex;
         }
 
-        const token = readIdentifier(masked, i);
-        if (!token) {
-            i = skipToMemberBoundary(masked, i, close);
-            if (i < close && masked[i] === ',') i++;
-            continue;
-        }
-
-        if (token.value === name) {
-            const after = skipSpaces(masked, token.index + token.value.length);
-            const next = masked[after];
-            if (next === ':' || next === '?' || next === ',' || next === '=' || next === '}') {
-                return token.index;
-            }
-        }
-
-        i = skipToMemberBoundary(masked, token.index + token.value.length, close);
-        if (i < close && masked[i] === ',') i++;
+        i = member.next;
     }
 
     return null;
@@ -769,38 +1147,33 @@ export function findKeyType(source: string, masked: string, open: number, name: 
 
     let i = open + 1;
     while (i < close) {
-        i = skipTrivia(masked, i, close);
-        if (i >= close) break;
+        const member = readMemberNameAt(source, masked, i, close);
+        if (!member) break;
 
-        const token = readIdentifier(masked, i);
-        if (!token) {
-            i = skipToMemberBoundary(masked, i, close);
-            if (i < close && masked[i] === ',') i++;
-            continue;
+        if (member.name === name) {
+            const colon = skipOptional(masked, member.afterName);
+            if (masked[colon] === ':') return readTypeAfterColon(source, masked, colon, close);
         }
 
-        const afterName = skipSpaces(masked, token.index + token.value.length);
-        const optional = masked[afterName] === '?' ? skipSpaces(masked, afterName + 1) : afterName;
-
-        if (token.value === name && masked[optional] === ':') {
-            const valueStart = skipSpaces(masked, optional + 1);
-            // 对象类型 `{ a: string }` 单独处理，否则 scanTypeEnd 会在 `{` 处直接停住
-            let typeEnd: number;
-            if (masked[valueStart] === '{') {
-                const objEnd = findMatchingBracket(masked, valueStart);
-                typeEnd = objEnd === -1 ? close : objEnd + 1;
-            } else {
-                typeEnd = scanTypeEnd(masked, optional + 1, close);
-            }
-            const type = source.slice(optional + 1, typeEnd).trim();
-            return type || null;
-        }
-
-        i = skipToMemberBoundary(masked, token.index + token.value.length, close);
-        if (i < close && masked[i] === ',') i++;
+        i = member.next;
     }
 
     return null;
+}
+
+/** 读取 `:` 之后到成员边界之间的类型原文 */
+function readTypeAfterColon(source: string, masked: string, colon: number, close: number): string | null {
+    const valueStart = skipSpaces(masked, colon + 1);
+    // 对象类型 `{ a: string }` 单独处理，否则 scanTypeEnd 会在 `{` 处直接停住
+    let typeEnd: number;
+    if (masked[valueStart] === '{') {
+        const objEnd = findMatchingBracket(masked, valueStart);
+        typeEnd = objEnd === -1 ? close : objEnd + 1;
+    } else {
+        typeEnd = scanTypeEnd(masked, colon + 1, close);
+    }
+    const type = source.slice(colon + 1, typeEnd).trim();
+    return type || null;
 }
 
 export function escapeRegex(str: string): string {

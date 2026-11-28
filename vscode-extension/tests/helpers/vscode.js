@@ -56,11 +56,97 @@ const state = {
     textDocuments: [],
 };
 
+/** 诊断集合暂存：`set(uri, diagnostics)` 后可按 uri 读回，供诊断相关用例断言 */
+const diagnosticStore = new Map();
+
+function createDiagnosticCollection() {
+    // 每个集合只认自己写的条目：两个集合写同一个 uri 时，任一 dispose / delete
+    // 都不能把对方那一条清掉（真实的 DiagnosticCollection 彼此独立）
+    const owner = Symbol('diagnostic-collection');
+    const owned = new Set();
+
+    const write = (key, diagnostics) => {
+        if (diagnostics === undefined) {
+            const entry = diagnosticStore.get(key);
+            if (entry && entry.owner === owner) diagnosticStore.delete(key);
+            owned.delete(key);
+            return;
+        }
+        diagnosticStore.set(key, { owner, diagnostics });
+        owned.add(key);
+    };
+
+    return {
+        set(uri, diagnostics) {
+            write(uri.toString(), diagnostics);
+        },
+        delete(uri) {
+            write(uri.toString(), undefined);
+        },
+        dispose() {
+            for (const key of owned) {
+                const entry = diagnosticStore.get(key);
+                if (entry && entry.owner === owner) diagnosticStore.delete(key);
+            }
+            owned.clear();
+        },
+    };
+}
+
+function getDiagnostics(uri) {
+    return diagnosticStore.get(uri.toString())?.diagnostics ?? [];
+}
+
+/** 该 uri 是否已经写入过诊断（空数组也算写入过） */
+function hasDiagnosticEntry(uri) {
+    return diagnosticStore.has(uri.toString());
+}
+
+class Disposable {
+    constructor(callOnDispose) {
+        this.callOnDispose = callOnDispose;
+    }
+
+    dispose() {
+        if (typeof this.callOnDispose === 'function') this.callOnDispose();
+    }
+}
+
+/** `activate()` 创建的文件监听器，按创建顺序记录，供用例模拟磁盘事件 */
+const fileSystemWatchers = [];
+
+function createFileSystemWatcher(glob) {
+    const watcher = {
+        glob,
+        handlers: { change: [], create: [], delete: [] },
+        onDidChange(callback) {
+            watcher.handlers.change.push(callback);
+            return new Disposable();
+        },
+        onDidCreate(callback) {
+            watcher.handlers.create.push(callback);
+            return new Disposable();
+        },
+        onDidDelete(callback) {
+            watcher.handlers.delete.push(callback);
+            return new Disposable();
+        },
+        dispose() {},
+    };
+    fileSystemWatchers.push(watcher);
+    return watcher;
+}
+
+function getLastFileSystemWatcher() {
+    return fileSystemWatchers[fileSystemWatchers.length - 1] ?? null;
+}
+
 const vscode = {
     Position,
     Range,
     Uri,
     Location,
+    Disposable,
     DiagnosticSeverity: { Error: 0, Warning: 1, Information: 2, Hint: 3 },
     CompletionItemKind: { Method: 1, Property: 9, Variable: 5, Keyword: 13, Event: 22 },
     MarkdownString: class {
@@ -100,10 +186,10 @@ const vscode = {
         }
     },
     languages: {
-        createDiagnosticCollection: () => ({ set() {}, delete() {}, dispose() {} }),
-        registerDefinitionProvider() {},
-        registerHoverProvider() {},
-        registerCompletionItemProvider() {},
+        createDiagnosticCollection,
+        registerDefinitionProvider: () => new Disposable(),
+        registerHoverProvider: () => new Disposable(),
+        registerCompletionItemProvider: () => new Disposable(),
     },
     window: {
         activeTextEditor: null,
@@ -114,6 +200,7 @@ const vscode = {
         get textDocuments() {
             return state.textDocuments;
         },
+        createFileSystemWatcher,
         onDidChangeTextDocument() {},
         onDidOpenTextDocument() {},
         onDidCloseTextDocument() {},
@@ -121,7 +208,7 @@ const vscode = {
         onDidDeleteFiles() {},
         onDidRenameFiles() {},
     },
-    commands: { registerCommand() {} },
+    commands: { registerCommand: () => new Disposable() },
 };
 
 let installed = false;
@@ -166,4 +253,15 @@ function makeDocument(filePath, text, languageId = 'html') {
     };
 }
 
-module.exports = { installMock, setOpenDocuments, makeDocument, Position, Range, Uri };
+module.exports = {
+    installMock,
+    setOpenDocuments,
+    makeDocument,
+    getDiagnostics,
+    hasDiagnosticEntry,
+    getLastFileSystemWatcher,
+    createDiagnosticCollection,
+    Position,
+    Range,
+    Uri,
+};

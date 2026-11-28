@@ -5,17 +5,31 @@ import {
     ClassInfo,
     MemberInfo,
     escapeRegex,
-    findInterfaceBody,
     findKeyIndex,
     findKeyType,
     findMatchingBracket,
-    listClasses,
-    maskTypeScript,
-    readInterfaceKeys,
     readObjectLiteralKeys,
     scanClassMembers,
 } from './tsSource';
 import { collectExpressionRegions, computeLineStarts, maskHtmlNonContent, offsetToLineCol } from './htmlSource';
+import { clearSourceCache, loadSource, SourceInfo } from './tsLoader';
+import {
+    clearModuleCache,
+    findImportBinding,
+    findNamespaceImports,
+    normalizePath,
+    resolveImportDeclaration,
+    resolveModuleFile,
+    resolvePackageImport,
+} from './moduleResolver';
+import {
+    clearTypeCache,
+    invalidateTypeCache,
+    readTypeBodyKeys,
+    resolveDataBodies,
+    resolveDataBodiesInfo,
+    typeBodyHasKey,
+} from './typeResolver';
 
 const SOLELY_CONTROL_TAGS = new Set(['if', 'elseif', 'else', 'for', 'show']);
 
@@ -79,6 +93,13 @@ export function clearTsFileCache(htmlPath?: string): void {
     } else {
         tsFileCache.clear();
         parentCache.clear();
+        clearTypeCache();
+        // 路径 → 源码缓存也一并清掉，避免文件删改后旧内容常驻
+        clearSourceCache();
+        // 包内声明文件的位置可能随依赖更新变化
+        baseElementDirCache.clear();
+        // 包入口解析同理
+        clearModuleCache();
     }
 }
 
@@ -95,6 +116,9 @@ export function invalidateForChangedFile(filePath: string): void {
         if (tsPath === null || tsPath === filePath) tsFileCache.delete(htmlPath);
     }
     parentCache.clear();
+    // $data 类型可能来自被修改的文件（types.ts / 导入链）。这里只递增缓存代次：
+    // 下次命中时按文件版本决定是否重解析，没被牵动的类型链不必重新展开
+    invalidateTypeCache();
 }
 
 export type ReferenceKind = 'method' | 'dataProp' | 'ref' | 'dataKeyword' | 'getter';
@@ -119,63 +143,6 @@ export interface MethodSignature {
 }
 
 /* ============================================================
- * 源码读取与缓存
- * ============================================================ */
-
-interface SourceInfo {
-    text: string;
-    masked: string;
-    classes: ClassInfo[];
-    version: string;
-}
-
-const sourceCache = new Map<string, SourceInfo>();
-
-function buildSource(filePath: string, text: string, version: string): SourceInfo {
-    const masked = maskTypeScript(text);
-    const info: SourceInfo = { text, masked, classes: listClasses(masked), version };
-    sourceCache.set(filePath, info);
-    return info;
-}
-
-/**
- * 读取 TS 源码。优先用编辑器里**未保存**的内容，保证刚写完的方法立刻参与诊断；
- * 用 version（文档 version / mtime+size）做缓存键，避免每次调用都重新掩码。
- */
-function loadSource(filePath: string): SourceInfo | null {
-    const documents: readonly vscode.TextDocument[] = vscode.workspace?.textDocuments ?? [];
-    const open = documents.find(doc => doc.uri?.scheme === 'file' && doc.uri.fsPath === filePath);
-    if (open) {
-        const version = `doc:${open.version}`;
-        const cached = sourceCache.get(filePath);
-        if (cached && cached.version === version) return cached;
-        return buildSource(filePath, open.getText(), version);
-    }
-
-    let stat: fs.Stats;
-    try {
-        stat = fs.statSync(filePath);
-    } catch {
-        sourceCache.delete(filePath);
-        return null;
-    }
-
-    const version = `fs:${stat.mtimeMs}:${stat.size}`;
-    const cached = sourceCache.get(filePath);
-    if (cached && cached.version === version) return cached;
-
-    try {
-        return buildSource(filePath, fs.readFileSync(filePath, 'utf-8'), version);
-    } catch {
-        return null;
-    }
-}
-
-function readText(filePath: string): string | null {
-    return loadSource(filePath)?.text ?? null;
-}
-
-/* ============================================================
  * 模板 ↔ 组件关联
  * ============================================================ */
 
@@ -184,36 +151,52 @@ interface TemplateImport {
     localName: string | null;
 }
 
-/** 列出文件里所有 `?solely` / `?raw` 模板导入 */
-function findTemplateImports(text: string): TemplateImport[] {
+/**
+ * 列出文件里所有 `?solely` / `?raw` 模板导入。
+ *
+ * 只认代码区域：`masked` 与原文逐字符对齐，注释 / 字符串里的 `import` 早已被
+ * 替换成空格，因此注释掉的导入不会把组件关联到别的模板上。
+ */
+function findTemplateImports(text: string, masked: string): TemplateImport[] {
     const result: TemplateImport[] = [];
-    const re = /import\s+([^'"]*?)from\s+['"]([^'"]+)['"]|import\s+['"]([^'"]+)['"]/g;
+    // 允许紧凑写法：`import tpl from'./x?solely'` / `import{x}from'./y?solely'`
+    // `\bimport\b` 两边都要：否则 "imports from './x?solely'" 这类说明文字也会命中
+    const re = /\bimport\b\s*([^'"]*?)\s*from\s*['"]([^'"]+)['"]|\bimport\b\s*['"]([^'"]+)['"]/g;
     let match: RegExpExecArray | null;
 
     while ((match = re.exec(text)) !== null) {
+        if (!masked.startsWith('import', match.index)) continue;
         const spec = match[2] ?? match[3] ?? '';
         if (!/\?(?:solely|raw)$/.test(spec)) continue;
-        const clause = match[1] ?? '';
-        const def = /^\s*([A-Za-z_$][\w$]*)/.exec(clause);
+
+        // 说明符的引号也要落在代码区：`import { a } // from './x?solely'` 这种
+        // 行尾（或多行导入中间的）注释，路径在注释里而不是真的导入，不能算数。
+        // 引号本身在 masked 里被抹成空格，于是改判「说明符之前有没有代码区的 from」
+        if (match[2] !== undefined) {
+            const quoteIndex = match.index + match[0].length - spec.length - 1;
+            if (!masked.slice(match.index, quoteIndex).includes('from')) continue;
+        }
+        // 默认导入名：`import type { X } from` 没有默认绑定，`type` 不是导入名
+        const clause = (match[1] ?? '').trim();
+        const typeOnly = /^type\b\s*/.exec(clause);
+        const def = /^([A-Za-z_$][\w$]*)/.exec(typeOnly ? clause.slice(typeOnly[0].length) : clause);
         result.push({ spec, localName: def ? def[1] : null });
     }
 
     return result;
 }
 
-function importsTemplate(text: string, tsPath: string, htmlPath: string): boolean {
-    return findTemplateImports(text).some(item => resolveSpecifier(tsPath, item.spec) === normalizePath(htmlPath));
+function importsTemplate(tsPath: string, htmlPath: string): boolean {
+    const source = loadSource(tsPath);
+    if (!source) return false;
+    return findTemplateImports(source.text, source.masked).some(
+        item => resolveSpecifier(tsPath, item.spec) === normalizePath(htmlPath),
+    );
 }
 
 /** 把 import 说明符解析成绝对路径（去查询串、统一分隔符与大小写） */
 function resolveSpecifier(tsPath: string, spec: string): string {
     return normalizePath(path.resolve(path.dirname(tsPath), spec.split('?')[0]));
-}
-
-function normalizePath(filePath: string): string {
-    const normalized = path.normalize(filePath);
-    // Windows 下大小写不敏感，比较前统一小写
-    return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
 }
 
 /**
@@ -261,9 +244,7 @@ export function findCorrespondingTsFile(htmlPath: string): string | null {
             if (--budget <= 0) break;
 
             const tsPath = path.join(dir, file);
-            const text = readText(tsPath);
-            if (!text) continue;
-            if (importsTemplate(text, tsPath, htmlPath)) {
+            if (importsTemplate(tsPath, htmlPath)) {
                 tsFileCache.set(htmlPath, tsPath);
                 return tsPath;
             }
@@ -276,11 +257,11 @@ export function findCorrespondingTsFile(htmlPath: string): string | null {
 
 /** 从 TS 文件查找其导入的对应 HTML 模板文件 */
 export function findCorrespondingHtmlFile(tsPath: string): string | null {
-    const text = readText(tsPath);
-    if (!text) return null;
+    const source = loadSource(tsPath);
+    if (!source) return null;
 
     const dir = path.dirname(tsPath);
-    for (const item of findTemplateImports(text)) {
+    for (const item of findTemplateImports(source.text, source.masked)) {
         const htmlPath = path.resolve(dir, item.spec.split('?')[0]);
         if (fs.existsSync(htmlPath)) return htmlPath;
     }
@@ -292,9 +273,9 @@ export function findCorrespondingHtmlFile(tsPath: string): string | null {
  * ============================================================ */
 
 /** 找到某个模板导入在文件里的默认导入名 */
-function findTemplateLocalName(text: string, tsPath: string, htmlPath: string): string | null {
+function findTemplateLocalName(source: SourceInfo, tsPath: string, htmlPath: string): string | null {
     const target = normalizePath(htmlPath);
-    for (const item of findTemplateImports(text)) {
+    for (const item of findTemplateImports(source.text, source.masked)) {
         if (!item.localName) continue;
         if (resolveSpecifier(tsPath, item.spec) === target) return item.localName;
     }
@@ -336,7 +317,7 @@ function resolveComponentClass(tsPath: string, htmlPath?: string): ClassInfo | n
     if (source.classes.length === 1) return source.classes[0];
 
     if (htmlPath) {
-        const localName = findTemplateLocalName(source.text, tsPath, htmlPath);
+        const localName = findTemplateLocalName(source, tsPath, htmlPath);
         if (localName) {
             const byBinding = findClassByTemplateBinding(source.masked, source.classes, localName);
             if (byBinding) return byBinding;
@@ -412,8 +393,14 @@ function findSuperObject(source: SourceInfo, cls: ClassInfo | null): number | nu
 
 /** 从 TS 文件提取 $data 的数据属性名（super({}) + interface） */
 export function extractDataPropsFromTs(tsPath: string, htmlPath?: string): string[] {
-    const props = [...extractDataPropsFromSuper(tsPath, htmlPath), ...extractDataPropsFromInterface(tsPath, htmlPath)];
-    return Array.from(new Set(props));
+    return extractDataPropsInfo(tsPath, htmlPath).props;
+}
+
+/** 同 `extractDataPropsFromTs`，同时返回键集是否完整（诊断据此决定要不要跳过校验） */
+function extractDataPropsInfo(tsPath: string, htmlPath?: string): { props: string[]; incomplete: boolean } {
+    const { props: interfaceProps, incomplete } = extractDataPropsFromInterface(tsPath, htmlPath);
+    const props = [...extractDataPropsFromSuper(tsPath, htmlPath), ...interfaceProps];
+    return { props: Array.from(new Set(props)), incomplete };
 }
 
 function extractDataPropsFromSuper(tsPath: string, htmlPath?: string): string[] {
@@ -426,42 +413,15 @@ function extractDataPropsFromSuper(tsPath: string, htmlPath?: string): string[] 
     return readObjectLiteralKeys(source.masked, open);
 }
 
-/**
- * 定位组件 `$data` 类型声明的 `{`。
- *
- * 支持两种写法：
- * - `BaseElement<MyData>` → 去找 `interface MyData {`（`inline: false`）
- * - `BaseElement<{ a: number }>` → 直接用类型字面量本身（`inline: true`）
- *
- * `BaseElement<Props, Refs>` 与 `BaseElement<TreeProps & {...}>` 都只取第一个类型参数。
- */
-function findDataTypeBody(source: SourceInfo, cls: ClassInfo | null): { open: number; inline: boolean } | null {
-    const owner = cls ?? findFirstBaseElementClass(source);
-    const typeArg = owner?.extendsTypeArg;
-    if (!typeArg) return null;
-
-    if (typeArg.startsWith('{') && owner && owner.extendsTypeArgStart >= 0) {
-        const open = source.masked.indexOf('{', owner.extendsTypeArgStart);
-        return open === -1 ? null : { open, inline: true };
+/** 从 `BaseElement<...>` 的类型声明里提取 $data 属性名（交叉 / 继承 / 导入 / 别名，见 typeResolver） */
+function extractDataPropsFromInterface(tsPath: string, htmlPath?: string): { props: string[]; incomplete: boolean } {
+    const props: string[] = [];
+    // 去重由 extractDataPropsInfo 统一负责
+    const resolution = resolveDataBodiesInfo(tsPath, resolveComponentClass(tsPath, htmlPath));
+    for (const body of resolution.refs) {
+        props.push(...readTypeBodyKeys(body));
     }
-
-    const firstName = /^\s*([A-Za-z_$][\w$]*)/.exec(typeArg)?.[1];
-    if (!firstName) return null;
-
-    const open = findInterfaceBody(source.masked, firstName);
-    return open === null ? null : { open, inline: false };
-}
-
-function extractDataPropsFromInterface(tsPath: string, htmlPath?: string): string[] {
-    const source = loadSource(tsPath);
-    if (!source) return [];
-
-    const body = findDataTypeBody(source, resolveComponentClass(tsPath, htmlPath));
-    return body === null ? [] : readInterfaceKeys(source.masked, body.open);
-}
-
-function findFirstBaseElementClass(source: SourceInfo): ClassInfo | null {
-    return source.classes.find(cls => cls.extendsName === 'BaseElement' && cls.extendsTypeArg) ?? null;
+    return { props, incomplete: resolution.incomplete };
 }
 
 /* ============================================================
@@ -716,11 +676,11 @@ export function findDefinitionInTsFile(
         }
     }
 
-    // 链式调用：this.router.push() → 先找 router 的类型，再在那个类里找 push
+    // 链式调用：this.router.push() → 先找 router 的类型，再在那个类里找 push。
     if (ref.kind === 'method' && ref.fullExpression) {
         const chainedMatch = ref.fullExpression.match(/\bthis\.(\w+)\.\w+\s*\(/);
         if (chainedMatch) {
-            const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1], htmlPath);
+            const propClassPath = findChainedPropertyClass(tsPath, chainedMatch[1], htmlPath);
             if (propClassPath) return findMethodInTsFile(propClassPath, ref.name);
         }
     }
@@ -728,36 +688,168 @@ export function findDefinitionInTsFile(
     return null;
 }
 
+/**
+ * 找 `this.<prop>.<method>()` 中 prop 的类型声明文件。
+ * 属性可能声明在当前类或任意父类，因此沿继承链逐个查找（definition 与 hover 共用）。
+ */
+export function findChainedPropertyClass(tsPath: string, propName: string, htmlPath?: string): string | null {
+    for (const ownerPath of [tsPath, ...findAncestorFiles(tsPath, htmlPath)]) {
+        const propClassPath = findPropertyClassFile(ownerPath, propName, htmlPath);
+        if (propClassPath) return propClassPath;
+    }
+    return null;
+}
+
+/**
+ * 文件里所有**非相对路径**的模块说明符（只认代码区，注释 / 字符串里的不算）。
+ * 返回全部而不是第一个：组件通常还导入了 lodash / clsx 这类包，
+ * 只取第一个会按「谁写在前面」决定成败
+ */
+function findPackageImportSpecs(text: string, masked: string): string[] {
+    const specs: string[] = [];
+    const fromRe = /\bfrom\b/g;
+    // 粘性匹配直接在原文上取引号串，省掉每个 from 都切一次尾部字符串
+    const specRe = /\s*(['"])([^'".][^'"]*)\1/y;
+    let match: RegExpExecArray | null;
+    while ((match = fromRe.exec(masked)) !== null) {
+        specRe.lastIndex = match.index + match[0].length;
+        const spec = specRe.exec(text);
+        if (spec && !specs.includes(spec[2])) specs.push(spec[2]);
+    }
+    return specs;
+}
+
+interface BaseElementLookup {
+    file: string | null;
+    /** 命中时的指纹：`npm install` 更新依赖、或本地构建补进声明后据此判断缓存过期 */
+    stamp: string;
+    /**
+     * 负结果时遍历过的目录及其 mtime：构件补进**已存在**的子目录（`dist/deep/`）时，
+     * 包根和入口目录都不会变，只有那个子目录会变。目录数超上限时不记录。
+     */
+    dirs?: Array<{ path: string; mtime: string }>;
+}
+
+/** `包目录|入口目录` → base-element 声明文件（找不到记 null，但带指纹校验） */
+const baseElementDirCache = new Map<string, BaseElementLookup>();
+
+/**
+ * 负结果最多跟踪的目录数。
+ *
+ * 命中时要对每个被跟踪目录做一次 stat（Windows + Defender 下约 0.11~0.2ms/目录）：
+ * 8 个约 3ms、16 个约 4ms；放大到 60 个会到 8.5ms，反而比「超上限退回 3 项指纹」的
+ * 1.4ms 更慢 —— 上限不是越大越好。真实项目的构建产物目录通常 < 8 个。
+ */
+const MAX_TRACKED_DIRS = 16;
+
+/**
+ * 包目录指纹：package.json 的 mtime+size、包根目录 mtime、入口文件所在目录 mtime。
+ * 后两项覆盖「只补文件不动 package.json」：构建产物通常落在包根或 `dist/`。
+ */
+function packageStamp(packageDir: string, entryDir: string): string {
+    let jsonStamp = '';
+    try {
+        const stat = fs.statSync(path.join(packageDir, 'package.json'));
+        jsonStamp = `${stat.mtimeMs}:${stat.size}`;
+    } catch {
+        /* 没有 package.json */
+    }
+
+    return `${jsonStamp}|${dirMtime(packageDir)}|${dirMtime(entryDir)}`;
+}
+
+function dirMtime(dir: string): string {
+    try {
+        return String(fs.statSync(dir).mtimeMs);
+    } catch {
+        return '';
+    }
+}
+
+/**
+ * 在包目录里深度优先找 `base-element.d.ts`（跳过嵌套 node_modules）。
+ * 结果按包目录缓存：大包（@types/node 这类）遍历一次就要十几毫秒，
+ * hover / 补全会反复走到这里。
+ *
+ * 负结果（没有 base-element 的包，比如 lodash）也缓存，但每次命中都用指纹
+ * 做一次廉价校验：`npm install` 更新依赖、或本地构建把声明补进已遍历过的目录后
+ * （node_modules 不在监听范围，不会触发清缓存）也能自动生效。
+ */
+function findBaseElementFile(packageDir: string, entryDir: string): string | null {
+    // 键带上入口目录：同一个包被不同子路径导入时，两条指纹不同，
+    // 只用 packageDir 作键会让两边互相顶掉，每次查询都退化成重新遍历
+    const cacheKey = `${packageDir}|${entryDir}`;
+    const stamp = packageStamp(packageDir, entryDir);
+    const cached = baseElementDirCache.get(cacheKey);
+    if (cached && cached.stamp === stamp && (!cached.dirs || cached.dirs.every(isUnchangedDir))) {
+        return cached.file;
+    }
+
+    let found: string | null = null;
+    const visited: Array<{ path: string; mtime: string }> = [];
+    let overLimit = false;
+    const pending = [packageDir];
+    while (pending.length > 0 && found === null) {
+        const current = pending.pop();
+        if (!current) continue;
+        if (visited.length < MAX_TRACKED_DIRS) visited.push({ path: current, mtime: dirMtime(current) });
+        else overLimit = true;
+
+        for (const item of fs.readdirSync(current, { withFileTypes: true })) {
+            const itemPath = path.join(current, item.name);
+            if (item.isDirectory() && item.name !== 'node_modules') {
+                pending.push(itemPath);
+            } else if (/^base-element\.(?:d\.ts|ts|tsx)$/.test(item.name)) {
+                found = itemPath;
+                break;
+            }
+        }
+    }
+
+    baseElementDirCache.set(cacheKey, {
+        file: found,
+        stamp,
+        // 只在「没找到」且目录数没超上限时记录；正结果靠 stamp 就够
+        dirs: found === null && !overLimit ? visited : undefined,
+    });
+    return found;
+}
+
+function isUnchangedDir(dir: { path: string; mtime: string }): boolean {
+    return dirMtime(dir.path) === dir.mtime;
+}
+
+/**
+ * 从包入口文件向上找包根目录（含 `package.json`）。
+ * 以 `node_modules` 为边界：包没有 package.json 时直接放弃，绝不能一路走到盘根
+ * 再对整盘做深度遍历。
+ */
+export function findPackageRoot(entry: string): string | null {
+    let current = path.dirname(entry);
+    while (path.basename(current) !== 'node_modules') {
+        if (fs.existsSync(path.join(current, 'package.json'))) return current;
+        const parent = path.dirname(current);
+        if (parent === current) return null;
+        current = parent;
+    }
+    return null;
+}
+
 /** Locate BaseElement directly inside the imported framework package. */
 function findBaseElementDeclaration(tsPath: string): string | null {
     try {
-        const componentSource = readText(tsPath);
-        if (!componentSource) return null;
+        const source = loadSource(tsPath);
+        if (!source) return null;
 
-        const importMatch = componentSource.match(/from\s+['"]([^'".][^'"]*)['"]/);
-        if (!importMatch) return null;
+        for (const spec of findPackageImportSpecs(source.text, source.masked)) {
+            const entry = resolvePackageImport(path.dirname(tsPath), spec);
+            if (!entry) continue;
 
-        const entry = resolvePackageImport(path.dirname(tsPath), importMatch[1]);
-        if (!entry) return null;
+            const packageDir = findPackageRoot(entry);
+            if (!packageDir) continue;
 
-        let packageDir = path.dirname(entry);
-        while (packageDir !== path.dirname(packageDir)) {
-            if (fs.existsSync(path.join(packageDir, 'package.json'))) break;
-            packageDir = path.dirname(packageDir);
-        }
-
-        const pending = [packageDir];
-        while (pending.length > 0) {
-            const current = pending.pop();
-            if (!current) continue;
-            for (const item of fs.readdirSync(current, { withFileTypes: true })) {
-                const itemPath = path.join(current, item.name);
-                if (item.isDirectory() && item.name !== 'node_modules') {
-                    pending.push(itemPath);
-                } else if (/^base-element\.(?:d\.ts|ts|tsx)$/.test(item.name)) {
-                    return itemPath;
-                }
-            }
+            const found = findBaseElementFile(packageDir, path.dirname(entry));
+            if (found) return found;
         }
     } catch {
         /* ignore */
@@ -825,156 +917,31 @@ function findParentClassFile(tsPath: string, className?: string): { path: string
         return null;
     }
 
-    const importPath = findImportPathForName(source.text, cls.extendsName);
-    if (!importPath) {
-        parentCache.set(cacheKey, null);
-        return null;
-    }
+    let declaration: ReturnType<typeof resolveImportDeclaration> = null;
 
-    const resolved = resolveImportPath(path.dirname(tsPath), importPath, cls.extendsName);
-    const value = resolved ? { path: resolved, name: cls.extendsName } : null;
+    // `extends ns.Base`：extendsExpr 带命名空间前缀时，必须按别名精确匹配 namespace 来源。
+    // 不能先走命名导入 —— 同文件里若有 `import { Base } from './other'` 会抢先命中，
+    // 静默解析到错误的类。
+    const namespaceAlias = cls.extendsExpr?.includes('.') ? cls.extendsExpr.split('.')[0] : null;
+    if (namespaceAlias) {
+        const target = findNamespaceImports(source.text, source.masked).find(item => item.alias === namespaceAlias);
+        if (target) declaration = resolveImportDeclaration(path.dirname(tsPath), target.spec, cls.extendsName);
+    } else {
+        // 别名导入 / 默认导入要拿到目标文件里的真实声明名，才能继续往上一层查找；
+        // resolveImportDeclaration 同时跟随任意 barrel 的命名 / * 再导出。
+        const binding = findImportBinding(source.text, source.masked, cls.extendsName);
+        if (binding) {
+            declaration = resolveImportDeclaration(
+                path.dirname(tsPath),
+                binding.spec,
+                binding.imported,
+                binding.isDefault,
+            );
+        }
+    }
+    const value = declaration ? { path: declaration.path, name: declaration.name } : null;
     parentCache.set(cacheKey, value);
     return value;
-}
-
-/** 找到导入某个类名的模块路径（支持命名导入与默认导入） */
-function findImportPathForName(text: string, className: string): string | null {
-    const named = new RegExp(`import\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`);
-    const namedMatch = text.match(named);
-    if (namedMatch) return namedMatch[1];
-
-    const defaultImport = new RegExp(`import\\s+${escapeRegex(className)}\\s+from\\s+['"]([^'"]+)['"]`);
-    const defaultMatch = text.match(defaultImport);
-    return defaultMatch ? defaultMatch[1] : null;
-}
-
-/**
- * Resolve an import path to an actual .ts file, following re-exports.
- */
-function resolveImportPath(fromDir: string, importPath: string, className: string): string | null {
-    if (!importPath.startsWith('.') && !path.isAbsolute(importPath)) {
-        const packagePath = resolvePackageImport(fromDir, importPath);
-        if (packagePath) {
-            const packageResult = resolveImportPath(
-                path.dirname(packagePath),
-                './' + path.basename(packagePath),
-                className,
-            );
-            return packageResult ?? packagePath;
-        }
-        return null;
-    }
-
-    let resolvedPath = path.resolve(fromDir, importPath);
-
-    if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isDirectory()) {
-        const indexPath = ['index.ts', 'index.tsx', 'index.d.ts']
-            .map(name => path.join(resolvedPath, name))
-            .find(candidate => fs.existsSync(candidate));
-        if (!indexPath) return null;
-        resolvedPath = indexPath;
-    }
-
-    if (!/\.(?:ts|tsx|d\.ts)$/.test(resolvedPath)) {
-        const candidates = [resolvedPath + '.ts', resolvedPath + '.tsx', resolvedPath + '.d.ts'];
-        const candidate = candidates.find(p => fs.existsSync(p));
-        if (!candidate) return null;
-        resolvedPath = candidate;
-    }
-
-    if (!fs.existsSync(resolvedPath)) return null;
-
-    if (/index\.(?:ts|tsx|d\.ts)$/.test(resolvedPath)) {
-        const indexDir = path.dirname(resolvedPath);
-
-        const kebabName = className
-            .replace(/([A-Z])/g, '-$1')
-            .toLowerCase()
-            .replace(/^-/, '');
-        const directPath = resolveSourceFile(path.join(indexDir, kebabName));
-        if (directPath) return directPath;
-
-        try {
-            const indexContent = fs.readFileSync(resolvedPath, 'utf-8');
-            const reExportPattern = new RegExp(
-                `export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
-            );
-            const reExportMatch = indexContent.match(reExportPattern);
-            if (reExportMatch) {
-                const classPath = path.resolve(indexDir, reExportMatch[1]);
-                const finalPath = resolveSourceFile(classPath);
-                if (finalPath) return finalPath;
-            }
-
-            const declarationPattern = new RegExp(`(?:declare\\s+)?class\\s+${escapeRegex(className)}\\b`);
-            if (declarationPattern.test(indexContent)) return resolvedPath;
-
-            const starExportPattern = /export\s+\*\s+from\s+['"]([^'"]+)['"]/g;
-            let starExport: RegExpExecArray | null;
-            while ((starExport = starExportPattern.exec(indexContent)) !== null) {
-                const finalPath = resolveImportPath(indexDir, starExport[1], className);
-                if (finalPath) return finalPath;
-            }
-        } catch {
-            /* ignore */
-        }
-    }
-
-    const sourceContent = readText(resolvedPath);
-    if (!sourceContent) return null;
-    const classPattern = new RegExp(`(?:declare\\s+)?(?:export\\s+)?class\\s+${escapeRegex(className)}\\b`);
-    if (!classPattern.test(sourceContent)) return null;
-    return resolvedPath;
-}
-
-function resolveSourceFile(basePath: string): string | null {
-    if (fs.existsSync(basePath) && fs.statSync(basePath).isFile()) return basePath;
-    for (const suffix of ['.ts', '.tsx', '.d.ts']) {
-        if (fs.existsSync(basePath + suffix)) return basePath + suffix;
-    }
-    return null;
-}
-
-function resolvePackageImport(fromDir: string, importPath: string): string | null {
-    const parts = importPath.split('/');
-    const packageName = importPath.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
-    const subpath = importPath.slice(packageName.length).replace(/^\//, '');
-    let dir = fromDir;
-    let parent = path.dirname(dir);
-
-    while (dir !== parent) {
-        const packageDir = path.join(dir, 'node_modules', packageName);
-        if (fs.existsSync(packageDir)) {
-            let entry: string | undefined;
-            try {
-                const pkg = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
-                entry = subpath ? undefined : typeof pkg.types === 'string' ? pkg.types : pkg.typings || pkg.main;
-            } catch {
-                /* package.json may be unavailable */
-            }
-            const candidates = subpath
-                ? [path.join(packageDir, subpath)]
-                : entry
-                  ? [
-                        path.resolve(packageDir, entry),
-                        path.join(packageDir, 'index.d.ts'),
-                        path.join(packageDir, 'index.ts'),
-                    ]
-                  : [path.join(packageDir, 'index.d.ts'), path.join(packageDir, 'index.ts')];
-
-            for (const candidate of candidates) {
-                const file =
-                    resolveSourceFile(candidate) ||
-                    (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()
-                        ? resolveSourceFile(path.join(candidate, 'index'))
-                        : null);
-                if (file) return file;
-            }
-        }
-        dir = parent;
-        parent = path.dirname(dir);
-    }
-    return null;
 }
 
 export function findPropertyClassFile(tsPath: string, propName: string, htmlPath?: string): string | null {
@@ -993,40 +960,20 @@ export function findPropertyClassFile(tsPath: string, propName: string, htmlPath
     const typeMatch = declaration.match(new RegExp(`\\b${escapeRegex(propName)}\\s*[:=]\\s*(?:new\\s+)?([A-Z]\\w*)`));
     if (!typeMatch) return null;
 
-    const className = typeMatch[1];
-    const dir = path.dirname(tsPath);
-    const importPath = findImportPathForName(source.text, className);
-    if (!importPath) return null;
+    // 与父类解析共用同一套「真实声明名」解析，支持别名导入与任意 barrel 再导出
+    const binding = findImportBinding(source.text, source.masked, typeMatch[1]);
+    if (!binding) return null;
+    const resolvedDecl = resolveImportDeclaration(
+        path.dirname(tsPath),
+        binding.spec,
+        binding.imported,
+        binding.isDefault,
+    );
+    if (resolvedDecl) return resolvedDecl.path;
 
-    let resolvedPath = path.resolve(dir, importPath);
-    if (!resolvedPath.endsWith('.ts') && !resolvedPath.endsWith('.tsx')) {
-        if (fs.existsSync(resolvedPath + '.ts')) resolvedPath += '.ts';
-        else if (fs.existsSync(resolvedPath + '.tsx')) resolvedPath += '.tsx';
-    }
-
-    if (resolvedPath.endsWith('index.ts') || resolvedPath.endsWith('index.tsx')) {
-        const indexDir = path.dirname(resolvedPath);
-        const kebabName = className
-            .replace(/([A-Z])/g, '-$1')
-            .toLowerCase()
-            .replace(/^-/, '');
-        const directPath = path.join(indexDir, kebabName + '.ts');
-        if (fs.existsSync(directPath)) return directPath;
-
-        const indexContent = readText(resolvedPath);
-        if (indexContent) {
-            const reExportMatch = indexContent.match(
-                new RegExp(`export\\s+\\{[^}]*\\b${escapeRegex(className)}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`),
-            );
-            if (reExportMatch) {
-                const classPath = path.resolve(indexDir, reExportMatch[1]);
-                const finalPath = classPath.endsWith('.ts') ? classPath : classPath + '.ts';
-                if (fs.existsSync(finalPath)) return finalPath;
-            }
-        }
-    }
-
-    return fs.existsSync(resolvedPath) ? resolvedPath : null;
+    // 属性类型是 interface / type 别名（非 class）时没有类声明可解析，
+    // 退回模块文件，交给 findMethodInTsFile 的全文签名兜底定位方法。
+    return resolveModuleFile(path.dirname(tsPath), binding.spec);
 }
 
 /* ============================================================
@@ -1082,15 +1029,17 @@ function findPropInTsFile(tsPath: string, propName: string, htmlPath?: string): 
     // 1. super({ ... }) 里的键
     const superOpen = findSuperObject(source, cls);
     if (superOpen !== null) {
-        const keyIndex = findKeyIndex(source.masked, superOpen, propName);
+        const keyIndex = findKeyIndex(source.text, source.masked, superOpen, propName);
         if (keyIndex !== null) return locate(tsPath, keyIndex);
     }
 
-    // 2. 类型声明里的属性（interface 或内联字面量）
-    const dataBody = findDataTypeBody(source, cls);
-    if (dataBody !== null) {
-        const keyIndex = findKeyIndex(source.masked, dataBody.open, propName);
-        if (keyIndex !== null) return locate(tsPath, keyIndex);
+    // 2. 类型声明里的属性（interface / 内联字面量 / 交叉类型 / 导入）
+    for (const body of resolveDataBodies(tsPath, cls)) {
+        if (!typeBodyHasKey(body, propName)) continue;
+        const bodySource = loadSource(body.path);
+        if (!bodySource) continue;
+        const keyIndex = findKeyIndex(bodySource.text, bodySource.masked, body.open, propName);
+        if (keyIndex !== null) return locate(body.path, keyIndex);
     }
 
     // 3. 装饰器 props 数组里的 { name: 'xxx' }
@@ -1128,11 +1077,16 @@ function findDataDefinitionInTsFile(tsPath: string, htmlPath?: string): vscode.L
 
     const cls = resolveComponentClass(tsPath, htmlPath);
 
-    const dataBody = findDataTypeBody(source, cls);
-    if (dataBody !== null) {
-        if (dataBody.inline) return locate(tsPath, dataBody.open);
-        const interfaceIndex = source.masked.lastIndexOf('interface', dataBody.open);
-        if (interfaceIndex !== -1) return locate(tsPath, interfaceIndex);
+    const dataBodies = resolveDataBodies(tsPath, cls);
+    if (dataBodies.length > 0) {
+        const body = dataBodies[0];
+        const bodySource = loadSource(body.path);
+        if (bodySource) {
+            if (body.kind === 'literal') return locate(body.path, body.open);
+            const interfaceIndex = bodySource.masked.lastIndexOf('interface', body.open);
+            if (interfaceIndex !== -1) return locate(body.path, interfaceIndex);
+            return locate(body.path, body.open);
+        }
     }
 
     if (cls) return locate(tsPath, cls.keywordIndex);
@@ -1203,10 +1157,12 @@ export function getPropTypeFromTsFile(tsPath: string, propName: string, htmlPath
 
     const cls = resolveComponentClass(tsPath, htmlPath);
 
-    // 1. 类型声明里的类型注解（interface 或内联字面量）
-    const dataBody = findDataTypeBody(source, cls);
-    if (dataBody !== null) {
-        const type = findKeyType(source.text, source.masked, dataBody.open, propName);
+    // 1. 类型声明里的类型注解（interface / 内联字面量 / 交叉类型 / 导入）
+    for (const body of resolveDataBodies(tsPath, cls)) {
+        if (!typeBodyHasKey(body, propName)) continue;
+        const bodySource = loadSource(body.path);
+        if (!bodySource) continue;
+        const type = findKeyType(bodySource.text, bodySource.masked, body.open, propName);
         if (type) return type;
     }
 
@@ -1235,10 +1191,13 @@ export function getComponentMembers(
     methods: Set<string>;
     getters: Set<string>;
     dataProps: Set<string>;
+    /** $data 键集不完整：有无法静态确定的类型，不能用于报未定义 */
+    dataPropsIncomplete: boolean;
 } {
     const methods = new Set<string>();
     const getters = new Set<string>();
     const dataProps = new Set<string>();
+    let dataPropsIncomplete = false;
 
     // 组件继承 HTMLElement，这些 API 在模板里调用是合法的
     for (const name of FRAMEWORK_METHODS) methods.add(name);
@@ -1254,11 +1213,13 @@ export function getComponentMembers(
 
         // 数据属性只在当前组件里找（父类的 $data 是另一套）
         if (currentPath === tsPath) {
-            for (const prop of extractDataPropsFromTs(currentPath, htmlPath)) dataProps.add(prop);
+            const info = extractDataPropsInfo(currentPath, htmlPath);
+            for (const prop of info.props) dataProps.add(prop);
+            dataPropsIncomplete = info.incomplete;
         }
     }
 
-    return { methods, getters, dataProps };
+    return { methods, getters, dataProps, dataPropsIncomplete };
 }
 
 /* ============================================================
@@ -1276,7 +1237,7 @@ export function validateReferences(document: vscode.TextDocument): TemplateDiagn
     const tsPath = findCorrespondingTsFile(document.fileName);
     if (!tsPath) return diagnostics;
 
-    const { methods, getters, dataProps } = getComponentMembers(tsPath, document.fileName);
+    const { methods, getters, dataProps, dataPropsIncomplete } = getComponentMembers(tsPath, document.fileName);
     const text = document.getText();
     const masked = maskHtmlNonContent(text);
     const lineStarts = computeLineStarts(text);
@@ -1304,8 +1265,9 @@ export function validateReferences(document: vscode.TextDocument): TemplateDiagn
             pushDiagnostic(`方法 '${name}' 在组件及其父类中未定义`, region.start + match.index + 5, name.length);
         }
 
-        // dataProps 为空说明 super/interface 都没解析出来，跳过以免误报
-        if (dataProps.size === 0) continue;
+        // dataProps 为空说明 super/interface 都没解析出来；键集不完整说明存在无法静态
+        // 确定的类型（泛型实参 / 索引访问等）。两种情况都跳过，以免按残缺键集误报
+        if (dataProps.size === 0 || dataPropsIncomplete) continue;
 
         const dataProp = /\$data\.(\w+)/g;
         while ((match = dataProp.exec(slice)) !== null) {

@@ -3,7 +3,7 @@ import {
     extractReferenceAtPosition,
     findCorrespondingTsFile,
     findAncestorFiles,
-    findPropertyClassFile,
+    findChainedPropertyClass,
     getMethodSignatures,
     getPropTypeFromTsFile,
 } from './templateParser';
@@ -43,11 +43,12 @@ export class SolelyHoverProvider implements vscode.HoverProvider {
                 }
             }
 
-            // Fallback for chained method: find in the class of the first-level property
+            // Fallback for chained method: find in the class of the first-level property.
+            // The property may be declared in an ancestor, so walk the chain (same as definition).
             if (!sig && ref.fullExpression) {
                 const chainedMatch = ref.fullExpression.match(/\bthis\.(\w+)\.\w+\s*\(/);
                 if (chainedMatch) {
-                    const propClassPath = findPropertyClassFile(tsPath, chainedMatch[1], document.fileName);
+                    const propClassPath = findChainedPropertyClass(tsPath, chainedMatch[1], document.fileName);
                     if (propClassPath) {
                         signatures = getMethodSignatures(propClassPath, document.fileName);
                         sig = signatures.find(s => s.name === ref.name);
